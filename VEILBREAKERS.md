@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.35** | Last updated: 2026-01-15
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.37** | Last updated: 2026-01-15
 
 ---
 
@@ -8,12 +8,12 @@
 
 | Field | Value |
 |-------|-------|
-| Engine | Unity 3D (transitioning from Godot 4.5.1) |
+| Engine | **Unity 3D** |
 | Genre | AAA 3D Real-Time Tactical Monster RPG |
 | Combat Style | Dragon Age: Inquisition action-forward |
-| Art Style | Dark Fantasy Horror |
+| Art Style | Dark Fantasy Horror (3D models from 2D art) |
 | Resolution | 1920x1080 |
-| GitHub | Sharks820/VeilbreakersGame |
+| GitHub | Sharks820/VeilBreakers3D |
 
 ### Core Systems
 - Real-time tactical combat with party command system
@@ -26,11 +26,254 @@
 
 ---
 
-## ⚠️ MANDATORY UTILITIES (5,285 lines - MUST USE)
+## 🎮 UNITY 3D PROJECT STRUCTURE
 
-**ALL new code MUST use these utilities. NO exceptions. NO manual implementations.**
+### Root Folders
+```
+VeilBreakers3D/
+├── Assets/                    # ALL game assets
+│   ├── Art/                   # Visual assets
+│   │   ├── 2D_Reference/      # Original 2D art for 3D conversion
+│   │   │   └── Monsters/      # 2D monster concept art
+│   │   ├── 3D_Models/         # 3D model files
+│   │   │   ├── Characters/    # Player, heroes
+│   │   │   ├── Monsters/      # Monster 3D models
+│   │   │   ├── Props/         # Environmental props
+│   │   │   └── Weapons/       # Weapon models
+│   │   ├── Animations/        # Animation clips
+│   │   │   ├── Characters/    # Player/hero animations
+│   │   │   ├── Monsters/      # Monster animations
+│   │   │   └── Shared/        # Reusable animations
+│   │   ├── Rigs/              # Rigging files
+│   │   │   ├── Characters/    # Character rigs
+│   │   │   └── Monsters/      # Monster rigs
+│   │   ├── Materials/         # Material definitions
+│   │   ├── Textures/          # Texture files
+│   │   └── VFX/               # Visual effects
+│   ├── Audio/                 # Sound assets
+│   │   ├── Music/             # Background music
+│   │   ├── SFX/               # Sound effects
+│   │   └── Voice/             # Voice lines
+│   ├── Data/                  # Game data (JSON, ScriptableObjects)
+│   │   ├── Monsters/          # Monster definitions
+│   │   ├── Skills/            # Skill definitions
+│   │   ├── Items/             # Item definitions
+│   │   └── Brands/            # Brand configurations
+│   ├── Prefabs/               # Prefab assets
+│   │   ├── Characters/        # Character prefabs
+│   │   ├── Monsters/          # Monster prefabs
+│   │   ├── UI/                # UI prefabs
+│   │   └── VFX/               # Effect prefabs
+│   ├── Scenes/                # Unity scenes
+│   │   ├── Main/              # Core game scenes
+│   │   ├── Battle/            # Combat scenes
+│   │   └── Test/              # Testing scenes
+│   ├── Scripts/               # C# scripts
+│   │   ├── Core/              # Core systems
+│   │   ├── Combat/            # Battle logic
+│   │   ├── UI/                # UI controllers
+│   │   ├── Monsters/          # Monster logic
+│   │   ├── Characters/        # Character logic
+│   │   └── Utils/             # Utility scripts
+│   └── UI/                    # UI assets
+│       ├── Sprites/           # UI sprites
+│       ├── Fonts/             # Font files
+│       └── Prefabs/           # UI prefabs
+├── Docs/                      # Documentation
+│   ├── ArtReference/          # Art style guides
+│   ├── Design/                # Design documents
+│   └── LEGACY_Godot/          # [OUTDATED] Old Godot docs
+├── screenshots/               # In-game screenshots (debug)
+├── CLAUDE.md                  # AI agent instructions
+└── VEILBREAKERS.md            # This file (single source of truth)
+```
 
-### UIStyleFactory (889 lines) - `scripts/utils/ui_style_factory.gd`
+### 3D Model Naming Convention
+```
+[type]_[name]_[variant].fbx
+monster_hollow_base.fbx
+monster_hollow_corrupted.fbx
+hero_bastion_armor01.fbx
+```
+
+### Animation Naming Convention
+```
+[character]@[action]_[variant].anim
+hollow@idle_loop.anim
+hollow@attack_slash.anim
+hollow@death_fall.anim
+bastion@walk_forward.anim
+```
+
+### Rig File Naming
+```
+rig_[character]_[type].prefab
+rig_hollow_generic.prefab
+rig_bastion_humanoid.prefab
+```
+
+---
+
+## 📸 SCREENSHOT PROTOCOL
+
+**Location:** `screenshots/` (root folder)
+
+**Naming Convention:**
+```
+screenshot_[date]_[description].png
+screenshot_2026-01-15_battle_ui_test.png
+screenshot_2026-01-15_monster_hollow_ingame.png
+```
+
+**Use Cases:**
+- Visual verification of in-game assets
+- UI layout debugging
+- Before/after comparisons
+- Bug documentation
+
+**NEVER save screenshots to:** Assets/, Docs/, or project root
+
+---
+
+## 🛠️ UNITY DEVELOPMENT BEST PRACTICES
+
+### C# Code Style (Unity Standard)
+```csharp
+// Namespace all scripts
+namespace VeilBreakers.Combat
+{
+    // Class names: PascalCase
+    public class BattleManager : MonoBehaviour
+    {
+        // Constants: PascalCase with k prefix
+        private const int kMaxPartySize = 3;
+
+        // Private fields: _camelCase
+        [SerializeField] private int _currentTurn;
+
+        // Public properties: PascalCase
+        public int CurrentTurn => _currentTurn;
+
+        // Events: PascalCase with On prefix
+        public event Action<int> OnTurnChanged;
+
+        // Methods: PascalCase
+        public void StartBattle() { }
+        private void ProcessTurn() { }
+    }
+}
+```
+
+### ScriptableObject Pattern (Use for Data)
+```csharp
+// Assets/Data/Monsters/
+[CreateAssetMenu(fileName = "Monster", menuName = "VeilBreakers/Monster Data")]
+public class MonsterData : ScriptableObject
+{
+    public string monsterName;
+    public Brand primaryBrand;
+    public int baseHealth;
+    public Sprite portrait;
+    public GameObject modelPrefab;
+}
+```
+
+### Required Namespaces
+| Namespace | Purpose |
+|-----------|---------|
+| `VeilBreakers.Core` | Core systems, managers |
+| `VeilBreakers.Combat` | Battle logic, damage |
+| `VeilBreakers.Monsters` | Monster classes, AI |
+| `VeilBreakers.Characters` | Player, heroes |
+| `VeilBreakers.UI` | UI controllers |
+| `VeilBreakers.Data` | ScriptableObjects, configs |
+| `VeilBreakers.Utils` | Helper classes |
+
+### Manager Pattern (Singleton)
+```csharp
+public class GameManager : MonoBehaviour
+{
+    public static GameManager Instance { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+}
+```
+
+### Event System (Use UnityEvents for Inspector)
+```csharp
+// For inspector binding
+[SerializeField] private UnityEvent<int> onDamageDealt;
+
+// For code-only events
+public event Action<Monster, int> OnMonsterDamaged;
+```
+
+### Prefab Workflow
+1. Create prefab in `Assets/Prefabs/[Category]/`
+2. Configure components in Inspector
+3. Use prefab variants for differences
+4. Never modify prefab instances directly (use overrides)
+
+### Animation Controller Setup
+```
+Assets/Art/Animations/[Character]/
+├── [Character]_AnimController.controller
+├── [Character]@idle.anim
+├── [Character]@walk.anim
+├── [Character]@attack.anim
+└── [Character]@death.anim
+```
+
+### Layer Management
+| Layer | Purpose |
+|-------|---------|
+| Default | Environment |
+| Player | Player character |
+| Enemies | Enemy monsters |
+| Allies | Allied monsters |
+| UI | UI elements |
+| Projectiles | Attacks |
+| Triggers | Interaction zones |
+
+### Tags
+| Tag | Purpose |
+|-----|---------|
+| Player | Main player |
+| Enemy | Enemy units |
+| Ally | Allied units |
+| Interactable | Clickable objects |
+| Spawn | Spawn points |
+
+### Input System (New Input System)
+Use Unity's new Input System package for:
+- Action maps: `Combat`, `UI`, `Exploration`
+- Rebindable controls
+- Multiple input device support
+
+### Addressables (Recommended)
+Use Addressables for:
+- Monster models (load on demand)
+- Audio files
+- Large textures
+- Level assets
+
+---
+
+## ⚠️ LEGACY: Godot Utilities (5,285 lines) - [OUTDATED]
+
+> **⚠️ THIS SECTION IS FROM GODOT 2D - NOT APPLICABLE TO UNITY 3D**
+> Kept for reference during transition. Do NOT use in Unity project.
+
+### UIStyleFactory (889 lines) - `scripts/utils/ui_style_factory.gd` [GODOT ONLY]
 | ❌ DON'T DO THIS | ✅ DO THIS INSTEAD |
 |------------------|-------------------|
 | `var label = Label.new()` + font overrides | `UIStyleFactory.create_label("text", FONT_NORMAL, COLOR_PARCHMENT)` |
@@ -101,7 +344,9 @@
 
 ---
 
-## Main Menu UI
+## LEGACY: Main Menu UI [GODOT 2D - OUTDATED]
+
+> **⚠️ These values are from Godot 2D project - rebuild in Unity**
 
 ### Logo
 | Property | Value |
@@ -135,9 +380,11 @@
 
 ---
 
-## Battle System
+## LEGACY: Battle System [GODOT 2D - OUTDATED]
 
-**Status: 75% complete**
+> **⚠️ This was 2D turn-based. Transitioning to 3D real-time tactical.**
+
+**Status: DEPRECATED - Rebuilding in Unity 3D**
 
 ### Architecture
 - BattleManager, TurnManager, DamageCalculator
@@ -390,21 +637,50 @@ Successful Quick Time Event adds +5-15% to capture chance.
 
 ---
 
-## MCP Workflow
+## MCP & Plugin Arsenal
 
-### Active Servers (15 total)
+### Active MCP Servers (3)
 | Server | Purpose |
 |--------|---------|
-| godot-screenshots | Run game, capture screenshots |
-| godot-editor | Scene/node manipulation |
-| godot-ultimate | **PRIMARY** - 55 tools for project health, testing, debugging |
-| gdscript-lsp | GDScript language server |
-| sequential-thinking | Problem solving |
+| sequential-thinking | Complex problem decomposition, planning |
 | **memory** | **Persistent knowledge graph - syncs with this file** |
-| image-process | Image manipulation |
-| fal-ai | AI image generation |
-| scenario | Scenario.com asset generation |
-| trello | Task tracking |
+| image-process | Image manipulation (crop, resize, convert) |
+
+### Installed Claude Code Plugins (26 - USE ALL)
+
+#### Official Plugins (19)
+| Plugin | Purpose |
+|--------|---------|
+| ralph-wiggum | Fun/personality |
+| frontend-design | UI/UX design assistance |
+| context7 | Context management |
+| serena | Development assistant |
+| github | GitHub integration |
+| code-review | Code review assistance |
+| typescript-lsp | TypeScript language server |
+| security-guidance | Security best practices |
+| feature-dev | Feature development |
+| commit-commands | Git commit assistance |
+| pr-review-toolkit | Pull request reviews |
+| agent-sdk-dev | Agent development |
+| pyright-lsp | Python language server |
+| explanatory-output-style | Better explanations |
+| greptile | Code search |
+| sentry | Error monitoring |
+| gopls-lsp | Go language server |
+| **csharp-lsp** | **C# language server (Unity!)** |
+| clangd-lsp | C/C++ language server |
+
+#### Superpowers Marketplace (7)
+| Plugin | Purpose |
+|--------|---------|
+| double-shot-latte | Enhanced responses |
+| superpowers-chrome | Browser automation |
+| episodic-memory | Session memory |
+| elements-of-style | Writing style |
+| superpowers | Core enhancements |
+| superpowers-developing-for-claude-code | Meta development |
+| superpowers-lab | Experimental features |
 
 ### Memory Protocol
 **VEILBREAKERS.md is THE source of truth.** Memory MCP should reflect this file's content.
@@ -417,13 +693,12 @@ When memory MCP is available:
 **Tools are LOCAL ONLY** - never committed to git:
 - `.claude/skills/` - Claude Code skills
 - `.claude/rules/` - Claude Code rules
-- `.opencode/` - OpenCode agent configs
 
 ### Asset Pipeline
-1. HuggingFace generates base images
+1. Generate art with AI tools
 2. Image Process resizes/crops to spec
-3. Godot Editor imports to project
-4. Screenshots verify in-game appearance
+3. Unity imports to Assets/
+4. Verify in-game with Play mode
 
 ---
 
@@ -524,10 +799,12 @@ battle, ui, art, audio, vera, monsters, critical
 | 2026-01-13 | v1.29: Memory protocol - VEILBREAKERS.md is single source of truth, tools stay LOCAL (not in git) |
 | 2026-01-14 | v1.34: Character Select fixes - confirmation popup centering, VERA portrait caching, hero card idle animation, highlight state management |
 | 2026-01-15 | **v1.35: MAJOR REDESIGN** - VeilBreakers3D combat system, 10-Brand system (from 12), real-time tactical combat, Path/Brand synergy (buff-only), corruption mechanics, post-battle capture with QTE |
+| 2026-01-15 | v1.36: Added 26 Claude Code plugins (19 official + 7 superpowers), updated MCP servers (3 active), added mandatory session protocols |
+| 2026-01-15 | **v1.37: 3D ORGANIZATION** - Complete Unity 3D folder structure, 3D model/animation/rig naming conventions, marked all Godot sections as LEGACY/OUTDATED, screenshot protocol added |
 
 ---
 
-## NEXT SESSION: Unity Implementation
+## NEXT SESSION: Unity 3D Implementation
 
 **Transition Status:**
 - ~100 files transferred to Unity
@@ -547,9 +824,11 @@ battle, ui, art, audio, vera, monsters, critical
 
 ---
 
-## LEGACY: Hollow Sprite Sheets (Godot)
+## LEGACY: Hollow Sprite Sheets [GODOT 2D - OUTDATED]
 
-**Task**: Use Scenario MCP to remove gray backgrounds from 5 sprite sheets.
+> **⚠️ 2D sprite sheets - Now using 3D models. Keep as reference for 3D conversion.**
+
+**Original Task**: Use Scenario MCP to remove gray backgrounds from 5 sprite sheets.
 
 **Files to create** (save to assets/sprites/monsters/sheets/):
 - hollow_claw_sheet.png (4x4) - X-slash, beam, death
@@ -562,9 +841,11 @@ battle, ui, art, audio, vera, monsters, critical
 
 ---
 
-## Recent Changes (v0.96)
+## LEGACY: Recent Godot Changes (v0.96) [OUTDATED]
 
-### New Utility Systems (scripts/utils/)
+> **⚠️ These changes were for Godot 2D project**
+
+### New Utility Systems (scripts/utils/) [GODOT]
 - **BrandSystem** - Centralized brand effectiveness, colors, and classification
 - **UIStyleFactory** - Standardized StyleBoxFlat creation for panels, buttons, bars
 - **AnimationEffects** - Reusable flash, shake, fade, scale, button hover effects
@@ -587,9 +868,11 @@ battle, ui, art, audio, vera, monsters, critical
 
 ---
 
-## Recent Changes (v0.53-v0.60)
+## LEGACY: Recent Godot Changes (v0.53-v0.60) [OUTDATED]
 
-### Removed Systems
+> **⚠️ These changes were for Godot 2D project**
+
+### Removed Systems [GODOT]
 - **Element System** - Completely removed (was deprecated)
   - Deleted `Element_DEPRECATED` enum and `Element` alias from enums.gd
   - Removed legacy Path values (SHADE, TWILIGHT, NEUTRAL, LIGHT, SERAPH)
