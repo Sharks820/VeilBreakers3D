@@ -16,42 +16,6 @@
         "image-process-mcp-server"
       ]
     },
-    "fal-ai": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "fal-mcp-server"
-      ],
-      "env": {
-        "FAL_KEY": "${FAL_KEY}"
-      }
-    },
-    "scenario": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "scenario.com-mcp-server"
-      ],
-      "env": {
-        "SCENARIO_API_KEY": "${SCENARIO_API_KEY}",
-        "SCENARIO_API_SECRET": "${SCENARIO_API_SECRET}"
-      }
-    },
-    "trello": {
-      "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcp-trello"
-      ],
-      "env": {
-        "TRELLO_API_KEY": "${TRELLO_API_KEY}",
-        "TRELLO_TOKEN": "${TRELLO_TOKEN}",
-        "TRELLO_BOARD_ID": "${TRELLO_BOARD_ID}"
-      }
-    },
     "memory": {
       "type": "stdio",
       "command": "npx",

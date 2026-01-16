@@ -1,28 +1,32 @@
-# VEILBREAKERS - THE ULTIMATE GAME DEV TITAN
+# VEILBREAKERS 3D - UNITY PROJECT
 
 ## Mission: AAA 2D Turn-Based RPG. NO COMPROMISES. NO RIVALS.
 
----
-
-# CRITICAL: GODOT-MCP-ULTIMATE (THE TITAN)
-
-## ALWAYS USE THIS FOR ALL GODOT TASKS - NO EXCEPTIONS
-
-**godot-mcp-ultimate** (55 tools) is the PRIMARY tool. PREMIUM - MAXIMIZE USAGE.
-
-**Location:** `C:/Users/Conner/Downloads/godot-mcp-ultimate`
-
-**USE FOR:** Project health, bug testing, dead code detection, script analysis, asset validation, scene inspection, input validation, game data validation, ALL debugging/testing.
-
-**RUN:**
-```bash
-cd C:/Users/Conner/Downloads/godot-mcp-ultimate && export GODOT_PROJECT_PATH="C:/Users/Conner/Downloads/VeilbreakersGame" && export GODOT_PATH="C:/Users/Conner/AppData/Local/Microsoft/WinGet/Packages/GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe/Godot_v4.5.1-stable_win64_console.exe" && /c/Users/Conner/AppData/Local/nvm/v22.21.1/node.exe test-mcp.mjs
-```
-
-**NEVER skip this. Use ALL agents and tools. PREMIUM usage required.**
+**Engine:** Unity (migrated from Godot)
+**Project Path:** `C:/Users/Conner/Downloads/VeilBreakers3D`
 
 ---
 
+# ⚠️ CRITICAL: MANDATORY RULES (READ FIRST)
+
+## 🔴 THE THREE ABSOLUTES - NEVER SKIP
+
+### 1. SAVE MEMORIES EVERY 15 MINUTES
+- Update `VEILBREAKERS.md` with any new decisions, values, or lessons
+- This is the SINGLE SOURCE OF TRUTH across sessions
+- If you learned something, WRITE IT DOWN
+
+### 2. COMMIT EVERY 15 MINUTES
+- `git add -A && git commit -m "descriptive message" && git push`
+- NO EXCEPTIONS. Losing work is UNACCEPTABLE.
+- Increment version in VEILBREAKERS.md header before each commit
+
+### 3. ORGANIZE FILES INTO CORRECT GIT LOCATIONS
+- EVERY file goes to its designated folder
+- EVERY commit goes to the correct branch
+- NEVER dump files randomly
+
+---
 
 # ⚠️ MANDATORY: SESSION PROTOCOLS
 
@@ -146,9 +150,42 @@ This is NON-NEGOTIABLE. Before writing ANY:
 - Game function/story/big script changes
 - Delete ANY file (archive only, never delete)
 
+## 7. Git Organization Protocol (MANDATORY)
+
+### Branch Naming Convention
+| Prefix | Purpose | Example |
+|--------|---------|---------|
+| `feature/` | New features | `feature/battle-system` |
+| `bugfix/` | Bug fixes | `bugfix/hp-display` |
+| `docs/` | Documentation only | `docs/api-reference` |
+| `hotfix/` | Urgent production fixes | `hotfix/crash-on-load` |
+| `refactor/` | Code cleanup | `refactor/manager-classes` |
+
+### File Organization Rules
+| File Type | Location | Branch |
+|-----------|----------|--------|
+| C# Scripts | `Assets/Scripts/[category]/` | `feature/*` or `bugfix/*` |
+| Documentation | `Docs/` | `docs/*` or current feature branch |
+| Art Assets | `Assets/Art/[category]/` | `feature/*` |
+| Prefabs | `Assets/Prefabs/[category]/` | `feature/*` |
+| Scenes | `Assets/Scenes/` | `feature/*` |
+| Config/Data | `Assets/Data/` | `feature/*` |
+
+### Commit Rules
+1. **NEVER commit directly to `main`** - Always use feature branches
+2. **One logical change per commit** - Don't bundle unrelated changes
+3. **Descriptive messages** - What and why, not just what
+4. **Push immediately after commit** - Don't let commits sit locally
+
+### Before Every Commit Checklist
+- [ ] Files are in correct folders
+- [ ] On correct branch for this work type
+- [ ] VEILBREAKERS.md updated if needed
+- [ ] No debug/test code left in
+
 ---
 
-# THE ARSENAL - 15 MCP SERVERS
+# THE ARSENAL - MCP SERVERS
 
 ## GODOT ENGINE CONTROL
 
@@ -353,20 +390,27 @@ C:/Users/Conner/AppData/Local/Microsoft/WinGet/Packages/GodotEngine.GodotEngine_
 
 ## Project Structure
 ```
-VeilbreakersGame/
-├── assets/
-│   ├── sprites/monsters/     # 9 monsters
-│   ├── sprites/heroes/       # 4 heroes
-│   ├── ui/title/             # Title screen
-│   └── ui/buttons/           # Menu buttons
-├── data/                     # JSON (99 skills, 33 items)
-├── scenes/main/              # Main scenes
-├── scripts/
-│   ├── autoload/             # Singletons
-│   ├── ui/                   # UI controllers
-│   └── battle/               # Battle logic
-├── .mcp.json                 # MCP config (15 servers)
-└── CLAUDE.md                 # This file
+VeilBreakers3D/
+├── Assets/
+│   ├── Scripts/              # C# scripts
+│   │   ├── Battle/           # Battle system
+│   │   ├── Managers/         # Game managers
+│   │   ├── UI/               # UI controllers
+│   │   └── Utils/            # Utility classes
+│   ├── Art/
+│   │   ├── Sprites/          # 2D sprites
+│   │   ├── UI/               # UI elements
+│   │   └── Effects/          # VFX
+│   ├── Prefabs/              # Reusable prefabs
+│   ├── Scenes/               # Unity scenes
+│   └── Data/                 # ScriptableObjects, JSON
+├── Docs/                     # Documentation
+│   ├── ArtReference/         # Art style guides
+│   ├── plans/                # Design plans
+│   └── generated/            # Auto-generated docs
+├── .mcp.json                 # MCP server config
+├── CLAUDE.md                 # This file (AI instructions)
+└── VEILBREAKERS.md           # Cross-session memory
 ```
 
 ## Autoload Singletons
