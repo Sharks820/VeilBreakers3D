@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.37** | Last updated: 2026-01-15
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.38** | Last updated: 2026-01-15
 
 ---
 
@@ -801,6 +801,7 @@ battle, ui, art, audio, vera, monsters, critical
 | 2026-01-15 | **v1.35: MAJOR REDESIGN** - VeilBreakers3D combat system, 10-Brand system (from 12), real-time tactical combat, Path/Brand synergy (buff-only), corruption mechanics, post-battle capture with QTE |
 | 2026-01-15 | v1.36: Added 26 Claude Code plugins (19 official + 7 superpowers), updated MCP servers (3 active), added mandatory session protocols |
 | 2026-01-15 | **v1.37: 3D ORGANIZATION** - Complete Unity 3D folder structure, 3D model/animation/rig naming conventions, marked all Godot sections as LEGACY/OUTDATED, screenshot protocol added |
+| 2026-01-15 | **v1.38: LEGACY CLEANUP** - Moved Godot docs to Docs/LEGACY_Godot/ with README warning, created 40+ Unity 3D asset folders with .gitkeep files, full branch/file structure documented |
 
 ---
 
