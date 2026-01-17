@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.38** | Last updated: 2026-01-15
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.39** | Last updated: 2026-01-17
 
 ---
 
@@ -639,12 +639,32 @@ Successful Quick Time Event adds +5-15% to capture chance.
 
 ## MCP & Plugin Arsenal
 
-### Active MCP Servers (3)
-| Server | Purpose |
-|--------|---------|
-| sequential-thinking | Complex problem decomposition, planning |
-| **memory** | **Persistent knowledge graph - syncs with this file** |
-| image-process | Image manipulation (crop, resize, convert) |
+### Active MCP Servers (2 Local + 5 Plugin)
+
+**Local (.mcp.json):**
+| Server | Purpose | Usage Trigger |
+|--------|---------|---------------|
+| sequential-thinking | Complex problem decomposition | "Design...", "Plan...", system architecture |
+| image-process | Image manipulation (crop, resize) | 2D UI asset pipeline |
+
+**Plugin-provided:**
+| Server | Purpose | Usage Trigger |
+|--------|---------|---------------|
+| Context7 | Unity API docs (23k snippets) | Before writing ANY Unity C# |
+| Serena | C# semantic code tools | Any code modification |
+| Greptile | Codebase-wide search | "Where is X used?" |
+| Episodic Memory | Cross-session conversation history | Every session start |
+| Chrome | Browser automation | Web research (rare) |
+
+**TO ADD:**
+| Server | Purpose | Status |
+|--------|---------|--------|
+| **mcp-unity** | Unity Editor control | Install via Package Manager |
+
+**DELETED (2026-01-17):**
+- ~~memory~~ - Redundant (VEILBREAKERS.md is single source of truth)
+- ~~github~~ - Broken (requires Copilot)
+- ~~sentry~~ - Not configured
 
 ### Installed Claude Code Plugins (26 - USE ALL)
 
@@ -802,6 +822,7 @@ battle, ui, art, audio, vera, monsters, critical
 | 2026-01-15 | v1.36: Added 26 Claude Code plugins (19 official + 7 superpowers), updated MCP servers (3 active), added mandatory session protocols |
 | 2026-01-15 | **v1.37: 3D ORGANIZATION** - Complete Unity 3D folder structure, 3D model/animation/rig naming conventions, marked all Godot sections as LEGACY/OUTDATED, screenshot protocol added |
 | 2026-01-15 | **v1.38: LEGACY CLEANUP** - Moved Godot docs to Docs/LEGACY_Godot/ with README warning, created 40+ Unity 3D asset folders with .gitkeep files, full branch/file structure documented |
+| 2026-01-17 | **v1.39: MCP ARSENAL OPTIMIZATION** - Deleted 3 redundant MCPs (memory, github, sentry), documented usage triggers for all 7 MCPs, added mcp-unity installation plan, created Docs/plans/2026-01-17-mcp-arsenal-design.md |
 
 ---
 

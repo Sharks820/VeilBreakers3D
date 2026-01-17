@@ -86,3 +86,9 @@ screenshots/
 
 # Godot import files (should not be in Unity project)
 *.import
+
+# Windows reserved names
+nul
+
+# Serena cache
+.serena/
