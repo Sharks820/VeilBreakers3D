@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.40** | Last updated: 2026-01-17
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.41** | Last updated: 2026-01-17
 
 ---
 
@@ -826,6 +826,7 @@ battle, ui, art, audio, vera, monsters, critical
 | 2026-01-15 | **v1.38: LEGACY CLEANUP** - Moved Godot docs to Docs/LEGACY_Godot/ with README warning, created 40+ Unity 3D asset folders with .gitkeep files, full branch/file structure documented |
 | 2026-01-17 | **v1.39: MCP ARSENAL OPTIMIZATION** - Deleted 3 redundant MCPs (memory, github, sentry), documented usage triggers for all 7 MCPs, added mcp-unity installation plan, created Docs/plans/2026-01-17-mcp-arsenal-design.md |
 | 2026-01-17 | **v1.40: COMBAT SYSTEM v2.0** - 6-slot abilities (basic, defend, 3 skills, ultimate), tiered synergy (full/partial/neutral/anti), rebalanced combo abilities, AAA rigging/animation/facial pipeline design doc |
+| 2026-01-17 | **v1.41: COMBAT IMPLEMENTATION** - Implemented 10-brand effectiveness matrix (2x/0.5x), SynergySystem (full/partial/neutral/anti tiers), AbilityLoadout (6-slot with cooldowns), Combatant base class, DamageCalculator, BattleManager, EventBus combat events, comprehensive test script |
 
 ---
 
@@ -836,16 +837,22 @@ battle, ui, art, audio, vera, monsters, critical
 - ~135 files pending (hero sprites, backgrounds, title, UI)
 - Design document: `docs/plans/2026-01-15-combat-system-design.md`
 
-**Implementation Priority:**
-1. Core combat loop (attacks, damage, death)
-2. Brand effectiveness system
-3. Universal actions (defend, guard)
-4. 6-slot ability structure (basic, defend, 3 skills, ultimate)
-5. Party swapping
-6. Command hierarchy
-7. Tiered synergy system (full, partial, neutral, anti)
-8. Corruption mechanics
-9. Capture system
+**Implementation Status (v1.41):**
+- ✅ 10-Brand effectiveness system (BrandSystem.cs)
+- ✅ Tiered synergy system (SynergySystem.cs)
+- ✅ 6-slot ability structure (AbilityData.cs, Enums.cs)
+- ✅ Combatant base class (Combatant.cs)
+- ✅ Damage calculation (DamageCalculator.cs)
+- ✅ Real-time battle manager (BattleManager.cs)
+- ✅ Combat events in EventBus
+- ✅ Comprehensive test script (CombatTestSetup.cs)
+
+**Next Priority:**
+1. Create test scene in Unity and run CombatTestSetup
+2. Implement party swapping system (swap cooldown, backup monster list)
+3. Implement command hierarchy (AI modes, quick commands, hotkeys, ping system)
+4. Integrate corruption mechanics with synergy system
+5. Implement capture system (post-battle phase with QTE)
 
 ---
 
