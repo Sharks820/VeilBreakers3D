@@ -70,6 +70,27 @@ namespace VeilBreakers.Data
         ULTIMATE = 6
     }
 
+    // =============================================================================
+    // 6-SLOT ABILITY SYSTEM
+    // =============================================================================
+
+    public enum AbilitySlot
+    {
+        BASIC_ATTACK = 0,   // Slot 1 - No cooldown
+        DEFEND = 1,         // Slot 2 - No cooldown
+        SKILL_1 = 2,        // Slot 3 - 4-6s cooldown
+        SKILL_2 = 3,        // Slot 4 - 10-15s cooldown
+        SKILL_3 = 4,        // Slot 5 - 18-25s cooldown
+        ULTIMATE = 5        // Slot 6 - 45-90s cooldown
+    }
+
+    public enum DefenseAction
+    {
+        DEFEND_SELF,        // 50% damage reduction
+        GUARD_ALLY,         // Intercept for ally, 75% damage to self
+        GUARD_CHAMPION      // Full intercept for champion, 100% damage to self
+    }
+
     public enum DamageType
     {
         PHYSICAL = 0,
