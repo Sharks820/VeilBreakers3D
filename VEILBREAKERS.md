@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.39** | Last updated: 2026-01-17
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.40** | Last updated: 2026-01-17
 
 ---
 
@@ -443,15 +443,16 @@ power * ATK/DEF * level * element * variance * crits
 | Marrow | VOIDTOUCHED | Healer | life_tap, siphon_heal, essence_transfer, life_link |
 | Mirage | UNCHAINED | Illusionist | minor_illusion, fear_touch, mirror_image, mass_confusion |
 
-### Path-Brand Synergy (v6.0 - BALANCED)
+### Path-Brand Synergy (v7.0 - TIERED)
 
-**Core Philosophy:** Synergy = BUFF. Non-synergy = NEUTRAL. No stat penalties.
+**Core Philosophy:** Synergy = BUFF. Non-synergy = NEUTRAL. Partial synergy now rewards building toward full composition.
 
-| Synergy Tier | Effect |
-|--------------|--------|
-| **Strong** | +10% damage, +5% defense, 0.5x corruption rate |
-| **Neutral** | No bonus, no penalty, normal corruption |
-| **Weak** | No bonus, 1.5x corruption rate, no combo access |
+| Tier | Requirement | Damage | Defense | Corruption | Combo? |
+|------|-------------|--------|---------|------------|--------|
+| **FULL** | 3/3 monsters match | +8% | +8% | 0.5x | ✅ YES |
+| **PARTIAL** | 2/3 monsters match | +5% | +5% | 0.75x | ❌ No |
+| **NEUTRAL** | 0-1/3 monsters match | +0% | +0% | 1.0x | ❌ No |
+| **ANTI** | Any Weak brand | +0% | +0% | 1.5x each | ❌ No |
 
 | Path | Strong Synergy Brands | Weak Synergy Brands |
 |------|----------------------|---------------------|
@@ -460,14 +461,14 @@ power * ATK/DEF * level * element * variance * crits
 | VOIDTOUCHED | VOID, DREAD, SURGE | IRON, GRACE, MEND |
 | UNCHAINED | All Neutral | None (flex path) |
 
-### Combo Abilities (Require FULL Party Synergy)
+### Combo Abilities (Require FULL 3/3 Synergy)
 
 | Path | Combo | Effect | Cooldown |
 |------|-------|--------|----------|
-| IRONBOUND | Bulwark Formation | +15% party defense, 8 sec | 45s |
-| FANGBORN | Blood Frenzy | +12% party damage, 6 sec | 45s |
-| VOIDTOUCHED | Reality Fracture | 20% chance reset ally cooldown | 60s |
-| UNCHAINED | Adaptive Surge | Copy ally ability at 50% power | 60s |
+| IRONBOUND | Bulwark Formation | +12% defense, 25% damage redirects to tank, 6s | 60s |
+| FANGBORN | Blood Frenzy | +10% damage, attacks heal 3% dealt, 5s | 60s |
+| VOIDTOUCHED | Reality Fracture | 15% chance reset cooldowns on ability use, 8s | 75s |
+| UNCHAINED | Adaptive Surge | Next ability copies to random ally at 40% (instant) | 60s |
 
 - Heroes get Paths (not Brands) - synergize with multiple monster brands
 - 15 stats per character with growth rates
@@ -520,15 +521,16 @@ All monsters have these regardless of Brand:
 | Guard Ally | Intercept, 75% damage redirected | None |
 | Guard Champion | Intercept, 100% damage taken | None |
 
-### 5-Slot Ability Structure
+### 6-Slot Ability Structure
 
-| Slot | Type | Cooldown |
-|------|------|----------|
-| 1 | Basic Attack | None |
-| 2 | Defend/Guard | None |
-| 3 | Skill 1 | 3-5 seconds |
-| 4 | Skill 2 | 8-12 seconds |
-| 5 | Ultimate | 30-60 seconds |
+| Slot | Type | Cooldown | Purpose |
+|------|------|----------|---------|
+| 1 | Basic Attack | None | Always available damage |
+| 2 | Defend/Guard | None | Always available defense |
+| 3 | Skill 1 | 4-6 seconds | Spammable utility |
+| 4 | Skill 2 | 10-15 seconds | Core rotation |
+| 5 | Skill 3 | 18-25 seconds | Situational power |
+| 6 | Ultimate | 45-90 seconds | Fight-changer |
 
 ### Party Structure
 - **3 Active** + **3 Backpack** + Unlimited Storage
@@ -823,6 +825,7 @@ battle, ui, art, audio, vera, monsters, critical
 | 2026-01-15 | **v1.37: 3D ORGANIZATION** - Complete Unity 3D folder structure, 3D model/animation/rig naming conventions, marked all Godot sections as LEGACY/OUTDATED, screenshot protocol added |
 | 2026-01-15 | **v1.38: LEGACY CLEANUP** - Moved Godot docs to Docs/LEGACY_Godot/ with README warning, created 40+ Unity 3D asset folders with .gitkeep files, full branch/file structure documented |
 | 2026-01-17 | **v1.39: MCP ARSENAL OPTIMIZATION** - Deleted 3 redundant MCPs (memory, github, sentry), documented usage triggers for all 7 MCPs, added mcp-unity installation plan, created Docs/plans/2026-01-17-mcp-arsenal-design.md |
+| 2026-01-17 | **v1.40: COMBAT SYSTEM v2.0** - 6-slot abilities (basic, defend, 3 skills, ultimate), tiered synergy (full/partial/neutral/anti), rebalanced combo abilities, AAA rigging/animation/facial pipeline design doc |
 
 ---
 
@@ -837,10 +840,10 @@ battle, ui, art, audio, vera, monsters, critical
 1. Core combat loop (attacks, damage, death)
 2. Brand effectiveness system
 3. Universal actions (defend, guard)
-4. 5-slot ability structure
+4. 6-slot ability structure (basic, defend, 3 skills, ultimate)
 5. Party swapping
 6. Command hierarchy
-7. Synergy system
+7. Tiered synergy system (full, partial, neutral, anti)
 8. Corruption mechanics
 9. Capture system
 
