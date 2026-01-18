@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.51** | Last updated: 2026-01-18
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.52** | Last updated: 2026-01-19
 
 ---
 
@@ -869,17 +869,18 @@ battle, ui, art, audio, vera, monsters, critical
 | 2026-01-18 | **v1.49: STATUS EFFECTS DESIGN** - Complete status effect system: Brand+Type dual categories, no-stacking rule (AI won't target with same effect), scaling formula (Base×Stat×SkillRank×BrandEffectiveness). 11 Control effects (Stun→Petrify), 20+ Buffs (stat/defensive/offensive/utility/emergency), 20+ Debuffs (stat downs/vulnerabilities/restrictions/anti-sustain/death sentences). Cleanse removes 1-3 by skill rank with AI triage (Doom>CC>DoT>Stat). VOID steals buffs instead of dispelling. Created Docs/plans/2026-01-18-status-effects-design.md. |
 | 2026-01-18 | **v1.50: QUICK COMMAND DESIGN** - Radial wheel ally command system. Q opens menu (25% time slow), click/Enter confirms. Commands: Attack/Defend Target, Defend Player, On Me (auto-defend+attack threats+reform), Fall Back, Reposition (ground target), Return to Formation. Tactical presets: Aggressive/Defensive/Support/Focus/Protect. 12s cooldown per ally after commanding. TAB cycles enemies, CTRL cycles allies. Created Docs/plans/2026-01-18-quick-command-design.md. |
 | 2026-01-18 | **v1.51: MONSTER CAPTURE DESIGN** - Two-phase system: C marks during combat (allies switch to Bind mode), post-battle QTE capture. Bind threshold based on corruption (LOW=easier +15%, HIGH=harder -15%), rarity, speed, brand, intimidation. Capture formula: HP% + Corruption + Rarity (Common 0%, Legendary -75%) + Level diff (±3-5%/level) + Items (Shard +10% → Heart +50%) + QTE. Items INCREASE chance, never guarantee. Failure: Flee (70% low corrupt) or Berserk (70% high corrupt), either possible at any level. Legendary requires top-tier items. Created Docs/plans/2026-01-18-monster-capture-design.md. |
+| 2026-01-19 | **v1.52: SAVE/LOAD SYSTEM DESIGN** - Shrine-based save zones: manual save only within discovered shrine radius (large areas have multiple shrines). 3 save slots + dedicated auto.sav. Auto-save on story objectives + all boss victories. JSON + AES-256 encryption. SaveData stores IDs (stats recalculated on load for balance patches). Sequential migrations (v1→v2→v3). Load screen shows: hero portrait, level, path, location, playtime, strongest monster. Settings global via PlayerPrefs. Created Docs/plans/2026-01-19-save-load-system-design.md. |
 
 ---
 
 ## NEXT SESSION TASK LIST (2026-01-19)
 
-### Priority 1: Save/Load System Design
-- Design persistence layer
-- Player data structure
-- Monster collection saving
-- Settings/preferences
-- Auto-save system
+### Priority 1: Save/Load System Design ✅ IN PROGRESS
+- ✅ Shrine-based save zones designed
+- ✅ 3 slots + auto.sav structure
+- ✅ SaveData structure defined
+- ✅ Migration system designed
+- ⏳ Finish remaining sections
 
 ### Priority 2: Audio System Design (Optional)
 - Combat sound effects
@@ -892,7 +893,7 @@ Combat system is **100% DESIGNED** - ready to build!
 
 ---
 
-## DESIGN DOCUMENTS COMPLETE (9 Total)
+## DESIGN DOCUMENTS COMPLETE (10 Total)
 
 | Document | File |
 |----------|------|
@@ -905,10 +906,11 @@ Combat system is **100% DESIGNED** - ready to build!
 | Status Effects | 2026-01-18-status-effects-design.md |
 | Quick Command | 2026-01-18-quick-command-design.md |
 | Monster Capture | 2026-01-18-monster-capture-design.md |
+| Save/Load System | 2026-01-19-save-load-system-design.md |
 
 ---
 
-## IMPLEMENTATION STATUS (v1.51)
+## IMPLEMENTATION STATUS (v1.52)
 
 **C# Code Ready:**
 - ✅ 10-Brand effectiveness system (BrandSystem.cs)
@@ -926,7 +928,7 @@ Combat system is **100% DESIGNED** - ready to build!
 - ❌ QuickCommandSystem (design complete)
 - ❌ CaptureSystem (design complete)
 - ❌ Combat UI (design complete)
-- ❌ Save/Load (needs design)
+- ❌ Save/Load (design in progress)
 - ❌ Audio (needs design)
 
 ---
