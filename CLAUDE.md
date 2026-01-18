@@ -183,6 +183,53 @@ This is NON-NEGOTIABLE. Before writing ANY:
 - [ ] VEILBREAKERS.md updated if needed
 - [ ] No debug/test code left in
 
+## 8. Serena Code Intelligence Protocol (MANDATORY)
+
+⚠️ **USE SERENA FOR ALL CODE OPERATIONS TO SAVE TOKENS**
+
+Serena provides semantic code intelligence. Using Serena instead of basic tools can reduce token usage by 80%+ for code exploration.
+
+### ALWAYS Use Serena For:
+
+| Task | ❌ DON'T DO THIS | ✅ DO THIS INSTEAD |
+|------|------------------|-------------------|
+| Understand a file's structure | `Read` entire file, scan visually | `get_symbols_overview` - instant structured list |
+| Find a class/method definition | `Grep "class Foo"`, read matches | `find_symbol("Foo")` - exact location + body |
+| Find where something is used | Multiple `Grep` queries | `find_referencing_symbols` - all usages |
+| Replace a function body | `Read` file, `Edit` with exact match | `replace_symbol_body` - semantic replacement |
+| Rename across codebase | Find/replace, hope you got them all | `rename_symbol` - guaranteed refactoring |
+| Search code patterns | `Grep` with regex | `search_for_pattern` - context-aware results |
+| Add code after a function | Calculate line numbers manually | `insert_after_symbol` - automatic placement |
+
+### Serena Workflow
+
+1. **First contact with a file** → `get_symbols_overview` (NOT `Read`)
+2. **Need specific symbol** → `find_symbol` with `include_body=true`
+3. **Need to understand usage** → `find_referencing_symbols`
+4. **Need to edit** → `replace_symbol_body` or `replace_content` (regex mode)
+5. **Need to add code** → `insert_before_symbol` or `insert_after_symbol`
+
+### When to Use Basic Tools Instead
+
+- **Non-code files** (JSON, MD, config) → Use `Read`/`Edit`
+- **Full file needed** (small files <100 lines) → Use `Read`
+- **Simple text search** (in non-code files) → Use `Grep`
+
+### Project Activation
+
+Serena requires project activation. At session start:
+```
+mcp__plugin_serena_serena__activate_project("VeilBreakers3D")
+```
+
+### Token Savings Examples
+
+| Operation | Basic Tools | Serena | Savings |
+|-----------|-------------|--------|---------|
+| "What methods does BattleManager have?" | ~2000 tokens (Read file) | ~200 tokens (overview) | **90%** |
+| "Find Brand enum definition" | ~500 tokens (Grep + Read) | ~150 tokens (find_symbol) | **70%** |
+| "Where is DamageCalculator used?" | ~1500 tokens (multiple Greps) | ~300 tokens (find_refs) | **80%** |
+
 ---
 
 # THE ARSENAL - MCP SERVERS
