@@ -872,24 +872,45 @@ battle, ui, art, audio, vera, monsters, critical
 
 ---
 
-## NEXT SESSION: Unity 3D Implementation
+## NEXT SESSION TASK LIST (2026-01-19)
 
-**Migration Status: 48% Complete** (see `Docs/MIGRATION_PLAN.md` for full tracking)
+### Priority 1: Save/Load System Design
+- Design persistence layer
+- Player data structure
+- Monster collection saving
+- Settings/preferences
+- Auto-save system
 
-| Category | Progress | Weight |
-|----------|----------|--------|
-| Core Systems | 80% | 15% |
-| Combat Systems | 70% | 20% |
-| Game Systems | 75% | 15% |
-| Data Models | 90% | 10% |
-| UI Systems | 0% | 15% |
-| Audio Systems | 0% | 5% |
-| Save/Load | 0% | 5% |
-| Managers | 20% | 5% |
-| Utilities | 0% | 5% |
-| Unity-Specific | 10% | 5% |
+### Priority 2: Audio System Design (Optional)
+- Combat sound effects
+- Music system
+- Ambient audio
+- UI feedback sounds
 
-**Implementation Status (v1.44):**
+### Priority 3: BEGIN UNITY IMPLEMENTATION
+Combat system is **100% DESIGNED** - ready to build!
+
+---
+
+## DESIGN DOCUMENTS COMPLETE (9 Total)
+
+| Document | File |
+|----------|------|
+| Combat System | 2026-01-15-combat-system-design.md |
+| Combat Implementation | 2026-01-17-combat-implementation-plan.md |
+| Combat UI | 2026-01-17-combat-ui-design.md |
+| Rigging/Animation | 2026-01-17-rigging-animation-facial-design.md |
+| MCP Arsenal | 2026-01-17-mcp-arsenal-design.md |
+| Gambits AI | 2026-01-18-gambits-ai-design.md |
+| Status Effects | 2026-01-18-status-effects-design.md |
+| Quick Command | 2026-01-18-quick-command-design.md |
+| Monster Capture | 2026-01-18-monster-capture-design.md |
+
+---
+
+## IMPLEMENTATION STATUS (v1.51)
+
+**C# Code Ready:**
 - ✅ 10-Brand effectiveness system (BrandSystem.cs)
 - ✅ Tiered synergy system (SynergySystem.cs)
 - ✅ 6-slot ability structure (AbilityData.cs, Enums.cs)
@@ -899,15 +920,14 @@ battle, ui, art, audio, vera, monsters, critical
 - ✅ Combat events in EventBus
 - ✅ Comprehensive test script (CombatTestSetup.cs)
 
-**Next Priority (Phase 1 - Get to Playable):**
-1. **UI Systems** - Can't test without UI (Unity UI Toolkit)
-2. **Audio Systems** - Essential for feel (Unity Audio Mixer)
-3. **Save/Load** - Need persistence (ScriptableObjects + JsonUtility)
-
-**Phase 2 - Combat Complete:**
-4. AIController - Enemy behavior
-5. StatusEffectManager - Buffs/debuffs (ScriptableObjects)
-6. CaptureSystem - Post-battle capture with QTE
+**Needs Implementation:**
+- ❌ StatusEffectManager (design complete)
+- ❌ AIController / Gambits (design complete)
+- ❌ QuickCommandSystem (design complete)
+- ❌ CaptureSystem (design complete)
+- ❌ Combat UI (design complete)
+- ❌ Save/Load (needs design)
+- ❌ Audio (needs design)
 
 ---
 
