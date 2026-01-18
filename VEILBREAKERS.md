@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.48** | Last updated: 2026-01-18
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.49** | Last updated: 2026-01-18
 
 ---
 
@@ -866,6 +866,7 @@ battle, ui, art, audio, vera, monsters, critical
 | 2026-01-18 | **v1.46: AGENT OPTIMIZATION** - Upgraded 6 agents to Opus model (unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler, balance-analyzer, vera-dialogue-tester). Created 2 new Haiku agents (commit-helper, documentation-writer). Created 3 MCP skills (unity-editor-control, generate-game-asset, github-workflow). Added Agent Orchestration Protocol to CLAUDE.md. |
 | 2026-01-18 | **v1.47: COMBAT UI DESIGN** - Completed full UI brainstorming session. Final approved HUD: Player info (top-left), Enemy info (top-center), Menu icons (top-right), Allies floating (right side vertical), Skills with keybinds (bottom-center), Capture banner with C keybind (bottom-right). Game-style floating elements, NO webpage boxes. Single C button for capture (mark → flash → capture). Updated Docs/plans/2026-01-17-combat-ui-design.md to v2.0 FINAL. |
 | 2026-01-18 | **v1.48: GAMBITS AI DESIGN** - Completed Utility-based AI system design for all 10 brands. Dragon Age Tactics style with presets + customizable thresholds. Brand-specific multipliers: IRON (tank/guard), SAVAGE (execute DPS), SURGE (ranged kite), VENOM (DoT/debuff), DREAD (CC chain), LEECH (drain sustain), GRACE (reactive heal), MEND (proactive shield), RUIN (AOE cluster), VOID (chaos/desperation). Universal multipliers: Execute (<25% HP = ×2.5-3.0), Focus fire (debuffed = ×1.5), Tank avoidance (no shred = ×0.3-0.5). Ultimate Override Window (5s player priority). Created Docs/plans/2026-01-18-gambits-ai-design.md. |
+| 2026-01-18 | **v1.49: STATUS EFFECTS DESIGN** - Complete status effect system: Brand+Type dual categories, no-stacking rule (AI won't target with same effect), scaling formula (Base×Stat×SkillRank×BrandEffectiveness). 11 Control effects (Stun→Petrify), 20+ Buffs (stat/defensive/offensive/utility/emergency), 20+ Debuffs (stat downs/vulnerabilities/restrictions/anti-sustain/death sentences). Cleanse removes 1-3 by skill rank with AI triage (Doom>CC>DoT>Stat). VOID steals buffs instead of dispelling. Created Docs/plans/2026-01-18-status-effects-design.md. |
 
 ---
 
