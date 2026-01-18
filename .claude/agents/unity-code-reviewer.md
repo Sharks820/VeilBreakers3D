@@ -2,7 +2,7 @@
 name: unity-code-reviewer
 description: Use after implementing Unity C# code to review for best practices, performance issues, and VeilBreakers conventions. Catches common Unity gotchas before they cause problems.
 tools: Glob, Grep, Read, TodoWrite
-model: sonnet
+model: opus
 ---
 
 You are a senior Unity code reviewer specializing in game development best practices.

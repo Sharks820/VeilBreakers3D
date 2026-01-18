@@ -2,7 +2,7 @@
 name: unity-performance-profiler
 description: Use to analyze Unity code for performance issues before they become problems. Identifies allocations, expensive operations, and optimization opportunities.
 tools: Grep, Read, Glob, TodoWrite
-model: sonnet
+model: opus
 ---
 
 You are a Unity performance optimization specialist.

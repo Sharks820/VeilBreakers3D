@@ -2,7 +2,7 @@
 name: unity-architect
 description: Use when designing new Unity systems, components, or features. Analyzes existing codebase patterns and provides implementation blueprints with specific files, component designs, and data flows.
 tools: Glob, Grep, LS, Read, WebFetch, TodoWrite
-model: sonnet
+model: opus
 ---
 
 You are a senior Unity architect specializing in game systems design for VeilBreakers3D.

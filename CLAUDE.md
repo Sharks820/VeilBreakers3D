@@ -270,6 +270,79 @@ BRAINSTORM → WRITE PLAN → EXECUTE PLAN
 | **unity-performance-check** | Before commits | Quick performance red flags check |
 | **veilbreakers-balance-check** | Changing damage/rates | Validate game balance changes won't break game |
 | **veilbreakers-vera-test** | Modifying VERA dialogue | Test VERA dual personality consistency |
+| **unity-editor-control** | "Run the game", "Check compile errors" | Unity Editor interaction via MCP |
+| **generate-game-asset** | "Create a sprite for..." | AI art generation via HuggingFace |
+| **github-workflow** | "Create PR", "Check CI status" | GitHub operations via MCP |
+
+## 11. Agent Orchestration Protocol (MANDATORY)
+
+**USE THE RIGHT AGENT FOR THE RIGHT TASK**
+
+### Agent Model Tiers
+
+| Tier | Model | Extended Reasoning | Use For |
+|------|-------|-------------------|---------|
+| **Critical** | opus | YES | Architecture, debugging, code review, balance, VERA |
+| **Creative** | sonnet | Limited | Asset generation, creative prompts |
+| **Routine** | haiku | No | Commits, docs, pattern scanning |
+
+### Agent Domain Ownership
+
+| Agent | Model | Owns | Cannot Touch |
+|-------|-------|------|--------------|
+| unity-architect | opus | System designs, architecture docs | Actual code implementation |
+| unity-code-reviewer | opus | Code quality judgment | Design decisions |
+| unity-debugger | opus | Bug investigation | Feature code |
+| unity-performance-profiler | opus | Performance analysis | Feature code |
+| balance-analyzer | opus | Game balance values | UI/system code |
+| vera-dialogue-tester | opus | VERA dialogue, personality | Combat code |
+| asset-generator | sonnet | Art prompts, style guide | Code files |
+| bug-hunter | haiku | Bug scanning (read-only) | Any modifications |
+| commit-helper | haiku | Git commits only | Code/design files |
+| documentation-writer | haiku | Simple doc edits | Code files, major decisions |
+
+### Parallel Execution Rules
+
+**CAN Run in Parallel:**
+- Research agents (bug-hunter, performance-profiler scanning)
+- Content agents (balance-analyzer + vera-dialogue-tester)
+- Background tasks (asset-generator while coding)
+
+**MUST Run Sequential:**
+- architect → (main Claude implements) → code-reviewer
+- debugger → (fix applied) → code-reviewer
+- Any agents modifying the same files
+
+### Agent Handoff Protocol
+
+```
+1. DESIGN PHASE
+   unity-architect creates design → Returns to main Claude
+
+2. IMPLEMENTATION PHASE
+   Main Claude implements using Serena → Completes code
+
+3. REVIEW PHASE
+   unity-code-reviewer validates → Returns approval or issues
+
+4. COMMIT PHASE
+   commit-helper creates commit → Push to remote
+
+5. IF ISSUES
+   unity-debugger investigates → Back to step 2
+```
+
+### Background Agent Usage
+
+```csharp
+// Run agent in background while you continue working
+Task tool with run_in_background: true
+
+// Good for:
+- bug-hunter scanning while implementing
+- performance-profiler checking while designing
+- asset-generator creating while coding
+```
 
 ---
 

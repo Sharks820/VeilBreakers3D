@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.45** | Last updated: 2026-01-17
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.47** | Last updated: 2026-01-18
 
 ---
 
@@ -863,6 +863,8 @@ battle, ui, art, audio, vera, monsters, critical
 | 2026-01-17 | **v1.43: SUPERPOWERS WORKFLOW** - Added mandatory 3-phase workflow: (1) Brainstorm → (2) Write Plan → (3) Execute Plan. Review checkpoints require Serena + C# LSP analysis before proceeding. |
 | 2026-01-17 | **v1.44: MIGRATION PLAN & TOOL PROTOCOLS** - Created Docs/MIGRATION_PLAN.md (48% complete, weighted tracking). Plugin cleanup (26→17): removed Ralph Wiggum, explanatory-output-style, 5 unused LSPs, broken plugins. Complete CLAUDE.md overhaul: removed Godot content, added Protocol #5 (Migration), Protocol #10 (Tool Protocols for all 17 plugins + 7 MCPs), Tool Usage Matrix. |
 | 2026-01-17 | **v1.45: CUSTOM AGENTS & SKILLS** - Added 3 new MCPs (mcp-unity, game-asset-generator, github). Created 8 custom agents: unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler, balance-analyzer, vera-dialogue-tester, bug-hunter, asset-generator. Created 4 custom skills: unity-component-design, unity-performance-check, veilbreakers-balance-check, veilbreakers-vera-test. AAA studio vision established. |
+| 2026-01-18 | **v1.46: AGENT OPTIMIZATION** - Upgraded 6 agents to Opus model (unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler, balance-analyzer, vera-dialogue-tester). Created 2 new Haiku agents (commit-helper, documentation-writer). Created 3 MCP skills (unity-editor-control, generate-game-asset, github-workflow). Added Agent Orchestration Protocol to CLAUDE.md. |
+| 2026-01-18 | **v1.47: COMBAT UI DESIGN** - Completed full UI brainstorming session. Final approved HUD: Player info (top-left), Enemy info (top-center), Menu icons (top-right), Allies floating (right side vertical), Skills with keybinds (bottom-center), Capture banner with C keybind (bottom-right). Game-style floating elements, NO webpage boxes. Single C button for capture (mark → flash → capture). Updated Docs/plans/2026-01-17-combat-ui-design.md to v2.0 FINAL. |
 
 ---
 

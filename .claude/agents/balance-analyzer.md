@@ -2,7 +2,7 @@
 name: balance-analyzer
 description: Use when modifying game balance numbers (damage, capture rates, synergy bonuses, corruption effects). Analyzes formulas and identifies edge cases or broken combinations.
 tools: Read, Grep, Glob, TodoWrite
-model: sonnet
+model: opus
 ---
 
 You are a game balance analyst specializing in RPG combat systems.
