@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.43** | Last updated: 2026-01-17
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.44** | Last updated: 2026-01-17
 
 ---
 
@@ -668,41 +668,45 @@ Successful Quick Time Event adds +5-15% to capture chance.
 - ~~github~~ - Broken (requires Copilot)
 - ~~sentry~~ - Not configured
 
-### Installed Claude Code Plugins (26 - USE ALL)
+### Installed Claude Code Plugins (17 Active - Cleaned 2026-01-17)
 
-#### Official Plugins (19)
+#### Official Plugins (11)
 | Plugin | Purpose |
 |--------|---------|
-| ralph-wiggum | Fun/personality |
 | frontend-design | UI/UX design assistance |
-| context7 | Context management |
-| serena | Development assistant |
-| github | GitHub integration |
+| context7 | Unity API docs (23k snippets) |
+| serena | C# semantic code intelligence |
 | code-review | Code review assistance |
-| typescript-lsp | TypeScript language server |
 | security-guidance | Security best practices |
 | feature-dev | Feature development |
 | commit-commands | Git commit assistance |
 | pr-review-toolkit | Pull request reviews |
-| agent-sdk-dev | Agent development |
-| pyright-lsp | Python language server |
-| explanatory-output-style | Better explanations |
-| greptile | Code search |
-| sentry | Error monitoring |
-| gopls-lsp | Go language server |
+| agent-sdk-dev | Agent/VERA development |
+| greptile | Codebase-wide semantic search |
 | **csharp-lsp** | **C# language server (Unity!)** |
-| clangd-lsp | C/C++ language server |
 
-#### Superpowers Marketplace (7)
+#### Superpowers Marketplace (6)
 | Plugin | Purpose |
 |--------|---------|
-| double-shot-latte | Enhanced responses |
+| double-shot-latte | Prevents "continue?" interruptions |
 | superpowers-chrome | Browser automation |
-| episodic-memory | Session memory |
-| elements-of-style | Writing style |
-| superpowers | Core enhancements |
-| superpowers-developing-for-claude-code | Meta development |
-| superpowers-lab | Experimental features |
+| episodic-memory | Cross-session conversation memory |
+| elements-of-style | Clear writing style |
+| superpowers | Core workflows (brainstorm, plan, execute) |
+| superpowers-lab | Duplicate function detection |
+
+#### Removed Plugins (2026-01-17)
+| Plugin | Reason |
+|--------|--------|
+| ralph-wiggum | Caused intrusive popups |
+| explanatory-output-style | Caused code popups |
+| superpowers-developing-for-claude-code | Not developing plugins |
+| typescript-lsp | Not using TypeScript |
+| pyright-lsp | Not using Python |
+| gopls-lsp | Not using Go |
+| clangd-lsp | Not using C/C++ |
+| github | Broken (requires Copilot) |
+| sentry | Not configured |
 
 ### Memory Protocol
 **VEILBREAKERS.md is THE source of truth.** Memory MCP should reflect this file's content.
@@ -829,17 +833,28 @@ battle, ui, art, audio, vera, monsters, critical
 | 2026-01-17 | **v1.41: COMBAT IMPLEMENTATION** - Implemented 10-brand effectiveness matrix (2x/0.5x), SynergySystem (full/partial/neutral/anti tiers), AbilityLoadout (6-slot with cooldowns), Combatant base class, DamageCalculator, BattleManager, EventBus combat events, comprehensive test script |
 | 2026-01-17 | **v1.42: SERENA PROTOCOL** - Added mandatory Serena Code Intelligence Protocol to CLAUDE.md. Serena now required for all code operations to save 70-90% tokens. Documented when to use Serena vs basic tools. |
 | 2026-01-17 | **v1.43: SUPERPOWERS WORKFLOW** - Added mandatory 3-phase workflow: (1) Brainstorm → (2) Write Plan → (3) Execute Plan. Review checkpoints require Serena + C# LSP analysis before proceeding. |
+| 2026-01-17 | **v1.44: MIGRATION PLAN & TOOL PROTOCOLS** - Created Docs/MIGRATION_PLAN.md (48% complete, weighted tracking). Plugin cleanup (26→17): removed Ralph Wiggum, explanatory-output-style, 5 unused LSPs, broken plugins. Complete CLAUDE.md overhaul: removed Godot content, added Protocol #5 (Migration), Protocol #10 (Tool Protocols for all 17 plugins + 7 MCPs), Tool Usage Matrix. |
 
 ---
 
 ## NEXT SESSION: Unity 3D Implementation
 
-**Transition Status:**
-- ~100 files transferred to Unity
-- ~135 files pending (hero sprites, backgrounds, title, UI)
-- Design document: `docs/plans/2026-01-15-combat-system-design.md`
+**Migration Status: 48% Complete** (see `Docs/MIGRATION_PLAN.md` for full tracking)
 
-**Implementation Status (v1.41):**
+| Category | Progress | Weight |
+|----------|----------|--------|
+| Core Systems | 80% | 15% |
+| Combat Systems | 70% | 20% |
+| Game Systems | 75% | 15% |
+| Data Models | 90% | 10% |
+| UI Systems | 0% | 15% |
+| Audio Systems | 0% | 5% |
+| Save/Load | 0% | 5% |
+| Managers | 20% | 5% |
+| Utilities | 0% | 5% |
+| Unity-Specific | 10% | 5% |
+
+**Implementation Status (v1.44):**
 - ✅ 10-Brand effectiveness system (BrandSystem.cs)
 - ✅ Tiered synergy system (SynergySystem.cs)
 - ✅ 6-slot ability structure (AbilityData.cs, Enums.cs)
@@ -849,12 +864,15 @@ battle, ui, art, audio, vera, monsters, critical
 - ✅ Combat events in EventBus
 - ✅ Comprehensive test script (CombatTestSetup.cs)
 
-**Next Priority:**
-1. Create test scene in Unity and run CombatTestSetup
-2. Implement party swapping system (swap cooldown, backup monster list)
-3. Implement command hierarchy (AI modes, quick commands, hotkeys, ping system)
-4. Integrate corruption mechanics with synergy system
-5. Implement capture system (post-battle phase with QTE)
+**Next Priority (Phase 1 - Get to Playable):**
+1. **UI Systems** - Can't test without UI (Unity UI Toolkit)
+2. **Audio Systems** - Essential for feel (Unity Audio Mixer)
+3. **Save/Load** - Need persistence (ScriptableObjects + JsonUtility)
+
+**Phase 2 - Combat Complete:**
+4. AIController - Enemy behavior
+5. StatusEffectManager - Buffs/debuffs (ScriptableObjects)
+6. CaptureSystem - Post-battle capture with QTE
 
 ---
 

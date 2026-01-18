@@ -1,15 +1,16 @@
 # VEILBREAKERS 3D - UNITY PROJECT
 
-## Mission: AAA 2D Turn-Based RPG. NO COMPROMISES. NO RIVALS.
+## Mission: AAA 3D Real-Time Tactical Monster RPG. NO COMPROMISES. NO RIVALS.
 
 **Engine:** Unity (migrated from Godot)
 **Project Path:** `C:/Users/Conner/Downloads/VeilBreakers3D`
+**Migration Status:** See `Docs/MIGRATION_PLAN.md` for detailed progress
 
 ---
 
-# ⚠️ CRITICAL: MANDATORY RULES (READ FIRST)
+# CRITICAL: MANDATORY RULES (READ FIRST)
 
-## 🔴 THE THREE ABSOLUTES - NEVER SKIP
+## THE THREE ABSOLUTES - NEVER SKIP
 
 ### 1. SAVE MEMORIES EVERY 15 MINUTES
 - Update `VEILBREAKERS.md` with any new decisions, values, or lessons
@@ -28,117 +29,51 @@
 
 ---
 
-# ⚠️ MANDATORY: SESSION PROTOCOLS
+# MANDATORY: SESSION PROTOCOLS
 
 ## 1. Memory Protocol
 **EVERY SESSION MUST:**
 1. **READ `VEILBREAKERS.md`** at the start of every conversation
-2. **ACKNOWLEDGE** current project state before taking any action
-3. **UPDATE `VEILBREAKERS.md`** when making significant changes (new systems, UI values, lessons learned)
+2. **READ `Docs/MIGRATION_PLAN.md`** to know current migration status
+3. **ACKNOWLEDGE** current project state before taking any action
+4. **UPDATE** both files when making significant changes
 
 > **VEILBREAKERS.md is THE SINGLE SOURCE OF TRUTH for cross-session memory.**
-> Do NOT rely on MCP memory server. Do NOT create new memory files.
-> All persistent project knowledge lives in VEILBREAKERS.md.
 
 ## 2. Auto-Save Protocol (EVERY 15 MINUTES - NO EXCEPTIONS)
 
-⏰ **COMMIT AND PUSH EVERY 15 MINUTES. PERIOD.**
+**COMMIT AND PUSH EVERY 15 MINUTES. PERIOD.**
 
-This is NON-NEGOTIABLE. Every 15 minutes of active work:
-1. Increment version in VEILBREAKERS.md header (v2.3 → v2.4 → v2.5...)
+1. Increment version in VEILBREAKERS.md header (v1.44 → v1.45...)
 2. `git add -A`
-3. `git commit -m "v2.X: [brief description]"`
+3. `git commit -m "v1.X: [brief description]"`
 4. `git push`
-
-### Version Format
-- **Major:** v3.0, v4.0 = Major milestones (new systems, releases)
-- **Minor:** v2.1, v2.2, v2.3 = Every single commit increments by 0.1
-- **Current version is in VEILBREAKERS.md header** - ALWAYS increment before commit
 
 ### Commit Message Rules
 - **NO** "Generated with Claude Code" tags
 - **NO** "Co-Authored-By: Claude" tags
 - **NO** mentions of Claude or AI in commits
-- Keep messages clean and professional
-
-**Why:** Unexpected shutdowns happen. Losing work is unacceptable.
-
-**Track time mentally.** After approximately 15 minutes of work, stop and commit.
-If unsure, err on the side of committing MORE often, not less.
 
 ## 3. File Naming Rules (MANDATORY)
 
 **NEVER create files with Windows reserved names:**
-- `NUL`, `CON`, `PRN`, `AUX`
-- `COM1`-`COM9`, `LPT1`-`LPT9`
-- These cause undeletable phantom files on Windows
-
-**NEVER redirect output to `nul` in scripts** - use `$null` in PowerShell or `> NUL` only in pure CMD.
+- `NUL`, `CON`, `PRN`, `AUX`, `COM1`-`COM9`, `LPT1`-`LPT9`
 
 ## 4. Screenshot Protocol (MANDATORY)
 
 **ALL screenshots MUST go to: `screenshots/`**
 
-When capturing screenshots:
-```
-screenshots/screenshot_[descriptive_name].png
-```
+## 5. Migration Tracking Protocol (MANDATORY)
 
-**NEVER save screenshots to:**
-- Project root ❌
-- assets/ folder ❌
-- Any other location ❌
+**CHECK `Docs/MIGRATION_PLAN.md` BEFORE ANY WORK**
 
-This keeps the project clean. Screenshots are debug artifacts, not game assets.
+When completing migration tasks:
+1. Update task status (❌ → ✅) in MIGRATION_PLAN.md
+2. Recalculate category percentage
+3. Recalculate overall percentage
+4. Update "Last Updated" date
 
-### What to Update in VEILBREAKERS.md:
-- UI position/scale values that work
-- New systems implemented
-- Bug fixes worth remembering
-- User preferences discovered
-- Lessons learned (failed approaches)
-- Version history (important commits)
-
-### What NOT to Put in VEILBREAKERS.md:
-- Temporary debugging info
-- Session-specific context
-- Duplicate info from CLAUDE.md
-
-## 5. Code Utilities Protocol (MANDATORY)
-
-⚠️ **ALL new code MUST use the centralized utilities in `scripts/utils/`**
-
-This is NON-NEGOTIABLE. Before writing ANY:
-- UI styling → **Use UIStyleFactory** (889 lines)
-- Tween animations → **Use AnimationEffects** (783 lines)
-- Node operations → **Use NodeHelpers** (385 lines)
-- String formatting → **Use StringHelpers** (304 lines)
-- Math calculations → **Use MathHelpers** (228 lines)
-- Magic numbers → **Use Constants** (635 lines)
-
-**NEVER manually:**
-- Create `StyleBoxFlat.new()` → use `UIStyleFactory.create_*`
-- Add font/color overrides → use `UIStyleFactory.FONT_*` and `COLOR_*`
-- Write `is_instance_valid(x): x.queue_free()` → use `NodeHelpers.safe_free(x)`
-- Format `"%d/%d" % [hp, max]` → use `StringHelpers.format_hp()`
-- Hardcode `0.3` durations → use `Constants.WAIT_SHORT`
-
-**Full reference in VEILBREAKERS.md → "MANDATORY UTILITIES" section**
-
-### Prevention Tools
-
-**Before writing new code:**
-1. **Check `docs/CODE_PATTERNS.md`** - Quick anti-pattern reference
-2. **Check `scripts/utils/README.md`** - Utility overview
-
-**When adding new patterns:**
-1. If pattern is used **3+ times**, add it to appropriate utility file
-2. Update `docs/CODE_PATTERNS.md` with the new pattern
-3. Follow the utility function template in `scripts/utils/README.md`
-
-**Duplication detector:** `scripts/tools/duplication_detector.gd`
-- Run in Godot Editor (Script > Run) to scan for anti-patterns
-- Identifies code that should use utilities instead
+**Migration is complete when overall = 100%**
 
 ## 6. High-Risk Items (MUST ASK USER)
 
@@ -171,687 +106,311 @@ This is NON-NEGOTIABLE. Before writing ANY:
 | Scenes | `Assets/Scenes/` | `feature/*` |
 | Config/Data | `Assets/Data/` | `feature/*` |
 
-### Commit Rules
-1. **NEVER commit directly to `main`** - Always use feature branches
-2. **One logical change per commit** - Don't bundle unrelated changes
-3. **Descriptive messages** - What and why, not just what
-4. **Push immediately after commit** - Don't let commits sit locally
-
-### Before Every Commit Checklist
-- [ ] Files are in correct folders
-- [ ] On correct branch for this work type
-- [ ] VEILBREAKERS.md updated if needed
-- [ ] No debug/test code left in
-
 ## 8. Serena Code Intelligence Protocol (MANDATORY)
 
-⚠️ **USE SERENA FOR ALL CODE OPERATIONS TO SAVE TOKENS**
+**USE SERENA FOR ALL CODE OPERATIONS TO SAVE TOKENS**
 
-Serena provides semantic code intelligence. Using Serena instead of basic tools can reduce token usage by 80%+ for code exploration.
-
-### ALWAYS Use Serena For:
-
-| Task | ❌ DON'T DO THIS | ✅ DO THIS INSTEAD |
-|------|------------------|-------------------|
-| Understand a file's structure | `Read` entire file, scan visually | `get_symbols_overview` - instant structured list |
-| Find a class/method definition | `Grep "class Foo"`, read matches | `find_symbol("Foo")` - exact location + body |
-| Find where something is used | Multiple `Grep` queries | `find_referencing_symbols` - all usages |
-| Replace a function body | `Read` file, `Edit` with exact match | `replace_symbol_body` - semantic replacement |
-| Rename across codebase | Find/replace, hope you got them all | `rename_symbol` - guaranteed refactoring |
-| Search code patterns | `Grep` with regex | `search_for_pattern` - context-aware results |
-| Add code after a function | Calculate line numbers manually | `insert_after_symbol` - automatic placement |
+| Task | DON'T DO THIS | DO THIS INSTEAD |
+|------|---------------|-----------------|
+| Understand file structure | `Read` entire file | `get_symbols_overview` |
+| Find class/method | `Grep "class Foo"` | `find_symbol("Foo")` |
+| Find where used | Multiple `Grep` queries | `find_referencing_symbols` |
+| Replace function | `Read` + `Edit` | `replace_symbol_body` |
+| Rename across codebase | Find/replace | `rename_symbol` |
 
 ### Serena Workflow
-
-1. **First contact with a file** → `get_symbols_overview` (NOT `Read`)
+1. **First contact with file** → `get_symbols_overview`
 2. **Need specific symbol** → `find_symbol` with `include_body=true`
 3. **Need to understand usage** → `find_referencing_symbols`
-4. **Need to edit** → `replace_symbol_body` or `replace_content` (regex mode)
-5. **Need to add code** → `insert_before_symbol` or `insert_after_symbol`
+4. **Need to edit** → `replace_symbol_body` or `replace_content`
 
-### When to Use Basic Tools Instead
-
-- **Non-code files** (JSON, MD, config) → Use `Read`/`Edit`
-- **Full file needed** (small files <100 lines) → Use `Read`
-- **Simple text search** (in non-code files) → Use `Grep`
-
-### Project Activation
-
-Serena requires project activation. At session start:
+### Project Activation (Session Start)
 ```
 mcp__plugin_serena_serena__activate_project("VeilBreakers3D")
 ```
 
-### Token Savings Examples
-
-| Operation | Basic Tools | Serena | Savings |
-|-----------|-------------|--------|---------|
-| "What methods does BattleManager have?" | ~2000 tokens (Read file) | ~200 tokens (overview) | **90%** |
-| "Find Brand enum definition" | ~500 tokens (Grep + Read) | ~150 tokens (find_symbol) | **70%** |
-| "Where is DamageCalculator used?" | ~1500 tokens (multiple Greps) | ~300 tokens (find_refs) | **80%** |
-
 ## 9. Superpowers Workflow Protocol (MANDATORY)
 
-⚠️ **USE SUPERPOWERS SKILLS FOR ALL PLANNING AND EXECUTION**
-
-The Superpowers skills provide structured workflows for complex tasks. This is NOT optional - invoke these skills via the `Skill` tool before any significant work.
+**USE SUPERPOWERS SKILLS FOR ALL PLANNING AND EXECUTION**
 
 ### The Three-Phase Workflow
-
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  1. BRAINSTORM  │ →  │  2. WRITE PLAN  │ →  │  3. EXECUTE     │
-│                 │    │                 │    │                 │
-│ Explore intent  │    │ Formalize steps │    │ Batch work with │
-│ Requirements    │    │ Identify files  │    │ review points   │
-│ Design options  │    │ Dependencies    │    │ Code analysis   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+BRAINSTORM → WRITE PLAN → EXECUTE PLAN
 ```
 
-### Phase 1: Brainstorming (ALWAYS FIRST)
+| Phase | Skill | When |
+|-------|-------|------|
+| 1. Brainstorm | `superpowers:brainstorming` | Before ANY creative work |
+| 2. Write Plan | `superpowers:writing-plans` | After brainstorm approved |
+| 3. Execute | `superpowers:executing-plans` | After plan approved |
 
-**Skill:** `superpowers:brainstorming`
-
-**When:** Before ANY creative work - features, components, modifications, fixes
-
-**Invoke:**
-```
-Skill tool: skill="superpowers:brainstorming"
-```
-
-**Purpose:**
-- Explore user intent and requirements
-- Consider design options and trade-offs
-- Identify potential issues early
-- Ensure alignment before committing to implementation
-
-### Phase 2: Writing Plans (AFTER BRAINSTORM)
-
-**Skill:** `superpowers:writing-plans`
-
-**When:** After brainstorming is complete and direction is clear
-
-**Invoke:**
-```
-Skill tool: skill="superpowers:writing-plans"
-```
-
-**Purpose:**
-- Convert brainstorm into actionable steps
-- Identify all files to create/modify
-- Define dependencies and order
-- Create checkpoints for review
-
-### Phase 3: Executing Plans (AFTER PLAN APPROVED)
-
-**Skill:** `superpowers:executing-plans`
-
-**When:** After user approves the written plan
-
-**Invoke:**
-```
-Skill tool: skill="superpowers:executing-plans"
-```
-
-**Purpose:**
-- Execute plan in batches with review checkpoints
-- Run verification at each checkpoint
-- Code analysis with Serena + C# LSP
-- Error checking before proceeding
-
-### Review Checkpoint Requirements
-
-At each checkpoint during execution, perform:
-
-1. **Serena Analysis:**
-   - `get_symbols_overview` on modified files
-   - `find_referencing_symbols` to verify no broken references
-   - `search_for_pattern` for potential issues
-
-2. **C# LSP Analysis:**
-   - Use `csharp-lsp` plugin for compile errors
-   - Check for type mismatches, missing references
-   - Verify namespace consistency
-
-3. **Error Summary:**
-   - List any compilation errors
-   - List any Serena-detected issues
-   - Get user approval before continuing
-
-### When This Workflow is REQUIRED
-
+### When Required
 | Trigger | Required? |
 |---------|-----------|
-| "Add a feature" | ✅ YES - Full 3-phase workflow |
-| "Implement X system" | ✅ YES - Full 3-phase workflow |
-| "Fix this bug" | ⚠️ MAYBE - Brainstorm if complex |
-| "Refactor this code" | ✅ YES - Brainstorm + Plan |
-| "Quick question" | ❌ NO - Just answer |
-| "Read this file" | ❌ NO - Just read |
-
-### Workflow Exceptions
-
-Skip full workflow ONLY for:
-- Simple questions/explanations
-- Single-line fixes (typos, obvious bugs)
-- Reading/exploring code (no modifications)
-- Commits and git operations
+| "Add a feature" | YES - Full 3-phase |
+| "Implement X system" | YES - Full 3-phase |
+| "Fix this bug" | MAYBE - If complex |
+| "Quick question" | NO |
 
 ---
 
-# THE ARSENAL - MCP SERVERS
+# 10. COMPREHENSIVE TOOL PROTOCOLS (MANDATORY)
 
-## GODOT ENGINE CONTROL
+**EVERY TOOL MUST BE USED FOR ITS INTENDED PURPOSE**
 
-### 1. godot-screenshots (THE EYES)
-**Run game + capture in-game screenshots for visual verification**
-```
-- Run/stop Godot projects
-- Capture viewport screenshots
-- Search scenes and monitor output
-- Visual feedback loop - SEE what's happening
-```
-[Source: fernforestgames/mcp-server-godot](https://github.com/fernforestgames/mcp-server-godot)
+## Active Plugins (17 Total)
 
-### 2. godot-editor (THE HANDS)
-**Direct Godot editor manipulation**
-```
-- Launch editor, run projects
-- Create scenes, add nodes
-- Load sprites, save scenes
-- Get project info and debug output
-```
-[Source: Coding-Solo/godot-mcp](https://github.com/Coding-Solo/godot-mcp)
+### CODE INTELLIGENCE
+| Plugin | Trigger | Usage |
+|--------|---------|-------|
+| **serena** | ANY code operation | Symbols, refs, edits - see Protocol 8 |
+| **context7** | BEFORE writing Unity/C# code | Query Unity API docs first |
+| **csharp-lsp** | AFTER code changes | Run diagnostics, catch errors |
+| **greptile** | "Where is X used?" | Cross-repo semantic search |
 
----
+### WORKFLOW
+| Plugin | Trigger | Usage |
+|--------|---------|-------|
+| **superpowers** | ANY feature/implementation | 3-phase workflow - see Protocol 9 |
+| **superpowers-lab** | Code audits | `finding-duplicate-functions` skill |
+| **feature-dev** | Complex multi-file features | Architecture-first development |
+| **double-shot-latte** | Auto-enabled | Prevents "continue?" interruptions |
 
-## 2D ANIMATION POWERHOUSE
+### CODE QUALITY
+| Plugin | Trigger | Usage |
+|--------|---------|-------|
+| **code-review** | Before merges/PRs | Structured code review |
+| **pr-review-toolkit** | PR creation/review | Multi-agent specialized review |
+| **security-guidance** | Network/save code | Security vulnerability check |
 
-### 3. gsap-animation (THE CHOREOGRAPHER)
-**Animation expertise - natural language to code**
-```
-- 100+ production patterns
-- 60fps optimization
-- Timeline choreography
-- Scroll effects, parallax, reveals
-- Transferable to Godot Tween
-```
-[Source: bruzethegreat/gsap-master-mcp-server](https://github.com/bruzethegreat/gsap-master-mcp-server)
+### GIT & COMMITS
+| Plugin | Trigger | Usage |
+|--------|---------|-------|
+| **commit-commands** | Git operations | `/commit`, `/clean_gone` |
 
-### 4. spine2d-animation (DISABLED - NOT RECOMMENDED)
-**2D skeletal animation - REMOVED FROM WORKFLOW**
-```
-- Attempted bone rigging approach
-- Too complex for Godot 2D integration
-- Cutout animation didn't work reliably
-- STICK TO SPRITE SHEETS INSTEAD
-```
-[Source: ampersante/spine2d-animation-mcp](https://github.com/ampersante/spine2d-animation-mcp)
+### MEMORY & CONTEXT
+| Plugin | Trigger | Usage |
+|--------|---------|-------|
+| **episodic-memory** | SESSION START | Search past conversations |
 
-### 5. lottiefiles (ANIMATION LIBRARY)
-**Search and retrieve Lottie animations**
-```
-- Search 500,000+ free animations
-- Get animation details and data
-- Popular animations discovery
-- JSON-based, lightweight
-```
-[Source: junmer/mcp-server-lottiefiles](https://github.com/junmer/mcp-server-lottiefiles)
+### CONTENT & DESIGN
+| Plugin | Trigger | Usage |
+|--------|---------|-------|
+| **frontend-design** | UI/UX design | Design patterns for Unity UI |
+| **elements-of-style** | Documentation | Clear writing for docs, commits |
+| **superpowers-chrome** | Web research | Documentation browsing |
 
----
+### DEVELOPMENT
+| Plugin | Trigger | Usage |
+|--------|---------|-------|
+| **agent-sdk-dev** | AI-powered features | Build Claude agents for VERA/testing |
 
-## AI & REASONING
+## Active MCP Servers (2 Local + 5 Plugin-Provided)
 
-### 6. sequential-thinking (THE LOGIC)
-**Complex problem decomposition**
-```
-- Break down battle systems
-- Architectural decisions
-- Multi-step problem solving
-- Game balance calculations
-```
-[Source: @modelcontextprotocol/server-sequential-thinking](https://github.com/modelcontextprotocol/servers)
+### Local MCPs (.mcp.json)
+| MCP | Trigger | Usage |
+|-----|---------|-------|
+| **sequential-thinking** | Complex problems | Break down systems, balance calculations |
+| **image-process** | Asset manipulation | Crop, resize, format conversion |
 
-### 7. memory (THE MEMORY)
-**Persistent knowledge graph across sessions**
-```
-- Remember project decisions
-- Track entity relationships
-- User preferences
-- Cross-session context
-```
-[Source: @modelcontextprotocol/server-memory](https://github.com/modelcontextprotocol/servers)
+### Plugin-Provided MCPs
+| MCP | Trigger | Usage |
+|-----|---------|-------|
+| **Context7** | Unity/C# questions | Query up-to-date API documentation |
+| **Serena** | Code operations | Semantic code intelligence |
+| **Greptile** | Codebase search | Cross-repo understanding |
+| **Episodic Memory** | Past context | Search conversation history |
+| **Chrome** | Web access | Research, documentation |
 
----
+## Tool Usage Matrix - When to Use What
 
-## ASSET CREATION & PROCESSING
-
-### 8. image-process (THE PROCESSOR)
-**Image manipulation without external tools**
-```
-- Crop, resize, rotate
-- Format conversion
-- Batch processing
-- Sharp library powered
-```
-[Source: x007xyz/image-process-mcp-server](https://github.com/x007xyz/image-process-mcp-server)
-
-### 9. color-palette (THE ARTIST)
-**Generate harmonious color schemes**
-```
-- Monochrome, analogic, complementary
-- Hex, RGB, HSL input
-- Game art style consistency
-- Battle Chasers palette matching
-```
-[Source: deepakkumardewani/color-scheme-mcp](https://github.com/deepakkumardewani/color-scheme-mcp)
-
-### 10. huggingface (THE GENERATOR)
-**FREE AI image/sprite generation**
-```
-- Generate sprites from text prompts
-- Access to FLUX models
-- Free Hugging Face credits
-- "pixel art sword" → instant asset
-```
-[Source: Hugging Face MCP Server](https://huggingface.co/docs/hub/en/hf-mcp-server)
-
-### 11. pixel-mcp (ASEPRITE MASTER)
-**40+ tools for pixel art with Aseprite**
-```
-- Canvas & layer management
-- Drawing primitives, flood fill
-- 15 dithering patterns
-- Spritesheet export (PNG, GIF, JSON)
-- Animation frames
-```
-[Source: willibrandon/pixel-mcp](https://github.com/willibrandon/pixel-mcp)
+| Task | Primary Tool | Secondary |
+|------|--------------|-----------|
+| Explore C# file | Serena `get_symbols_overview` | - |
+| Find method definition | Serena `find_symbol` | Greptile |
+| Find all usages | Serena `find_referencing_symbols` | Greptile |
+| Unity API question | Context7 `query-docs` | WebSearch |
+| Complex planning | Superpowers brainstorm/plan | sequential-thinking |
+| Refactor code | Serena `rename_symbol` | csharp-lsp verify |
+| Check for errors | csharp-lsp | Serena |
+| Before commit | code-review | - |
+| PR creation | pr-review-toolkit | commit-commands |
+| Remember past work | episodic-memory | VEILBREAKERS.md |
+| Image processing | image-process MCP | - |
+| Find duplicates | superpowers-lab skill | Serena |
 
 ---
 
-## UI & DESIGN
+# PROJECT STRUCTURE
 
-### 12. figma (UI DESIGN-TO-CODE)
-**Convert Figma designs to code**
-```
-- Design-to-code workflow
-- Extract variables, components
-- Layout data for UI
-- Works with design systems
-```
-[Source: Figma MCP](https://www.figma.com/blog/introducing-figma-mcp-server/)
-
----
-
-## PROJECT MANAGEMENT
-
-### 13. trello (TASK TRACKING)
-**Manage boards, lists, and cards**
-```
-- Create/update cards
-- Track tasks
-- Sprint planning
-- AI-assisted project management
-```
-[Source: delorenj/mcp-server-trello](https://github.com/delorenj/mcp-server-trello)
-
----
-
-## LOCALIZATION
-
-### 14. i18n (TRANSLATION)
-**Internationalization for games**
-```
-- Manage JSON language files
-- Generate translations
-- Multi-language support
-- Game localization workflow
-```
-[Source: reinier-millo/i18n-mcp-server](https://github.com/reinier-millo/i18n-mcp-server)
-
----
-
-## MATH & PHYSICS
-
-### 15. wolfram (CALCULATIONS)
-**Wolfram Alpha computational engine**
-```
-- Complex math formulas
-- Physics calculations
-- Game balance math
-- Scientific queries
-```
-[Source: cnosuke/mcp-wolfram-alpha](https://github.com/cnosuke/mcp-wolfram-alpha)
-
----
-
-## ALREADY ACTIVE (Built-in)
-
-### Playwright MCP
-**Browser automation for web-based testing**
-
-### Cloudflare Docs MCP
-**Cloud infrastructure reference**
-
----
-
-# TECHNICAL REFERENCE
-
-## Godot Executable
-```
-C:/Users/Conner/AppData/Local/Microsoft/WinGet/Packages/GodotEngine.GodotEngine_Microsoft.Winget.Source_8wekyb3d8bbwe/Godot_v4.5.1-stable_win64_console.exe
-```
-
-## Project Structure
 ```
 VeilBreakers3D/
 ├── Assets/
 │   ├── Scripts/              # C# scripts
-│   │   ├── Battle/           # Battle system
-│   │   ├── Managers/         # Game managers
-│   │   ├── UI/               # UI controllers
-│   │   └── Utils/            # Utility classes
-│   ├── Art/
-│   │   ├── Sprites/          # 2D sprites
-│   │   ├── UI/               # UI elements
-│   │   └── Effects/          # VFX
+│   │   ├── Combat/           # BattleManager, DamageCalculator, Combatant
+│   │   ├── Core/             # GameManager, EventBus, Constants
+│   │   ├── Data/             # Enums, ScriptableObject definitions
+│   │   ├── Systems/          # BrandSystem, SynergySystem, CorruptionSystem
+│   │   ├── Managers/         # SaveManager, AudioManager, etc. (TODO)
+│   │   ├── UI/               # UI controllers (TODO)
+│   │   ├── Characters/       # Hero logic (TODO)
+│   │   ├── Monsters/         # Monster logic (TODO)
+│   │   ├── Utils/            # Utilities (TODO)
+│   │   └── Test/             # Test scripts
+│   ├── Art/                  # Visual assets
+│   ├── Audio/                # Sound assets
+│   ├── Data/                 # ScriptableObjects, JSON
 │   ├── Prefabs/              # Reusable prefabs
 │   ├── Scenes/               # Unity scenes
-│   └── Data/                 # ScriptableObjects, JSON
-├── Docs/                     # Documentation
-│   ├── ArtReference/         # Art style guides
-│   ├── plans/                # Design plans
-│   └── generated/            # Auto-generated docs
+│   └── UI/                   # UI assets (USS, UXML)
+├── Docs/
+│   ├── MIGRATION_PLAN.md     # Migration tracking (CHECK DAILY)
+│   ├── LEGACY_Godot/         # Old Godot docs (reference only)
+│   ├── plans/                # Design documents
+│   └── ArtReference/         # Art style guides
+├── screenshots/              # Debug screenshots
 ├── .mcp.json                 # MCP server config
-├── CLAUDE.md                 # This file (AI instructions)
+├── CLAUDE.md                 # This file
 └── VEILBREAKERS.md           # Cross-session memory
 ```
 
-## Autoload Singletons
-| Singleton | Purpose |
-|-----------|---------|
-| ErrorLogger | Debug logging |
-| DataManager | JSON data |
-| GameManager | Game state |
-| SaveManager | Save/load |
-| AudioManager | Sound/music |
-| SettingsManager | Settings |
-| VeraSystem | VERA AI |
-| InventorySystem | Inventory |
-| SceneManager | Scenes |
-
 ---
 
-# ART STYLE & GENERATION
+# C# CODE STYLE (Unity Standard)
 
-## Style Reference
-**Dark Fantasy Horror** - NOT Battle Chasers style for generation
-- Hand-painted 2D, atmospheric
-- Dynamic lighting, dramatic shadows
-- Glowing eyes/cores, ominous mood
-- High detail, painterly quality
-
-## Art Generation Rules (MANDATORY)
-
-### Model Rules
-| Status | Model | Notes |
-|--------|-------|-------|
-| **PREFERRED** | Seedream (`model_bytedance-seedream-4-5`) | Best quality, use for all new art |
-| **ALLOWED** | VeilBreakersV1 (`model_fmiEeZzx1zUMf4dhKeo16nqK`) | Fallback option |
-| **FORBIDDEN** | ~~Scenario V2 / Dark Fantasy V2~~ | INACCURATE - needs retraining |
-
-### Style Prompt (INCLUDE IN EVERY PROMPT)
-```
-dark fantasy horror, [creature description], dark atmospheric,
-glowing [color] eyes/core, dramatic lighting, deep shadows,
-high detail, painterly quality, ominous mood,
-2D game sprite, transparent background
-```
-
-### DO NOT Use in Prompts
-- ❌ "Battle Chasers" or "Joe Madureira" (WRONG STYLE)
-- ❌ "thick linework" or "comic book" (WRONG STYLE)
-- ❌ anime/cel-shaded style
-- ❌ flat colors or comic halftone
-- ❌ checker pattern backgrounds
-
-### Output Specs
-| Parameter | Value |
-|-----------|-------|
-| Resolution | 1024-2048px |
-| Format | PNG with transparency |
-| Save to | `assets/sprites/monsters/` |
-| Scale in-game | 0.08 |
-
----
-
-# CODE STYLE
-
-## File Structure
-```gdscript
-class_name ClassName
-extends ParentClass
-## Brief description of the class.
-
-# =============================================================================
-# SIGNALS
-# =============================================================================
-
-signal something_happened(param: Type)
-
-# =============================================================================
-# CONSTANTS
-# =============================================================================
-
-const MY_CONSTANT := 10
-
-# =============================================================================
-# EXPORTS
-# =============================================================================
-
-@export var my_var: int = 0
-
-# =============================================================================
-# STATE
-# =============================================================================
-
-var internal_state: Dictionary = {}
+## Namespaces
+```csharp
+namespace VeilBreakers.Combat { }
+namespace VeilBreakers.Core { }
+namespace VeilBreakers.Data { }
+namespace VeilBreakers.Systems { }
+namespace VeilBreakers.UI { }
+namespace VeilBreakers.Utils { }
 ```
 
 ## Naming Conventions
-- **Classes:** PascalCase (`BattleManager`, `CharacterBase`)
-- **Functions:** snake_case (`calculate_damage`, `get_stat`)
-- **Variables:** snake_case (`current_hp`, `turn_order`)
-- **Constants:** SCREAMING_SNAKE_CASE (`MAX_PARTY_SIZE`, `BRAND_STRONG`)
-- **Signals:** snake_case past tense (`damage_dealt`, `turn_ended`)
-- **Enums:** PascalCase enum, SCREAMING_SNAKE values
-- **Private functions:** prefix with `_` (`_on_button_pressed`)
+| Type | Convention | Example |
+|------|------------|---------|
+| Classes | PascalCase | `BattleManager` |
+| Methods | PascalCase | `CalculateDamage()` |
+| Public Properties | PascalCase | `CurrentHealth` |
+| Private Fields | _camelCase | `_currentHealth` |
+| Constants | PascalCase with k | `kMaxPartySize` |
+| Enums | PascalCase | `BattleState.Combat` |
+| Interfaces | IPascalCase | `IDamageable` |
+| Events | On + PascalCase | `OnDamageDealt` |
 
-## Type Hints (REQUIRED)
-```gdscript
-# Always use explicit types - Godot treats Variant inference as warning/error
-var value: float = some_dict.get("key", 0.0)  # Correct
-var value := some_dict.get("key", 0.0)        # ERROR - infers Variant
+## Class Structure
+```csharp
+namespace VeilBreakers.Combat
+{
+    public class BattleManager : MonoBehaviour
+    {
+        // Constants
+        private const int kMaxPartySize = 3;
 
-# Function signatures
-func calculate_damage(attacker: CharacterBase, defender: CharacterBase) -> int:
+        // Serialized Fields
+        [SerializeField] private int _startingHealth;
 
-# Arrays with types
-var party: Array[CharacterBase] = []
+        // Private Fields
+        private BattleState _currentState;
+
+        // Public Properties
+        public BattleState State => _currentState;
+
+        // Events
+        public event Action<int> OnDamageDealt;
+
+        // Unity Lifecycle
+        private void Awake() { }
+        private void Update() { }
+
+        // Public Methods
+        public void StartBattle() { }
+
+        // Private Methods
+        private void ProcessTurn() { }
+    }
+}
 ```
 
-## Null Safety
-```gdscript
-# Always check before accessing
-var node := get_node_or_null("/root/GameManager")
-if node and node.has_method("some_method"):
-    node.some_method()
-
-# Safe dictionary access
-var value: float = data.get("key", default_value)
+## ScriptableObject Pattern
+```csharp
+[CreateAssetMenu(fileName = "Monster", menuName = "VeilBreakers/Monster Data")]
+public class MonsterData : ScriptableObject
+{
+    public string monsterName;
+    public Brand primaryBrand;
+    public int baseHealth;
+}
 ```
 
 ---
 
 # KEY SYSTEMS (DO NOT BREAK)
 
-## Autoload Order (project.godot)
-1. ErrorLogger
-2. EventBus
-3. DataManager
-4. GameManager
-5. SaveManager
-6. AudioManager
-7. SceneManager
-8. SettingsManager
-9. VERASystem
-10. InventorySystem
-11. PathSystem
-12. CrashHandler
+## Brand System (10 Brands)
+IRON, SAVAGE, SURGE, VENOM, DREAD, LEECH, GRACE, MEND, RUIN, VOID
 
-## Brand System (12 Brands - LOCKED)
-**Pure:** SAVAGE, IRON, VENOM, SURGE, DREAD, LEECH
-**Hybrid:** BLOODIRON, CORROSIVE, VENOMSTRIKE, TERRORFLUX, NIGHTLEECH, RAVENOUS
-
-Effectiveness wheel: SAVAGE > IRON > VENOM > SURGE > DREAD > LEECH > SAVAGE
+Each brand: 2x damage to 2 brands, 0.5x damage to 2 brands, 1x to 6 brands
 
 ## Path System (4 Paths)
-IRONBOUND, FANGBORN, VOIDTOUCHED, UNCHAINED, NONE
+IRONBOUND, FANGBORN, VOIDTOUCHED, UNCHAINED
 
 ## Corruption System
-- 0-10%: ASCENDED (+25% stats)
-- 11-25%: Purified (+10% stats)
-- 26-50%: Unstable (normal)
-- 51-75%: Corrupted (-10% stats)
-- 76-100%: Abyssal (-20% stats)
+| Range | State | Effect |
+|-------|-------|--------|
+| 0-10% | ASCENDED | +25% stats |
+| 11-25% | Purified | +10% stats |
+| 26-50% | Unstable | Normal |
+| 51-75% | Corrupted | -10% stats |
+| 76-100% | Abyssal/Untamed | -20% / Uncontrollable |
 
-**Core philosophy:** Lower corruption = STRONGER monster. Goal is ASCENSION.
-
----
-
-# COMMON PATTERNS
-
-## Signals via EventBus
-```gdscript
-# Emit
-EventBus.damage_dealt.emit(source, target, amount, is_critical)
-
-# Connect (use NodeHelpers for safe connection)
-NodeHelpers.safe_connect(EventBus, "damage_dealt", _on_damage_dealt)
-```
-
-## Using Constants
-```gdscript
-# Wait timers - USE CONSTANTS
-await get_tree().create_timer(Constants.WAIT_SHORT).timeout
-await get_tree().create_timer(Constants.WAIT_STANDARD).timeout
-
-# DON'T use Constants in const declarations (load order issues)
-const BAD := [Constants.SOME_VALUE]  # Parse error!
-const GOOD: Array[float] = [75.0, 50.0, 25.0]  # Hardcode instead
-```
-
-## Using Enums
-```gdscript
-var state: Enums.BattleState = Enums.BattleState.INITIALIZING
-var brand: Enums.Brand = Enums.Brand.SAVAGE
-```
-
-## Using UIStyleFactory
-```gdscript
-var label := UIStyleFactory.create_label("Text", UIStyleFactory.FONT_HEADING, UIStyleFactory.COLOR_GOLD)
-var hp_bar := UIStyleFactory.create_hp_bar()
-var vbox := UIStyleFactory.create_vbox(8)
-var button := UIStyleFactory.create_button("Click Me")
-```
-
-## Using NodeHelpers
-```gdscript
-NodeHelpers.safe_free(node)
-NodeHelpers.clear_children(container)
-NodeHelpers.show(node)
-var labels := NodeHelpers.get_children_of_type(parent, Label)
-```
-
-## Using StringHelpers
-```gdscript
-var hp_text := StringHelpers.format_hp(current_hp, max_hp)  # "45/100"
-var change := StringHelpers.format_stat_change(5)  # "+5"
-var pct := StringHelpers.format_percent(0.75)  # "75%"
-```
-
-## Using AnimationEffects
-```gdscript
-AnimationEffects.button_hover(button)
-AnimationEffects.popup_entrance(popup)
-AnimationEffects.flash_white(node)
-AnimationEffects.death_animation(sprite)
-```
+## Synergy System (Tiered)
+| Tier | Requirement | Damage | Defense | Combo? |
+|------|-------------|--------|---------|--------|
+| FULL | 3/3 match | +8% | +8% | YES |
+| PARTIAL | 2/3 match | +5% | +5% | NO |
+| NEUTRAL | 0-1/3 | +0% | +0% | NO |
+| ANTI | Any Weak | +0% | +0% | NO |
 
 ---
 
-# ANIMATION PATTERNS
+# ART STYLE & GENERATION
 
-## Button Hover (USE AnimationEffects!)
-```gdscript
-# ❌ OLD WAY - DON'T DO THIS
-func _on_button_hover(button: BaseButton) -> void:
-    create_tween().tween_property(button, "scale", Vector2(1.05, 1.05), 0.15)
+## Style Reference
+**Dark Fantasy Horror** - Hand-painted, atmospheric, glowing eyes/cores
 
-# ✅ NEW WAY - USE THIS
-func _on_button_hover(button: BaseButton) -> void:
-    AnimationEffects.button_hover(button)
-
-func _on_button_unhover(button: BaseButton) -> void:
-    AnimationEffects.button_unhover(button)
+## Art Generation Prompt Template
+```
+dark fantasy horror, [creature description], dark atmospheric,
+glowing [color] eyes/core, dramatic lighting, deep shadows,
+high detail, painterly quality, ominous mood,
+3D game character, dark background
 ```
 
-## Standard Timings (USE Constants!)
-| Animation | Constant | Value |
-|-----------|----------|-------|
-| Button hover | `Constants.UI_BUTTON_HOVER` | 0.15s |
-| Button press | `Constants.UI_BUTTON_PRESS` | 0.1s |
-| Scene fade | `Constants.UI_SCENE_FADE` | 0.3s |
-| Menu slide | `Constants.UI_MENU_SLIDE` | 0.25s |
-| Wait short | `Constants.WAIT_SHORT` | 0.3s |
-| Wait standard | `Constants.WAIT_STANDARD` | 0.5s |
+## DO NOT Use in Prompts
+- "Battle Chasers" or "Joe Madureira"
+- "thick linework" or "comic book"
+- anime/cel-shaded style
 
 ---
 
 # LESSONS LEARNED
 
 ## FAILED (Don't Repeat)
-- Lightning effects - background has them
+- Lightning effects - background already has them
 - Custom eye drawing - artwork has them
 - Complex logo animation - caused glitching
 - Fake transparency (checker pattern) - use REAL alpha
-- **Spine/Cutout rigging for Godot** - Too complex, animations glitchy, STICK TO SPRITE SHEETS
+- Spine/Cutout rigging for 2D - Too complex, use 3D now
 
 ## WORKS
-- TextureButton with texture_disabled
-- Simple scale/modulate tweens
-- Clean button transparency
-- Subtle, fast animations
-- GSAP power3.out = Godot EASE_OUT + TRANS_CUBIC
-- Sprite sheet animation with hframes/vframes
-- Python PIL for removing white backgrounds (threshold >220)
-- Force Godot reimport: `godot --headless --path PROJECT --import --quit`
-
----
-
-# SETUP
-
-## Increase MCP Token Limit (Windows)
-```cmd
-set MAX_MCP_OUTPUT_TOKENS=100000
-cd C:\Users\Conner\Downloads\VeilbreakersGame
-claude
-```
-
-## Make Permanent
-```cmd
-setx MAX_MCP_OUTPUT_TOKENS 100000
-```
+- ScriptableObjects for game data
+- Event-driven architecture (EventBus)
+- Brand effectiveness matrix design
+- Tiered synergy system
+- Corruption as monster mechanic (not player)
 
 ---
 
@@ -860,15 +419,6 @@ setx MAX_MCP_OUTPUT_TOKENS 100000
 1. **AAA or nothing** - No shortcuts
 2. **Visual verification** - Use screenshots
 3. **Working > Fancy broken** - Simple wins
-4. **Don't duplicate** - Check artwork first
+4. **Don't duplicate** - Use existing systems
 5. **User is judge** - They see what matters
-
----
-
-# MCP SOURCES
-
-All FREE and open-source:
-- [PulseMCP Directory (7460+ servers)](https://www.pulsemcp.com/servers)
-- [Awesome MCP Servers](https://github.com/punkpeye/awesome-mcp-servers)
-- [Official MCP Registry](https://registry.modelcontextprotocol.io)
-- [mcpservers.org](https://mcpservers.org/)
+6. **Tools exist for a reason** - USE THEM (see Protocol 10)
