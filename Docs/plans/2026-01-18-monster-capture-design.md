@@ -170,48 +170,58 @@ Lower HP at bind = easier capture
 
 ### Item Modifier by Monster Rarity
 
-Items are EXPENSIVE - must be highly effective on low rarity to justify cost.
+Cheap items are cheap for a reason - low effectiveness. Core/Heart are expensive but WORTH the investment.
 
-**Common / Uncommon Monsters:**
+**Common Monsters:**
 
-| Item | Capture Chance |
-|------|----------------|
-| Veil Shard | ~60-70% |
-| Veil Crystal | ~80-85% |
-| Veil Core | ~75-85% |
-| Veil Heart | ~99% (near guaranteed) |
+| Item | Capture Chance | Cost |
+|------|----------------|------|
+| Veil Shard | ~35-40% | Cheap |
+| Veil Crystal | ~50-55% | Mid |
+| Veil Core | ~80-85% | Expensive |
+| Veil Heart | ~99% | Very Expensive |
+
+**Uncommon Monsters:**
+
+| Item | Capture Chance | Cost |
+|------|----------------|------|
+| Veil Shard | ~25-30% | Cheap |
+| Veil Crystal | ~40-45% | Mid |
+| Veil Core | ~70-75% | Expensive |
+| Veil Heart | ~95% | Very Expensive |
 
 **Rare Monsters:**
 
-| Item | Capture Chance |
-|------|----------------|
-| Veil Shard | ~40-50% |
-| Veil Crystal | ~55-65% |
-| Veil Core | ~65-75% |
-| Veil Heart | ~90% |
+| Item | Capture Chance | Cost |
+|------|----------------|------|
+| Veil Shard | ~15-20% | Cheap |
+| Veil Crystal | ~25-30% | Mid |
+| Veil Core | ~55-65% | Expensive |
+| Veil Heart | ~85-90% | Very Expensive |
 
 **Epic Monsters:**
 
-| Item | Capture Chance |
-|------|----------------|
-| Veil Shard | ~15-25% |
-| Veil Crystal | ~30-40% |
-| Veil Core | ~50-60% |
-| Veil Heart | ~75-80% |
+| Item | Capture Chance | Cost |
+|------|----------------|------|
+| Veil Shard | ~5-10% | Cheap |
+| Veil Crystal | ~10-15% | Mid |
+| Veil Core | ~35-45% | Expensive |
+| Veil Heart | ~65-75% | Very Expensive |
 
 **Legendary Monsters:**
 
-| Item | Capture Chance |
-|------|----------------|
-| Veil Shard | 0% (ineffective) |
-| Veil Crystal | 0% (ineffective) |
-| Veil Core | ~10-15% |
-| Veil Heart | ~20-25% |
+| Item | Capture Chance | Cost |
+|------|----------------|------|
+| Veil Shard | 0% (ineffective) | - |
+| Veil Crystal | 0% (ineffective) | - |
+| Veil Core | ~10-15% | Expensive |
+| Veil Heart | ~20-25% | Very Expensive |
 
 **Key Points:**
-- Low rarity + high tier item = near guaranteed (Heart on Common = 99%)
-- Legendary monsters REQUIRE Core or Heart - all others are 0% effective
-- Items are expensive, so they must deliver results on lower rarities
+- Cheap items (Shard/Crystal) have LOW effectiveness - you get what you pay for
+- Core/Heart are expensive but reliable - worth the investment
+- Clear progression: Higher tier item = significantly better odds
+- Legendary REQUIRES Core or Heart - cheap items are 0% effective
 
 ### QTE Bonus
 
