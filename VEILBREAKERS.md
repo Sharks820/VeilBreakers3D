@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.47** | Last updated: 2026-01-18
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.48** | Last updated: 2026-01-18
 
 ---
 
@@ -865,6 +865,7 @@ battle, ui, art, audio, vera, monsters, critical
 | 2026-01-17 | **v1.45: CUSTOM AGENTS & SKILLS** - Added 3 new MCPs (mcp-unity, game-asset-generator, github). Created 8 custom agents: unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler, balance-analyzer, vera-dialogue-tester, bug-hunter, asset-generator. Created 4 custom skills: unity-component-design, unity-performance-check, veilbreakers-balance-check, veilbreakers-vera-test. AAA studio vision established. |
 | 2026-01-18 | **v1.46: AGENT OPTIMIZATION** - Upgraded 6 agents to Opus model (unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler, balance-analyzer, vera-dialogue-tester). Created 2 new Haiku agents (commit-helper, documentation-writer). Created 3 MCP skills (unity-editor-control, generate-game-asset, github-workflow). Added Agent Orchestration Protocol to CLAUDE.md. |
 | 2026-01-18 | **v1.47: COMBAT UI DESIGN** - Completed full UI brainstorming session. Final approved HUD: Player info (top-left), Enemy info (top-center), Menu icons (top-right), Allies floating (right side vertical), Skills with keybinds (bottom-center), Capture banner with C keybind (bottom-right). Game-style floating elements, NO webpage boxes. Single C button for capture (mark → flash → capture). Updated Docs/plans/2026-01-17-combat-ui-design.md to v2.0 FINAL. |
+| 2026-01-18 | **v1.48: GAMBITS AI DESIGN** - Completed Utility-based AI system design for all 10 brands. Dragon Age Tactics style with presets + customizable thresholds. Brand-specific multipliers: IRON (tank/guard), SAVAGE (execute DPS), SURGE (ranged kite), VENOM (DoT/debuff), DREAD (CC chain), LEECH (drain sustain), GRACE (reactive heal), MEND (proactive shield), RUIN (AOE cluster), VOID (chaos/desperation). Universal multipliers: Execute (<25% HP = ×2.5-3.0), Focus fire (debuffed = ×1.5), Tank avoidance (no shred = ×0.3-0.5). Ultimate Override Window (5s player priority). Created Docs/plans/2026-01-18-gambits-ai-design.md. |
 
 ---
 
