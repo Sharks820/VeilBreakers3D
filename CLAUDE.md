@@ -1,6 +1,8 @@
 # VEILBREAKERS 3D - UNITY PROJECT
 
-## Mission: AAA 3D Real-Time Tactical Monster RPG. NO COMPROMISES. NO RIVALS.
+## Mission: BUILD AN AAA GAME STUDIO. NO COMPROMISES. NO RIVALS.
+
+**The Vision:** Claude + Unity = Unstoppable game development. We're not just making a game, we're building a studio.
 
 **Engine:** Unity (migrated from Godot)
 **Project Path:** `C:/Users/Conner/Downloads/VeilBreakers3D`
@@ -205,13 +207,16 @@ BRAINSTORM → WRITE PLAN → EXECUTE PLAN
 |--------|---------|-------|
 | **agent-sdk-dev** | AI-powered features | Build Claude agents for VERA/testing |
 
-## Active MCP Servers (2 Local + 5 Plugin-Provided)
+## Active MCP Servers (5 Local + 5 Plugin-Provided)
 
 ### Local MCPs (.mcp.json)
 | MCP | Trigger | Usage |
 |-----|---------|-------|
 | **sequential-thinking** | Complex problems | Break down systems, balance calculations |
 | **image-process** | Asset manipulation | Crop, resize, format conversion |
+| **mcp-unity** | Unity Editor control | Run builds, manipulate scenes, get debug output |
+| **game-asset-generator** | Asset creation | Generate 2D/3D assets via HuggingFace (FREE) |
+| **github** | GitHub integration | PRs, issues, CI/CD, code review via PAT |
 
 ### Plugin-Provided MCPs
 | MCP | Trigger | Usage |
@@ -238,6 +243,106 @@ BRAINSTORM → WRITE PLAN → EXECUTE PLAN
 | Remember past work | episodic-memory | VEILBREAKERS.md |
 | Image processing | image-process MCP | - |
 | Find duplicates | superpowers-lab skill | Serena |
+
+## Custom VeilBreakers Agents (.claude/agents/)
+
+### Unity Development Agents
+| Agent | Trigger | Purpose |
+|-------|---------|---------|
+| **unity-architect** | "Design a system for..." | System architecture, component design |
+| **unity-code-reviewer** | Before merges | Unity-specific code review checklist |
+| **unity-debugger** | "Why is X not working?" | Systematic Unity debugging |
+| **unity-performance-profiler** | "Check performance of..." | Profiling, optimization analysis |
+
+### VeilBreakers Game Agents
+| Agent | Trigger | Purpose |
+|-------|---------|---------|
+| **balance-analyzer** | "Analyze balance of..." | Game balance validation (brands, synergy, damage) |
+| **vera-dialogue-tester** | "Test VERA response to..." | VERA personality & Veil Integrity testing |
+| **bug-hunter** | Proactive audits | Find bugs in code patterns |
+| **asset-generator** | "Generate art for..." | AI art prompts with VeilBreakers style guide |
+
+## Custom VeilBreakers Skills (.claude/skills/)
+
+| Skill | Trigger | Purpose |
+|-------|---------|---------|
+| **unity-component-design** | "Create a new component for..." | Design MonoBehaviour/ScriptableObject architecture |
+| **unity-performance-check** | Before commits | Quick performance red flags check |
+| **veilbreakers-balance-check** | Changing damage/rates | Validate game balance changes won't break game |
+| **veilbreakers-vera-test** | Modifying VERA dialogue | Test VERA dual personality consistency |
+| **unity-editor-control** | "Run the game", "Check compile errors" | Unity Editor interaction via MCP |
+| **generate-game-asset** | "Create a sprite for..." | AI art generation via HuggingFace |
+| **github-workflow** | "Create PR", "Check CI status" | GitHub operations via MCP |
+
+## 11. Agent Orchestration Protocol (MANDATORY)
+
+**USE THE RIGHT AGENT FOR THE RIGHT TASK**
+
+### Agent Model Tiers
+
+| Tier | Model | Extended Reasoning | Use For |
+|------|-------|-------------------|---------|
+| **Critical** | opus | YES | Architecture, debugging, code review, balance, VERA |
+| **Creative** | sonnet | Limited | Asset generation, creative prompts |
+| **Routine** | haiku | No | Commits, docs, pattern scanning |
+
+### Agent Domain Ownership
+
+| Agent | Model | Owns | Cannot Touch |
+|-------|-------|------|--------------|
+| unity-architect | opus | System designs, architecture docs | Actual code implementation |
+| unity-code-reviewer | opus | Code quality judgment | Design decisions |
+| unity-debugger | opus | Bug investigation | Feature code |
+| unity-performance-profiler | opus | Performance analysis | Feature code |
+| balance-analyzer | opus | Game balance values | UI/system code |
+| vera-dialogue-tester | opus | VERA dialogue, personality | Combat code |
+| asset-generator | sonnet | Art prompts, style guide | Code files |
+| bug-hunter | haiku | Bug scanning (read-only) | Any modifications |
+| commit-helper | haiku | Git commits only | Code/design files |
+| documentation-writer | haiku | Simple doc edits | Code files, major decisions |
+
+### Parallel Execution Rules
+
+**CAN Run in Parallel:**
+- Research agents (bug-hunter, performance-profiler scanning)
+- Content agents (balance-analyzer + vera-dialogue-tester)
+- Background tasks (asset-generator while coding)
+
+**MUST Run Sequential:**
+- architect → (main Claude implements) → code-reviewer
+- debugger → (fix applied) → code-reviewer
+- Any agents modifying the same files
+
+### Agent Handoff Protocol
+
+```
+1. DESIGN PHASE
+   unity-architect creates design → Returns to main Claude
+
+2. IMPLEMENTATION PHASE
+   Main Claude implements using Serena → Completes code
+
+3. REVIEW PHASE
+   unity-code-reviewer validates → Returns approval or issues
+
+4. COMMIT PHASE
+   commit-helper creates commit → Push to remote
+
+5. IF ISSUES
+   unity-debugger investigates → Back to step 2
+```
+
+### Background Agent Usage
+
+```csharp
+// Run agent in background while you continue working
+Task tool with run_in_background: true
+
+// Good for:
+- bug-hunter scanning while implementing
+- performance-profiler checking while designing
+- asset-generator creating while coding
+```
 
 ---
 
