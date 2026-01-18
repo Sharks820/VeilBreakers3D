@@ -92,3 +92,4 @@ nul
 
 # Serena cache
 .serena/
+.env

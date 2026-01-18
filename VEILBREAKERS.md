@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.44** | Last updated: 2026-01-17
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.45** | Last updated: 2026-01-17
 
 ---
 
@@ -641,13 +641,16 @@ Successful Quick Time Event adds +5-15% to capture chance.
 
 ## MCP & Plugin Arsenal
 
-### Active MCP Servers (2 Local + 5 Plugin)
+### Active MCP Servers (5 Local + 5 Plugin)
 
 **Local (.mcp.json):**
 | Server | Purpose | Usage Trigger |
 |--------|---------|---------------|
 | sequential-thinking | Complex problem decomposition | "Design...", "Plan...", system architecture |
 | image-process | Image manipulation (crop, resize) | 2D UI asset pipeline |
+| **mcp-unity** | Unity Editor control | Run builds, get debug output, scene manipulation |
+| **game-asset-generator** | AI asset generation | Generate sprites, textures, 3D models (FREE via HuggingFace) |
+| **github** | GitHub integration | PRs, issues, CI/CD, code review (PAT-based) |
 
 **Plugin-provided:**
 | Server | Purpose | Usage Trigger |
@@ -658,14 +661,8 @@ Successful Quick Time Event adds +5-15% to capture chance.
 | Episodic Memory | Cross-session conversation history | Every session start |
 | Chrome | Browser automation | Web research (rare) |
 
-**TO ADD:**
-| Server | Purpose | Status |
-|--------|---------|--------|
-| **mcp-unity** | Unity Editor control | Install via Package Manager |
-
 **DELETED (2026-01-17):**
 - ~~memory~~ - Redundant (VEILBREAKERS.md is single source of truth)
-- ~~github~~ - Broken (requires Copilot)
 - ~~sentry~~ - Not configured
 
 ### Installed Claude Code Plugins (17 Active - Cleaned 2026-01-17)
@@ -707,6 +704,33 @@ Successful Quick Time Event adds +5-15% to capture chance.
 | clangd-lsp | Not using C/C++ |
 | github | Broken (requires Copilot) |
 | sentry | Not configured |
+
+### Custom VeilBreakers Agents (.claude/agents/)
+
+**Unity Development:**
+| Agent | Purpose |
+|-------|---------|
+| unity-architect | System architecture design |
+| unity-code-reviewer | Unity-specific code review |
+| unity-debugger | Systematic Unity debugging |
+| unity-performance-profiler | Performance analysis |
+
+**Game-Specific:**
+| Agent | Purpose |
+|-------|---------|
+| balance-analyzer | Game balance validation |
+| vera-dialogue-tester | VERA personality testing |
+| bug-hunter | Proactive bug detection |
+| asset-generator | AI art with VeilBreakers style |
+
+### Custom VeilBreakers Skills (.claude/skills/)
+
+| Skill | Purpose |
+|-------|---------|
+| unity-component-design | Design MonoBehaviour/ScriptableObject |
+| unity-performance-check | Pre-commit performance check |
+| veilbreakers-balance-check | Balance validation |
+| veilbreakers-vera-test | VERA dialogue testing |
 
 ### Memory Protocol
 **VEILBREAKERS.md is THE source of truth.** Memory MCP should reflect this file's content.
@@ -755,34 +779,38 @@ battle, ui, art, audio, vera, monsters, critical
 - Likes AAA quality animations
 - Prefers subtle, fast button animations
 - Values pixel-perfect alignment
-- **Use gdtoolkit (gdlint/gdparse)** for GDScript validation before committing
+- **Use csharp-lsp** for C# validation before committing
 - Add all new requirements/tools to memory files
+- **UI must be fresh** - Don't port old Godot UI patterns, build new in Unity UI Toolkit
 
 ---
 
 ## Lessons Learned
 
-### FAILED (Don't Repeat)
+### FAILED (Don't Repeat) - GODOT ERA (Archived)
+> These are from Godot 2D. Keep as historical reference only.
 - Lightning effects - background already has them
 - Custom eye drawing - artwork has them
 - Complex logo animation - caused glitching
 - Fake transparency (checker pattern) - use REAL alpha
-- **Spine/Cutout rigging for Godot** - Too complex, animations glitchy, STICK TO SPRITE SHEETS
+- Spine/Cutout rigging for 2D - Too complex, now using 3D
 
-### WORKS
-- TextureButton with texture_disabled
-- **Run Godot --check-only** to catch script errors before testing
-- Autoloads CANNOT have class_name matching singleton name (Godot 4.x)
-- Child classes CANNOT redeclare signals from parent class
-- Simple scale/modulate tweens
-- Clean button transparency
-- Subtle, fast animations
-- GSAP power3.out = Godot EASE_OUT + TRANS_CUBIC
-- Sprite sheet animation with hframes/vframes
-- Python PIL for removing white backgrounds (threshold >220)
-- Force Godot reimport: `godot --headless --path PROJECT --import --quit`
-- **Popup centering**: Don't use anchors (0.5) with direct position - calculate position dynamically: `position = (viewport_size - panel_size) / 2.0`
-- **VERADialoguePortrait cache**: Track sheet changes along with row/col to prevent glitching on character swap
+### UNITY LESSONS (Active)
+*Building this section as we learn*
+
+- **UI Toolkit > UGUI** for complex UIs (better styling, USS)
+- **DOTween** for animations (replaces Godot tweens)
+- **ScriptableObjects** for game data (monsters, skills, items)
+- **Events** for decoupling (C# events or UnityEvents)
+- **Object pooling** for frequently spawned objects
+- **Addressables** for async asset loading
+
+### UNITY GOTCHAS (Avoid These)
+- Don't use `Find()` or `FindObjectOfType()` in Update - cache references
+- Don't allocate in Update (no `new`, no LINQ, no string concat)
+- Don't forget to unsubscribe events in OnDisable/OnDestroy
+- SerializeField private > public fields for Inspector
+- Use `[RequireComponent]` to ensure dependencies
 
 ---
 
@@ -834,6 +862,7 @@ battle, ui, art, audio, vera, monsters, critical
 | 2026-01-17 | **v1.42: SERENA PROTOCOL** - Added mandatory Serena Code Intelligence Protocol to CLAUDE.md. Serena now required for all code operations to save 70-90% tokens. Documented when to use Serena vs basic tools. |
 | 2026-01-17 | **v1.43: SUPERPOWERS WORKFLOW** - Added mandatory 3-phase workflow: (1) Brainstorm → (2) Write Plan → (3) Execute Plan. Review checkpoints require Serena + C# LSP analysis before proceeding. |
 | 2026-01-17 | **v1.44: MIGRATION PLAN & TOOL PROTOCOLS** - Created Docs/MIGRATION_PLAN.md (48% complete, weighted tracking). Plugin cleanup (26→17): removed Ralph Wiggum, explanatory-output-style, 5 unused LSPs, broken plugins. Complete CLAUDE.md overhaul: removed Godot content, added Protocol #5 (Migration), Protocol #10 (Tool Protocols for all 17 plugins + 7 MCPs), Tool Usage Matrix. |
+| 2026-01-17 | **v1.45: CUSTOM AGENTS & SKILLS** - Added 3 new MCPs (mcp-unity, game-asset-generator, github). Created 8 custom agents: unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler, balance-analyzer, vera-dialogue-tester, bug-hunter, asset-generator. Created 4 custom skills: unity-component-design, unity-performance-check, veilbreakers-balance-check, veilbreakers-vera-test. AAA studio vision established. |
 
 ---
 

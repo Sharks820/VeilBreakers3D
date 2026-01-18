@@ -15,6 +15,36 @@
         "-y",
         "image-process-mcp-server"
       ]
+    },
+    "mcp-unity": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@anthropic/mcp-server-unity"
+      ]
+    },
+    "game-asset-generator": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "game-asset-mcp"
+      ],
+      "env": {
+        "HF_TOKEN": "${HF_TOKEN}"
+      }
+    },
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@github/mcp-server"
+      ],
+      "env": {
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+      }
     }
   }
 }

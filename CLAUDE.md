@@ -1,6 +1,8 @@
 # VEILBREAKERS 3D - UNITY PROJECT
 
-## Mission: AAA 3D Real-Time Tactical Monster RPG. NO COMPROMISES. NO RIVALS.
+## Mission: BUILD AN AAA GAME STUDIO. NO COMPROMISES. NO RIVALS.
+
+**The Vision:** Claude + Unity = Unstoppable game development. We're not just making a game, we're building a studio.
 
 **Engine:** Unity (migrated from Godot)
 **Project Path:** `C:/Users/Conner/Downloads/VeilBreakers3D`
@@ -205,13 +207,16 @@ BRAINSTORM → WRITE PLAN → EXECUTE PLAN
 |--------|---------|-------|
 | **agent-sdk-dev** | AI-powered features | Build Claude agents for VERA/testing |
 
-## Active MCP Servers (2 Local + 5 Plugin-Provided)
+## Active MCP Servers (5 Local + 5 Plugin-Provided)
 
 ### Local MCPs (.mcp.json)
 | MCP | Trigger | Usage |
 |-----|---------|-------|
 | **sequential-thinking** | Complex problems | Break down systems, balance calculations |
 | **image-process** | Asset manipulation | Crop, resize, format conversion |
+| **mcp-unity** | Unity Editor control | Run builds, manipulate scenes, get debug output |
+| **game-asset-generator** | Asset creation | Generate 2D/3D assets via HuggingFace (FREE) |
+| **github** | GitHub integration | PRs, issues, CI/CD, code review via PAT |
 
 ### Plugin-Provided MCPs
 | MCP | Trigger | Usage |
@@ -238,6 +243,33 @@ BRAINSTORM → WRITE PLAN → EXECUTE PLAN
 | Remember past work | episodic-memory | VEILBREAKERS.md |
 | Image processing | image-process MCP | - |
 | Find duplicates | superpowers-lab skill | Serena |
+
+## Custom VeilBreakers Agents (.claude/agents/)
+
+### Unity Development Agents
+| Agent | Trigger | Purpose |
+|-------|---------|---------|
+| **unity-architect** | "Design a system for..." | System architecture, component design |
+| **unity-code-reviewer** | Before merges | Unity-specific code review checklist |
+| **unity-debugger** | "Why is X not working?" | Systematic Unity debugging |
+| **unity-performance-profiler** | "Check performance of..." | Profiling, optimization analysis |
+
+### VeilBreakers Game Agents
+| Agent | Trigger | Purpose |
+|-------|---------|---------|
+| **balance-analyzer** | "Analyze balance of..." | Game balance validation (brands, synergy, damage) |
+| **vera-dialogue-tester** | "Test VERA response to..." | VERA personality & Veil Integrity testing |
+| **bug-hunter** | Proactive audits | Find bugs in code patterns |
+| **asset-generator** | "Generate art for..." | AI art prompts with VeilBreakers style guide |
+
+## Custom VeilBreakers Skills (.claude/skills/)
+
+| Skill | Trigger | Purpose |
+|-------|---------|---------|
+| **unity-component-design** | "Create a new component for..." | Design MonoBehaviour/ScriptableObject architecture |
+| **unity-performance-check** | Before commits | Quick performance red flags check |
+| **veilbreakers-balance-check** | Changing damage/rates | Validate game balance changes won't break game |
+| **veilbreakers-vera-test** | Modifying VERA dialogue | Test VERA dual personality consistency |
 
 ---
 
