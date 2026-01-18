@@ -7,39 +7,25 @@ namespace VeilBreakers.Data
     /// </summary>
 
     // =============================================================================
-    // BRAND SYSTEM - 12 BRANDS (6 Pure + 6 Hybrid)
-    // Effectiveness wheel: SAVAGE > IRON > VENOM > SURGE > DREAD > LEECH > SAVAGE
+    // BRAND SYSTEM - 10 BRANDS
+    // Each brand deals 2x to 2 brands, 0.5x to 2 brands, 1x to 6 brands
     // =============================================================================
 
     public enum Brand
     {
         NONE = 0,
 
-        // Pure Brands (Primary)
-        SAVAGE = 1,     // Red - Raw damage, berserk, crits
-        IRON = 2,       // Silver - Defense, armor, resilience
-        VENOM = 3,      // Green - Poison, decay, DoT
-        SURGE = 4,      // Blue - Speed, lightning, tempo
-        DREAD = 5,      // Purple - Fear, debuffs, control
-        LEECH = 6,      // Crimson - Lifesteal, drain, sustain
-
-        // Hybrid Brands (SAVAGE base + Secondary)
-        BLOODIRON = 7,      // SAVAGE + IRON - Tank that rages
-        CORROSIVE = 8,      // SAVAGE + VENOM - Poison rampage
-        VENOMSTRIKE = 9,    // VENOM + SURGE - Fast poison
-        TERRORFLUX = 10,    // DREAD + SURGE - Lightning fear
-        NIGHTLEECH = 11,    // DREAD + LEECH - Terrifying drain
-        RAVENOUS = 12,      // LEECH + SAVAGE - Hungry berserker
-
-        // Ascended tier (0% corruption)
-        PRIMAL = 99
-    }
-
-    public enum BrandTier
-    {
-        PURE = 0,       // Single brand
-        HYBRID = 1,     // Two brands combined
-        PRIMAL = 2      // Ascended (0% corruption)
+        // The 10 Brands
+        IRON = 1,       // Tank - Defensive Wall
+        SAVAGE = 2,     // Melee Burst - Berserker
+        SURGE = 3,      // Ranged DPS - Artillery
+        VENOM = 4,      // DoT/Debuff - Poison Master
+        DREAD = 5,      // CC/Terror - Fear Mage
+        LEECH = 6,      // Drain Tank - Lifesteal Bruiser
+        GRACE = 7,      // Battle Healer - Combat Medic
+        MEND = 8,       // Ward Healer - Shield Support
+        RUIN = 9,       // AOE Devastator - Explosion Mage
+        VOID = 10       // Chaos Mage - Reality Warper
     }
 
     // =============================================================================
@@ -82,6 +68,27 @@ namespace VeilBreakers.Data
         HEAL = 4,
         UTILITY = 5,
         ULTIMATE = 6
+    }
+
+    // =============================================================================
+    // 6-SLOT ABILITY SYSTEM
+    // =============================================================================
+
+    public enum AbilitySlot
+    {
+        BASIC_ATTACK = 0,   // Slot 1 - No cooldown
+        DEFEND = 1,         // Slot 2 - No cooldown
+        SKILL_1 = 2,        // Slot 3 - 4-6s cooldown
+        SKILL_2 = 3,        // Slot 4 - 10-15s cooldown
+        SKILL_3 = 4,        // Slot 5 - 18-25s cooldown
+        ULTIMATE = 5        // Slot 6 - 45-90s cooldown
+    }
+
+    public enum DefenseAction
+    {
+        DEFEND_SELF,        // 50% damage reduction
+        GUARD_ALLY,         // Intercept for ally, 75% damage to self
+        GUARD_CHAMPION      // Full intercept for champion, 100% damage to self
     }
 
     public enum DamageType

@@ -1,8 +1,8 @@
 # VeilBreakers3D - Real-Time Tactical Combat System Design
 
-**Version:** 1.0
-**Date:** 2026-01-15
-**Status:** Approved Design
+**Version:** 2.0
+**Date:** 2026-01-17
+**Status:** Approved Design (Updated: 6-slot abilities, tiered synergy)
 
 ---
 
@@ -92,17 +92,24 @@ When multiple monsters attempt to guard:
 
 ---
 
-## 5-Slot Ability Structure
+## 6-Slot Ability Structure
 
-Every monster has exactly 5 ability slots:
+Every monster has exactly 6 ability slots:
 
-| Slot | Type | Cooldown | Notes |
-|------|------|----------|-------|
-| 1 | Basic Attack | None | Brand-flavored, always available |
+| Slot | Type | Cooldown | Purpose |
+|------|------|----------|---------|
+| 1 | Basic Attack | None | Brand-flavored, always available damage |
 | 2 | Defend/Guard | None | Universal defensive action |
-| 3 | Skill 1 | 3-5 seconds | Light ability |
-| 4 | Skill 2 | 8-12 seconds | Medium ability |
-| 5 | Ultimate | 30-60 seconds | Powerful signature move |
+| 3 | Skill 1 | 4-6 seconds | Spammable utility/damage |
+| 4 | Skill 2 | 10-15 seconds | Core rotation ability |
+| 5 | Skill 3 | 18-25 seconds | Situational power move |
+| 6 | Ultimate | 45-90 seconds | Fight-changing signature move |
+
+### Cooldown Design Philosophy
+- **Short (4-6s):** Used frequently, defines basic playstyle
+- **Medium (10-15s):** Once or twice per fight, core to rotation
+- **Medium-Long (18-25s):** Strategic timing, situational power
+- **Long (45-90s):** Once per major encounter, fight-changing
 
 ---
 
@@ -162,43 +169,48 @@ Every monster has exactly 5 ability slots:
 ## Path/Brand Synergy System
 
 ### Core Philosophy
-**Synergy = BUFF. Non-synergy = NEUTRAL.** No stat penalties for mismatched teams.
+**Synergy = BUFF. Non-synergy = NEUTRAL.** No stat penalties for mismatched teams. Partial synergy now rewards building toward full composition.
 
-### Synergy Tiers
+### Tiered Synergy System
 
-| Tier | Requirement | Effect |
-|------|-------------|--------|
-| **Strong Synergy** | Brand aligns with Path | +10% damage, +5% defense, slower corruption |
-| **Neutral Synergy** | Brand doesn't align or oppose | No bonus, no penalty, normal corruption |
-| **Weak Synergy** | Brand opposes Path | No bonus, faster corruption, no combo access |
+| Tier | Requirement | Damage | Defense | Corruption | Combo? |
+|------|-------------|--------|---------|------------|--------|
+| **FULL** | 3/3 monsters match Path | +8% | +8% | 0.5x | ✅ YES |
+| **PARTIAL** | 2/3 monsters match Path | +5% | +5% | 0.75x | ❌ No |
+| **NEUTRAL** | 0-1/3 monsters match | +0% | +0% | 1.0x | ❌ No |
+| **ANTI** | Any Weak Synergy brand | +0% | +0% | 1.5x per | ❌ No |
+
+### Design Notes
+- **Full synergy** is rewarding but not mandatory (+8%/+8% balanced)
+- **Partial synergy** (NEW) encourages team building without forcing perfection
+- **Anti-synergy** only affects corruption, not combat stats (less punishing)
+- **Combos** remain exclusive to full synergy as aspirational reward
 
 ### Path Alignments
 
-| Path | Strong Synergy | Weak Synergy |
-|------|---------------|--------------|
+| Path | Strong Synergy Brands | Weak Synergy Brands |
+|------|----------------------|---------------------|
 | IRONBOUND | IRON, MEND, LEECH | VOID, SAVAGE, RUIN |
 | FANGBORN | SAVAGE, VENOM, RUIN | GRACE, MEND, IRON |
 | VOIDTOUCHED | VOID, DREAD, SURGE | IRON, GRACE, MEND |
-| UNCHAINED | All Neutral | None |
+| UNCHAINED | All Neutral | None (flex path) |
 
 ### Combo Abilities
 
-**Requirement:** ALL 3 active party monsters must share Strong Synergy with Champion's Path.
+**Requirement:** ALL 3 active party monsters must have Strong Synergy with Champion's Path.
 
 | Path | Combo | Effect | Cooldown |
 |------|-------|--------|----------|
-| IRONBOUND | Bulwark Formation | +15% party defense, 8 sec | 45s |
-| FANGBORN | Blood Frenzy | +12% party damage, 6 sec | 45s |
-| VOIDTOUCHED | Reality Fracture | 20% chance reset ally cooldown | 60s |
-| UNCHAINED | Adaptive Surge | Copy ally ability at 50% power | 60s |
+| IRONBOUND | Bulwark Formation | +12% party defense, 25% damage redirects to tank, 6 sec | 60s |
+| FANGBORN | Blood Frenzy | +10% party damage, attacks heal 3% of damage dealt, 5 sec | 60s |
+| VOIDTOUCHED | Reality Fracture | 15% chance to reset any ally cooldown on ability use, 8 sec | 75s |
+| UNCHAINED | Adaptive Surge | Next ability copies to random ally at 40% power (instant) | 60s |
 
-### Corruption Rate Modifiers
-
-| Synergy | Corruption Speed |
-|---------|-----------------|
-| Strong | 0.5x (slower) |
-| Neutral | 1.0x (normal) |
-| Weak | 1.5x (faster) |
+### Combo Design Notes
+- Reduced percentage bonuses for balance
+- Added secondary effects for flavor and depth
+- Standardized cooldowns around 60s (once per major fight)
+- UNCHAINED combo is instant effect (fits "freedom" theme)
 
 ---
 
@@ -264,10 +276,10 @@ Successful Quick Time Event adds +5-15% to capture chance.
 1. Core combat loop (attacks, damage, death)
 2. Brand effectiveness system
 3. Universal actions (defend, guard)
-4. 5-slot ability structure
+4. 6-slot ability structure (basic, defend, 3 skills, ultimate)
 5. Party swapping
 6. Command hierarchy
-7. Synergy system
+7. Tiered synergy system (full, partial, neutral, anti)
 8. Corruption mechanics
 9. Capture system
 

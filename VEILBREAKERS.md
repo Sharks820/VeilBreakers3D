@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.38** | Last updated: 2026-01-15
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.44** | Last updated: 2026-01-17
 
 ---
 
@@ -443,15 +443,16 @@ power * ATK/DEF * level * element * variance * crits
 | Marrow | VOIDTOUCHED | Healer | life_tap, siphon_heal, essence_transfer, life_link |
 | Mirage | UNCHAINED | Illusionist | minor_illusion, fear_touch, mirror_image, mass_confusion |
 
-### Path-Brand Synergy (v6.0 - BALANCED)
+### Path-Brand Synergy (v7.0 - TIERED)
 
-**Core Philosophy:** Synergy = BUFF. Non-synergy = NEUTRAL. No stat penalties.
+**Core Philosophy:** Synergy = BUFF. Non-synergy = NEUTRAL. Partial synergy now rewards building toward full composition.
 
-| Synergy Tier | Effect |
-|--------------|--------|
-| **Strong** | +10% damage, +5% defense, 0.5x corruption rate |
-| **Neutral** | No bonus, no penalty, normal corruption |
-| **Weak** | No bonus, 1.5x corruption rate, no combo access |
+| Tier | Requirement | Damage | Defense | Corruption | Combo? |
+|------|-------------|--------|---------|------------|--------|
+| **FULL** | 3/3 monsters match | +8% | +8% | 0.5x | ✅ YES |
+| **PARTIAL** | 2/3 monsters match | +5% | +5% | 0.75x | ❌ No |
+| **NEUTRAL** | 0-1/3 monsters match | +0% | +0% | 1.0x | ❌ No |
+| **ANTI** | Any Weak brand | +0% | +0% | 1.5x each | ❌ No |
 
 | Path | Strong Synergy Brands | Weak Synergy Brands |
 |------|----------------------|---------------------|
@@ -460,14 +461,14 @@ power * ATK/DEF * level * element * variance * crits
 | VOIDTOUCHED | VOID, DREAD, SURGE | IRON, GRACE, MEND |
 | UNCHAINED | All Neutral | None (flex path) |
 
-### Combo Abilities (Require FULL Party Synergy)
+### Combo Abilities (Require FULL 3/3 Synergy)
 
 | Path | Combo | Effect | Cooldown |
 |------|-------|--------|----------|
-| IRONBOUND | Bulwark Formation | +15% party defense, 8 sec | 45s |
-| FANGBORN | Blood Frenzy | +12% party damage, 6 sec | 45s |
-| VOIDTOUCHED | Reality Fracture | 20% chance reset ally cooldown | 60s |
-| UNCHAINED | Adaptive Surge | Copy ally ability at 50% power | 60s |
+| IRONBOUND | Bulwark Formation | +12% defense, 25% damage redirects to tank, 6s | 60s |
+| FANGBORN | Blood Frenzy | +10% damage, attacks heal 3% dealt, 5s | 60s |
+| VOIDTOUCHED | Reality Fracture | 15% chance reset cooldowns on ability use, 8s | 75s |
+| UNCHAINED | Adaptive Surge | Next ability copies to random ally at 40% (instant) | 60s |
 
 - Heroes get Paths (not Brands) - synergize with multiple monster brands
 - 15 stats per character with growth rates
@@ -520,15 +521,16 @@ All monsters have these regardless of Brand:
 | Guard Ally | Intercept, 75% damage redirected | None |
 | Guard Champion | Intercept, 100% damage taken | None |
 
-### 5-Slot Ability Structure
+### 6-Slot Ability Structure
 
-| Slot | Type | Cooldown |
-|------|------|----------|
-| 1 | Basic Attack | None |
-| 2 | Defend/Guard | None |
-| 3 | Skill 1 | 3-5 seconds |
-| 4 | Skill 2 | 8-12 seconds |
-| 5 | Ultimate | 30-60 seconds |
+| Slot | Type | Cooldown | Purpose |
+|------|------|----------|---------|
+| 1 | Basic Attack | None | Always available damage |
+| 2 | Defend/Guard | None | Always available defense |
+| 3 | Skill 1 | 4-6 seconds | Spammable utility |
+| 4 | Skill 2 | 10-15 seconds | Core rotation |
+| 5 | Skill 3 | 18-25 seconds | Situational power |
+| 6 | Ultimate | 45-90 seconds | Fight-changer |
 
 ### Party Structure
 - **3 Active** + **3 Backpack** + Unlimited Storage
@@ -639,48 +641,72 @@ Successful Quick Time Event adds +5-15% to capture chance.
 
 ## MCP & Plugin Arsenal
 
-### Active MCP Servers (3)
-| Server | Purpose |
-|--------|---------|
-| sequential-thinking | Complex problem decomposition, planning |
-| **memory** | **Persistent knowledge graph - syncs with this file** |
-| image-process | Image manipulation (crop, resize, convert) |
+### Active MCP Servers (2 Local + 5 Plugin)
 
-### Installed Claude Code Plugins (26 - USE ALL)
+**Local (.mcp.json):**
+| Server | Purpose | Usage Trigger |
+|--------|---------|---------------|
+| sequential-thinking | Complex problem decomposition | "Design...", "Plan...", system architecture |
+| image-process | Image manipulation (crop, resize) | 2D UI asset pipeline |
 
-#### Official Plugins (19)
+**Plugin-provided:**
+| Server | Purpose | Usage Trigger |
+|--------|---------|---------------|
+| Context7 | Unity API docs (23k snippets) | Before writing ANY Unity C# |
+| Serena | C# semantic code tools | Any code modification |
+| Greptile | Codebase-wide search | "Where is X used?" |
+| Episodic Memory | Cross-session conversation history | Every session start |
+| Chrome | Browser automation | Web research (rare) |
+
+**TO ADD:**
+| Server | Purpose | Status |
+|--------|---------|--------|
+| **mcp-unity** | Unity Editor control | Install via Package Manager |
+
+**DELETED (2026-01-17):**
+- ~~memory~~ - Redundant (VEILBREAKERS.md is single source of truth)
+- ~~github~~ - Broken (requires Copilot)
+- ~~sentry~~ - Not configured
+
+### Installed Claude Code Plugins (17 Active - Cleaned 2026-01-17)
+
+#### Official Plugins (11)
 | Plugin | Purpose |
 |--------|---------|
-| ralph-wiggum | Fun/personality |
 | frontend-design | UI/UX design assistance |
-| context7 | Context management |
-| serena | Development assistant |
-| github | GitHub integration |
+| context7 | Unity API docs (23k snippets) |
+| serena | C# semantic code intelligence |
 | code-review | Code review assistance |
-| typescript-lsp | TypeScript language server |
 | security-guidance | Security best practices |
 | feature-dev | Feature development |
 | commit-commands | Git commit assistance |
 | pr-review-toolkit | Pull request reviews |
-| agent-sdk-dev | Agent development |
-| pyright-lsp | Python language server |
-| explanatory-output-style | Better explanations |
-| greptile | Code search |
-| sentry | Error monitoring |
-| gopls-lsp | Go language server |
+| agent-sdk-dev | Agent/VERA development |
+| greptile | Codebase-wide semantic search |
 | **csharp-lsp** | **C# language server (Unity!)** |
-| clangd-lsp | C/C++ language server |
 
-#### Superpowers Marketplace (7)
+#### Superpowers Marketplace (6)
 | Plugin | Purpose |
 |--------|---------|
-| double-shot-latte | Enhanced responses |
+| double-shot-latte | Prevents "continue?" interruptions |
 | superpowers-chrome | Browser automation |
-| episodic-memory | Session memory |
-| elements-of-style | Writing style |
-| superpowers | Core enhancements |
-| superpowers-developing-for-claude-code | Meta development |
-| superpowers-lab | Experimental features |
+| episodic-memory | Cross-session conversation memory |
+| elements-of-style | Clear writing style |
+| superpowers | Core workflows (brainstorm, plan, execute) |
+| superpowers-lab | Duplicate function detection |
+
+#### Removed Plugins (2026-01-17)
+| Plugin | Reason |
+|--------|--------|
+| ralph-wiggum | Caused intrusive popups |
+| explanatory-output-style | Caused code popups |
+| superpowers-developing-for-claude-code | Not developing plugins |
+| typescript-lsp | Not using TypeScript |
+| pyright-lsp | Not using Python |
+| gopls-lsp | Not using Go |
+| clangd-lsp | Not using C/C++ |
+| github | Broken (requires Copilot) |
+| sentry | Not configured |
 
 ### Memory Protocol
 **VEILBREAKERS.md is THE source of truth.** Memory MCP should reflect this file's content.
@@ -802,26 +828,51 @@ battle, ui, art, audio, vera, monsters, critical
 | 2026-01-15 | v1.36: Added 26 Claude Code plugins (19 official + 7 superpowers), updated MCP servers (3 active), added mandatory session protocols |
 | 2026-01-15 | **v1.37: 3D ORGANIZATION** - Complete Unity 3D folder structure, 3D model/animation/rig naming conventions, marked all Godot sections as LEGACY/OUTDATED, screenshot protocol added |
 | 2026-01-15 | **v1.38: LEGACY CLEANUP** - Moved Godot docs to Docs/LEGACY_Godot/ with README warning, created 40+ Unity 3D asset folders with .gitkeep files, full branch/file structure documented |
+| 2026-01-17 | **v1.39: MCP ARSENAL OPTIMIZATION** - Deleted 3 redundant MCPs (memory, github, sentry), documented usage triggers for all 7 MCPs, added mcp-unity installation plan, created Docs/plans/2026-01-17-mcp-arsenal-design.md |
+| 2026-01-17 | **v1.40: COMBAT SYSTEM v2.0** - 6-slot abilities (basic, defend, 3 skills, ultimate), tiered synergy (full/partial/neutral/anti), rebalanced combo abilities, AAA rigging/animation/facial pipeline design doc |
+| 2026-01-17 | **v1.41: COMBAT IMPLEMENTATION** - Implemented 10-brand effectiveness matrix (2x/0.5x), SynergySystem (full/partial/neutral/anti tiers), AbilityLoadout (6-slot with cooldowns), Combatant base class, DamageCalculator, BattleManager, EventBus combat events, comprehensive test script |
+| 2026-01-17 | **v1.42: SERENA PROTOCOL** - Added mandatory Serena Code Intelligence Protocol to CLAUDE.md. Serena now required for all code operations to save 70-90% tokens. Documented when to use Serena vs basic tools. |
+| 2026-01-17 | **v1.43: SUPERPOWERS WORKFLOW** - Added mandatory 3-phase workflow: (1) Brainstorm → (2) Write Plan → (3) Execute Plan. Review checkpoints require Serena + C# LSP analysis before proceeding. |
+| 2026-01-17 | **v1.44: MIGRATION PLAN & TOOL PROTOCOLS** - Created Docs/MIGRATION_PLAN.md (48% complete, weighted tracking). Plugin cleanup (26→17): removed Ralph Wiggum, explanatory-output-style, 5 unused LSPs, broken plugins. Complete CLAUDE.md overhaul: removed Godot content, added Protocol #5 (Migration), Protocol #10 (Tool Protocols for all 17 plugins + 7 MCPs), Tool Usage Matrix. |
 
 ---
 
 ## NEXT SESSION: Unity 3D Implementation
 
-**Transition Status:**
-- ~100 files transferred to Unity
-- ~135 files pending (hero sprites, backgrounds, title, UI)
-- Design document: `docs/plans/2026-01-15-combat-system-design.md`
+**Migration Status: 48% Complete** (see `Docs/MIGRATION_PLAN.md` for full tracking)
 
-**Implementation Priority:**
-1. Core combat loop (attacks, damage, death)
-2. Brand effectiveness system
-3. Universal actions (defend, guard)
-4. 5-slot ability structure
-5. Party swapping
-6. Command hierarchy
-7. Synergy system
-8. Corruption mechanics
-9. Capture system
+| Category | Progress | Weight |
+|----------|----------|--------|
+| Core Systems | 80% | 15% |
+| Combat Systems | 70% | 20% |
+| Game Systems | 75% | 15% |
+| Data Models | 90% | 10% |
+| UI Systems | 0% | 15% |
+| Audio Systems | 0% | 5% |
+| Save/Load | 0% | 5% |
+| Managers | 20% | 5% |
+| Utilities | 0% | 5% |
+| Unity-Specific | 10% | 5% |
+
+**Implementation Status (v1.44):**
+- ✅ 10-Brand effectiveness system (BrandSystem.cs)
+- ✅ Tiered synergy system (SynergySystem.cs)
+- ✅ 6-slot ability structure (AbilityData.cs, Enums.cs)
+- ✅ Combatant base class (Combatant.cs)
+- ✅ Damage calculation (DamageCalculator.cs)
+- ✅ Real-time battle manager (BattleManager.cs)
+- ✅ Combat events in EventBus
+- ✅ Comprehensive test script (CombatTestSetup.cs)
+
+**Next Priority (Phase 1 - Get to Playable):**
+1. **UI Systems** - Can't test without UI (Unity UI Toolkit)
+2. **Audio Systems** - Essential for feel (Unity Audio Mixer)
+3. **Save/Load** - Need persistence (ScriptableObjects + JsonUtility)
+
+**Phase 2 - Combat Complete:**
+4. AIController - Enemy behavior
+5. StatusEffectManager - Buffs/debuffs (ScriptableObjects)
+6. CaptureSystem - Post-battle capture with QTE
 
 ---
 

@@ -60,6 +60,18 @@ namespace VeilBreakers.Core
             => OnSkillUsed?.Invoke(userId, skillId);
 
         // =============================================================================
+        // COMBAT SYNERGY EVENTS
+        // =============================================================================
+
+        public static event Action<int> OnSynergyTierChanged;          // tier as int (SynergyTier enum)
+        public static event Action<string> OnCombatantDied;            // combatantId
+        public static event Action<string, int> OnHealReceived;        // targetId, amount
+
+        public static void SynergyTierChanged(int tier) => OnSynergyTierChanged?.Invoke(tier);
+        public static void CombatantDied(string combatantId) => OnCombatantDied?.Invoke(combatantId);
+        public static void HealReceived(string targetId, int amount) => OnHealReceived?.Invoke(targetId, amount);
+
+        // =============================================================================
         // MONSTER EVENTS
         // =============================================================================
 
@@ -167,6 +179,10 @@ namespace VeilBreakers.Core
             OnStatusRemoved = null;
             OnUnitDefeated = null;
             OnSkillUsed = null;
+
+            OnSynergyTierChanged = null;
+            OnCombatantDied = null;
+            OnHealReceived = null;
 
             OnMonsterCaptured = null;
             OnMonsterLevelUp = null;
