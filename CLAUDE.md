@@ -230,6 +230,113 @@ mcp__plugin_serena_serena__activate_project("VeilBreakers3D")
 | "Find Brand enum definition" | ~500 tokens (Grep + Read) | ~150 tokens (find_symbol) | **70%** |
 | "Where is DamageCalculator used?" | ~1500 tokens (multiple Greps) | ~300 tokens (find_refs) | **80%** |
 
+## 9. Superpowers Workflow Protocol (MANDATORY)
+
+⚠️ **USE SUPERPOWERS SKILLS FOR ALL PLANNING AND EXECUTION**
+
+The Superpowers skills provide structured workflows for complex tasks. This is NOT optional - invoke these skills via the `Skill` tool before any significant work.
+
+### The Three-Phase Workflow
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│  1. BRAINSTORM  │ →  │  2. WRITE PLAN  │ →  │  3. EXECUTE     │
+│                 │    │                 │    │                 │
+│ Explore intent  │    │ Formalize steps │    │ Batch work with │
+│ Requirements    │    │ Identify files  │    │ review points   │
+│ Design options  │    │ Dependencies    │    │ Code analysis   │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+### Phase 1: Brainstorming (ALWAYS FIRST)
+
+**Skill:** `superpowers:brainstorming`
+
+**When:** Before ANY creative work - features, components, modifications, fixes
+
+**Invoke:**
+```
+Skill tool: skill="superpowers:brainstorming"
+```
+
+**Purpose:**
+- Explore user intent and requirements
+- Consider design options and trade-offs
+- Identify potential issues early
+- Ensure alignment before committing to implementation
+
+### Phase 2: Writing Plans (AFTER BRAINSTORM)
+
+**Skill:** `superpowers:writing-plans`
+
+**When:** After brainstorming is complete and direction is clear
+
+**Invoke:**
+```
+Skill tool: skill="superpowers:writing-plans"
+```
+
+**Purpose:**
+- Convert brainstorm into actionable steps
+- Identify all files to create/modify
+- Define dependencies and order
+- Create checkpoints for review
+
+### Phase 3: Executing Plans (AFTER PLAN APPROVED)
+
+**Skill:** `superpowers:executing-plans`
+
+**When:** After user approves the written plan
+
+**Invoke:**
+```
+Skill tool: skill="superpowers:executing-plans"
+```
+
+**Purpose:**
+- Execute plan in batches with review checkpoints
+- Run verification at each checkpoint
+- Code analysis with Serena + C# LSP
+- Error checking before proceeding
+
+### Review Checkpoint Requirements
+
+At each checkpoint during execution, perform:
+
+1. **Serena Analysis:**
+   - `get_symbols_overview` on modified files
+   - `find_referencing_symbols` to verify no broken references
+   - `search_for_pattern` for potential issues
+
+2. **C# LSP Analysis:**
+   - Use `csharp-lsp` plugin for compile errors
+   - Check for type mismatches, missing references
+   - Verify namespace consistency
+
+3. **Error Summary:**
+   - List any compilation errors
+   - List any Serena-detected issues
+   - Get user approval before continuing
+
+### When This Workflow is REQUIRED
+
+| Trigger | Required? |
+|---------|-----------|
+| "Add a feature" | ✅ YES - Full 3-phase workflow |
+| "Implement X system" | ✅ YES - Full 3-phase workflow |
+| "Fix this bug" | ⚠️ MAYBE - Brainstorm if complex |
+| "Refactor this code" | ✅ YES - Brainstorm + Plan |
+| "Quick question" | ❌ NO - Just answer |
+| "Read this file" | ❌ NO - Just read |
+
+### Workflow Exceptions
+
+Skip full workflow ONLY for:
+- Simple questions/explanations
+- Single-line fixes (typos, obvious bugs)
+- Reading/exploring code (no modifications)
+- Commits and git operations
+
 ---
 
 # THE ARSENAL - MCP SERVERS
