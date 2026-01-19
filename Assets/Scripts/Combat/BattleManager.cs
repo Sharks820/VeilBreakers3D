@@ -201,7 +201,18 @@ namespace VeilBreakers.Combat
                 case SkillType.DEFENSE:
                     user.StartDefend(user.Abilities.currentDefenseAction, target);
                     break;
-                // TODO: Buff, Debuff, Utility
+                case SkillType.BUFF:
+                    ExecuteBuff(user, target, skillData);
+                    break;
+                case SkillType.DEBUFF:
+                    ExecuteDebuff(user, target, skillData);
+                    break;
+                case SkillType.UTILITY:
+                    ExecuteUtility(user, target, skillData);
+                    break;
+                case SkillType.ULTIMATE:
+                    ExecuteUltimate(user, target, skillData);
+                    break;
             }
 
             Debug.Log($"[BattleManager] {user.DisplayName} used {skillData.display_name}");
@@ -241,6 +252,97 @@ namespace VeilBreakers.Combat
             int healAmount = DamageCalculator.CalculateHeal(healer, skill.base_power);
             target.Heal(healAmount);
             OnHealApplied?.Invoke(target, healAmount);
+        }
+
+        /// <summary>
+        /// Execute buff ability (apply beneficial status effects to ally)
+        /// </summary>
+        private void ExecuteBuff(Combatant caster, Combatant target, SkillData skill)
+        {
+            ApplySkillStatusEffects(caster, target, skill);
+            EventBus.BuffApplied(target.gameObject, skill.skill_id);
+        }
+
+        /// <summary>
+        /// Execute debuff ability (apply harmful status effects to enemy)
+        /// </summary>
+        private void ExecuteDebuff(Combatant caster, Combatant target, SkillData skill)
+        {
+            // Check for guard intercept on debuffs too
+            var interceptor = GetGuardInterceptor(target);
+            if (interceptor != null)
+            {
+                target = interceptor;
+            }
+
+            ApplySkillStatusEffects(caster, target, skill);
+            EventBus.DebuffApplied(target.gameObject, skill.skill_id);
+        }
+
+        /// <summary>
+        /// Execute utility ability (movement, positioning, special actions)
+        /// </summary>
+        private void ExecuteUtility(Combatant caster, Combatant target, SkillData skill)
+        {
+            // Apply any status effects the utility skill may have
+            ApplySkillStatusEffects(caster, target, skill);
+
+            // Fire utility event for special handling
+            EventBus.UtilityUsed(caster.gameObject, skill.skill_id);
+        }
+
+        /// <summary>
+        /// Execute ultimate ability (powerful fight-changing skill)
+        /// </summary>
+        private void ExecuteUltimate(Combatant caster, Combatant target, SkillData skill)
+        {
+            // Ultimates can be attack, heal, buff, or debuff based on their effects
+            if (skill.base_power > 0 && skill.GetDamageType() != DamageType.NONE)
+            {
+                // Ultimate with damage component
+                ExecuteAttack(caster, target, skill);
+            }
+
+            // Apply any status effects
+            ApplySkillStatusEffects(caster, target, skill);
+
+            // Fire ultimate event
+            EventBus.UltimateUsed(caster.gameObject, skill.skill_id);
+        }
+
+        /// <summary>
+        /// Apply all status effects from a skill to target
+        /// </summary>
+        private void ApplySkillStatusEffects(Combatant caster, Combatant target, SkillData skill)
+        {
+            if (skill.status_effects == null || skill.status_effects.Count == 0)
+                return;
+
+            var statusManager = Managers.StatusEffectManager.Instance;
+            if (statusManager == null)
+            {
+                Debug.LogWarning("[BattleManager] StatusEffectManager not available");
+                return;
+            }
+
+            for (int i = 0; i < skill.status_effects.Count; i++)
+            {
+                var effectEntry = skill.status_effects[i];
+
+                // Check chance to apply
+                if (effectEntry.chance < 1f && UnityEngine.Random.value > effectEntry.chance)
+                    continue;
+
+                // Apply the effect
+                statusManager.ApplyEffect(
+                    (Data.StatusEffectType)effectEntry.effect,
+                    caster.gameObject,
+                    target.gameObject,
+                    caster.GetMagic(), // stat modifier
+                    1f, // skill rank
+                    BrandSystem.GetEffectiveness(caster.Brand, target.Brand)
+                );
+            }
         }
 
         /// <summary>

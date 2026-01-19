@@ -46,6 +46,9 @@ namespace VeilBreakers.Capture
         [Tooltip("Time window to execute bind after threshold reached")]
         [SerializeField] private float _bindWindowDuration = 3f;
 
+        [Tooltip("Duration of bind animation before monster is fully bound")]
+        [SerializeField] private float _bindDuration = 1.5f;
+
         // =============================================================================
         // STATE
         // =============================================================================
@@ -61,13 +64,19 @@ namespace VeilBreakers.Capture
         // Bound monsters awaiting capture
         private readonly List<BoundMonsterData> _boundMonsters = new List<BoundMonsterData>();
 
-        // Currently active bind attempts
+        // Currently active bind attempts (ally -> target)
         private readonly Dictionary<Combatant, Combatant> _bindAttempts = new Dictionary<Combatant, Combatant>();
+
+        // Bind start times for duration tracking (ally -> start time)
+        private readonly Dictionary<Combatant, float> _bindStartTimes = new Dictionary<Combatant, float>();
 
         // Capture phase state
         private bool _inCapturePhase = false;
         private BoundMonsterData _currentCaptureTarget;
         private CaptureItem _selectedItem = CaptureItem.NONE;
+
+        // Target override for custom targeting
+        private Combatant _targetOverride;
 
         // Pre-allocated buffer for iteration
         private readonly List<Combatant> _iterationBuffer = new List<Combatant>(8);
@@ -79,6 +88,8 @@ namespace VeilBreakers.Capture
         public event Action<Combatant> OnTargetMarked;
         public event Action<Combatant> OnTargetUnmarked;
         public event Action<Combatant, float> OnBindThresholdReached;
+        public event Action<Combatant, Combatant> OnBindStarted;  // target, ally
+        public event Action<Combatant, float> OnBindProgress;     // target, progress (0-1)
         public event Action<Combatant> OnMonsterBound;
         public event Action OnCapturePhaseStarted;
         public event Action OnCapturePhaseEnded;
@@ -125,6 +136,8 @@ namespace VeilBreakers.Capture
             OnTargetMarked = null;
             OnTargetUnmarked = null;
             OnBindThresholdReached = null;
+            OnBindStarted = null;
+            OnBindProgress = null;
             OnMonsterBound = null;
             OnCapturePhaseStarted = null;
             OnCapturePhaseEnded = null;
@@ -164,6 +177,7 @@ namespace VeilBreakers.Capture
             _markedTargets.Clear();
             _boundMonsters.Clear();
             _bindAttempts.Clear();
+            _bindStartTimes.Clear();
             _inCapturePhase = false;
             _currentCaptureTarget = null;
             _selectedItem = CaptureItem.NONE;
@@ -196,9 +210,28 @@ namespace VeilBreakers.Capture
 
         private Combatant GetCurrentTarget()
         {
-            // Get current target from battle manager or targeting system
-            // TODO: Integrate with actual targeting system
+            // Check for custom targeting override first
+            if (_targetOverride != null && _targetOverride.IsAlive)
+                return _targetOverride;
+
+            // Fall back to BattleManager's current target
             return BattleManager.Instance?.CurrentTarget;
+        }
+
+        /// <summary>
+        /// Override the current target for capture marking (used by UI/input systems)
+        /// </summary>
+        public void SetTargetOverride(Combatant target)
+        {
+            _targetOverride = target;
+        }
+
+        /// <summary>
+        /// Clear the target override
+        /// </summary>
+        public void ClearTargetOverride()
+        {
+            _targetOverride = null;
         }
 
         // =============================================================================
@@ -324,28 +357,55 @@ namespace VeilBreakers.Capture
         {
             // Check for completed bind attempts
             _iterationBuffer.Clear();
+            float currentTime = Time.time;
+
             foreach (var kvp in _bindAttempts)
             {
                 var ally = kvp.Key;
                 var target = kvp.Value;
 
-                // Check if bind should complete
+                // Check if bind should be cancelled
                 if (target == null || !target.IsAlive)
                 {
                     _iterationBuffer.Add(ally);
                     continue;
                 }
 
-                // Simplified: instant bind for now
-                // TODO: Add bind animation/duration
-                BindMonster(target, ally);
-                _iterationBuffer.Add(ally);
+                // Check if ally is still able to bind (alive and in range)
+                if (ally == null || !ally.IsAlive)
+                {
+                    _iterationBuffer.Add(ally);
+                    continue;
+                }
+
+                // Get bind start time
+                if (!_bindStartTimes.TryGetValue(ally, out float startTime))
+                {
+                    // Should not happen, but handle gracefully
+                    _iterationBuffer.Add(ally);
+                    continue;
+                }
+
+                // Calculate progress
+                float elapsed = currentTime - startTime;
+                float progress = Mathf.Clamp01(elapsed / _bindDuration);
+
+                // Fire progress event for UI updates
+                OnBindProgress?.Invoke(target, progress);
+
+                // Check if bind is complete
+                if (elapsed >= _bindDuration)
+                {
+                    BindMonster(target, ally);
+                    _iterationBuffer.Add(ally);
+                }
             }
 
             // Clean up completed attempts
             foreach (var ally in _iterationBuffer)
             {
                 _bindAttempts.Remove(ally);
+                _bindStartTimes.Remove(ally);
             }
 
             // Clear buffer to release references for GC
@@ -357,7 +417,10 @@ namespace VeilBreakers.Capture
             if (ally == null || _bindAttempts.ContainsKey(ally)) return;
 
             _bindAttempts[ally] = target;
-            Debug.Log($"[CaptureManager] {ally.DisplayName} attempting to bind {target.DisplayName}");
+            _bindStartTimes[ally] = Time.time;
+
+            OnBindStarted?.Invoke(target, ally);
+            Debug.Log($"[CaptureManager] {ally.DisplayName} attempting to bind {target.DisplayName} (duration: {_bindDuration}s)");
         }
 
         /// <summary>
@@ -652,16 +715,30 @@ namespace VeilBreakers.Capture
             // Remove from marked targets
             _markedTargets.Remove(monster);
 
-            // Remove from enemy list if using enemies reference
-            _enemies?.Remove(monster);
+            // Remove from bind attempts if in progress
+            _iterationBuffer.Clear();
+            foreach (var kvp in _bindAttempts)
+            {
+                if (kvp.Value == monster)
+                {
+                    _iterationBuffer.Add(kvp.Key);
+                }
+            }
+            foreach (var ally in _iterationBuffer)
+            {
+                _bindAttempts.Remove(ally);
+                _bindStartTimes.Remove(ally);
+            }
+            _iterationBuffer.Clear();
 
-            // Destroy the game object (it's no longer in battle)
+            // Disable the game object (monster is removed from battle)
+            // BattleManager checks IsAlive, so deactivating + killing handles enemy tracking
             if (monster.gameObject != null)
             {
-                // Mark as dead first to trigger any death-related cleanup
-                monster.TakeDamage(monster.MaxHp + 1);
+                // Mark as dead to trigger any death-related cleanup
+                monster.TakeDamage(monster.MaxHP + 1);
 
-                // Optionally disable instead of destroy for pooling later
+                // Disable instead of destroy for object pooling later
                 monster.gameObject.SetActive(false);
             }
 
@@ -683,6 +760,7 @@ namespace VeilBreakers.Capture
                 _markedTargets.Clear();
                 _boundMonsters.Clear();
                 _bindAttempts.Clear();
+                _bindStartTimes.Clear();
             }
         }
 

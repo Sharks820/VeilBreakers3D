@@ -53,6 +53,21 @@ namespace VeilBreakers.Core
         public static void SkillUsed(string userId, string skillId)
             => OnSkillUsed?.Invoke(userId, skillId);
 
+        // Skill type specific events
+        public static event Action<GameObject, string> OnBuffApplied;     // target, skillId
+        public static event Action<GameObject, string> OnDebuffApplied;   // target, skillId
+        public static event Action<GameObject, string> OnUtilityUsed;     // caster, skillId
+        public static event Action<GameObject, string> OnUltimateUsed;    // caster, skillId
+
+        public static void BuffApplied(GameObject target, string skillId)
+            => OnBuffApplied?.Invoke(target, skillId);
+        public static void DebuffApplied(GameObject target, string skillId)
+            => OnDebuffApplied?.Invoke(target, skillId);
+        public static void UtilityUsed(GameObject caster, string skillId)
+            => OnUtilityUsed?.Invoke(caster, skillId);
+        public static void UltimateUsed(GameObject caster, string skillId)
+            => OnUltimateUsed?.Invoke(caster, skillId);
+
         // =============================================================================
         // STATUS EFFECT EVENTS (New system using StatusEffectType)
         // =============================================================================

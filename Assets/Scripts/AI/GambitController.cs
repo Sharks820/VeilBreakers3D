@@ -64,6 +64,10 @@ namespace VeilBreakers.AI
         private float _lastKillTime;
         private const float MOMENTUM_WINDOW = 5f;
 
+        // Forced target from Quick Command system
+        private Combatant _forcedTarget;
+        private string _lastDamageTargetId;
+
         // =============================================================================
         // UNITY LIFECYCLE
         // =============================================================================
@@ -273,8 +277,8 @@ namespace VeilBreakers.AI
                     return FindEnemyHealer() ?? _battleContext.GetLowestHpEnemy();
 
                 case AIPersonality.UltimateTargetMode.ENEMY_CLUSTER:
-                    // TODO: Implement cluster detection
-                    return _battleContext.GetLowestHpEnemy();
+                    // Use cluster detection to find best AOE target
+                    return GetClusterTarget() ?? _battleContext.GetLowestHpEnemy();
 
                 default:
                     return _battleContext.GetLowestHpEnemy();
@@ -386,10 +390,13 @@ namespace VeilBreakers.AI
             // Track kills for momentum (SAVAGE brand)
             if (_personality.tracksMomentum)
             {
-                // Check if we caused the kill
-                // TODO: Implement kill tracking when damage attribution is available
-                _killCount++;
-                _lastKillTime = Time.time;
+                // Check if we caused the kill using damage attribution
+                if (DidWeCauseKill(unitId))
+                {
+                    _killCount++;
+                    _lastKillTime = Time.time;
+                    Debug.Log($"[GambitController] {_combatant.DisplayName} kill streak: {_killCount}");
+                }
             }
         }
 
@@ -751,6 +758,143 @@ namespace VeilBreakers.AI
         public bool IsInitialized => _isInitialized;
         public bool UltimateReady => _ultimateReady;
         public Combatant ProtectedAlly => _protectedAlly;
+        public Combatant ForcedTarget => _forcedTarget;
+
+        // =============================================================================
+        // FORCED TARGET (Quick Command Integration)
+        // =============================================================================
+
+        /// <summary>
+        /// Set a forced target (overrides normal target selection).
+        /// Used by Quick Command system for "On Me" threat response.
+        /// </summary>
+        public void SetForcedTarget(Combatant target)
+        {
+            _forcedTarget = target;
+            if (target != null)
+            {
+                Debug.Log($"[GambitController] {_combatant.DisplayName} forced to target {target.DisplayName}");
+            }
+        }
+
+        /// <summary>
+        /// Clear the forced target, returning to normal AI behavior.
+        /// </summary>
+        public void ClearForcedTarget()
+        {
+            if (_forcedTarget != null)
+            {
+                Debug.Log($"[GambitController] {_combatant.DisplayName} cleared forced target");
+            }
+            _forcedTarget = null;
+        }
+
+        /// <summary>
+        /// Check if this controller has a forced target.
+        /// </summary>
+        public bool HasForcedTarget()
+        {
+            return _forcedTarget != null && _forcedTarget.IsAlive;
+        }
+
+        // =============================================================================
+        // KILL TRACKING
+        // =============================================================================
+
+        /// <summary>
+        /// Track the last target this combatant damaged.
+        /// Called by combat system when damage is dealt.
+        /// </summary>
+        public void TrackDamageTarget(string targetId)
+        {
+            _lastDamageTargetId = targetId;
+        }
+
+        /// <summary>
+        /// Check if we likely caused a kill (called when unit dies).
+        /// </summary>
+        private bool DidWeCauseKill(string killedUnitId)
+        {
+            // Simple attribution: if we recently damaged this unit, we likely killed it
+            return _lastDamageTargetId == killedUnitId;
+        }
+
+        // =============================================================================
+        // CLUSTER DETECTION
+        // =============================================================================
+
+        /// <summary>
+        /// Get the center of the largest enemy cluster.
+        /// Used for AOE targeting.
+        /// </summary>
+        public Combatant GetClusterTarget(float clusterRadius = 5f)
+        {
+            if (_battleContext == null) return null;
+
+            var enemies = _battleContext.GetEnemies();
+            if (enemies == null || enemies.Length == 0) return null;
+
+            Combatant bestTarget = null;
+            int maxNearbyCount = 0;
+
+            // For each enemy, count how many other enemies are nearby
+            for (int i = 0; i < enemies.Length; i++)
+            {
+                var enemy = enemies[i];
+                if (enemy == null || !enemy.IsAlive) continue;
+
+                int nearbyCount = 0;
+                for (int j = 0; j < enemies.Length; j++)
+                {
+                    if (i == j) continue;
+                    var other = enemies[j];
+                    if (other == null || !other.IsAlive) continue;
+
+                    float dist = Vector3.Distance(enemy.transform.position, other.transform.position);
+                    if (dist <= clusterRadius)
+                    {
+                        nearbyCount++;
+                    }
+                }
+
+                // Include self in count
+                nearbyCount++;
+
+                if (nearbyCount > maxNearbyCount)
+                {
+                    maxNearbyCount = nearbyCount;
+                    bestTarget = enemy;
+                }
+            }
+
+            return bestTarget;
+        }
+
+        /// <summary>
+        /// Count enemies within a radius of a position.
+        /// </summary>
+        public int CountEnemiesInRadius(Vector3 position, float radius)
+        {
+            if (_battleContext == null) return 0;
+
+            var enemies = _battleContext.GetEnemies();
+            if (enemies == null) return 0;
+
+            int count = 0;
+            for (int i = 0; i < enemies.Length; i++)
+            {
+                var enemy = enemies[i];
+                if (enemy == null || !enemy.IsAlive) continue;
+
+                float dist = Vector3.Distance(position, enemy.transform.position);
+                if (dist <= radius)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
     }
 
     /// <summary>

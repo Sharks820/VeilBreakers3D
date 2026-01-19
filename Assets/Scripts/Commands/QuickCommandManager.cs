@@ -55,8 +55,10 @@ namespace VeilBreakers.Commands
 
         private Dictionary<Combatant, QuickCommandInstance> _activeCommands;
         private Dictionary<Combatant, float> _cooldowns;
+        private Dictionary<Combatant, Vector3> _formationPositions; // Saved formation positions relative to player
         private Combatant _player;
         private Combatant[] _allies;
+        private Combatant[] _enemies; // Enemy list for threat detection
         private Combatant _currentTarget;
 
         // Pre-allocated buffers to avoid GC in Update loop
@@ -90,6 +92,7 @@ namespace VeilBreakers.Commands
 
             _activeCommands = new Dictionary<Combatant, QuickCommandInstance>();
             _cooldowns = new Dictionary<Combatant, float>();
+            _formationPositions = new Dictionary<Combatant, Vector3>();
         }
 
         private void OnDestroy()
@@ -118,15 +121,95 @@ namespace VeilBreakers.Commands
         /// <summary>
         /// Initialize the manager with party members.
         /// </summary>
-        public void Initialize(Combatant player, Combatant[] allies)
+        public void Initialize(Combatant player, Combatant[] allies, Combatant[] enemies = null)
         {
             _player = player;
             _allies = allies ?? Array.Empty<Combatant>();
+            _enemies = enemies ?? Array.Empty<Combatant>();
 
             _activeCommands.Clear();
             _cooldowns.Clear();
+            _formationPositions.Clear();
 
-            Debug.Log($"[QuickCommandManager] Initialized with {_allies.Length} allies");
+            // Set default formation positions (V-formation behind player)
+            SetDefaultFormation();
+
+            Debug.Log($"[QuickCommandManager] Initialized with {_allies.Length} allies, {_enemies.Length} enemies");
+        }
+
+        /// <summary>
+        /// Update enemy list (useful when enemies are added/removed during battle).
+        /// </summary>
+        public void UpdateEnemyList(Combatant[] enemies)
+        {
+            _enemies = enemies ?? Array.Empty<Combatant>();
+        }
+
+        /// <summary>
+        /// Set default V-formation positions relative to player.
+        /// </summary>
+        private void SetDefaultFormation()
+        {
+            if (_player == null || _allies == null) return;
+
+            for (int i = 0; i < _allies.Length; i++)
+            {
+                var ally = _allies[i];
+                if (ally == null) continue;
+
+                // V-formation: allies spread out behind player
+                float angle = (i % 2 == 0) ? -30f - (i / 2) * 15f : 30f + (i / 2) * 15f;
+                float distance = 3f + (i / 2) * 1f;
+
+                // Convert angle to offset (behind player means negative Z in local space)
+                float rad = angle * Mathf.Deg2Rad;
+                Vector3 offset = new Vector3(Mathf.Sin(rad) * distance, 0, -Mathf.Cos(rad) * distance);
+
+                _formationPositions[ally] = offset;
+            }
+        }
+
+        /// <summary>
+        /// Save current ally positions as formation.
+        /// </summary>
+        public void SaveCurrentFormation()
+        {
+            if (_player == null) return;
+
+            Vector3 playerPos = _player.transform.position;
+            Quaternion playerRotInverse = Quaternion.Inverse(_player.transform.rotation);
+
+            for (int i = 0; i < _allies.Length; i++)
+            {
+                var ally = _allies[i];
+                if (ally == null || !ally.IsAlive) continue;
+
+                // Store position relative to player (local space)
+                Vector3 worldOffset = ally.transform.position - playerPos;
+                Vector3 localOffset = playerRotInverse * worldOffset;
+                _formationPositions[ally] = localOffset;
+            }
+
+            Debug.Log("[QuickCommandManager] Formation saved");
+        }
+
+        /// <summary>
+        /// Get the world position for an ally's formation spot.
+        /// </summary>
+        public Vector3 GetFormationPosition(Combatant ally)
+        {
+            if (_player == null || ally == null) return Vector3.zero;
+
+            if (_formationPositions.TryGetValue(ally, out Vector3 localOffset))
+            {
+                // Convert local offset to world position
+                return _player.transform.position + _player.transform.rotation * localOffset;
+            }
+
+            // Fallback: position near player
+            int index = Array.IndexOf(_allies, ally);
+            float offset = (index + 1) * 2f;
+            return _player.transform.position + new Vector3(offset, 0, -2f);
         }
 
         /// <summary>
@@ -307,14 +390,8 @@ namespace VeilBreakers.Commands
                     break;
 
                 case QuickCommandType.RETURN_TO_FORMATION:
-                    // TODO: Get saved formation position
-                    // For now, use player position offset
-                    if (_player != null)
-                    {
-                        int allyIndex = Array.IndexOf(_allies, command.executor);
-                        float offset = (allyIndex + 1) * 2f;
-                        command.targetPosition = _player.transform.position + new Vector3(offset, 0, -2f);
-                    }
+                    // Use saved formation position
+                    command.targetPosition = GetFormationPosition(command.executor);
                     break;
 
                 case QuickCommandType.FALL_BACK:
@@ -587,17 +664,79 @@ namespace VeilBreakers.Commands
                     break;
 
                 case CommandState.EXECUTING:
-                    // Check for enemies in defense range
-                    // TODO: Check for threats and auto-attack
+                    // Check for enemies in defense range and auto-attack nearest threat
+                    Combatant nearestThreat = GetNearestThreat(command.executor, _onMeDefenseRange);
+                    if (nearestThreat != null && command.onMeAutoDefend)
+                    {
+                        // Signal ally to attack this threat (AI will handle actual attack)
+                        var controller = command.executor.GetComponent<AI.GambitController>();
+                        if (controller != null)
+                        {
+                            controller.SetForcedTarget(nearestThreat);
+                        }
+                    }
 
-                    // Check if should reform
-                    if (command.onMeReformPending)
+                    // Check if should reform (no threats nearby)
+                    if (command.onMeReformPending || !HasNearbyThreats(_player, _onMeDefenseRange))
                     {
                         command.executor.StopDefend();
+                        var controller = command.executor.GetComponent<AI.GambitController>();
+                        if (controller != null)
+                        {
+                            controller.ClearForcedTarget();
+                        }
                         CompleteCommand(command);
                     }
                     break;
             }
+        }
+
+        /// <summary>
+        /// Get the nearest threat within range of a position.
+        /// </summary>
+        private Combatant GetNearestThreat(Combatant from, float range)
+        {
+            if (_enemies == null || from == null) return null;
+
+            Combatant nearest = null;
+            float nearestDist = float.MaxValue;
+
+            for (int i = 0; i < _enemies.Length; i++)
+            {
+                var enemy = _enemies[i];
+                if (enemy == null || !enemy.IsAlive) continue;
+
+                float dist = Vector3.Distance(from.transform.position, enemy.transform.position);
+                if (dist <= range && dist < nearestDist)
+                {
+                    nearestDist = dist;
+                    nearest = enemy;
+                }
+            }
+
+            return nearest;
+        }
+
+        /// <summary>
+        /// Check if there are any living enemies within range of a combatant.
+        /// </summary>
+        private bool HasNearbyThreats(Combatant from, float range)
+        {
+            if (_enemies == null || from == null) return false;
+
+            for (int i = 0; i < _enemies.Length; i++)
+            {
+                var enemy = _enemies[i];
+                if (enemy == null || !enemy.IsAlive) continue;
+
+                float dist = Vector3.Distance(from.transform.position, enemy.transform.position);
+                if (dist <= range)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void UpdateMove(QuickCommandInstance command)
@@ -703,8 +842,10 @@ namespace VeilBreakers.Commands
                     command.state == CommandState.EXECUTING)
                 {
                     // Check if this was the last nearby threat
-                    // TODO: Implement threat detection
-                    command.onMeReformPending = true;
+                    if (!HasNearbyThreats(_player, _onMeDefenseRange))
+                    {
+                        command.onMeReformPending = true;
+                    }
                 }
             }
         }
