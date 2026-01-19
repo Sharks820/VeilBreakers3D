@@ -41,8 +41,6 @@ namespace VeilBreakers.Core
         // Combat action events
         public static event Action<string, string, int, bool> OnDamageDealt;  // source, target, amount, isCrit
         public static event Action<string, int> OnHealing;                      // target, amount
-        public static event Action<string, StatusEffect, int> OnStatusApplied;  // target, effect, duration
-        public static event Action<string, StatusEffect> OnStatusRemoved;       // target, effect
         public static event Action<string> OnUnitDefeated;                       // unitId
         public static event Action<string, string> OnSkillUsed;                  // userId, skillId
 
@@ -50,14 +48,38 @@ namespace VeilBreakers.Core
             => OnDamageDealt?.Invoke(source, target, amount, isCrit);
         public static void Healing(string target, int amount)
             => OnHealing?.Invoke(target, amount);
-        public static void StatusApplied(string target, StatusEffect effect, int duration)
-            => OnStatusApplied?.Invoke(target, effect, duration);
-        public static void StatusRemoved(string target, StatusEffect effect)
-            => OnStatusRemoved?.Invoke(target, effect);
         public static void UnitDefeated(string unitId)
             => OnUnitDefeated?.Invoke(unitId);
         public static void SkillUsed(string userId, string skillId)
             => OnSkillUsed?.Invoke(userId, skillId);
+
+        // =============================================================================
+        // STATUS EFFECT EVENTS (New system using StatusEffectType)
+        // =============================================================================
+
+        public static event Action<GameObject, StatusEffectType> OnStatusEffectApplied;  // target, effectType
+        public static event Action<GameObject, StatusEffectType> OnStatusEffectRemoved;  // target, effectType
+        public static event Action<GameObject, StatusEffectType, float> OnStatusEffectTick;  // target, effectType, value
+
+        public static void StatusEffectApplied(GameObject target, StatusEffectType effectType)
+            => OnStatusEffectApplied?.Invoke(target, effectType);
+        public static void StatusEffectRemoved(GameObject target, StatusEffectType effectType)
+            => OnStatusEffectRemoved?.Invoke(target, effectType);
+        public static void StatusEffectTick(GameObject target, StatusEffectType effectType, float value)
+            => OnStatusEffectTick?.Invoke(target, effectType, value);
+
+        // Legacy status effect events (deprecated - use new StatusEffectType versions)
+        [Obsolete("Use StatusEffectApplied(GameObject, StatusEffectType) instead")]
+        public static event Action<string, StatusEffect, int> OnStatusApplied;
+        [Obsolete("Use StatusEffectRemoved(GameObject, StatusEffectType) instead")]
+        public static event Action<string, StatusEffect> OnStatusRemoved;
+
+#pragma warning disable CS0618 // Suppress obsolete warnings for these methods
+        public static void StatusApplied(string target, StatusEffect effect, int duration)
+            => OnStatusApplied?.Invoke(target, effect, duration);
+        public static void StatusRemoved(string target, StatusEffect effect)
+            => OnStatusRemoved?.Invoke(target, effect);
+#pragma warning restore CS0618
 
         // =============================================================================
         // COMBAT SYNERGY EVENTS
@@ -235,10 +257,14 @@ namespace VeilBreakers.Core
             OnTurnEnded = null;
             OnDamageDealt = null;
             OnHealing = null;
-            OnStatusApplied = null;
-            OnStatusRemoved = null;
             OnUnitDefeated = null;
             OnSkillUsed = null;
+
+            OnStatusEffectApplied = null;
+            OnStatusEffectRemoved = null;
+            OnStatusEffectTick = null;
+            OnStatusApplied = null;
+            OnStatusRemoved = null;
 
             OnSynergyTierChanged = null;
             OnCombatantDied = null;
