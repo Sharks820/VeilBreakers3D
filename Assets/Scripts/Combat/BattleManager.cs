@@ -19,6 +19,8 @@ namespace VeilBreakers.Combat
         [SerializeField] private BattleState _state = BattleState.INITIALIZING;
 
         [Header("Combatants")]
+        [SerializeField] private Combatant _player; // The human player's character
+        [SerializeField] private Combatant _currentTarget; // Currently targeted enemy
         [SerializeField] private List<Combatant> _playerParty = new List<Combatant>();
         [SerializeField] private List<Combatant> _enemyParty = new List<Combatant>();
         [SerializeField] private List<Combatant> _backupMonsters = new List<Combatant>();
@@ -29,6 +31,8 @@ namespace VeilBreakers.Combat
 
         // Properties
         public BattleState State => _state;
+        public Combatant Player => _player;
+        public Combatant CurrentTarget => _currentTarget;
         public IReadOnlyList<Combatant> PlayerParty => _playerParty;
         public IReadOnlyList<Combatant> EnemyParty => _enemyParty;
         public SynergySystem.SynergyTier SynergyTier => _currentSynergyTier;
@@ -41,6 +45,7 @@ namespace VeilBreakers.Combat
         public event Action<Combatant, int> OnHealApplied;
         public event Action<Combatant> OnCombatantDeath;
         public event Action<SynergySystem.SynergyTier> OnSynergyChanged;
+        public event Action<Combatant> OnTargetChanged;
 
         private void Awake()
         {
@@ -61,6 +66,12 @@ namespace VeilBreakers.Combat
             _enemyParty = enemies;
             _championPath = championPath;
 
+            // Set player (first in party who is marked as player)
+            _player = _playerParty.FirstOrDefault(c => c.IsPlayer) ?? _playerParty.FirstOrDefault();
+
+            // Set initial target (first living enemy)
+            _currentTarget = _enemyParty.FirstOrDefault(c => c.IsAlive);
+
             // Subscribe to death events
             foreach (var combatant in _playerParty.Concat(_enemyParty))
             {
@@ -74,6 +85,18 @@ namespace VeilBreakers.Combat
             OnBattleStart?.Invoke();
 
             Debug.Log($"[BattleManager] Battle started! Synergy: {_currentSynergyTier}");
+        }
+
+        /// <summary>
+        /// Set the current target enemy
+        /// </summary>
+        public void SetCurrentTarget(Combatant target)
+        {
+            if (target == _currentTarget) return;
+            if (target != null && !_enemyParty.Contains(target)) return;
+
+            _currentTarget = target;
+            OnTargetChanged?.Invoke(_currentTarget);
         }
 
         /// <summary>
