@@ -156,6 +156,66 @@ namespace VeilBreakers.Core
             => OnStopMusic?.Invoke();
 
         // =============================================================================
+        // SAVE/LOAD EVENTS
+        // =============================================================================
+
+        public static event Action<int> OnSaveStarted;               // slot
+        public static event Action<int> OnSaveCompleted;             // slot
+        public static event Action<int, string> OnSaveFailed;        // slot, error
+        public static event Action<int> OnLoadStarted;               // slot
+        public static event Action<int> OnLoadCompleted;             // slot
+        public static event Action<int, string> OnLoadFailed;        // slot, error
+        public static event Action<string> OnAutoSaveTriggered;      // reason
+
+        public static void SaveStarted(int slot)
+            => OnSaveStarted?.Invoke(slot);
+        public static void SaveCompleted(int slot)
+            => OnSaveCompleted?.Invoke(slot);
+        public static void SaveFailed(int slot, string error)
+            => OnSaveFailed?.Invoke(slot, error);
+        public static void LoadStarted(int slot)
+            => OnLoadStarted?.Invoke(slot);
+        public static void LoadCompleted(int slot)
+            => OnLoadCompleted?.Invoke(slot);
+        public static void LoadFailed(int slot, string error)
+            => OnLoadFailed?.Invoke(slot, error);
+        public static void AutoSaveTriggered(string reason)
+            => OnAutoSaveTriggered?.Invoke(reason);
+
+        // =============================================================================
+        // SHRINE EVENTS
+        // =============================================================================
+
+        public static event Action<string> OnShrineDiscovered;       // shrineId
+        public static event Action<string> OnShrineEntered;          // shrineId
+        public static event Action<string> OnShrineExited;           // shrineId
+
+        public static void ShrineDiscovered(string shrineId)
+            => OnShrineDiscovered?.Invoke(shrineId);
+        public static void ShrineEntered(string shrineId)
+            => OnShrineEntered?.Invoke(shrineId);
+        public static void ShrineExited(string shrineId)
+            => OnShrineExited?.Invoke(shrineId);
+
+        // =============================================================================
+        // PROGRESSION EVENTS (Auto-save triggers)
+        // =============================================================================
+
+        public static event Action<string> OnCharacterCreated;       // heroId
+        public static event Action OnTutorialCompleted;
+        public static event Action<string> OnBossDefeated;           // bossId
+        public static event Action<string> OnMainQuestCompleted;     // questId
+
+        public static void CharacterCreated(string heroId)
+            => OnCharacterCreated?.Invoke(heroId);
+        public static void TutorialCompleted()
+            => OnTutorialCompleted?.Invoke();
+        public static void BossDefeated(string bossId)
+            => OnBossDefeated?.Invoke(bossId);
+        public static void MainQuestCompleted(string questId)
+            => OnMainQuestCompleted?.Invoke(questId);
+
+        // =============================================================================
         // CLEANUP
         // =============================================================================
 
@@ -206,6 +266,23 @@ namespace VeilBreakers.Core
             OnPlaySFX = null;
             OnPlayMusic = null;
             OnStopMusic = null;
+
+            OnSaveStarted = null;
+            OnSaveCompleted = null;
+            OnSaveFailed = null;
+            OnLoadStarted = null;
+            OnLoadCompleted = null;
+            OnLoadFailed = null;
+            OnAutoSaveTriggered = null;
+
+            OnShrineDiscovered = null;
+            OnShrineEntered = null;
+            OnShrineExited = null;
+
+            OnCharacterCreated = null;
+            OnTutorialCompleted = null;
+            OnBossDefeated = null;
+            OnMainQuestCompleted = null;
 
             Debug.Log("[EventBus] All listeners cleared");
         }

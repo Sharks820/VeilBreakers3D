@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.53** | Last updated: 2026-01-19
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.55** | Last updated: 2026-01-19
 
 ---
 
@@ -871,29 +871,34 @@ battle, ui, art, audio, vera, monsters, critical
 | 2026-01-18 | **v1.51: MONSTER CAPTURE DESIGN** - Two-phase system: C marks during combat (allies switch to Bind mode), post-battle QTE capture. Bind threshold based on corruption (LOW=easier +15%, HIGH=harder -15%), rarity, speed, brand, intimidation. Capture formula: HP% + Corruption + Rarity (Common 0%, Legendary -75%) + Level diff (±3-5%/level) + Items (Shard +10% → Heart +50%) + QTE. Items INCREASE chance, never guarantee. Failure: Flee (70% low corrupt) or Berserk (70% high corrupt), either possible at any level. Legendary requires top-tier items. Created Docs/plans/2026-01-18-monster-capture-design.md. |
 | 2026-01-19 | **v1.52: SAVE/LOAD SYSTEM DESIGN** - Shrine-based save zones: manual save only within discovered shrine radius (large areas have multiple shrines). 3 save slots + dedicated auto.sav. Auto-save on story objectives + all boss victories. JSON + AES-256 encryption. SaveData stores IDs (stats recalculated on load for balance patches). Sequential migrations (v1→v2→v3). Load screen shows: hero portrait, level, path, location, playtime, strongest monster. Settings global via PlayerPrefs. Created Docs/plans/2026-01-19-save-load-system-design.md. |
 | 2026-01-19 | **v1.53: BULLETPROOF SAVE SYSTEM** - Enterprise-grade corruption prevention: 11-layer protection (magic bytes, SHA-256 checksum, GZip compression, atomic writes, write verification, disk space check, 3x retries, flush to disk, rotating backups .bak1/.bak2, save mutex, orphan cleanup). Partial recovery via regex fallback. Opt-in telemetry sends corrupted files for analysis. Hold-to-delete/overwrite UI. Auto-save after character creation + tutorial battle. Unity async/await with Awaitable.BackgroundThreadAsync(). Target: <0.001% corruption, >95% recovery. |
+| 2026-01-19 | **v1.54: AAA AUDIO SYSTEM** - Full immersive audio: FMOD primary + Wwise spatial. Full voice (VERA, heroes, NPCs, unique per monster). Adaptive music (horizontal+vertical layers). VERA voice dynamically changes with Veil Integrity. Veil proximity audio (whispers, distortion, otherworldly). Low health heartbeat+frantic music. Environmental zones with time/weather variants. Smart contextual loading: predictive preloading, ~250MB budget, zero latency. Accessibility: mono, subtitles, sound descriptions, visualize cues. Created Docs/plans/2026-01-19-audio-system-design.md. |
+| 2026-01-19 | **v1.55: IMPLEMENTATION STRATEGY + PHASE 1 FOUNDATION** - Created comprehensive implementation strategy document (8 phases, agent coordination, quality gates). Completed Phase 1 Foundation: EventBus expanded to 50 events (+14 new: save/load, shrine, progression triggers). Created ObjectPool<T> generic pooling utility with IPoolable interface and GameObjectPool wrapper. Code reviewed by unity-code-reviewer. Migration 49% complete. |
 
 ---
 
 ## NEXT SESSION TASK LIST
 
-### Priority 1: Audio System Design (Optional)
-- Combat sound effects
-- Music system
-- Ambient audio
-- UI feedback sounds
-
-### Priority 2: BEGIN UNITY IMPLEMENTATION
+### Priority 1: BEGIN UNITY IMPLEMENTATION
 **ALL SYSTEMS 100% DESIGNED** - ready to build!
 
 11 design documents complete:
-- Combat, UI, Gambits AI, Status Effects
-- Quick Command, Monster Capture
-- Save/Load (bulletproof)
+- Combat System, Combat UI, Combat Implementation
+- Gambits AI, Status Effects, Quick Command
+- Monster Capture, Save/Load (bulletproof), Audio (AAA)
 - Rigging/Animation, MCP Arsenal
+
+### Recommended Implementation Order
+1. Core managers (GameManager, EventBus) - DONE
+2. Combat foundation (already started)
+3. Save/Load system (critical path)
+4. UI framework (UI Toolkit)
+5. Audio integration (FMOD setup)
+6. AI/Gambits
+7. Polish systems (Quick Command, Capture)
 
 ---
 
-## DESIGN DOCUMENTS COMPLETE (10 Total)
+## DESIGN DOCUMENTS COMPLETE (12 Total)
 
 | Document | File |
 |----------|------|
@@ -907,10 +912,12 @@ battle, ui, art, audio, vera, monsters, critical
 | Quick Command | 2026-01-18-quick-command-design.md |
 | Monster Capture | 2026-01-18-monster-capture-design.md |
 | Save/Load System | 2026-01-19-save-load-system-design.md |
+| Audio System | 2026-01-19-audio-system-design.md |
+| **Implementation Strategy** | 2026-01-19-implementation-strategy.md |
 
 ---
 
-## IMPLEMENTATION STATUS (v1.53)
+## IMPLEMENTATION STATUS (v1.54)
 
 **C# Code Ready:**
 - ✅ 10-Brand effectiveness system (BrandSystem.cs)
@@ -929,7 +936,7 @@ battle, ui, art, audio, vera, monsters, critical
 - ❌ CaptureSystem (design complete)
 - ❌ Combat UI (design complete)
 - ❌ Save/Load (design complete - bulletproof)
-- ❌ Audio (optional - needs design)
+- ❌ Audio (design complete - AAA immersive)
 
 ---
 

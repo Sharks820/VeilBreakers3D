@@ -1,6 +1,6 @@
 # VEILBREAKERS - Godot to Unity Migration Plan
 
-> **Migration Status: 35% Complete** | Last Updated: 2026-01-17
+> **Migration Status: 49% Complete** | Last Updated: 2026-01-19
 >
 > **Target:** 100% migration before full Unity development begins
 
@@ -17,10 +17,10 @@
 | Audio Systems | 0% | 🔴 Not Started |
 | Save/Load | 0% | 🔴 Not Started |
 | Managers | 20% | 🟡 In Progress |
-| Utilities | 0% | 🟡 OVERHAUL Planned |
-| Unity-Specific | 10% | 🟡 In Progress |
+| Utilities | 25% | 🟡 In Progress |
+| Unity-Specific | 25% | 🟡 In Progress |
 
-**Overall: 35%** (weighted average)
+**Overall: 49%** (weighted average)
 
 ---
 
@@ -31,7 +31,7 @@
 | Task | Status | Notes |
 |------|--------|-------|
 | GameManager.cs | ✅ 100% | States, party, currency, hero selection |
-| EventBus.cs | ✅ 100% | 36 events implemented |
+| EventBus.cs | ✅ 100% | 50 events implemented |
 | Constants.cs | ✅ 100% | Game constants |
 | GameDatabase.cs | ✅ 100% | Data container |
 | ErrorLogger | ❌ 0% | Need Unity equivalent (Debug.Log wrapper) |
@@ -164,11 +164,11 @@
 | Task | Status | Notes |
 |------|--------|-------|
 | DOTween Integration | ❌ 0% | Replaces AnimationEffects |
-| ObjectPool.cs | ❌ 0% | Generic pooling system |
+| ObjectPool.cs | ✅ 100% | Generic pooling with IPoolable interface |
 | Extensions.cs | ❌ 0% | C# extension methods |
 | Helpers.cs | ❌ 0% | Minimal utility functions |
 
-**Subtotal: 0%**
+**Subtotal: 25%**
 
 ---
 
@@ -178,14 +178,14 @@
 |------|--------|-------|
 | Project Structure | ✅ 100% | Folders created |
 | Addressables Setup | ❌ 0% | Async asset loading |
-| Object Pooling | ❌ 0% | Performance system |
+| Object Pooling | ✅ 100% | Generic ObjectPool<T> with IPoolable |
 | New Input System | ❌ 0% | Rebindable controls |
 | Cinemachine Setup | ❌ 0% | Camera system |
 | Timeline Setup | ❌ 0% | Cutscene/animation system |
 | NavMesh Setup | ❌ 0% | 3D pathfinding |
 | Shader Graph | ❌ 0% | Visual shaders |
 
-**Subtotal: 10%**
+**Subtotal: 25%**
 
 ---
 
@@ -196,13 +196,13 @@ Overall % = (Core×15 + Combat×20 + Systems×15 + Data×10 + UI×15 +
              Audio×5 + Save×5 + Managers×5 + Utils×5 + Unity×5) / 100
 
 Current:  = (80×15 + 70×20 + 75×15 + 90×10 + 0×15 +
-             0×5 + 0×5 + 20×5 + 0×5 + 10×5) / 100
-          = (1200 + 1400 + 1125 + 900 + 0 + 0 + 0 + 100 + 0 + 50) / 100
-          = 4775 / 100
-          = 47.75% ≈ 48%
+             0×5 + 0×5 + 20×5 + 25×5 + 25×5) / 100
+          = (1200 + 1400 + 1125 + 900 + 0 + 0 + 0 + 100 + 125 + 125) / 100
+          = 4975 / 100
+          = 49.75% ≈ 49%
 ```
 
-**Corrected Overall: 48% Complete**
+**Corrected Overall: 49% Complete**
 
 ---
 
