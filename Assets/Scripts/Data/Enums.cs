@@ -179,6 +179,7 @@ namespace VeilBreakers.Data
         CONFUSE = 18,       // Random targets
         SLEEP = 19,         // CC, breaks on damage
         PETRIFY = 20,       // Long stun + damage resist
+        BOUND = 21,         // Capture system: Can't act, can't die
 
         // ===== STAT BUFFS =====
         ATTACK_UP = 30,

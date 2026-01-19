@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.59** | Last updated: 2026-01-19
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.60** | Last updated: 2026-01-19
 
 ---
 
@@ -69,11 +69,18 @@ VeilBreakers3D/
 │   │   ├── Battle/            # Combat scenes
 │   │   └── Test/              # Testing scenes
 │   ├── Scripts/               # C# scripts
-│   │   ├── Core/              # Core systems
-│   │   ├── Combat/            # Battle logic
-│   │   ├── UI/                # UI controllers
-│   │   ├── Monsters/          # Monster logic
-│   │   ├── Characters/        # Character logic
+│   │   ├── Core/              # Core systems (GameManager, EventBus)
+│   │   ├── Combat/            # Battle logic (BattleManager, Combatant)
+│   │   ├── Systems/           # Game systems (Brand, Synergy, Corruption)
+│   │   ├── Data/              # Enums, ScriptableObject definitions
+│   │   ├── Commands/          # Quick Command system (v1.59)
+│   │   ├── Capture/           # Monster capture system (v1.60)
+│   │   ├── Gambits/           # AI Gambits system (v1.58)
+│   │   ├── Managers/          # SaveManager, AudioManager (TODO)
+│   │   ├── UI/                # UI controllers (TODO)
+│   │   ├── Monsters/          # Monster logic (TODO)
+│   │   ├── Characters/        # Character logic (TODO)
+│   │   ├── Test/              # Test scripts
 │   │   └── Utils/             # Utility scripts
 │   └── UI/                    # UI assets
 │       ├── Sprites/           # UI sprites

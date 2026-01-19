@@ -16,6 +16,10 @@ namespace VeilBreakers.Combat
         [SerializeField] private string _displayName;
         [SerializeField] private Brand _brand = Brand.NONE;
         [SerializeField] private bool _isPlayerControlled = true;
+        [SerializeField] private bool _isPlayer = false;
+        [SerializeField] private int _level = 1;
+        [SerializeField] private MonsterRarity _rarity = MonsterRarity.COMMON;
+        [SerializeField] private float _corruption = 0f;
 
         [Header("Stats")]
         [SerializeField] private int _maxHp = 100;
@@ -43,13 +47,21 @@ namespace VeilBreakers.Combat
         public string CombatantId => _combatantId;
         public string DisplayName => _displayName;
         public Brand Brand => _brand;
+        public Brand PrimaryBrand => _brand; // Alias for capture system
         public bool IsPlayerControlled => _isPlayerControlled;
+        public bool IsPlayer => _isPlayer;
         public bool IsAlive => _isAlive;
         public bool IsDefending => _isDefending;
         public Combatant GuardTarget => _guardTarget;
 
+        public int Level => _level;
+        public MonsterRarity Rarity => _rarity;
+        public float Corruption => _corruption;
+
         public int MaxHp => _maxHp;
         public int CurrentHp => _currentHp;
+        public int MaxHP => _maxHp; // Alias for capture system
+        public int CurrentHP => _currentHp; // Alias for capture system
         public int MaxMp => _maxMp;
         public int CurrentMp => _currentMp;
         public int Attack => _attack;
@@ -60,6 +72,10 @@ namespace VeilBreakers.Combat
 
         public float HpPercent => _maxHp > 0 ? (float)_currentHp / _maxHp : 0f;
         public float MpPercent => _maxMp > 0 ? (float)_currentMp / _maxMp : 0f;
+
+        // Damage modifiers
+        private float _damageBuffMultiplier = 1f;
+        public float DamageMultiplier => _damageBuffMultiplier;
 
         // Events
         public event Action<int, int> OnHpChanged;          // current, max
@@ -212,6 +228,101 @@ namespace VeilBreakers.Combat
         {
             Abilities?.UpdateAllCooldowns(deltaTime);
         }
+
+        // =============================================================================
+        // CAPTURE SYSTEM SUPPORT
+        // =============================================================================
+
+        /// <summary>
+        /// Set corruption level (0-100).
+        /// </summary>
+        public void SetCorruption(float corruption)
+        {
+            _corruption = Mathf.Clamp(corruption, 0f, 100f);
+        }
+
+        /// <summary>
+        /// Set combatant level.
+        /// </summary>
+        public void SetLevel(int level)
+        {
+            _level = Mathf.Max(1, level);
+        }
+
+        /// <summary>
+        /// Set monster rarity.
+        /// </summary>
+        public void SetRarity(MonsterRarity rarity)
+        {
+            _rarity = rarity;
+        }
+
+        /// <summary>
+        /// Set whether this is the player character.
+        /// </summary>
+        public void SetPlayer(bool isPlayer)
+        {
+            _isPlayer = isPlayer;
+        }
+
+        /// <summary>
+        /// Apply a damage buff multiplier.
+        /// </summary>
+        public void ApplyDamageBuff(float multiplier)
+        {
+            _damageBuffMultiplier = 1f + multiplier;
+        }
+
+        /// <summary>
+        /// Reset damage buff to normal.
+        /// </summary>
+        public void ClearDamageBuff()
+        {
+            _damageBuffMultiplier = 1f;
+        }
+
+        /// <summary>
+        /// Apply a status effect.
+        /// </summary>
+        public void ApplyStatus(StatusEffectType type, float duration, Combatant source)
+        {
+            var instance = new StatusEffectInstance
+            {
+                effectType = type,
+                duration = duration,
+                stacks = 1,
+                source = source
+            };
+            _statusEffects.Add(instance);
+        }
+
+        /// <summary>
+        /// Remove a status effect by type.
+        /// </summary>
+        public void RemoveStatus(StatusEffectType type)
+        {
+            _statusEffects.RemoveAll(s => s.effectType == type);
+        }
+
+        /// <summary>
+        /// Check if has a specific status effect.
+        /// </summary>
+        public bool HasStatus(StatusEffectType type)
+        {
+            foreach (var s in _statusEffects)
+            {
+                if (s.effectType == type) return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Get all active status effects.
+        /// </summary>
+        public IReadOnlyList<StatusEffectInstance> GetStatusEffects()
+        {
+            return _statusEffects;
+        }
     }
 
     /// <summary>
@@ -220,7 +331,8 @@ namespace VeilBreakers.Combat
     [Serializable]
     public class StatusEffectInstance
     {
-        public StatusEffect effect;
+        public StatusEffectType effectType;
+        public StatusEffectData effectData; // Optional: full ScriptableObject data
         public float duration;
         public float tickInterval;
         public float lastTickTime;
