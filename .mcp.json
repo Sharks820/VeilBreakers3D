@@ -51,6 +51,15 @@
         "ELEVENLABS_API_KEY": "${ELEVENLABS_API_KEY}"
       },
       "description": "AI audio - Suno V5 music generation, ElevenLabs voice/SFX for VERA and game audio"
+    },
+    "notion": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@notionhq/notion-mcp-server"],
+      "env": {
+        "NOTION_API_KEY": "${NOTION_API_KEY}"
+      },
+      "description": "Project management - monster database, feature backlog, design docs, game bible"
     }
   }
 }

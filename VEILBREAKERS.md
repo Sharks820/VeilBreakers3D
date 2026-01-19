@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.69** | Last updated: 2026-01-19
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.70** | Last updated: 2026-01-19
 
 ---
 
@@ -144,11 +144,11 @@ screenshot_2026-01-15_monster_hollow_ingame.png
 
 ---
 
-## 🔧 CLAUDE MCP TOOLS (v1.69)
+## 🔧 CLAUDE MCP TOOLS (v1.70)
 
 **ALL Claude sessions have access to these tools. USE THEM.**
 
-### Local MCPs (7 Total)
+### Local MCPs (8 Total)
 | MCP | Trigger | What It Does |
 |-----|---------|--------------|
 | **sequential-thinking** | "ultrathink", "analyze", "complex" | Multi-step problem solving, game balance |
@@ -158,6 +158,7 @@ screenshot_2026-01-15_monster_hollow_ingame.png
 | **blender** | "3D model", "mesh", "render" | Control Blender for 3D |
 | **image-process** | "crop", "resize" | Image manipulation |
 | **audio** | "music", "voice", "SFX" | Suno music + ElevenLabs voice |
+| **notion** | "track", "backlog", "database", "doc" | Project management, monster DB, design docs |
 
 ### Plugin MCPs (Auto-loaded)
 | MCP | Purpose |
@@ -185,6 +186,7 @@ screenshot_2026-01-15_monster_hollow_ingame.png
 - `GITHUB_TOKEN` ✅ - GitHub operations
 - `SUNO_API_KEY` ⚠️ - Suno music (optional)
 - `ELEVENLABS_API_KEY` ⚠️ - Voice gen (optional)
+- `NOTION_API_KEY` ⚠️ - Notion project management (needs setup)
 
 **Blender Addon:** Must install addon.py from github.com/ahujasid/blender-mcp
 

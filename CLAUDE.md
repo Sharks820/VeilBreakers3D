@@ -207,7 +207,7 @@ BRAINSTORM → WRITE PLAN → EXECUTE PLAN
 |--------|---------|-------|
 | **agent-sdk-dev** | AI-powered features | Build Claude agents for VERA/testing |
 
-## Active MCP Servers (7 Local + 5 Plugin-Provided)
+## Active MCP Servers (8 Local + 5 Plugin-Provided)
 
 ### CRITICAL: MCP USAGE RULES - NO TOOL SITS STAGNANT
 
@@ -215,7 +215,7 @@ BRAINSTORM → WRITE PLAN → EXECUTE PLAN
 
 If you catch yourself NOT using an MCP when its trigger applies, STOP and USE IT.
 
-### Local MCPs (.mcp.json) - 7 TOTAL
+### Local MCPs (.mcp.json) - 8 TOTAL
 
 #### CORE DEVELOPMENT (Always Available)
 | MCP | Trigger Keywords | MANDATORY Usage |
@@ -235,6 +235,11 @@ If you catch yourself NOT using an MCP when its trigger applies, STOP and USE IT
 | MCP | Trigger Keywords | MANDATORY Usage |
 |-----|------------------|-----------------|
 | **audio** | "music", "sound effect", "SFX", "voice", "VERA voice", "audio", "Suno", "ElevenLabs" | Generate game music (Suno V5), voice lines (ElevenLabs), sound effects. USE FOR ALL AUDIO |
+
+#### PROJECT MANAGEMENT (Use for Tracking & Documentation)
+| MCP | Trigger Keywords | MANDATORY Usage |
+|-----|------------------|-----------------|
+| **notion** | "track", "backlog", "database", "document", "PRD", "spec", "game bible", "monster list", "feature list" | Read/write Notion pages for project management. Track monsters, features, design docs. USE INSTEAD OF JUST MEMORY |
 
 ### Plugin-Provided MCPs (Auto-loaded)
 | MCP | Trigger | Usage |
@@ -264,6 +269,8 @@ USER REQUEST RECEIVED
 │ • "complex/ultrathink/analyze" → USE sequential-thinking  │
 │ • "PR/issue/GitHub" → USE github MCP                      │
 │ • "crop/resize image" → USE image-process MCP             │
+│ • "track/backlog/database/doc" → USE notion MCP           │
+│ • "monster list/feature list" → USE notion MCP            │
 └───────────────────────────────────────────────────────────┘
         │
         ▼
@@ -275,6 +282,9 @@ USER REQUEST RECEIVED
 │                                                           │
 │ WRONG: "The audio MCP can generate music..."              │
 │ RIGHT: *Actually generates the music with audio MCP*      │
+│                                                           │
+│ WRONG: "I'll remember this for next session..."           │
+│ RIGHT: *Actually writes it to Notion database*            │
 └───────────────────────────────────────────────────────────┘
 ```
 
@@ -300,6 +310,9 @@ USER REQUEST RECEIVED
 | Refactor code | Serena `rename_symbol` | - | Don't find/replace manually |
 | Remember past work | episodic-memory | VEILBREAKERS.md | Don't claim no memory |
 | Process existing image | **image-process** | - | Don't ask user to edit |
+| Track monsters/features | **notion** | VEILBREAKERS.md | Don't just keep in memory |
+| Write design docs | **notion** | Docs/ folder | Don't skip documentation |
+| Manage backlog | **notion** | TodoWrite | Don't lose track of tasks |
 
 ---
 
@@ -313,6 +326,7 @@ For full MCP functionality, ensure these are set:
 | `GITHUB_TOKEN` | github | ✅ Set | GitHub Personal Access Token |
 | `SUNO_API_KEY` | audio | ⚠️ Optional | [suno.ai](https://suno.ai) Settings → API |
 | `ELEVENLABS_API_KEY` | audio | ⚠️ Optional | [elevenlabs.io](https://elevenlabs.io) Profile → API Key |
+| `NOTION_API_KEY` | notion | ⚠️ Needs Setup | [notion.so/my-integrations](https://notion.so/my-integrations) |
 
 **Blender MCP requires:** Blender 3.0+ installed (✅ User has 5.0) with addon.py from [github.com/ahujasid/blender-mcp](https://github.com/ahujasid/blender-mcp)
 
