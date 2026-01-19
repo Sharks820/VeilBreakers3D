@@ -84,8 +84,14 @@ Thumbs.db
 # Screenshots (debug artifacts)
 screenshots/
 
-# Godot import files (should not be in Unity project)
+# Godot files (should not be in Unity project)
 *.import
+*.gd
+*.tscn
+*.tres
+*.gdshader
+project.godot
+.godot/
 
 # Windows reserved names
 nul
