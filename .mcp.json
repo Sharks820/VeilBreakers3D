@@ -21,15 +21,15 @@
       "command": "npx",
       "args": [
         "-y",
-        "@anthropic/mcp-server-unity"
+        "@akiojin/unity-mcp-server@latest"
       ]
     },
-    "game-asset-generator": {
+    "mcp-hfspace": {
       "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
-        "game-asset-mcp"
+        "@llmindset/mcp-hfspace"
       ],
       "env": {
         "HF_TOKEN": "${HF_TOKEN}"
@@ -40,10 +40,10 @@
       "command": "npx",
       "args": [
         "-y",
-        "@github/mcp-server"
+        "github-mcp"
       ],
       "env": {
-        "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+        "GITHUB_ACCESS_TOKEN": "${GITHUB_TOKEN}"
       }
     }
   }
