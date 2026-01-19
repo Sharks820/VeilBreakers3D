@@ -1,6 +1,7 @@
 # Hero & Character System Design
 
-> **Status:** IN PROGRESS | **Version:** 1.0 | **Date:** 2026-01-19
+> **Status:** IN PROGRESS | **Version:** 1.1 | **Date:** 2026-01-19
+> **v1.1:** Restored exciting ability values, balanced through gating (cooldowns/costs) not nerfing
 
 ---
 
@@ -48,9 +49,23 @@ Every hero needs a clear "When I do X, my team does Y, and Z happens" loop.
 ```
 COMMAND GAUGE (0-100)
 ├── Built by: Light attacks (+8), Successful commands (+12), Monster kills (+20)
-├── Spent on: Hero abilities (cost 10-25 each)
+├── Spent on: Hero abilities (cost 15-30 each)
 └── Purpose: Prevents ability spam, forces engagement, rewards good play
 ```
+
+### Balance Philosophy
+
+**Balance through GATING, not NERFING:**
+- Keep abilities powerful and exciting
+- Gate with cooldowns (12-55s)
+- Gate with Command Gauge costs (15-30)
+- Gate with conditions (requires setup, positioning, synergy)
+
+| Wrong | Right |
+|-------|-------|
+| Reduce 50% buff to 15% | Keep 50%, add longer cooldown |
+| Remove cool effect | Keep effect, require setup |
+| Make everything small | Make it BIG but earned |
 
 ---
 
@@ -77,10 +92,10 @@ COMMAND GAUGE (0-100)
 
 | Ability | Cost | Cooldown | Effect |
 |---------|------|----------|--------|
-| **Aegis Dome** | 20 CG | 20s | AoE bubble - allies take 40% reduced damage for 4s |
-| **Rallying Presence** | Passive | - | Nearby monsters gain +8% damage when above 70% HP |
-| **Guardian's Mark** | 15 CG | 15s | Mark monster - 30% damage redirects to you, monster heals 10% of damage dealt |
-| **Fortress Stance** | 25 CG | 40s | Root yourself - allies gain +15% defense for 3s |
+| **Aegis Dome** | 25 CG | 25s | AoE bubble - allies take 70% reduced damage for 5s |
+| **Rallying Presence** | Passive | - | Nearby monsters gain +15% damage when above 70% HP |
+| **Guardian's Mark** | 20 CG | 18s | Mark monster - 50% damage redirects to you, monster heals 15% of damage dealt |
+| **Fortress Stance** | 30 CG | 45s | Root yourself - allies gain +30% defense for 4s |
 
 **Healing Mechanics:** 1 (Guardian's Mark)
 
@@ -90,10 +105,10 @@ COMMAND GAUGE (0-100)
 
 | Ability | Cost | Cooldown | Effect |
 |---------|------|----------|--------|
-| **Thorned Bond** | 15 CG | 18s | Link to monster 6s - attackers take 25% reflected damage |
-| **Vengeance Mark** | 10 CG | 12s | Mark enemy 8s - allies heal 8% of damage dealt to it |
-| **Retribution Aura** | 20 CG | 20s | 6s - when ally is hit, your next attack deals +50% damage |
-| **Sentinel's Judgment** | 25 CG | 30s | Counter-stance 4s - next enemy attacker is stunned 2s |
+| **Thorned Bond** | 20 CG | 20s | Link to monster 8s - attackers take 40% reflected damage |
+| **Vengeance Mark** | 15 CG | 15s | Mark enemy 10s - allies heal 12% of damage dealt to it |
+| **Retribution Aura** | 25 CG | 25s | 8s - when ally is hit, your next attack deals +100% damage |
+| **Sentinel's Judgment** | 30 CG | 35s | Counter-stance 5s - next enemy attacker is stunned 3s |
 
 **Healing Mechanics:** 1 (Vengeance Mark)
 
@@ -109,12 +124,12 @@ COMMAND GAUGE (0-100)
 
 | Ability | Cost | Cooldown | Effect |
 |---------|------|----------|--------|
-| **Blood Frenzy** | 20 CG | 25s | 6s buff - allies gain +3% damage per hit landed, max 30% |
-| **Alpha Strike** | 15 CG | 15s | Dash + attack, all monsters immediately attack same target |
-| **Predator's Mark** | 10 CG | 10s | Mark 8s - monsters deal +20% to target, kills heal all monsters 10% HP |
-| **Unleash the Pack** | 25 CG | 50s | Reset monster cooldowns, +25% attack speed for 5s |
+| **Blood Frenzy** | 25 CG | 30s | 8s buff - allies gain +5% damage per hit landed, max 50% |
+| **Alpha Strike** | 20 CG | 18s | Dash + attack, all monsters immediately attack same target |
+| **Predator's Mark** | 15 CG | 12s | Mark 10s - monsters deal +30% to target, kills reset ALL monster cooldowns |
+| **Unleash the Pack** | 30 CG | 55s | Full ability reset for all monsters, +40% attack speed for 6s |
 
-**Healing Mechanics:** 1 (Predator's Mark on kill)
+**Healing Mechanics:** 1 (Predator's Mark on kill heals team 15%)
 
 ### VEX - Kill Coordinator
 
@@ -122,10 +137,10 @@ COMMAND GAUGE (0-100)
 
 | Ability | Cost | Cooldown | Effect |
 |---------|------|----------|--------|
-| **Expose Weakness** | 10 CG | 12s | Debuff 6s - target takes +30% damage from next 3 attacks |
-| **Crippling Poison** | 15 CG | 18s | AoE 5s - enemies deal 20% less damage |
-| **Execute Order** | 20 CG | 18s | Mark enemy below 25% HP - guaranteed crit, kill heals monster 20% |
-| **Shadow Coordination** | Passive | - | Your attacks have 30% chance for a monster to also attack |
+| **Expose Weakness** | 15 CG | 15s | Debuff 8s - target takes +50% damage from next 3 attacks |
+| **Crippling Poison** | 20 CG | 20s | AoE 6s - enemies deal 35% less damage |
+| **Execute Order** | 25 CG | 22s | Mark enemy below 30% HP - 3x damage, kill heals executing monster 25% |
+| **Shadow Coordination** | Passive | - | Your attacks have 40% chance for a monster to also attack |
 
 **Healing Mechanics:** 1 (Execute Order on kill)
 
@@ -141,10 +156,10 @@ COMMAND GAUGE (0-100)
 
 | Ability | Cost | Cooldown | Effect |
 |---------|------|----------|--------|
-| **Siphon Link** | 10 CG | 12s | Link 8s - monster heals 20% of damage dealt to linked enemy |
-| **Life Tide** | 20 CG | 25s | AoE 6s - monster attacks heal nearby allies for 10% of damage |
-| **Sacrifice Pact** | 15 CG | 18s | Spend 15% of monster's HP, they gain +30% damage for 8s |
-| **Communion** | 25 CG | 50s | 8s - all ally HP pools linked, damage is split evenly |
+| **Siphon Link** | 15 CG | 15s | Link 10s - monster heals 30% of damage dealt to linked enemy |
+| **Life Tide** | 25 CG | 30s | AoE 8s - monster attacks heal nearby allies for 15% of damage |
+| **Sacrifice Pact** | 20 CG | 22s | Spend 20% of monster's HP, they gain +50% damage for 10s |
+| **Communion** | 30 CG | 55s | 10s - all ally HP pools linked, damage is split evenly |
 
 **Healing Mechanics:** 3 (Siphon Link, Life Tide, Communion)
 
@@ -154,10 +169,10 @@ COMMAND GAUGE (0-100)
 
 | Ability | Cost | Cooldown | Effect |
 |---------|------|----------|--------|
-| **Creeping Doom** | 15 CG | 15s | AoE DoT 8s - stacking damage +3% per tick |
-| **Entropic Curse** | 20 CG | 22s | Debuff 6s - +15% damage taken, spreads on death, allies heal 5% on spread |
-| **Void Embrace** | 15 CG | 18s | Buff monster 8s - immune to debuffs, attacks heal 8% dealt |
-| **Decay Field** | 25 CG | 35s | Zone 6s - enemies lose 2% max HP/s, allies heal that amount |
+| **Creeping Doom** | 20 CG | 18s | AoE DoT 10s - stacking damage +5% per tick (max 50%) |
+| **Entropic Curse** | 25 CG | 25s | Debuff 8s - +25% damage taken, spreads on death, allies heal 8% on spread |
+| **Void Embrace** | 20 CG | 22s | Buff monster 10s - immune to debuffs, attacks heal 12% dealt |
+| **Decay Field** | 30 CG | 40s | Zone 8s - enemies lose 3% max HP/s, allies heal that amount |
 
 **Healing Mechanics:** 2 (Entropic Curse spread, Void Embrace)
 
@@ -173,10 +188,10 @@ COMMAND GAUGE (0-100)
 
 | Ability | Cost | Cooldown | Effect |
 |---------|------|----------|--------|
-| **Phantom Veil** | 15 CG | 18s | Create illusion 4s - enemies target it, real monster heals 15% |
-| **Displacement** | 10 CG | 14s | Swap positions of any two units (ally or enemy) |
-| **Mass Confusion** | 25 CG | 30s | AoE 4s - enemies have 35% chance to attack each other |
-| **Hall of Mirrors** | 25 CG | 50s | 5s - all monsters gain a clone that copies attacks at 25% damage |
+| **Phantom Veil** | 20 CG | 20s | Create illusion 6s - enemies target it, real monster heals 20% |
+| **Displacement** | 15 CG | 16s | Swap positions of any two units (ally or enemy) |
+| **Mass Confusion** | 30 CG | 35s | AoE 6s - enemies have 50% chance to attack each other |
+| **Hall of Mirrors** | 30 CG | 55s | 6s - all monsters gain a clone that copies attacks at 50% damage |
 
 **Healing Mechanics:** 1 (Phantom Veil)
 
@@ -186,10 +201,10 @@ COMMAND GAUGE (0-100)
 
 | Ability | Cost | Cooldown | Effect |
 |---------|------|----------|--------|
-| **Chaos Surge** | 15 CG | 15s | Random buff: +30% damage OR 25% heal OR 4s shield OR cooldown reset |
-| **Reality Warp** | 20 CG | 25s | All cooldowns shift by -3s to +3s randomly |
-| **Probability Field** | 20 CG | 22s | Zone 5s - +20% crit chance, +15% dodge chance |
-| **Jackpot** | 25 CG | 45s | Roll 2 random buffs for team (1 always includes heal) |
+| **Chaos Surge** | 20 CG | 18s | Random buff: +50% damage OR 40% heal OR 3s invulnerability OR full cooldown reset |
+| **Reality Warp** | 25 CG | 28s | All cooldowns shift by -5s to +5s randomly (weighted toward allies) |
+| **Probability Field** | 25 CG | 25s | Zone 6s - +30% crit chance, +25% dodge chance |
+| **Jackpot** | 30 CG | 50s | Roll 3 random powerful buffs for team (1 always includes 30% heal) |
 
 **Healing Mechanics:** 1 (Chaos Surge chance, Jackpot guaranteed)
 
@@ -199,11 +214,11 @@ COMMAND GAUGE (0-100)
 
 | Mechanic | Value |
 |----------|-------|
-| Damage buffs | +8% to +30% |
-| Damage reduction | 40% max |
-| Duration | 3-8s |
-| CG Costs | 10-25 |
-| Cooldowns | 10-50s |
+| Damage buffs | +15% to +100% (gated by cooldowns) |
+| Damage reduction | 70% max |
+| Duration | 5-10s |
+| CG Costs | 15-30 |
+| Cooldowns | 12-55s |
 | Healing per non-healer | 1 mechanic |
 | Healing for healers | 2-3 mechanics |
 

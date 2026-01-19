@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.63** | Last updated: 2026-01-19
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.64** | Last updated: 2026-01-19
 
 ---
 
@@ -443,7 +443,7 @@ power * ATK/DEF * level * element * variance * crits
 
 ---
 
-## Heroes (Path-Based, No Brands) - v1.63 REDESIGN
+## Heroes (Path-Based, No Brands) - v1.64 FINAL BALANCE
 
 **8 Heroes Total:** 4 Unlocked at start, 4 Unlockable through gameplay
 **Role:** Commanders who support/amplify monster teams (not primary damage dealers)
@@ -461,6 +461,14 @@ power * ATK/DEF * level * element * variance * crits
 COMMANDER ←―――――――――――――――――――――――→ FIGHTER
 IRONBOUND ―― VOIDTOUCHED ―― UNCHAINED ―― FANGBORN
 ```
+
+### Balance Philosophy (v1.64)
+**Balance through GATING, not NERFING:**
+- Keep abilities powerful and exciting (+15% to +100% buffs)
+- Gate with cooldowns (12-55s)
+- Gate with Command Gauge costs (15-30 CG)
+- Gate with conditions (requires setup, positioning, synergy)
+- Healing: 1 mechanic per non-healer, 2-3 for dedicated healers
 
 **See:** `Docs/plans/2026-01-19-hero-character-design.md` for full ability details
 
