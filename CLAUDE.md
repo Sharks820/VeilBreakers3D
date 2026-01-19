@@ -231,10 +231,14 @@ If you catch yourself NOT using an MCP when its trigger applies, STOP and USE IT
 | **blender** | "3D model", "mesh", "render", "Blender", "sculpt", "material", "texture 3D" | Create/edit 3D models directly in Blender. Use for converting 2D art to 3D |
 | **image-process** | "crop", "resize", "rotate", "convert format", "sprite sheet" | Process existing images - resize for Unity, crop sprites, convert formats |
 
-#### AUDIO & VOICE (Use for All Sound Needs)
+#### AUDIO & VOICE (FREE Stack)
 | MCP | Trigger Keywords | MANDATORY Usage |
 |-----|------------------|-----------------|
-| **audio** | "music", "sound effect", "SFX", "voice", "VERA voice", "audio", "Suno", "ElevenLabs" | Generate game music (Suno V5), voice lines (ElevenLabs), sound effects. USE FOR ALL AUDIO |
+| **fish-audio** | "voice", "VERA voice", "dialogue", "narration", "character voice" | Generate voice lines via Fish Audio (FREE tier, #1 TTS quality). USE FOR ALL VOICE |
+
+**Note:** Music and SFX have no MCP - use directly:
+- **Music:** [Udio](https://udio.com) - 1,200 free songs/month, commercial OK
+- **SFX:** [SFX Engine](https://sfxengine.com) - unlimited free, commercial OK
 
 #### PROJECT MANAGEMENT (Use for Tracking & Documentation)
 | MCP | Trigger Keywords | MANDATORY Usage |
@@ -263,7 +267,7 @@ USER REQUEST RECEIVED
 │                                                           │
 │ Does request mention ANY of these?                        │
 │ • "3D model/mesh/Blender" → USE blender MCP               │
-│ • "music/sound/voice/audio" → USE audio MCP               │
+│ • "voice/dialogue/VERA" → USE fish-audio MCP              │
 │ • "generate image/sprite/art" → USE mcp-hfspace           │
 │ • "Unity/scene/build/compile" → USE mcp-unity             │
 │ • "complex/ultrathink/analyze" → USE sequential-thinking  │
@@ -280,8 +284,8 @@ USER REQUEST RECEIVED
 │ WRONG: "I could use the blender MCP to..."                │
 │ RIGHT: *Actually calls blender MCP tool*                  │
 │                                                           │
-│ WRONG: "The audio MCP can generate music..."              │
-│ RIGHT: *Actually generates the music with audio MCP*      │
+│ WRONG: "The fish-audio MCP can generate voice..."         │
+│ RIGHT: *Actually generates voice with fish-audio MCP*     │
 │                                                           │
 │ WRONG: "I'll remember this for next session..."           │
 │ RIGHT: *Actually writes it to Notion database*            │
@@ -295,8 +299,8 @@ USER REQUEST RECEIVED
 | Task | PRIMARY MCP | Secondary | NEVER Do This |
 |------|-------------|-----------|---------------|
 | Create 3D model | **blender** | - | Don't describe how to model manually |
-| Generate music | **audio** (Suno) | - | Don't suggest royalty-free sites |
-| Generate voice line | **audio** (ElevenLabs) | - | Don't skip VERA voice generation |
+| Generate music | Use [Udio](https://udio.com) | - | Don't suggest royalty-free sites (Udio is FREE) |
+| Generate voice line | **fish-audio** | - | Don't skip VERA voice generation |
 | Generate 2D art | **mcp-hfspace** | image-process | Don't suggest finding stock art |
 | Check Unity errors | **mcp-unity** | - | Don't ask user to check manually |
 | Take game screenshot | **mcp-unity** | - | Don't ask user to screenshot |

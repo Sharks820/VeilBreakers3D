@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.70** | Last updated: 2026-01-19
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.71** | Last updated: 2026-01-19
 
 ---
 
@@ -154,10 +154,10 @@ screenshot_2026-01-15_monster_hollow_ingame.png
 | **sequential-thinking** | "ultrathink", "analyze", "complex" | Multi-step problem solving, game balance |
 | **mcp-unity** | "Unity", "compile", "screenshot" | Control Unity Editor directly |
 | **github** | "PR", "issue", "merge" | GitHub operations |
-| **mcp-hfspace** | "generate image", "sprite" | AI 2D art via FLUX |
+| **mcp-hfspace** | "generate image", "sprite" | FREE AI 2D art via FLUX |
 | **blender** | "3D model", "mesh", "render" | Control Blender for 3D |
 | **image-process** | "crop", "resize" | Image manipulation |
-| **audio** | "music", "voice", "SFX" | Suno music + ElevenLabs voice |
+| **fish-audio** | "voice", "VERA", "dialogue" | FREE AI voice via Fish Audio (#1 TTS quality) |
 | **notion** | "track", "backlog", "database", "doc" | Project management, monster DB, design docs |
 
 ### Plugin MCPs (Auto-loaded)
@@ -182,13 +182,19 @@ screenshot_2026-01-15_monster_hollow_ingame.png
 - **documentation-writer** - Doc updates
 
 ### Environment Variables (Set in system)
-- `HF_TOKEN` ✅ - HuggingFace (image gen)
+- `HF_TOKEN` ✅ - HuggingFace (FREE image gen via FLUX)
 - `GITHUB_TOKEN` ✅ - GitHub operations
-- `SUNO_API_KEY` ⚠️ - Suno music (optional)
-- `ELEVENLABS_API_KEY` ⚠️ - Voice gen (optional)
-- `NOTION_API_KEY` ⚠️ - Notion project management (needs setup)
+- `NOTION_API_KEY` ✅ - Notion project management
+- `FISH_AUDIO_API_KEY` ⚠️ - Fish Audio (FREE tier, needs setup at fish.audio)
 
-**Blender Addon:** Must install addon.py from github.com/ahujasid/blender-mcp
+**Blender Addon:** Must install addon.py from github.com/ahujasid/blender-mcp (port 9876)
+
+### Audio Stack (FREE)
+| Type | Service | Status |
+|------|---------|--------|
+| **Voice** | Fish Audio MCP | ✅ Configured (FREE tier) |
+| **Music** | Udio | ⚠️ No MCP (use web: udio.com, 1,200 free/month) |
+| **SFX** | SFX Engine | ⚠️ No MCP (use web: sfxengine.com, unlimited free) |
 
 ---
 
