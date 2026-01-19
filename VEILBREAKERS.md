@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.62** | Last updated: 2026-01-19
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.63** | Last updated: 2026-01-19
 
 ---
 
@@ -443,14 +443,26 @@ power * ATK/DEF * level * element * variance * crits
 
 ---
 
-## Heroes (Path-Based, No Brands)
+## Heroes (Path-Based, No Brands) - v1.63 REDESIGN
 
-| Hero | Path | Role | Signature Skills |
-|------|------|------|------------------|
-| Bastion | IRONBOUND | Tank | shield_bash, taunt, iron_wall, fortress_stance |
-| Rend | FANGBORN | DPS | rending_strike, bloodletting, execute, frenzy |
-| Marrow | VOIDTOUCHED | Healer | life_tap, siphon_heal, essence_transfer, life_link |
-| Mirage | UNCHAINED | Illusionist | minor_illusion, fear_touch, mirror_image, mass_confusion |
+**8 Heroes Total:** 4 Unlocked at start, 4 Unlockable through gameplay
+**Role:** Commanders who support/amplify monster teams (not primary damage dealers)
+**Resource:** Command Gauge (0-100) - built by attacks (+8), commands (+12), kills (+20)
+
+| Path | Starter Hero | Role | Locked Hero | Role |
+|------|--------------|------|-------------|------|
+| IRONBOUND | **Bastion** | Fortress Commander | **Warden** | Retribution Commander |
+| FANGBORN | **Rend** | Pack Alpha | **Vex** | Kill Coordinator |
+| VOIDTOUCHED | **Marrow** | Life Weaver (Healer) | **Shade** | Entropy Caster |
+| UNCHAINED | **Mirage** | Master of Misdirection | **Flux** | Chaos Catalyst |
+
+**Commander ↔ Fighter Spectrum:**
+```
+COMMANDER ←―――――――――――――――――――――――→ FIGHTER
+IRONBOUND ―― VOIDTOUCHED ―― UNCHAINED ―― FANGBORN
+```
+
+**See:** `Docs/plans/2026-01-19-hero-character-design.md` for full ability details
 
 ### Path-Brand Synergy (v7.0 - TIERED)
 
