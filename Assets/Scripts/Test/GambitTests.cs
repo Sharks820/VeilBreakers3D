@@ -499,20 +499,21 @@ namespace VeilBreakers.Test
 
             // Test that CRITICAL bucket is evaluated before STANDARD
             var personality = AIPersonality.CreateDefault(Brand.GRACE);
+
+            // Create rules separately to set baseUtility
+            var attackRule = GambitRule.Create("Attack", GambitCondition.Create(GambitCondition.ConditionType.ALWAYS),
+                GambitAction.Create(GambitAction.ActionType.BASIC_ATTACK),
+                PriorityBucket.STANDARD, 90);
+            attackRule.baseUtility = 100f;
+
+            var healRule = GambitRule.Create("Emergency Heal", GambitCondition.Create(GambitCondition.ConditionType.ALLY_CRITICAL),
+                GambitAction.Create(GambitAction.ActionType.HEAL_ALLY),
+                PriorityBucket.CRITICAL, 100);
+            healRule.baseUtility = 50f;
+
             var ruleSet = new GambitRuleSet
             {
-                rules = new[]
-                {
-                    // Standard rule with high base score
-                    GambitRule.Create("Attack", GambitCondition.Create(GambitCondition.ConditionType.ALWAYS),
-                        GambitAction.Create(GambitAction.ActionType.BASIC_ATTACK),
-                        PriorityBucket.STANDARD, 90) { baseUtility = 100f },
-
-                    // Critical rule with lower base score
-                    GambitRule.Create("Emergency Heal", GambitCondition.Create(GambitCondition.ConditionType.ALLY_CRITICAL),
-                        GambitAction.Create(GambitAction.ActionType.HEAL_ALLY),
-                        PriorityBucket.CRITICAL, 100) { baseUtility = 50f }
-                }
+                rules = new[] { attackRule, healRule }
             };
 
             var evaluator = new GambitEvaluator(personality, ruleSet);
@@ -658,28 +659,28 @@ namespace VeilBreakers.Test
 
         private GambitRuleSet CreateTestRuleSet()
         {
+            // Create rules separately to set baseUtility
+            var executeRule = GambitRule.Create(
+                "Execute",
+                GambitCondition.Create(GambitCondition.ConditionType.ENEMY_HP_BELOW, 25f),
+                GambitAction.Create(GambitAction.ActionType.EXECUTE),
+                PriorityBucket.HIGH,
+                90
+            );
+            executeRule.baseUtility = 80f;
+
+            var attackRule = GambitRule.CreateAlways(
+                "Attack",
+                GambitAction.Create(GambitAction.ActionType.BASIC_ATTACK),
+                PriorityBucket.LOW,
+                10
+            );
+            attackRule.baseUtility = 20f;
+
             return new GambitRuleSet
             {
                 setName = "Test Rules",
-                rules = new[]
-                {
-                    // Execute rule
-                    GambitRule.Create(
-                        "Execute",
-                        GambitCondition.Create(GambitCondition.ConditionType.ENEMY_HP_BELOW, 25f),
-                        GambitAction.Create(GambitAction.ActionType.EXECUTE),
-                        PriorityBucket.HIGH,
-                        90
-                    ) { baseUtility = 80f },
-
-                    // Basic attack fallback
-                    GambitRule.CreateAlways(
-                        "Attack",
-                        GambitAction.Create(GambitAction.ActionType.BASIC_ATTACK),
-                        PriorityBucket.LOW,
-                        10
-                    ) { baseUtility = 20f }
-                }
+                rules = new[] { executeRule, attackRule }
             };
         }
     }

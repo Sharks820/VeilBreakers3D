@@ -690,10 +690,12 @@ namespace VeilBreakers.AI
                 90
             ));
 
-            // Shield coverage
+            // Shield coverage - apply shield to ally without one
+            var noShieldCondition = GambitCondition.CreateStatusCondition(GambitCondition.ConditionType.ALLY_HAS_STATUS, StatusEffectType.SHIELD);
+            noShieldCondition.negate = true; // Negate to check for "not has shield"
             rules.Add(GambitRule.Create(
                 "Shield Ally",
-                GambitCondition.CreateStatusCondition(GambitCondition.ConditionType.ALLY_HAS_STATUS, StatusEffectType.SHIELD) { negate = true },
+                noShieldCondition,
                 new GambitAction
                 {
                     actionType = GambitAction.ActionType.BUFF_ALLY,
