@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.61** | Last updated: 2026-01-19
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.62** | Last updated: 2026-01-19
 
 ---
 
@@ -76,8 +76,10 @@ VeilBreakers3D/
 │   │   ├── Commands/          # Quick Command system (v1.59)
 │   │   ├── Capture/           # Monster capture system (v1.60)
 │   │   ├── Gambits/           # AI Gambits system (v1.58)
-│   │   ├── Managers/          # SaveManager, AudioManager (TODO)
-│   │   ├── UI/                # UI controllers (TODO)
+│   │   ├── Audio/             # Audio system (v1.62)
+│   │   ├── UI/                # UI controllers
+│   │   │   └── Combat/        # Combat HUD (v1.61)
+│   │   ├── Managers/          # SaveManager
 │   │   ├── Monsters/          # Monster logic (TODO)
 │   │   ├── Characters/        # Character logic (TODO)
 │   │   ├── Test/              # Test scripts

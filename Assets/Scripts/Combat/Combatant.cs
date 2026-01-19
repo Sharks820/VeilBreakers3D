@@ -13,10 +13,12 @@ namespace VeilBreakers.Combat
     {
         [Header("Identity")]
         [SerializeField] private string _combatantId;
+        [SerializeField] private string _monsterId;  // Audio bank identifier
         [SerializeField] private string _displayName;
         [SerializeField] private Brand _brand = Brand.NONE;
         [SerializeField] private bool _isPlayerControlled = true;
         [SerializeField] private bool _isPlayer = false;
+        [SerializeField] private bool _isBoss = false;
         [SerializeField] private int _level = 1;
         [SerializeField] private MonsterRarity _rarity = MonsterRarity.COMMON;
         [SerializeField] private float _corruption = 0f;
@@ -45,11 +47,13 @@ namespace VeilBreakers.Combat
 
         // Properties
         public string CombatantId => _combatantId;
+        public string MonsterId => _monsterId;  // Audio bank identifier
         public string DisplayName => _displayName;
         public Brand Brand => _brand;
         public Brand PrimaryBrand => _brand; // Alias for capture system
         public bool IsPlayerControlled => _isPlayerControlled;
         public bool IsPlayer => _isPlayer;
+        public bool IsBoss => _isBoss;
         public bool IsAlive => _isAlive;
         public bool IsDefending => _isDefending;
         public Combatant GuardTarget => _guardTarget;
@@ -71,6 +75,7 @@ namespace VeilBreakers.Combat
         public int Speed => _speed;
 
         public float HpPercent => _maxHp > 0 ? (float)_currentHp / _maxHp : 0f;
+        public float HealthPercent => HpPercent; // Alias for audio system
         public float MpPercent => _maxMp > 0 ? (float)_currentMp / _maxMp : 0f;
 
         // Damage modifiers
@@ -263,6 +268,22 @@ namespace VeilBreakers.Combat
         public void SetPlayer(bool isPlayer)
         {
             _isPlayer = isPlayer;
+        }
+
+        /// <summary>
+        /// Set monster ID for audio bank loading.
+        /// </summary>
+        public void SetMonsterId(string monsterId)
+        {
+            _monsterId = monsterId;
+        }
+
+        /// <summary>
+        /// Set whether this is a boss monster.
+        /// </summary>
+        public void SetBoss(bool isBoss)
+        {
+            _isBoss = isBoss;
         }
 
         /// <summary>
