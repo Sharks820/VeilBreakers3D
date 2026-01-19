@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.68** | Last updated: 2026-01-19
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.69** | Last updated: 2026-01-19
 
 ---
 
@@ -141,6 +141,52 @@ screenshot_2026-01-15_monster_hollow_ingame.png
 - Bug documentation
 
 **NEVER save screenshots to:** Assets/, Docs/, or project root
+
+---
+
+## 🔧 CLAUDE MCP TOOLS (v1.69)
+
+**ALL Claude sessions have access to these tools. USE THEM.**
+
+### Local MCPs (7 Total)
+| MCP | Trigger | What It Does |
+|-----|---------|--------------|
+| **sequential-thinking** | "ultrathink", "analyze", "complex" | Multi-step problem solving, game balance |
+| **mcp-unity** | "Unity", "compile", "screenshot" | Control Unity Editor directly |
+| **github** | "PR", "issue", "merge" | GitHub operations |
+| **mcp-hfspace** | "generate image", "sprite" | AI 2D art via FLUX |
+| **blender** | "3D model", "mesh", "render" | Control Blender for 3D |
+| **image-process** | "crop", "resize" | Image manipulation |
+| **audio** | "music", "voice", "SFX" | Suno music + ElevenLabs voice |
+
+### Plugin MCPs (Auto-loaded)
+| MCP | Purpose |
+|-----|---------|
+| **Serena** | Code intelligence (USE FOR ALL CODE) |
+| **Context7** | Unity API documentation |
+| **Greptile** | Cross-repo search |
+| **Episodic Memory** | Past conversation search |
+| **Chrome** | Web browsing |
+
+### Custom Agents (10 Total)
+- **unity-architect** - System design
+- **unity-code-reviewer** - Code review
+- **unity-debugger** - Bug investigation
+- **unity-performance-profiler** - Performance analysis
+- **balance-analyzer** - Game balance validation
+- **vera-dialogue-tester** - VERA personality testing
+- **bug-hunter** - Proactive bug scanning
+- **asset-generator** - Art prompt generation
+- **commit-helper** - Git commits
+- **documentation-writer** - Doc updates
+
+### Environment Variables (Set in system)
+- `HF_TOKEN` ✅ - HuggingFace (image gen)
+- `GITHUB_TOKEN` ✅ - GitHub operations
+- `SUNO_API_KEY` ⚠️ - Suno music (optional)
+- `ELEVENLABS_API_KEY` ⚠️ - Voice gen (optional)
+
+**Blender Addon:** Must install addon.py from github.com/ahujasid/blender-mcp
 
 ---
 

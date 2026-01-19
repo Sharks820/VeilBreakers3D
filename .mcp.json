@@ -3,48 +3,54 @@
     "sequential-thinking": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-sequential-thinking"
-      ]
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "description": "Complex problem breakdown, multi-step reasoning, game balance calculations"
     },
     "image-process": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "image-process-mcp-server"
-      ]
+      "args": ["-y", "image-process-mcp-server"],
+      "description": "Crop, resize, rotate, convert image formats for game assets"
     },
     "mcp-unity": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@akiojin/unity-mcp-server@latest"
-      ]
+      "args": ["-y", "@akiojin/unity-mcp-server@latest"],
+      "description": "Unity Editor control - screenshots, scenes, GameObjects, builds, console output"
     },
     "mcp-hfspace": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@llmindset/mcp-hfspace"
-      ],
+      "args": ["-y", "@llmindset/mcp-hfspace"],
       "env": {
         "HF_TOKEN": "${HF_TOKEN}"
-      }
+      },
+      "description": "AI image generation via FLUX - monster art, UI sprites, concept art"
     },
     "github": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "github-mcp"
-      ],
+      "args": ["-y", "github-mcp"],
       "env": {
         "GITHUB_ACCESS_TOKEN": "${GITHUB_TOKEN}"
-      }
+      },
+      "description": "GitHub operations - PRs, issues, commits, CI status"
+    },
+    "blender": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["blender-mcp"],
+      "description": "3D modeling - create/edit models, scenes, materials, render from Blender"
+    },
+    "audio": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@felores/kie-ai-mcp-server"],
+      "env": {
+        "SUNO_API_KEY": "${SUNO_API_KEY}",
+        "ELEVENLABS_API_KEY": "${ELEVENLABS_API_KEY}"
+      },
+      "description": "AI audio - Suno V5 music generation, ElevenLabs voice/SFX for VERA and game audio"
     }
   }
 }

@@ -207,42 +207,114 @@ BRAINSTORM → WRITE PLAN → EXECUTE PLAN
 |--------|---------|-------|
 | **agent-sdk-dev** | AI-powered features | Build Claude agents for VERA/testing |
 
-## Active MCP Servers (5 Local + 5 Plugin-Provided)
+## Active MCP Servers (7 Local + 5 Plugin-Provided)
 
-### Local MCPs (.mcp.json)
+### CRITICAL: MCP USAGE RULES - NO TOOL SITS STAGNANT
+
+**EVERY MCP MUST BE USED WHEN ITS TRIGGER CONDITION IS MET. NO EXCEPTIONS.**
+
+If you catch yourself NOT using an MCP when its trigger applies, STOP and USE IT.
+
+### Local MCPs (.mcp.json) - 7 TOTAL
+
+#### CORE DEVELOPMENT (Always Available)
+| MCP | Trigger Keywords | MANDATORY Usage |
+|-----|------------------|-----------------|
+| **sequential-thinking** | "ultrathink", "complex", "analyze", "balance", "design system" | Break down ANY multi-step problem. Use for game balance, architecture decisions, debugging complex issues |
+| **mcp-unity** | "Unity", "scene", "GameObject", "build", "compile", "screenshot", "console" | Control Unity Editor directly. Take screenshots, check compile errors, manipulate scenes, run builds |
+| **github** | "PR", "pull request", "issue", "commit", "CI", "merge" | All GitHub operations - create PRs, check CI status, manage issues |
+
+#### ASSET CREATION (Use Proactively)
+| MCP | Trigger Keywords | MANDATORY Usage |
+|-----|------------------|-----------------|
+| **mcp-hfspace** | "generate image", "create sprite", "monster art", "UI art", "concept art" | AI image generation via FLUX. Use for ALL 2D art needs - monsters, UI, concepts |
+| **blender** | "3D model", "mesh", "render", "Blender", "sculpt", "material", "texture 3D" | Create/edit 3D models directly in Blender. Use for converting 2D art to 3D |
+| **image-process** | "crop", "resize", "rotate", "convert format", "sprite sheet" | Process existing images - resize for Unity, crop sprites, convert formats |
+
+#### AUDIO & VOICE (Use for All Sound Needs)
+| MCP | Trigger Keywords | MANDATORY Usage |
+|-----|------------------|-----------------|
+| **audio** | "music", "sound effect", "SFX", "voice", "VERA voice", "audio", "Suno", "ElevenLabs" | Generate game music (Suno V5), voice lines (ElevenLabs), sound effects. USE FOR ALL AUDIO |
+
+### Plugin-Provided MCPs (Auto-loaded)
 | MCP | Trigger | Usage |
 |-----|---------|-------|
-| **sequential-thinking** | Complex problems | Break down systems, balance calculations |
-| **image-process** | Asset manipulation | Crop, resize, format conversion |
-| **mcp-unity** | Unity Editor control | Run builds, manipulate scenes, get debug output |
-| **game-asset-generator** | Asset creation | Generate 2D/3D assets via HuggingFace (FREE) |
-| **github** | GitHub integration | PRs, issues, CI/CD, code review via PAT |
+| **Context7** | Unity/C# API questions | Query up-to-date documentation BEFORE writing code |
+| **Serena** | ANY code operation | Semantic code intelligence - see Protocol 8 |
+| **Greptile** | Cross-repo search, PR reviews | Find code patterns across repos |
+| **Episodic Memory** | SESSION START, "remember", "past conversation" | Search conversation history for context |
+| **Chrome** | Web research, documentation | Browse web when MCPs don't have info |
 
-### Plugin-Provided MCPs
-| MCP | Trigger | Usage |
-|-----|---------|-------|
-| **Context7** | Unity/C# questions | Query up-to-date API documentation |
-| **Serena** | Code operations | Semantic code intelligence |
-| **Greptile** | Codebase search | Cross-repo understanding |
-| **Episodic Memory** | Past context | Search conversation history |
-| **Chrome** | Web access | Research, documentation |
+---
 
-## Tool Usage Matrix - When to Use What
+## MCP DECISION TREE - FOLLOW THIS EXACTLY
 
-| Task | Primary Tool | Secondary |
-|------|--------------|-----------|
-| Explore C# file | Serena `get_symbols_overview` | - |
-| Find method definition | Serena `find_symbol` | Greptile |
-| Find all usages | Serena `find_referencing_symbols` | Greptile |
-| Unity API question | Context7 `query-docs` | WebSearch |
-| Complex planning | Superpowers brainstorm/plan | sequential-thinking |
-| Refactor code | Serena `rename_symbol` | csharp-lsp verify |
-| Check for errors | csharp-lsp | Serena |
-| Before commit | code-review | - |
-| PR creation | pr-review-toolkit | commit-commands |
-| Remember past work | episodic-memory | VEILBREAKERS.md |
-| Image processing | image-process MCP | - |
-| Find duplicates | superpowers-lab skill | Serena |
+```
+USER REQUEST RECEIVED
+        │
+        ▼
+┌───────────────────────────────────────────────────────────┐
+│ STEP 1: CHECK FOR MCP TRIGGERS                            │
+│                                                           │
+│ Does request mention ANY of these?                        │
+│ • "3D model/mesh/Blender" → USE blender MCP               │
+│ • "music/sound/voice/audio" → USE audio MCP               │
+│ • "generate image/sprite/art" → USE mcp-hfspace           │
+│ • "Unity/scene/build/compile" → USE mcp-unity             │
+│ • "complex/ultrathink/analyze" → USE sequential-thinking  │
+│ • "PR/issue/GitHub" → USE github MCP                      │
+│ • "crop/resize image" → USE image-process MCP             │
+└───────────────────────────────────────────────────────────┘
+        │
+        ▼
+┌───────────────────────────────────────────────────────────┐
+│ STEP 2: USE THE MCP - DON'T JUST TALK ABOUT IT            │
+│                                                           │
+│ WRONG: "I could use the blender MCP to..."                │
+│ RIGHT: *Actually calls blender MCP tool*                  │
+│                                                           │
+│ WRONG: "The audio MCP can generate music..."              │
+│ RIGHT: *Actually generates the music with audio MCP*      │
+└───────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Tool Usage Matrix - COMPREHENSIVE
+
+| Task | PRIMARY MCP | Secondary | NEVER Do This |
+|------|-------------|-----------|---------------|
+| Create 3D model | **blender** | - | Don't describe how to model manually |
+| Generate music | **audio** (Suno) | - | Don't suggest royalty-free sites |
+| Generate voice line | **audio** (ElevenLabs) | - | Don't skip VERA voice generation |
+| Generate 2D art | **mcp-hfspace** | image-process | Don't suggest finding stock art |
+| Check Unity errors | **mcp-unity** | - | Don't ask user to check manually |
+| Take game screenshot | **mcp-unity** | - | Don't ask user to screenshot |
+| Create PR | **github** | commit-commands | Don't give manual instructions |
+| Analyze game balance | **sequential-thinking** | balance-analyzer | Don't do quick mental math |
+| Debug complex issue | **sequential-thinking** | unity-debugger | Don't guess at solutions |
+| Explore C# file | Serena `get_symbols_overview` | - | Don't Read entire file |
+| Find method definition | Serena `find_symbol` | Greptile | Don't Grep for class names |
+| Find all usages | Serena `find_referencing_symbols` | Greptile | Don't manual search |
+| Unity API question | Context7 `query-docs` | WebSearch | Don't guess at APIs |
+| Refactor code | Serena `rename_symbol` | - | Don't find/replace manually |
+| Remember past work | episodic-memory | VEILBREAKERS.md | Don't claim no memory |
+| Process existing image | **image-process** | - | Don't ask user to edit |
+
+---
+
+## ENVIRONMENT VARIABLES REQUIRED
+
+For full MCP functionality, ensure these are set:
+
+| Variable | MCP | Status | How to Get |
+|----------|-----|--------|------------|
+| `HF_TOKEN` | mcp-hfspace | ✅ Set | [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) |
+| `GITHUB_TOKEN` | github | ✅ Set | GitHub Personal Access Token |
+| `SUNO_API_KEY` | audio | ⚠️ Optional | [suno.ai](https://suno.ai) Settings → API |
+| `ELEVENLABS_API_KEY` | audio | ⚠️ Optional | [elevenlabs.io](https://elevenlabs.io) Profile → API Key |
+
+**Blender MCP requires:** Blender 3.0+ installed (✅ User has 5.0) with addon.py from [github.com/ahujasid/blender-mcp](https://github.com/ahujasid/blender-mcp)
 
 ## Custom VeilBreakers Agents (.claude/agents/)
 
