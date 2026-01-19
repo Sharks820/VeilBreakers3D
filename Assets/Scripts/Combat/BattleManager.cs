@@ -47,6 +47,9 @@ namespace VeilBreakers.Combat
         public event Action<SynergySystem.SynergyTier> OnSynergyChanged;
         public event Action<Combatant> OnTargetChanged;
 
+        // Track death event handlers for proper cleanup
+        private Dictionary<Combatant, Action> _deathHandlers = new Dictionary<Combatant, Action>();
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -55,6 +58,24 @@ namespace VeilBreakers.Combat
                 return;
             }
             Instance = this;
+        }
+
+        private void OnDestroy()
+        {
+            // Clean up event subscriptions if destroyed mid-battle
+            foreach (var kvp in _deathHandlers)
+            {
+                if (kvp.Key != null)
+                {
+                    kvp.Key.OnDeath -= kvp.Value;
+                }
+            }
+            _deathHandlers.Clear();
+
+            if (Instance == this)
+            {
+                Instance = null;
+            }
         }
 
         /// <summary>
@@ -72,10 +93,14 @@ namespace VeilBreakers.Combat
             // Set initial target (first living enemy)
             _currentTarget = _enemyParty.FirstOrDefault(c => c.IsAlive);
 
-            // Subscribe to death events
+            // Subscribe to death events (store handlers for proper cleanup)
+            _deathHandlers.Clear();
             foreach (var combatant in _playerParty.Concat(_enemyParty))
             {
-                combatant.OnDeath += () => HandleCombatantDeath(combatant);
+                var c = combatant; // Capture for closure
+                Action handler = () => HandleCombatantDeath(c);
+                _deathHandlers[combatant] = handler;
+                combatant.OnDeath += handler;
             }
 
             // Calculate initial synergy
@@ -304,11 +329,15 @@ namespace VeilBreakers.Combat
         {
             _state = endState;
 
-            // Unsubscribe from events
-            foreach (var combatant in _playerParty.Concat(_enemyParty))
+            // Unsubscribe from death events to prevent memory leaks
+            foreach (var kvp in _deathHandlers)
             {
-                // Note: In production, properly unsubscribe death events
+                if (kvp.Key != null)
+                {
+                    kvp.Key.OnDeath -= kvp.Value;
+                }
             }
+            _deathHandlers.Clear();
 
             OnBattleEnd?.Invoke();
             Debug.Log($"[BattleManager] Battle ended: {endState}");

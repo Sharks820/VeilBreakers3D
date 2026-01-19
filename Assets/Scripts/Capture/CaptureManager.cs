@@ -552,8 +552,35 @@ namespace VeilBreakers.Capture
             // Remove from bound list
             _boundMonsters.Remove(monster);
 
-            // TODO: Add monster to player's party/inventory
-            // PartyManager.Instance?.AddCapturedMonster(monster.combatant);
+            // Add monster to player's party using GameManager
+            if (GameManager.Instance != null)
+            {
+                string monsterId = monster.combatant.MonsterId;
+                if (!string.IsNullOrEmpty(monsterId))
+                {
+                    bool added = GameManager.Instance.AddToParty(
+                        monsterId,
+                        monster.combatant.Level,
+                        monster.combatant.Corruption
+                    );
+
+                    if (added)
+                    {
+                        Debug.Log($"[CaptureManager] Monster added to party: {monster.combatant.DisplayName}");
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"[CaptureManager] Failed to add monster to party (party full or invalid?)");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning($"[CaptureManager] Monster has no MonsterId, cannot add to party");
+                }
+            }
+
+            // Remove captured monster from battle enemies
+            RemoveMonsterFromBattle(monster.combatant);
 
             // Check if more monsters to capture
             if (_boundMonsters.Count > 0)
@@ -576,7 +603,9 @@ namespace VeilBreakers.Capture
                 Debug.Log($"[CaptureManager] {monster.combatant.DisplayName} fled!");
                 // Monster escapes - remove from combat
                 monster.combatant.RemoveStatus(StatusEffectType.BOUND);
-                // TODO: Remove from battle
+
+                // Remove fleeing monster from battle (it escaped)
+                RemoveMonsterFromBattle(monster.combatant);
             }
             else if (outcome == CaptureOutcome.BERSERK)
             {
@@ -591,9 +620,11 @@ namespace VeilBreakers.Capture
 
                 OnMonsterBerserk?.Invoke(monster.combatant);
 
-                // Resume combat
+                // Resume combat - monster stays in battle as berserk enemy
                 EndCapturePhase();
-                // TODO: Signal battle to resume
+
+                // Signal battle to resume via EventBus
+                EventBus.BattleStarted(); // Re-signal to resume combat flow
             }
 
             // Check for more bound monsters
@@ -610,6 +641,32 @@ namespace VeilBreakers.Capture
         // =============================================================================
         // COMBAT EVENTS
         // =============================================================================
+
+        /// <summary>
+        /// Remove a monster from the battle (captured or fled).
+        /// </summary>
+        private void RemoveMonsterFromBattle(Combatant monster)
+        {
+            if (monster == null) return;
+
+            // Remove from marked targets
+            _markedTargets.Remove(monster);
+
+            // Remove from enemy list if using enemies reference
+            _enemies?.Remove(monster);
+
+            // Destroy the game object (it's no longer in battle)
+            if (monster.gameObject != null)
+            {
+                // Mark as dead first to trigger any death-related cleanup
+                monster.TakeDamage(monster.MaxHp + 1);
+
+                // Optionally disable instead of destroy for pooling later
+                monster.gameObject.SetActive(false);
+            }
+
+            Debug.Log($"[CaptureManager] Removed {monster.DisplayName} from battle");
+        }
 
         /// <summary>
         /// Called when combat ends.

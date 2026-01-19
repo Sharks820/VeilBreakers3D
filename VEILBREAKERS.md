@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.64** | Last updated: 2026-01-19
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.65** | Last updated: 2026-01-19
 
 ---
 
@@ -1039,6 +1039,42 @@ battle, ui, art, audio, vera, monsters, critical
 ### New Files
 - `AGENTS.md` - Instructions for AI coding agents (OpenCode format)
 - `opencode.json` - MCP server configuration for OpenCode (15 servers)
+
+---
+
+## Session Log - 2026-01-19 (v1.65)
+
+### Unity Integration & Testing Infrastructure
+
+**New Files Created:**
+- `Assets/Scripts/Core/GameBootstrap.cs` - Initializes all managers in correct order
+- `Assets/Scripts/Test/TestArenaManager.cs` - Spawns test battles with configurable combatants
+- `Assets/Scripts/Editor/TestArenaSetup.cs` - Unity menu tools for creating test scenes
+- `Docs/UNITY_INTEGRATION_GUIDE.md` - Comprehensive setup guide
+
+**Critical Bug Fixes:**
+- `BattleManager.cs` - Fixed event subscription memory leak (OnDeath handlers now properly tracked and unsubscribed)
+- `CaptureManager.cs` - Completed capture flow TODOs:
+  - HandleCaptureSuccess now adds monsters to party via GameManager
+  - HandleCaptureFailure properly removes fleeing monsters
+  - Added RemoveMonsterFromBattle helper method
+  - Berserk monsters now signal battle resume via EventBus
+
+**Code Analysis Results:**
+- 76 C# files analyzed
+- 47 issues found (3 Critical, 5 High, 12 Medium, 27 Low)
+- Critical issues fixed this session
+
+**Unity Scene Setup:**
+- VeilBreakers → Create Test Arena Scene (menu)
+- Auto-creates GameBootstrap, TestArenaManager, spawn points, UI Canvas
+- Run All System Tests and System Health Check menu options
+
+**Next Session Priorities:**
+1. Monster Ultimates design
+2. Balance review of hero abilities
+3. UI Prefab implementation
+4. Start Menu flow
 
 ---
 
