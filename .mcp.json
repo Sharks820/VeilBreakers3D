@@ -40,6 +40,9 @@
       "type": "stdio",
       "command": "uvx",
       "args": ["blender-mcp"],
+      "env": {
+        "BLENDER_PORT": "9876"
+      },
       "description": "3D modeling - create/edit models, scenes, materials, render from Blender"
     },
     "audio": {
