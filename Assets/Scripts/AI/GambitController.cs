@@ -11,6 +11,7 @@ namespace VeilBreakers.AI
     /// Main AI controller that manages a combatant's decision-making.
     /// Attaches to a Combatant to provide autonomous combat behavior.
     /// </summary>
+    [RequireComponent(typeof(Combatant))]
     public class GambitController : MonoBehaviour
     {
         // =============================================================================

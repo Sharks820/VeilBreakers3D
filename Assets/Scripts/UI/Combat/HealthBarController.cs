@@ -48,6 +48,9 @@ namespace VeilBreakers.UI.Combat
         private Coroutine _ghostCoroutine;
         private bool _isPulsing = false;
 
+        // Cached WaitForSeconds to avoid GC allocation
+        private WaitForSeconds _ghostFadeDelayWait;
+
         // =============================================================================
         // PROPERTIES
         // =============================================================================
@@ -70,6 +73,9 @@ namespace VeilBreakers.UI.Combat
 
         private void Awake()
         {
+            // Cache WaitForSeconds to avoid GC allocation
+            _ghostFadeDelayWait = new WaitForSeconds(_ghostFadeDelay);
+
             if (_backgroundImage != null)
             {
                 _backgroundImage.color = _backgroundColor;
@@ -222,8 +228,8 @@ namespace VeilBreakers.UI.Combat
                 _damageGhostImage.color = _ghostColor;
             }
 
-            // Wait before fading
-            yield return new WaitForSeconds(_ghostFadeDelay);
+            // Wait before fading (uses cached WaitForSeconds)
+            yield return _ghostFadeDelayWait;
 
             // Fade ghost to new value
             float elapsed = 0f;

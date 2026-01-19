@@ -58,6 +58,9 @@ namespace VeilBreakers.UI.Combat
         private Coroutine _animationCoroutine;
         private bool _isSubscribed = false;
 
+        // Cached WaitForSeconds to avoid GC allocation
+        private WaitForSeconds _flashDurationWait;
+
         // =============================================================================
         // PROPERTIES
         // =============================================================================
@@ -77,6 +80,9 @@ namespace VeilBreakers.UI.Combat
 
         private void Awake()
         {
+            // Cache WaitForSeconds to avoid GC allocation
+            _flashDurationWait = new WaitForSeconds(_flashDuration);
+
             _baseScale = _bannerTransform != null ? _bannerTransform.localScale : Vector3.one;
 
             if (_keybindText != null)
@@ -320,9 +326,9 @@ namespace VeilBreakers.UI.Combat
             for (int i = 0; i < _flashCount; i++)
             {
                 _canvasGroup.alpha = 0.5f;
-                yield return new WaitForSeconds(_flashDuration);
+                yield return _flashDurationWait; // Cached to avoid GC allocation
                 _canvasGroup.alpha = 1f;
-                yield return new WaitForSeconds(_flashDuration);
+                yield return _flashDurationWait;
             }
         }
 

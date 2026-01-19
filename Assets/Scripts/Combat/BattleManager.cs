@@ -50,6 +50,10 @@ namespace VeilBreakers.Combat
         // Track death event handlers for proper cleanup
         private Dictionary<Combatant, Action> _deathHandlers = new Dictionary<Combatant, Action>();
 
+        // Pre-allocated buffers to avoid GC allocations in Update
+        private const int kMaxPartySize = 6;
+        private Brand[] _brandBuffer = new Brand[kMaxPartySize];
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
@@ -134,15 +138,23 @@ namespace VeilBreakers.Combat
 
             float dt = Time.deltaTime;
 
-            // Update all combatant cooldowns
-            foreach (var combatant in _playerParty.Where(c => c.IsAlive))
+            // Update all combatant cooldowns (no LINQ to avoid allocations)
+            for (int i = 0; i < _playerParty.Count; i++)
             {
-                combatant.UpdateCooldowns(dt);
+                var combatant = _playerParty[i];
+                if (combatant != null && combatant.IsAlive)
+                {
+                    combatant.UpdateCooldowns(dt);
+                }
             }
 
-            foreach (var combatant in _enemyParty.Where(c => c.IsAlive))
+            for (int i = 0; i < _enemyParty.Count; i++)
             {
-                combatant.UpdateCooldowns(dt);
+                var combatant = _enemyParty[i];
+                if (combatant != null && combatant.IsAlive)
+                {
+                    combatant.UpdateCooldowns(dt);
+                }
             }
 
             // Check victory/defeat conditions
@@ -236,19 +248,21 @@ namespace VeilBreakers.Combat
         /// </summary>
         private Combatant GetGuardInterceptor(Combatant target)
         {
-            // Check player party
-            foreach (var combatant in _playerParty.Where(c => c.IsAlive && c.IsDefending))
+            // Check player party (no LINQ to avoid allocations)
+            for (int i = 0; i < _playerParty.Count; i++)
             {
-                if (combatant.GuardTarget == target)
+                var combatant = _playerParty[i];
+                if (combatant != null && combatant.IsAlive && combatant.IsDefending && combatant.GuardTarget == target)
                 {
                     return combatant;
                 }
             }
 
             // Check enemy party
-            foreach (var combatant in _enemyParty.Where(c => c.IsAlive && c.IsDefending))
+            for (int i = 0; i < _enemyParty.Count; i++)
             {
-                if (combatant.GuardTarget == target)
+                var combatant = _enemyParty[i];
+                if (combatant != null && combatant.IsAlive && combatant.IsDefending && combatant.GuardTarget == target)
                 {
                     return combatant;
                 }
@@ -280,10 +294,20 @@ namespace VeilBreakers.Combat
         /// </summary>
         private void RecalculateSynergy()
         {
-            var partyBrands = _playerParty
-                .Where(c => c.IsAlive)
-                .Select(c => c.Brand)
-                .ToArray();
+            // Use pre-allocated buffer to avoid GC allocations
+            int brandCount = 0;
+            for (int i = 0; i < _playerParty.Count && brandCount < _brandBuffer.Length; i++)
+            {
+                var combatant = _playerParty[i];
+                if (combatant != null && combatant.IsAlive)
+                {
+                    _brandBuffer[brandCount++] = combatant.Brand;
+                }
+            }
+
+            // Create array segment for synergy calculation
+            var partyBrands = new Brand[brandCount];
+            System.Array.Copy(_brandBuffer, partyBrands, brandCount);
 
             var oldTier = _currentSynergyTier;
             _currentSynergyTier = SynergySystem.GetSynergyTier(_championPath, partyBrands);
@@ -305,18 +329,35 @@ namespace VeilBreakers.Combat
         }
 
         /// <summary>
-        /// Check if battle should end
+        /// Check if battle should end (no LINQ to avoid allocations)
         /// </summary>
         private void CheckBattleEnd()
         {
-            bool allPlayersDead = _playerParty.All(c => !c.IsAlive);
-            bool allEnemiesDead = _enemyParty.All(c => !c.IsAlive);
+            bool anyPlayerAlive = false;
+            for (int i = 0; i < _playerParty.Count; i++)
+            {
+                if (_playerParty[i] != null && _playerParty[i].IsAlive)
+                {
+                    anyPlayerAlive = true;
+                    break;
+                }
+            }
 
-            if (allPlayersDead)
+            bool anyEnemyAlive = false;
+            for (int i = 0; i < _enemyParty.Count; i++)
+            {
+                if (_enemyParty[i] != null && _enemyParty[i].IsAlive)
+                {
+                    anyEnemyAlive = true;
+                    break;
+                }
+            }
+
+            if (!anyPlayerAlive)
             {
                 EndBattle(BattleState.DEFEAT);
             }
-            else if (allEnemiesDead)
+            else if (!anyEnemyAlive)
             {
                 EndBattle(BattleState.VICTORY);
             }

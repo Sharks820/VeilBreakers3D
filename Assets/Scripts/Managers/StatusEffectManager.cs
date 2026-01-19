@@ -152,8 +152,16 @@ namespace VeilBreakers.Managers
                 return null;
             }
 
-            // NO-STACK RULE: Check for existing effect of same type
-            var existingEffect = effects.FirstOrDefault(e => e.IsSameType(effectData));
+            // NO-STACK RULE: Check for existing effect of same type (manual loop to avoid LINQ)
+            StatusEffectInstance existingEffect = null;
+            for (int i = 0; i < effects.Count; i++)
+            {
+                if (effects[i].IsSameType(effectData))
+                {
+                    existingEffect = effects[i];
+                    break;
+                }
+            }
 
             if (existingEffect != null)
             {
@@ -391,7 +399,13 @@ namespace VeilBreakers.Managers
             if (target == null || !_effectsByTarget.TryGetValue(target, out var effects))
                 return false;
 
-            return effects.Any(e => e.EffectType == effectType);
+            // Manual loop to avoid LINQ allocation
+            for (int i = 0; i < effects.Count; i++)
+            {
+                if (effects[i].EffectType == effectType)
+                    return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -402,7 +416,13 @@ namespace VeilBreakers.Managers
             if (target == null || !_effectsByTarget.TryGetValue(target, out var effects))
                 return false;
 
-            return effects.Any(e => e.Category == category);
+            // Manual loop to avoid LINQ allocation
+            for (int i = 0; i < effects.Count; i++)
+            {
+                if (effects[i].Category == category)
+                    return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -413,7 +433,13 @@ namespace VeilBreakers.Managers
             if (target == null || !_effectsByTarget.TryGetValue(target, out var effects))
                 return null;
 
-            return effects.FirstOrDefault(e => e.EffectType == effectType);
+            // Manual loop to avoid LINQ allocation
+            for (int i = 0; i < effects.Count; i++)
+            {
+                if (effects[i].EffectType == effectType)
+                    return effects[i];
+            }
+            return null;
         }
 
         /// <summary>
@@ -446,9 +472,17 @@ namespace VeilBreakers.Managers
             if (target == null || !_effectsByTarget.TryGetValue(target, out var effects))
                 return 0f;
 
-            return effects
-                .Where(e => e.effectData?.targetStat == stat)
-                .Sum(e => e.GetStatModValue());
+            // Manual loop to avoid LINQ allocation
+            float total = 0f;
+            for (int i = 0; i < effects.Count; i++)
+            {
+                var effect = effects[i];
+                if (effect.effectData != null && effect.effectData.targetStat == stat)
+                {
+                    total += effect.GetStatModValue();
+                }
+            }
+            return total;
         }
 
         /// <summary>
@@ -459,7 +493,14 @@ namespace VeilBreakers.Managers
             if (target == null || !_effectsByTarget.TryGetValue(target, out var effects))
                 return true;
 
-            return !effects.Any(e => e.effectData?.PreventsAction ?? false);
+            // Manual loop to avoid LINQ allocation
+            for (int i = 0; i < effects.Count; i++)
+            {
+                var effect = effects[i];
+                if (effect.effectData != null && effect.effectData.PreventsAction)
+                    return false;
+            }
+            return true;
         }
 
         /// <summary>

@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.65** | Last updated: 2026-01-19
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.66** | Last updated: 2026-01-19
 
 ---
 
@@ -1039,6 +1039,31 @@ battle, ui, art, audio, vera, monsters, critical
 ### New Files
 - `AGENTS.md` - Instructions for AI coding agents (OpenCode format)
 - `opencode.json` - MCP server configuration for OpenCode (15 servers)
+
+---
+
+## Session Log - 2026-01-19 (v1.66)
+
+### Performance Optimizations (v1.66)
+
+**BattleManager.cs:**
+- Removed LINQ from Update() loop - replaced with manual for loops
+- Removed LINQ from CheckBattleEnd() - manual loop for alive checks
+- Removed LINQ from GetGuardInterceptor() - manual loop
+- Removed LINQ from RecalculateSynergy() - pre-allocated Brand[] buffer
+- Added pre-allocated buffer `_brandBuffer` to avoid GC allocation
+
+**StatusEffectManager.cs:**
+- Replaced 6 LINQ hot path methods with manual loops:
+  - HasEffect(), HasEffectCategory(), GetEffect()
+  - GetStatModifier(), CanAct(), ApplyEffect() existing check
+- Methods now allocation-free for combat performance
+
+**GambitController.cs:**
+- Added `[RequireComponent(typeof(Combatant))]` attribute
+
+**HealthBarController.cs / CaptureBannerController.cs:**
+- Cached `WaitForSeconds` instances to avoid GC allocation in coroutines
 
 ---
 
