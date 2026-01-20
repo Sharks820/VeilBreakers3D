@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.90** | Last updated: 2026-01-19
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.91** | Last updated: 2026-01-19
 
 ---
 
@@ -896,6 +896,12 @@ battle, ui, art, audio, vera, monsters, critical
 - **Events** for decoupling (C# events or UnityEvents)
 - **Object pooling** for frequently spawned objects
 - **Addressables** for async asset loading
+- **Library folder corruption** - Delete entire Library/ to fix import loops (Unity rebuilds it)
+
+### MCP LESSONS (Active)
+- **Greptile** uses Bearer token auth, NOT OAuth. Add with: `claude mcp add --transport http greptile https://api.greptile.com/mcp --header "Authorization: Bearer [key]"`
+- **mcp-unity** requires Unity Editor open with MCP package installed
+- **Blender MCP** requires Blender running with addon.py loaded
 
 ### UNITY GOTCHAS (Avoid These)
 - Don't use `Find()` or `FindObjectOfType()` in Update - cache references
