@@ -110,10 +110,8 @@ namespace VeilBreakers.Audio
 
         private void OnDisable()
         {
-            OnVeilIntegrityChanged = null;
-            OnDialogueStarted = null;
-            OnDialogueEnded = null;
-            OnGlitchTriggered = null;
+            // NOTE: Do NOT set events to null - that breaks the event pattern
+            // by clearing ALL subscribers globally. Subscribers clean up in their own OnDestroy.
 
             StopAllCoroutines();
         }

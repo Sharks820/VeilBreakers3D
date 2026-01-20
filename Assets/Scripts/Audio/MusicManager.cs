@@ -116,12 +116,13 @@ namespace VeilBreakers.Audio
 
         private void OnDisable()
         {
-            OnMusicStateChanged = null;
-            OnParameterChanged = null;
+            // NOTE: Do NOT set events to null - that breaks the event pattern
+            // by clearing ALL subscribers globally. Subscribers clean up in their own OnDestroy.
 
             if (_transitionCoroutine != null)
             {
                 StopCoroutine(_transitionCoroutine);
+                _transitionCoroutine = null;
             }
         }
 

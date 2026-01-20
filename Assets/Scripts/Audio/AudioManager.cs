@@ -130,11 +130,8 @@ namespace VeilBreakers.Audio
 
         private void OnDisable()
         {
-            OnInitialized = null;
-            OnBankLoaded = null;
-            OnBankUnloaded = null;
-            OnZoneChanged = null;
-            OnMemoryUsageChanged = null;
+            // NOTE: Do NOT set events to null - that breaks the event pattern
+            // by clearing ALL subscribers globally. Subscribers clean up in their own OnDestroy.
 
             StopAllCoroutines();
         }
