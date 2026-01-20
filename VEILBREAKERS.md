@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.86** | Last updated: 2026-01-19
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.89** | Last updated: 2026-01-19
 
 ---
 
@@ -903,6 +903,7 @@ battle, ui, art, audio, vera, monsters, critical
 - Don't forget to unsubscribe events in OnDisable/OnDestroy
 - SerializeField private > public fields for Inspector
 - Use `[RequireComponent]` to ensure dependencies
+- **NEVER create files named `nul`, `con`, `prn`, `aux`, `com1-9`, `lpt1-9`** - Windows reserved names cause Unity infinite import loops. Fix: backup Scripts folder, create new one, copy files excluding bad names, delete Library folder, reopen Unity
 
 ---
 
@@ -965,6 +966,7 @@ battle, ui, art, audio, vera, monsters, critical
 | 2026-01-19 | **v1.53: BULLETPROOF SAVE SYSTEM** - Enterprise-grade corruption prevention: 11-layer protection (magic bytes, SHA-256 checksum, GZip compression, atomic writes, write verification, disk space check, 3x retries, flush to disk, rotating backups .bak1/.bak2, save mutex, orphan cleanup). Partial recovery via regex fallback. Opt-in telemetry sends corrupted files for analysis. Hold-to-delete/overwrite UI. Auto-save after character creation + tutorial battle. Unity async/await with Awaitable.BackgroundThreadAsync(). Target: <0.001% corruption, >95% recovery. |
 | 2026-01-19 | **v1.54: AAA AUDIO SYSTEM** - Full immersive audio: FMOD primary + Wwise spatial. Full voice (VERA, heroes, NPCs, unique per monster). Adaptive music (horizontal+vertical layers). VERA voice dynamically changes with Veil Integrity. Veil proximity audio (whispers, distortion, otherworldly). Low health heartbeat+frantic music. Environmental zones with time/weather variants. Smart contextual loading: predictive preloading, ~250MB budget, zero latency. Accessibility: mono, subtitles, sound descriptions, visualize cues. Created Docs/plans/2026-01-19-audio-system-design.md. |
 | 2026-01-19 | **v1.55: IMPLEMENTATION STRATEGY + PHASE 1 FOUNDATION** - Created comprehensive implementation strategy document (8 phases, agent coordination, quality gates). Completed Phase 1 Foundation: EventBus expanded to 50 events (+14 new: save/load, shrine, progression triggers). Created ObjectPool<T> generic pooling utility with IPoolable interface and GameObjectPool wrapper. Code reviewed by unity-code-reviewer. Migration 49% complete. |
+| 2026-01-19 | **v1.89: CRITICAL FIX - Unity Infinite Import Loop** - Fixed corrupted Unity project caused by Windows reserved filename "nul" in Assets/Scripts. Solution: backup Scripts folder, create fresh folder, copy all files EXCEPT nul/nul.meta, delete entire Library folder. Unity rebuilt cleanly. Added gotcha to CLAUDE.md: NEVER create files named nul/con/prn/aux/com1-9/lpt1-9. |
 
 ---
 
