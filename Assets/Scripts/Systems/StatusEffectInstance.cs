@@ -179,7 +179,7 @@ namespace VeilBreakers.Systems
             tickTimer -= deltaTime;
             if (tickTimer <= 0f)
             {
-                tickTimer = effectData.tickInterval;
+                tickTimer = effectData?.tickInterval ?? 1f;
                 return true; // Tick occurred
             }
 

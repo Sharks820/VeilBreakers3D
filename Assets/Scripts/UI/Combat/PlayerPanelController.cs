@@ -207,6 +207,7 @@ namespace VeilBreakers.UI.Combat
             for (int i = 0; i < count; i++)
             {
                 var effect = effects[i];
+                if (effect == null) continue;
                 AddStatusIcon(effect.effectType, IsBuff(effect.effectType));
             }
         }

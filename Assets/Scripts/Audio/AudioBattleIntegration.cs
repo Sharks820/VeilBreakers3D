@@ -288,7 +288,15 @@ namespace VeilBreakers.Audio
             if (enemies == null || enemies.Count == 0) return;
 
             float healthFactor = player != null ? 1f - player.HealthPercent : 0f;
-            float enemyFactor = enemies.Count(e => e.IsAlive) / (float)enemies.Count;
+
+            // Count alive enemies without LINQ allocation
+            int aliveCount = 0;
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                if (enemies[i] != null && enemies[i].IsAlive)
+                    aliveCount++;
+            }
+            float enemyFactor = aliveCount / (float)enemies.Count;
 
             // Check for boss (simplified - would check actual boss flag)
             bool hasBoss = false;
