@@ -72,12 +72,15 @@ namespace VeilBreakers.Systems
         /// <summary>Source of taunt (for TAUNT effects)</summary>
         public GameObject tauntSource;
 
+        /// <summary>Direct effect type (for simple creation without StatusEffectData)</summary>
+        public StatusEffectType directEffectType = StatusEffectType.NONE;
+
         // =============================================================================
         // PROPERTIES
         // =============================================================================
 
         /// <summary>The effect type</summary>
-        public StatusEffectType EffectType => effectData?.effectType ?? StatusEffectType.NONE;
+        public StatusEffectType EffectType => effectData?.effectType ?? directEffectType;
 
         /// <summary>The effect category</summary>
         public EffectCategory Category => effectData?.category ?? EffectCategory.DEBUFF;

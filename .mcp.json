@@ -13,12 +13,10 @@
       "description": "Crop, resize, rotate, convert image formats for game assets"
     },
     "mcp-unity": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "mcp-unity@latest"],
-      "env": {
-        "UNITY_PORT": "6400"
-      },
+      "command": "node",
+      "args": [
+        "C:/Users/Conner/Downloads/VeilBreakers3D/Library/PackageCache/com.gamelovers.mcp-unity@5dbd851fc5/Server~/build/index.js"
+      ],
       "description": "Unity Editor control - screenshots, scenes, GameObjects, builds, console output, prefabs, components"
     },
     "mcp-hfspace": {

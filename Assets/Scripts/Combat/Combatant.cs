@@ -314,10 +314,10 @@ namespace VeilBreakers.Combat
         {
             var instance = new StatusEffectInstance
             {
-                effectType = type,
+                directEffectType = type,
                 duration = duration,
                 stacks = 1,
-                source = source
+                source = source?.gameObject
             };
             _statusEffects.Add(instance);
         }
@@ -327,7 +327,7 @@ namespace VeilBreakers.Combat
         /// </summary>
         public void RemoveStatus(StatusEffectType type)
         {
-            _statusEffects.RemoveAll(s => s.effectType == type);
+            _statusEffects.RemoveAll(s => s.EffectType == type);
         }
 
         /// <summary>
@@ -337,7 +337,7 @@ namespace VeilBreakers.Combat
         {
             foreach (var s in _statusEffects)
             {
-                if (s.effectType == type) return true;
+                if (s.EffectType == type) return true;
             }
             return false;
         }

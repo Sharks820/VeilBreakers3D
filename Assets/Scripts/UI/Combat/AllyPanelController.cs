@@ -190,7 +190,7 @@ namespace VeilBreakers.UI.Combat
             for (int i = 0; i < count; i++)
             {
                 if (effects[i] == null) continue;
-                AddStatusIcon(effects[i].effectType);
+                AddStatusIcon(effects[i].EffectType);
             }
         }
 
