@@ -510,7 +510,16 @@ namespace VeilBreakers.Managers
             if (target == null || !_effectsByTarget.TryGetValue(target, out var effects))
                 return new List<StatusEffectInstance>();
 
-            return effects.Where(e => e.Category == category).ToList();
+            // Manual loop to avoid LINQ allocation
+            var result = new List<StatusEffectInstance>();
+            for (int i = 0; i < effects.Count; i++)
+            {
+                if (effects[i].Category == category)
+                {
+                    result.Add(effects[i]);
+                }
+            }
+            return result;
         }
 
         /// <summary>

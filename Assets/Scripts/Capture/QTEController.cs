@@ -98,6 +98,9 @@ namespace VeilBreakers.Capture
         // Target position (center of zones)
         private float _targetPosition = 0.5f;
 
+        // Coroutine tracking
+        private Coroutine _resetCoroutine;
+
         // =============================================================================
         // EVENTS
         // =============================================================================
@@ -348,7 +351,11 @@ namespace VeilBreakers.Capture
             Debug.Log($"[QTEController] QTE complete: {_result} (bar at {_barPosition:F2}, target at {_targetPosition:F2})");
 
             // Auto-reset to idle after a brief moment
-            StartCoroutine(ResetToIdleCoroutine());
+            if (_resetCoroutine != null)
+            {
+                StopCoroutine(_resetCoroutine);
+            }
+            _resetCoroutine = StartCoroutine(ResetToIdleCoroutine());
         }
 
         private IEnumerator ResetToIdleCoroutine()

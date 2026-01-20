@@ -71,6 +71,11 @@ namespace VeilBreakers.Audio
         private List<string> _banksToUnload = new List<string>(16);
         private List<KeyValuePair<string, float>> _sortedBanks = new List<KeyValuePair<string, float>>(32);
 
+        // Coroutine tracking (to prevent stacking and allow cancellation)
+        private Coroutine _zoneEnterCoroutine;
+        private Coroutine _combatBanksCoroutine;
+        private Coroutine _combatUnloadCoroutine;
+
         // =============================================================================
         // PROPERTIES
         // =============================================================================
@@ -185,7 +190,12 @@ namespace VeilBreakers.Audio
             string oldZone = _currentZone;
             _currentZone = zoneName;
 
-            StartCoroutine(HandleZoneEnterCoroutine(zoneName, oldZone));
+            // Cancel previous zone enter if still running
+            if (_zoneEnterCoroutine != null)
+            {
+                StopCoroutine(_zoneEnterCoroutine);
+            }
+            _zoneEnterCoroutine = StartCoroutine(HandleZoneEnterCoroutine(zoneName, oldZone));
         }
 
         private IEnumerator HandleZoneEnterCoroutine(string zoneName, string oldZone)
@@ -228,7 +238,19 @@ namespace VeilBreakers.Audio
         {
             if (enemyIds == null || enemyIds.Count == 0) return;
 
-            StartCoroutine(LoadCombatBanksCoroutine(enemyIds));
+            // Cancel any pending combat unload
+            if (_combatUnloadCoroutine != null)
+            {
+                StopCoroutine(_combatUnloadCoroutine);
+                _combatUnloadCoroutine = null;
+            }
+
+            // Cancel previous combat load if still running
+            if (_combatBanksCoroutine != null)
+            {
+                StopCoroutine(_combatBanksCoroutine);
+            }
+            _combatBanksCoroutine = StartCoroutine(LoadCombatBanksCoroutine(enemyIds));
         }
 
         private IEnumerator LoadCombatBanksCoroutine(List<string> enemyIds)
@@ -248,7 +270,12 @@ namespace VeilBreakers.Audio
         /// </summary>
         public void OnCombatEnd()
         {
-            StartCoroutine(UnloadCombatBanksDelayedCoroutine(_config?.combatUnloadDelay ?? 30f));
+            // Cancel previous unload if still pending
+            if (_combatUnloadCoroutine != null)
+            {
+                StopCoroutine(_combatUnloadCoroutine);
+            }
+            _combatUnloadCoroutine = StartCoroutine(UnloadCombatBanksDelayedCoroutine(_config?.combatUnloadDelay ?? 30f));
         }
 
         private IEnumerator UnloadCombatBanksDelayedCoroutine(float delay)
