@@ -339,20 +339,40 @@ namespace VeilBreakers.Managers
             if (target == null || !_effectsByTarget.TryGetValue(target, out var effects))
                 return 0;
 
-            // Get harmful effects sorted by cleanse priority
-            var debuffs = effects
-                .Where(e => e.ShouldBeCleansed)
-                .OrderByDescending(e => e.effectData?.cleansePriority ?? 0)
-                .Take(maxCleanse)
-                .ToList();
-
-            foreach (var debuff in debuffs)
+            // Collect cleansable debuffs (using temp list to avoid allocation)
+            _tempEffectList.Clear();
+            for (int i = 0; i < effects.Count; i++)
             {
-                RemoveEffect(debuff, EffectRemovalReason.CLEANSED);
+                if (effects[i].ShouldBeCleansed)
+                {
+                    _tempEffectList.Add(effects[i]);
+                }
             }
 
-            Log($"Cleansed {debuffs.Count} debuffs from {target.name}");
-            return debuffs.Count;
+            // Sort by cleanse priority (descending) - simple insertion sort for small lists
+            for (int i = 1; i < _tempEffectList.Count; i++)
+            {
+                var key = _tempEffectList[i];
+                int keyPriority = key.effectData?.cleansePriority ?? 0;
+                int j = i - 1;
+                while (j >= 0 && (_tempEffectList[j].effectData?.cleansePriority ?? 0) < keyPriority)
+                {
+                    _tempEffectList[j + 1] = _tempEffectList[j];
+                    j--;
+                }
+                _tempEffectList[j + 1] = key;
+            }
+
+            // Remove up to maxCleanse effects
+            int cleansed = 0;
+            for (int i = 0; i < _tempEffectList.Count && cleansed < maxCleanse; i++)
+            {
+                RemoveEffect(_tempEffectList[i], EffectRemovalReason.CLEANSED);
+                cleansed++;
+            }
+
+            Log($"Cleansed {cleansed} debuffs from {target.name}");
+            return cleansed;
         }
 
         /// <summary>
@@ -364,18 +384,24 @@ namespace VeilBreakers.Managers
             if (target == null || !_effectsByTarget.TryGetValue(target, out var effects))
                 return 0;
 
-            var buffs = effects
-                .Where(e => e.ShouldBeDispelled)
-                .Take(maxDispel)
-                .ToList();
-
-            foreach (var buff in buffs)
+            // Collect dispellable buffs (using temp list to avoid allocation)
+            _tempEffectList.Clear();
+            for (int i = 0; i < effects.Count && _tempEffectList.Count < maxDispel; i++)
             {
-                RemoveEffect(buff, EffectRemovalReason.DISPELLED);
+                if (effects[i].ShouldBeDispelled)
+                {
+                    _tempEffectList.Add(effects[i]);
+                }
             }
 
-            Log($"Dispelled {buffs.Count} buffs from {target.name}");
-            return buffs.Count;
+            // Remove collected buffs
+            for (int i = 0; i < _tempEffectList.Count; i++)
+            {
+                RemoveEffect(_tempEffectList[i], EffectRemovalReason.DISPELLED);
+            }
+
+            Log($"Dispelled {_tempEffectList.Count} buffs from {target.name}");
+            return _tempEffectList.Count;
         }
 
         /// <summary>
@@ -384,22 +410,30 @@ namespace VeilBreakers.Managers
         /// </summary>
         public List<StatusEffectInstance> StealBuffs(GameObject target, int maxSteal = 1)
         {
+            // Must return new list to caller, but avoid LINQ allocation
+            var result = new List<StatusEffectInstance>(maxSteal);
+
             if (target == null || !_effectsByTarget.TryGetValue(target, out var effects))
-                return new List<StatusEffectInstance>();
+                return result;
 
-            var buffs = effects
-                .Where(e => e.ShouldBeDispelled)
-                .Take(maxSteal)
-                .ToList();
-
-            foreach (var buff in buffs)
+            // Collect stealable buffs directly into result
+            for (int i = 0; i < effects.Count && result.Count < maxSteal; i++)
             {
-                effects.Remove(buff);
-                OnEffectRemoved?.Invoke(target, buff, EffectRemovalReason.STOLEN);
+                if (effects[i].ShouldBeDispelled)
+                {
+                    result.Add(effects[i]);
+                }
             }
 
-            Log($"Stole {buffs.Count} buffs from {target.name}");
-            return buffs;
+            // Remove stolen buffs from target
+            for (int i = 0; i < result.Count; i++)
+            {
+                effects.Remove(result[i]);
+                OnEffectRemoved?.Invoke(target, result[i], EffectRemovalReason.STOLEN);
+            }
+
+            Log($"Stole {result.Count} buffs from {target.name}");
+            return result;
         }
 
         // =============================================================================

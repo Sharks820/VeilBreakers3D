@@ -273,8 +273,9 @@ namespace VeilBreakers.UI.Combat
             for (int i = 0; i < _skillCount; i++)
             {
                 var slotObj = Instantiate(_skillIconPrefab, _skillIconContainer);
-                var slot = slotObj.GetComponent<SkillSlotController>();
+                if (slotObj == null) continue;
 
+                var slot = slotObj.GetComponent<SkillSlotController>();
                 if (slot != null)
                 {
                     bool isUltimate = (i == _skillCount - 1);

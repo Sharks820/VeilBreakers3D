@@ -56,6 +56,7 @@ namespace VeilBreakers.Capture
         public static bool CanBind(Combatant target, Combatant attacker)
         {
             if (target == null || !target.IsAlive) return false;
+            if (target.MaxHP <= 0) return false; // Guard against division by zero
 
             float threshold = CalculateThreshold(target, attacker);
             float currentHPPercent = target.CurrentHP / (float)target.MaxHP;

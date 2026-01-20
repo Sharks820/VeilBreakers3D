@@ -226,8 +226,9 @@ namespace VeilBreakers.UI.Combat
             foreach (var binding in _bindings)
             {
                 var slotObj = Instantiate(_skillSlotPrefab, _slotContainer);
-                var slot = slotObj.GetComponent<SkillSlotController>();
+                if (slotObj == null) continue;
 
+                var slot = slotObj.GetComponent<SkillSlotController>();
                 if (slot != null)
                 {
                     bool isUltimate = (binding.slotIndex == 6); // R key = ultimate

@@ -284,11 +284,22 @@ namespace VeilBreakers.Audio
             var player = BattleManager.Instance.Player;
             var enemies = BattleManager.Instance.EnemyParty;
 
+            // Guard against null or empty enemy list
+            if (enemies == null || enemies.Count == 0) return;
+
             float healthFactor = player != null ? 1f - player.HealthPercent : 0f;
             float enemyFactor = enemies.Count(e => e.IsAlive) / (float)enemies.Count;
 
             // Check for boss (simplified - would check actual boss flag)
-            bool hasBoss = enemies.Any(e => e.IsAlive && e.IsBoss);
+            bool hasBoss = false;
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                if (enemies[i] != null && enemies[i].IsAlive && enemies[i].IsBoss)
+                {
+                    hasBoss = true;
+                    break;
+                }
+            }
 
             float intensity = Mathf.Max(healthFactor, enemyFactor * 0.5f);
             if (hasBoss)

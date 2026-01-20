@@ -220,6 +220,8 @@ namespace VeilBreakers.UI.Combat
             if (_statusIcons.Count >= _maxStatusIcons) return;
 
             var iconObj = Instantiate(_statusIconPrefab, _statusIconContainer);
+            if (iconObj == null) return;
+
             _statusIcons.Add(iconObj);
 
             // Configure icon appearance based on effect type
