@@ -91,6 +91,8 @@ namespace VeilBreakers.Combat
         public float synergyMultiplier;
         public float variance;
         public bool isCritical;
+        public bool wasBlocked;
+        public bool wasDodged;
 
         public bool IsSuperEffective => brandMultiplier >= BrandSystem.SUPER_EFFECTIVE;
         public bool IsNotEffective => brandMultiplier <= BrandSystem.NOT_EFFECTIVE;

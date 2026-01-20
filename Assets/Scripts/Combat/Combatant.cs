@@ -82,6 +82,11 @@ namespace VeilBreakers.Combat
         private float _damageBuffMultiplier = 1f;
         public float DamageMultiplier => _damageBuffMultiplier;
 
+        /// <summary>
+        /// Get magic stat value (method form for status effect calculations)
+        /// </summary>
+        public int GetMagic() => _magic;
+
         // Events
         public event Action<int, int> OnHpChanged;          // current, max
         public event Action<int, int> OnMpChanged;          // current, max

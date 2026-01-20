@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using VeilBreakers.Core;
 using VeilBreakers.Data;
+using IOPath = System.IO.Path;  // Alias to avoid conflict with VeilBreakers.Data.Path
 
 namespace VeilBreakers.Managers
 {
@@ -74,7 +75,7 @@ namespace VeilBreakers.Managers
         public bool HasActiveSave => _currentSave != null;
 
         /// <summary>Path to saves directory</summary>
-        public string SavesDirectory => Path.Combine(Application.persistentDataPath, SAVES_FOLDER);
+        public string SavesDirectory => IOPath.Combine(Application.persistentDataPath, SAVES_FOLDER);
 
         // =============================================================================
         // UNITY LIFECYCLE
@@ -176,7 +177,7 @@ namespace VeilBreakers.Managers
         /// <summary>
         /// Creates a new save from initial game state.
         /// </summary>
-        public async Task<bool> CreateNewSaveAsync(int slot, string heroId, string heroName, Path heroPath)
+        public async Task<bool> CreateNewSaveAsync(int slot, string heroId, string heroName, Data.Path heroPath)
         {
             if (slot < 0 || slot >= SLOT_COUNT)
             {
@@ -490,12 +491,12 @@ namespace VeilBreakers.Managers
 
         private string GetSlotPath(int slot)
         {
-            return Path.Combine(SavesDirectory, $"{SLOT_PREFIX}{slot}{SAVE_EXTENSION}");
+            return IOPath.Combine(SavesDirectory, $"{SLOT_PREFIX}{slot}{SAVE_EXTENSION}");
         }
 
         private string GetAutoSavePath()
         {
-            return Path.Combine(SavesDirectory, $"{AUTO_FILENAME}{SAVE_EXTENSION}");
+            return IOPath.Combine(SavesDirectory, $"{AUTO_FILENAME}{SAVE_EXTENSION}");
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using VeilBreakers.Data;
+using IOPath = System.IO.Path;  // Alias to avoid conflict with VeilBreakers.Data.Path
 
 namespace VeilBreakers.Managers
 {
@@ -168,7 +169,7 @@ namespace VeilBreakers.Managers
             if (data == null || data.Length == 0)
                 throw new ArgumentNullException(nameof(data));
 
-            string directory = Path.GetDirectoryName(filePath);
+            string directory = IOPath.GetDirectoryName(filePath);
             string tempPath = filePath + ".tmp";
 
             // Ensure directory exists
@@ -563,7 +564,7 @@ namespace VeilBreakers.Managers
             {
                 if (string.IsNullOrEmpty(path)) return true;
 
-                var driveInfo = new DriveInfo(Path.GetPathRoot(path));
+                var driveInfo = new DriveInfo(IOPath.GetPathRoot(path));
                 return driveInfo.AvailableFreeSpace >= requiredBytes;
             }
             catch

@@ -6,6 +6,7 @@ using UnityEngine;
 using VeilBreakers.Core;
 using VeilBreakers.Data;
 using VeilBreakers.Managers;
+using GamePath = VeilBreakers.Data.Path;  // Alias to avoid conflict with System.IO.Path
 
 namespace VeilBreakers.Test
 {
@@ -108,13 +109,13 @@ namespace VeilBreakers.Test
             string testName = "SaveData.CreateNew";
             try
             {
-                var data = SaveData.CreateNew("hero_bastion", "TestHero", Path.IRONBOUND);
+                var data = SaveData.CreateNew("hero_bastion", "TestHero", GamePath.IRONBOUND);
 
                 Assert(data != null, "Data should not be null");
                 Assert(data.version == SaveVersion.CURRENT, "Version should match current");
                 Assert(data.heroId == "hero_bastion", "HeroId should match");
                 Assert(data.heroName == "TestHero", "HeroName should match");
-                Assert(data.heroPath == Path.IRONBOUND, "Path should match");
+                Assert(data.heroPath == GamePath.IRONBOUND, "Path should match");
                 Assert(!string.IsNullOrEmpty(data.saveId), "SaveId should be generated");
                 Assert(!string.IsNullOrEmpty(data.saveDate), "SaveDate should be set");
 
@@ -134,7 +135,7 @@ namespace VeilBreakers.Test
             try
             {
                 // Valid data
-                var validData = SaveData.CreateNew("hero_bastion", "Test", Path.IRONBOUND);
+                var validData = SaveData.CreateNew("hero_bastion", "Test", GamePath.IRONBOUND);
                 Assert(validData.Validate(), "Valid data should pass validation");
 
                 // Invalid data - missing heroId
@@ -161,7 +162,7 @@ namespace VeilBreakers.Test
             try
             {
                 // Create test data
-                var original = SaveData.CreateNew("hero_rend", "SerializeTest", Path.FANGBORN);
+                var original = SaveData.CreateNew("hero_rend", "SerializeTest", GamePath.FANGBORN);
                 original.heroLevel = 42;
                 original.currency = 9999;
                 original.party.Add(SavedMonster.Create("monster_hollow", 15, 25.5f));
@@ -197,7 +198,7 @@ namespace VeilBreakers.Test
             try
             {
                 // Create large test data
-                var data = SaveData.CreateNew("hero_marrow", "CompressionTest", Path.VOIDTOUCHED);
+                var data = SaveData.CreateNew("hero_marrow", "CompressionTest", GamePath.VOIDTOUCHED);
                 for (int i = 0; i < 100; i++)
                 {
                     data.storage.Add(SavedMonster.Create($"monster_{i}", i, i * 0.5f));
@@ -230,7 +231,7 @@ namespace VeilBreakers.Test
             string testName = "SaveFileHandler.Checksum";
             try
             {
-                var data = SaveData.CreateNew("hero_mirage", "ChecksumTest", Path.UNCHAINED);
+                var data = SaveData.CreateNew("hero_mirage", "ChecksumTest", GamePath.UNCHAINED);
                 byte[] bytes = SaveFileHandler.SerializeToBytes(data);
 
                 // Valid checksum should deserialize
@@ -264,7 +265,7 @@ namespace VeilBreakers.Test
                     TEST_SLOT,
                     "hero_bastion",
                     "SaveManagerTest",
-                    Path.IRONBOUND
+                    GamePath.IRONBOUND
                 );
 
                 Assert(success, "Create and save should succeed");
@@ -290,7 +291,7 @@ namespace VeilBreakers.Test
                     TEST_SLOT,
                     "hero_rend",
                     "LoadTest",
-                    Path.FANGBORN
+                    GamePath.FANGBORN
                 );
 
                 // Clear current save
@@ -321,7 +322,7 @@ namespace VeilBreakers.Test
                     TEST_SLOT,
                     "hero_marrow",
                     "MetadataTest",
-                    Path.VOIDTOUCHED
+                    GamePath.VOIDTOUCHED
                 );
 
                 // Get metadata
@@ -331,7 +332,7 @@ namespace VeilBreakers.Test
                 Assert(!metadata.isCorrupted, "Slot should not be corrupted");
                 Assert(metadata.heroId == "hero_marrow", "HeroId should match");
                 Assert(metadata.heroName == "MetadataTest", "HeroName should match");
-                Assert(metadata.heroPath == Path.VOIDTOUCHED, "Path should match");
+                Assert(metadata.heroPath == GamePath.VOIDTOUCHED, "Path should match");
 
                 Pass(testName);
             }
@@ -349,7 +350,7 @@ namespace VeilBreakers.Test
                 // Ensure save exists
                 if (!SaveManager.Instance.SlotExists(TEST_SLOT))
                 {
-                    await SaveManager.Instance.CreateNewSaveAsync(TEST_SLOT, "hero_bastion", "DeleteTest", Path.IRONBOUND);
+                    await SaveManager.Instance.CreateNewSaveAsync(TEST_SLOT, "hero_bastion", "DeleteTest", GamePath.IRONBOUND);
                 }
 
                 Assert(SaveManager.Instance.SlotExists(TEST_SLOT), "Slot should exist before delete");
@@ -452,7 +453,7 @@ namespace VeilBreakers.Test
                     TEST_SLOT,
                     "hero_bastion",
                     "FullCycleTest",
-                    Path.IRONBOUND
+                    GamePath.IRONBOUND
                 );
                 Assert(createSuccess, "Create should succeed");
 

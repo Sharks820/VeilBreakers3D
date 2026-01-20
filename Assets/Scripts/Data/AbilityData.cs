@@ -85,6 +85,24 @@ namespace VeilBreakers.Data
         }
 
         /// <summary>
+        /// Get remaining cooldown time for an ability by index (AbilitySlot)
+        /// </summary>
+        public float GetCooldownRemaining(int slotIndex)
+        {
+            var ability = GetAbility((AbilitySlot)slotIndex);
+            return ability?.cooldownRemaining ?? 0f;
+        }
+
+        /// <summary>
+        /// Get total cooldown duration for an ability by index (AbilitySlot)
+        /// </summary>
+        public float GetCooldownDuration(int slotIndex)
+        {
+            var ability = GetAbility((AbilitySlot)slotIndex);
+            return ability?.maxCooldown ?? 0f;
+        }
+
+        /// <summary>
         /// Create default loadout from monster skills
         /// </summary>
         public static AbilityLoadout CreateFromSkills(string basicId, string skill1Id, string skill2Id, string skill3Id, string ultimateId)

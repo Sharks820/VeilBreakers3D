@@ -52,6 +52,12 @@ namespace VeilBreakers.Core
         public IReadOnlyDictionary<string, HeroData> Heroes => _heroes;
         public IReadOnlyDictionary<string, ItemData> Items => _items;
 
+        // Count properties for convenience
+        public int MonsterCount => _monsters.Count;
+        public int SkillCount => _skills.Count;
+        public int HeroCount => _heroes.Count;
+        public int ItemCount => _items.Count;
+
         // =============================================================================
         // INITIALIZATION
         // =============================================================================

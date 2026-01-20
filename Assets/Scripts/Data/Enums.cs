@@ -25,7 +25,26 @@ namespace VeilBreakers.Data
         GRACE = 7,      // Battle Healer - Combat Medic
         MEND = 8,       // Ward Healer - Shield Support
         RUIN = 9,       // AOE Devastator - Explosion Mage
-        VOID = 10       // Chaos Mage - Reality Warper
+        VOID = 10,      // Chaos Mage - Reality Warper
+
+        // Hybrid/Advanced Brands (for Path recommendations)
+        BLOODIRON = 11,     // IRONBOUND hybrid - Iron + Leech
+        RAVENOUS = 12,      // FANGBORN hybrid - Savage + aggressive
+        CORROSIVE = 13,     // FANGBORN hybrid - Acid/decay damage
+        TERRORFLUX = 14,    // VOIDTOUCHED hybrid - Dread + Void
+        VENOMSTRIKE = 15,   // UNCHAINED hybrid - Venom + speed
+        NIGHTLEECH = 16     // UNCHAINED hybrid - Dark lifesteal
+    }
+
+    /// <summary>
+    /// Power tier within a Brand - determines ability strength
+    /// </summary>
+    public enum BrandTier
+    {
+        MINOR = 0,      // Basic brand affinity
+        STANDARD = 1,   // Full brand power
+        MAJOR = 2,      // Enhanced brand abilities
+        ULTIMATE = 3    // Maximum brand mastery
     }
 
     // =============================================================================
@@ -93,6 +112,7 @@ namespace VeilBreakers.Data
 
     public enum DamageType
     {
+        NONE = -1,      // No damage type
         PHYSICAL = 0,
         MAGICAL = 1,
         TRUE = 2,       // Ignores defense
@@ -305,6 +325,22 @@ namespace VeilBreakers.Data
     // MONSTER RARITY
     // =============================================================================
 
+    /// <summary>
+    /// Monster rarity tiers - affects stats, capture difficulty, and value
+    /// </summary>
+    public enum MonsterRarity
+    {
+        COMMON = 0,
+        UNCOMMON = 1,
+        RARE = 2,
+        EPIC = 3,
+        LEGENDARY = 4,
+        MYTHIC = 5
+    }
+
+    /// <summary>
+    /// Legacy alias - use MonsterRarity instead
+    /// </summary>
     public enum Rarity
     {
         COMMON = 0,

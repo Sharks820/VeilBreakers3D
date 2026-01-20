@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using VeilBreakers.Core;
+using VeilBreakers.Data;
 
 namespace VeilBreakers.Capture
 {

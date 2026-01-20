@@ -145,9 +145,9 @@ namespace VeilBreakers.Data
         public float chance;
         public int duration;
 
-        public StatusEffect GetStatusEffect()
+        public StatusEffectType GetStatusEffect()
         {
-            return (StatusEffect)effect;
+            return (StatusEffectType)effect;
         }
     }
 

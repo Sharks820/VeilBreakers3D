@@ -195,12 +195,13 @@ namespace VeilBreakers.AI
         /// <summary>
         /// Creates a condition programmatically.
         /// </summary>
-        public static GambitCondition Create(ConditionType type, float threshold = 50f)
+        public static GambitCondition Create(ConditionType type, float threshold = 50f, int countValue = 3)
         {
             return new GambitCondition
             {
                 conditionType = type,
-                threshold = threshold
+                threshold = threshold,
+                countValue = countValue
             };
         }
 
