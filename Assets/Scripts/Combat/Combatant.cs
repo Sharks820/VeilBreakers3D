@@ -350,19 +350,5 @@ namespace VeilBreakers.Combat
             return _statusEffects;
         }
     }
-
-    /// <summary>
-    /// Runtime status effect instance
-    /// </summary>
-    [Serializable]
-    public class StatusEffectInstance
-    {
-        public StatusEffectType effectType;
-        public StatusEffectData effectData; // Optional: full ScriptableObject data
-        public float duration;
-        public float tickInterval;
-        public float lastTickTime;
-        public int stacks;
-        public Combatant source;
-    }
+    // Note: StatusEffectInstance is defined in VeilBreakers.Systems namespace
 }

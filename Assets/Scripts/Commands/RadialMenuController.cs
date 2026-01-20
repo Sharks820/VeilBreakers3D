@@ -259,7 +259,7 @@ namespace VeilBreakers.Commands
             // Click or Enter to confirm highlighted
             if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(_confirmKey)) && _highlightedIndex >= 0)
             {
-                if (_highlightedIndex < _commandOptions.Length)
+                if (_commandOptions != null && _highlightedIndex < _commandOptions.Length)
                 {
                     SelectCommand(_commandOptions[_highlightedIndex].commandType);
                 }

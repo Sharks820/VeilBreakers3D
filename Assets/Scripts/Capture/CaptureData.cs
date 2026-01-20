@@ -67,12 +67,12 @@ namespace VeilBreakers.Capture
     public class CaptureItemConfig
     {
         // Base effectiveness percentages by rarity (index = MonsterRarity enum)
-        // Format: [Common, Uncommon, Rare, Epic, Legendary]
+        // Format: [Common, Uncommon, Rare, Epic, Legendary, Mythic]
 
-        public static readonly int[] ShardEffectiveness = { 40, 30, 20, 10, 0 };
-        public static readonly int[] CrystalEffectiveness = { 55, 45, 30, 15, 0 };
-        public static readonly int[] CoreEffectiveness = { 85, 75, 65, 45, 15 };
-        public static readonly int[] HeartEffectiveness = { 99, 95, 90, 75, 25 };
+        public static readonly int[] ShardEffectiveness = { 40, 30, 20, 10, 0, 0 };
+        public static readonly int[] CrystalEffectiveness = { 55, 45, 30, 15, 0, 0 };
+        public static readonly int[] CoreEffectiveness = { 85, 75, 65, 45, 15, 5 };
+        public static readonly int[] HeartEffectiveness = { 99, 95, 90, 75, 25, 10 };
 
         /// <summary>
         /// Gets the base effectiveness of an item against a monster rarity.
@@ -81,8 +81,8 @@ namespace VeilBreakers.Capture
         {
             int rarityIndex = (int)rarity;
 
-            // Clamp to valid range
-            rarityIndex = Mathf.Clamp(rarityIndex, 0, 4);
+            // Clamp to valid range (0-5 for Common through Mythic)
+            rarityIndex = Mathf.Clamp(rarityIndex, 0, 5);
 
             return item switch
             {
