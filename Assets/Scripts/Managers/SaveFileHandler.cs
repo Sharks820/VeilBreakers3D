@@ -461,7 +461,7 @@ namespace VeilBreakers.Managers
         {
             using (var outputStream = new MemoryStream())
             {
-                using (var gzipStream = new GZipStream(outputStream, CompressionLevel.Optimal))
+                using (var gzipStream = new GZipStream(outputStream, System.IO.Compression.CompressionLevel.Optimal))
                 {
                     gzipStream.Write(data, 0, data.Length);
                 }
