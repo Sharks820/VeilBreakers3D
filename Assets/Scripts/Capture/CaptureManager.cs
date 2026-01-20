@@ -341,7 +341,7 @@ namespace VeilBreakers.Capture
                 var nearestAlly = GetNearestAlly(target);
                 float threshold = BindThresholdCalculator.CalculateThreshold(target, nearestAlly);
 
-                float currentHP = target.CurrentHP / (float)target.MaxHP;
+                float currentHP = target.MaxHP > 0 ? target.CurrentHP / (float)target.MaxHP : 0f;
 
                 // Check if reached threshold
                 if (currentHP <= threshold && !_bindAttempts.ContainsValue(target))
@@ -430,7 +430,7 @@ namespace VeilBreakers.Capture
         {
             if (target == null || IsBound(target)) return;
 
-            float hpPercent = target.CurrentHP / (float)target.MaxHP;
+            float hpPercent = target.MaxHP > 0 ? target.CurrentHP / (float)target.MaxHP : 0f;
             float threshold = BindThresholdCalculator.CalculateThreshold(target, binder);
 
             var boundData = BoundMonsterData.Create(target, hpPercent, threshold);

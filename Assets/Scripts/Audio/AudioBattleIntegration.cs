@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -29,6 +30,7 @@ namespace VeilBreakers.Audio
 
         private bool _isSubscribed = false;
         private float _lastPlayerHealthPercent = 1f;
+        private Coroutine _subscribeRetryCoroutine = null;
 
         // Pre-allocated list for enemy IDs
         private List<string> _enemyIds = new List<string>(8);
@@ -47,6 +49,11 @@ namespace VeilBreakers.Audio
 
         private void OnDestroy()
         {
+            if (_subscribeRetryCoroutine != null)
+            {
+                StopCoroutine(_subscribeRetryCoroutine);
+                _subscribeRetryCoroutine = null;
+            }
             UnsubscribeFromBattleEvents();
         }
 
@@ -73,8 +80,11 @@ namespace VeilBreakers.Audio
             if (_isSubscribed) return;
             if (BattleManager.Instance == null)
             {
-                // Try again later
-                Invoke(nameof(SubscribeToBattleEvents), 0.5f);
+                // Try again later using coroutine for better control
+                if (_subscribeRetryCoroutine == null)
+                {
+                    _subscribeRetryCoroutine = StartCoroutine(RetrySubscribeCoroutine());
+                }
                 return;
             }
 
@@ -103,6 +113,16 @@ namespace VeilBreakers.Audio
             BattleManager.Instance.OnCombatantDeath -= HandleCombatantDeath;
 
             _isSubscribed = false;
+        }
+
+        /// <summary>
+        /// Coroutine to retry subscribing to battle events.
+        /// </summary>
+        private IEnumerator RetrySubscribeCoroutine()
+        {
+            yield return new WaitForSeconds(0.5f);
+            _subscribeRetryCoroutine = null;
+            SubscribeToBattleEvents();
         }
 
         // =============================================================================

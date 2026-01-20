@@ -664,6 +664,13 @@ namespace VeilBreakers.Commands
                     break;
 
                 case CommandState.EXECUTING:
+                    // Validate executor still exists
+                    if (command.executor == null)
+                    {
+                        CompleteCommand(command);
+                        break;
+                    }
+
                     // Check for enemies in defense range and auto-attack nearest threat
                     Combatant nearestThreat = GetNearestThreat(command.executor, _onMeDefenseRange);
                     if (nearestThreat != null && command.onMeAutoDefend)

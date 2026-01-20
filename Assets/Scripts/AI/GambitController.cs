@@ -288,6 +288,8 @@ namespace VeilBreakers.AI
         private Combatant FindEnemyHealer()
         {
             var enemies = _battleContext.GetEnemies();
+            if (enemies == null) return null;
+
             for (int i = 0; i < enemies.Length; i++)
             {
                 var enemy = enemies[i];

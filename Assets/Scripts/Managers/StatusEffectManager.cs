@@ -282,17 +282,26 @@ namespace VeilBreakers.Managers
             if (target == null || !_effectsByTarget.TryGetValue(target, out var effects))
                 return 0;
 
-            var toRemove = effects.Where(e => e.EffectType == effectType).ToList();
-
-            foreach (var effect in toRemove)
+            // Use pre-allocated list to avoid allocation in hot path
+            _tempEffectList.Clear();
+            for (int i = 0; i < effects.Count; i++)
             {
+                if (effects[i].EffectType == effectType)
+                {
+                    _tempEffectList.Add(effects[i]);
+                }
+            }
+
+            for (int i = 0; i < _tempEffectList.Count; i++)
+            {
+                var effect = _tempEffectList[i];
                 effects.Remove(effect);
                 OnEffectRemoved?.Invoke(target, effect, reason);
                 EventBus.StatusEffectRemoved(target, effectType);
             }
 
-            Log($"Removed {toRemove.Count} instances of {effectType} from {target.name}");
-            return toRemove.Count;
+            Log($"Removed {_tempEffectList.Count} instances of {effectType} from {target.name}");
+            return _tempEffectList.Count;
         }
 
         /// <summary>
@@ -303,16 +312,22 @@ namespace VeilBreakers.Managers
             if (target == null || !_effectsByTarget.TryGetValue(target, out var effects))
                 return;
 
-            var toRemove = effects.ToList();
+            // Use pre-allocated list to avoid allocation in hot path
+            _tempEffectList.Clear();
+            for (int i = 0; i < effects.Count; i++)
+            {
+                _tempEffectList.Add(effects[i]);
+            }
             effects.Clear();
 
-            foreach (var effect in toRemove)
+            for (int i = 0; i < _tempEffectList.Count; i++)
             {
+                var effect = _tempEffectList[i];
                 OnEffectRemoved?.Invoke(target, effect, reason);
                 EventBus.StatusEffectRemoved(target, effect.EffectType);
             }
 
-            Log($"Removed all {toRemove.Count} effects from {target.name}");
+            Log($"Removed all {_tempEffectList.Count} effects from {target.name}");
         }
 
         /// <summary>
@@ -708,7 +723,14 @@ namespace VeilBreakers.Managers
                 }
             }
 
-            Log($"Loaded {_effectDataCache.Count} status effect definitions into cache");
+            if (_effectDataCache.Count == 0)
+            {
+                Debug.LogWarning("[StatusEffectManager] No status effect definitions found in Resources/StatusEffects/. Status effects will not function properly.");
+            }
+            else
+            {
+                Log($"Loaded {_effectDataCache.Count} status effect definitions into cache");
+            }
         }
 
         /// <summary>

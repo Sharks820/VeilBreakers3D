@@ -167,6 +167,7 @@ namespace VeilBreakers.Combat
         public void ExecuteAbility(Combatant user, AbilitySlot slot, Combatant target)
         {
             if (!user.IsAlive) return;
+            if (user.Abilities == null) return;
 
             var ability = user.Abilities.GetAbility(slot);
             if (ability == null || !ability.isReady) return;

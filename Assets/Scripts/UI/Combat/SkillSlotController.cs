@@ -61,6 +61,7 @@ namespace VeilBreakers.UI.Combat
         private bool _isUltimate = false;
         private bool _isGlowing = false;
         private Coroutine _glowCoroutine;
+        private Coroutine _activationFlashCoroutine;
 
         // =============================================================================
         // PROPERTIES
@@ -236,8 +237,14 @@ namespace VeilBreakers.UI.Combat
             SetState(SkillSlotState.IN_USE);
             OnActivated?.Invoke(_slotIndex);
 
+            // Cancel any existing activation flash
+            if (_activationFlashCoroutine != null)
+            {
+                StopCoroutine(_activationFlashCoroutine);
+            }
+
             // Brief flash then return to appropriate state
-            StartCoroutine(ActivationFlash());
+            _activationFlashCoroutine = StartCoroutine(ActivationFlash());
         }
 
         // =============================================================================
