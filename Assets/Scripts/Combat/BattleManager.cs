@@ -92,15 +92,46 @@ namespace VeilBreakers.Combat
             _championPath = championPath;
 
             // Set player (first in party who is marked as player)
-            _player = _playerParty.FirstOrDefault(c => c.IsPlayer) ?? _playerParty.FirstOrDefault();
+            _player = null;
+            for (int i = 0; i < _playerParty.Count; i++)
+            {
+                if (_playerParty[i]?.IsPlayer == true)
+                {
+                    _player = _playerParty[i];
+                    break;
+                }
+            }
+            if (_player == null && _playerParty.Count > 0)
+            {
+                _player = _playerParty[0];
+            }
 
             // Set initial target (first living enemy)
-            _currentTarget = _enemyParty.FirstOrDefault(c => c.IsAlive);
+            _currentTarget = null;
+            for (int i = 0; i < _enemyParty.Count; i++)
+            {
+                if (_enemyParty[i]?.IsAlive == true)
+                {
+                    _currentTarget = _enemyParty[i];
+                    break;
+                }
+            }
 
             // Subscribe to death events (store handlers for proper cleanup)
             _deathHandlers.Clear();
-            foreach (var combatant in _playerParty.Concat(_enemyParty))
+            for (int i = 0; i < _playerParty.Count; i++)
             {
+                var combatant = _playerParty[i];
+                if (combatant == null) continue;
+                var c = combatant; // Capture for closure
+                Action handler = () => HandleCombatantDeath(c);
+                _deathHandlers[combatant] = handler;
+                combatant.OnDeath += handler;
+            }
+            for (int i = 0; i < _enemyParty.Count; i++)
+            {
+                var combatant = _enemyParty[i];
+                if (combatant == null) continue;
                 var c = combatant; // Capture for closure
                 Action handler = () => HandleCombatantDeath(c);
                 _deathHandlers[combatant] = handler;

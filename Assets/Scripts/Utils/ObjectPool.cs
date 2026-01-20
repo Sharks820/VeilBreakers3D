@@ -102,6 +102,13 @@ namespace VeilBreakers.Utils
                 obj = CreateNew();
             }
 
+            // Handle instantiation failure
+            if (obj == null)
+            {
+                Debug.LogError("[ObjectPool] Failed to get object from pool - creation failed");
+                return null;
+            }
+
             // Activate and notify
             obj.gameObject.SetActive(true);
 
@@ -210,6 +217,11 @@ namespace VeilBreakers.Utils
         private T CreateNew()
         {
             var obj = UnityEngine.Object.Instantiate(_prefab, _parent);
+            if (obj == null)
+            {
+                Debug.LogError($"[ObjectPool] Failed to instantiate {_prefab?.name ?? "null prefab"}");
+                return null;
+            }
             obj.name = $"{_prefab.name}_Pool_{_totalCreated}";
             _totalCreated++;
             return obj;
@@ -257,13 +269,23 @@ namespace VeilBreakers.Utils
         /// <summary>Gets a GameObject from the pool</summary>
         public GameObject Get()
         {
-            return _pool?.Get()?.gameObject;
+            if (_pool == null)
+            {
+                Debug.LogError($"[GameObjectPool] Pool not initialized on {gameObject.name} - check prefab assignment");
+                return null;
+            }
+            return _pool.Get()?.gameObject;
         }
 
         /// <summary>Gets a GameObject at a specific position and rotation</summary>
         public GameObject Get(Vector3 position, Quaternion rotation)
         {
-            return _pool?.Get(position, rotation)?.gameObject;
+            if (_pool == null)
+            {
+                Debug.LogError($"[GameObjectPool] Pool not initialized on {gameObject.name} - check prefab assignment");
+                return null;
+            }
+            return _pool.Get(position, rotation)?.gameObject;
         }
 
         /// <summary>Returns a GameObject to the pool</summary>

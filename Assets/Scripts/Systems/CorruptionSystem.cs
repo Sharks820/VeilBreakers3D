@@ -40,6 +40,9 @@ namespace VeilBreakers.Systems
         /// </summary>
         public static CorruptionState GetCorruptionState(float corruptionPercent)
         {
+            // Clamp to valid range to prevent exploits with negative values
+            corruptionPercent = Mathf.Clamp(corruptionPercent, 0f, 100f);
+
             if (corruptionPercent <= ASCENDED_THRESHOLD)
                 return CorruptionState.ASCENDED;
             if (corruptionPercent <= PURIFIED_THRESHOLD)
