@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.89** | Last updated: 2026-01-19
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.90** | Last updated: 2026-01-19
 
 ---
 
@@ -970,25 +970,102 @@ battle, ui, art, audio, vera, monsters, critical
 
 ---
 
-## NEXT SESSION TASK LIST
+## NEXT SESSION TASK LIST (2026-01-20)
 
-### Priority 1: BEGIN UNITY IMPLEMENTATION
-**ALL SYSTEMS 100% DESIGNED** - ready to build!
+### 🎯 TOMORROW'S GOAL: Migration 49% → 65%+
 
-11 design documents complete:
-- Combat System, Combat UI, Combat Implementation
-- Gambits AI, Status Effects, Quick Command
-- Monster Capture, Save/Load (bulletproof), Audio (AAA)
-- Rigging/Animation, MCP Arsenal
+---
 
-### Recommended Implementation Order
-1. Core managers (GameManager, EventBus) - DONE
-2. Combat foundation (already started)
-3. Save/Load system (critical path)
-4. UI framework (UI Toolkit)
-5. Audio integration (FMOD setup)
-6. AI/Gambits
-7. Polish systems (Quick Command, Capture)
+### PHASE 1: QUICK WINS (Get to 55%)
+*Estimated: 1-2 hours*
+
+| Task | Category | Impact |
+|------|----------|--------|
+| ✅ Create ErrorLogger.cs | Core | +4% Core (80→100%) |
+| ✅ Create StatusEffectData.cs | Data | +10% Data (90→100%) |
+| ✅ Create Extensions.cs | Utils | +25% Utils |
+
+**ErrorLogger.cs** - Simple Debug.Log wrapper:
+```csharp
+// Assets/Scripts/Core/ErrorLogger.cs
+public static class ErrorLogger {
+    public static void Log(string msg) => Debug.Log($"[VB] {msg}");
+    public static void Warn(string msg) => Debug.LogWarning($"[VB] {msg}");
+    public static void Error(string msg) => Debug.LogError($"[VB] {msg}");
+}
+```
+
+---
+
+### PHASE 2: COMBAT COMPLETION (Get to 65%)
+*Estimated: 3-4 hours*
+
+| Task | Category | Design Doc |
+|------|----------|------------|
+| 🔲 StatusEffectManager.cs | Combat | 2026-01-18-status-effects-design.md |
+| 🔲 AIController.cs | Combat | 2026-01-18-gambits-ai-design.md |
+
+**StatusEffectManager** requirements:
+- ScriptableObject-based effect definitions
+- Apply/Remove/Tick effects
+- Brand+Type dual categorization
+- No-stacking rule enforcement
+- Cleanse with AI triage (Doom>CC>DoT>Stat)
+
+**AIController** requirements:
+- Utility-based decision making
+- Brand-specific multipliers (10 brands)
+- Universal multipliers (Execute, Focus Fire, Tank Avoidance)
+- Presets (Aggressive/Defensive/Support/Focus/Protect)
+
+---
+
+### PHASE 3: UI FOUNDATION (Critical for Testing)
+*Estimated: 4-6 hours*
+
+| Task | Priority | Notes |
+|------|----------|-------|
+| 🔲 UI Toolkit Setup | HIGH | USS base styles, UXML templates |
+| 🔲 Battle UI (basic) | HIGH | Player HP, enemy HP, skill bar |
+| 🔲 Combat Log | MEDIUM | Scrollable damage/skill display |
+
+**UI Toolkit Setup**:
+1. Create `Assets/UI/Styles/VeilBreakers.uss` (base stylesheet)
+2. Create `Assets/UI/Templates/` folder structure
+3. Set up UIDocument on main canvas
+
+---
+
+### PHASE 4: REMAINING SYSTEMS (After UI)
+
+| System | Priority | Notes |
+|--------|----------|-------|
+| 🔲 Save/Load | HIGH | Bulletproof design ready |
+| 🔲 AudioManager | MEDIUM | FMOD integration |
+| 🔲 CaptureSystem | MEDIUM | Post-battle QTE |
+| 🔲 VERASystem | LOW | AI dialogue (needs UI first) |
+| 🔲 Input System | LOW | Rebindable controls |
+
+---
+
+### MIGRATION QUICK REFERENCE
+
+```
+Current:  49% → Target: 65%+
+
+Category Targets:
+├── Core:      80% → 100% (+ErrorLogger)
+├── Combat:    70% → 90%  (+StatusEffect, +AI)
+├── Data:      90% → 100% (+StatusEffectData)
+├── UI:        0%  → 20%  (+Toolkit, +Basic Battle)
+├── Utils:     25% → 50%  (+Extensions, +DOTween)
+└── Managers:  20% → 40%  (+SceneManager)
+```
+
+---
+
+### 12 DESIGN DOCUMENTS READY
+All designs complete - IMPLEMENTATION ONLY tomorrow!
 
 ---
 
