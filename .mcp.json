@@ -15,8 +15,11 @@
     "mcp-unity": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@akiojin/unity-mcp-server@latest"],
-      "description": "Unity Editor control - screenshots, scenes, GameObjects, builds, console output"
+      "args": ["-y", "mcp-unity@latest"],
+      "env": {
+        "UNITY_PORT": "6400"
+      },
+      "description": "Unity Editor control - screenshots, scenes, GameObjects, builds, console output, prefabs, components"
     },
     "mcp-hfspace": {
       "type": "stdio",
