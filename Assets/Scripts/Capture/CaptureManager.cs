@@ -132,18 +132,12 @@ namespace VeilBreakers.Capture
 
         private void OnDisable()
         {
-            // Clear event subscribers to prevent memory leaks
-            OnTargetMarked = null;
-            OnTargetUnmarked = null;
-            OnBindThresholdReached = null;
-            OnBindStarted = null;
-            OnBindProgress = null;
-            OnMonsterBound = null;
-            OnCapturePhaseStarted = null;
-            OnCapturePhaseEnded = null;
-            OnCaptureAttemptStarted = null;
-            OnCaptureAttemptComplete = null;
-            OnMonsterBerserk = null;
+            // NOTE: Do NOT set events to null here - that breaks the event pattern
+            // by clearing ALL subscribers globally. Events are cleaned up when
+            // subscribers unsubscribe in their own OnDestroy/OnDisable.
+            // Only clear runtime state.
+            _bindAttempts.Clear();
+            _bindStartTimes.Clear();
         }
 
         private void OnApplicationQuit()
@@ -509,7 +503,7 @@ namespace VeilBreakers.Capture
             }
 
             _inCapturePhase = true;
-            _currentCaptureTarget = _boundMonsters[0];
+            _currentCaptureTarget = _boundMonsters.Count > 0 ? _boundMonsters[0] : null;
             _selectedItem = CaptureItem.NONE;
 
             OnCapturePhaseStarted?.Invoke();
@@ -555,7 +549,8 @@ namespace VeilBreakers.Capture
         {
             if (_currentCaptureTarget == null || _selectedItem == CaptureItem.NONE)
             {
-                return null;
+                // Return a safe default instead of null to prevent NullReferenceException in callers
+                return new CaptureCalculationResult { finalChance = 0f };
             }
 
             return CaptureFormulaCalculator.PreviewChance(
@@ -616,12 +611,14 @@ namespace VeilBreakers.Capture
             _boundMonsters.Remove(monster);
 
             // Add monster to player's party using GameManager
-            if (GameManager.Instance != null)
+            // Cache instance to prevent race condition between null check and usage
+            var gameManager = GameManager.Instance;
+            if (gameManager != null)
             {
                 string monsterId = monster.combatant.MonsterId;
                 if (!string.IsNullOrEmpty(monsterId))
                 {
-                    bool added = GameManager.Instance.AddToParty(
+                    bool added = gameManager.AddToParty(
                         monsterId,
                         monster.combatant.Level,
                         monster.combatant.Corruption
@@ -652,6 +649,7 @@ namespace VeilBreakers.Capture
             }
             else
             {
+                _currentCaptureTarget = null;
                 EndCapturePhase();
             }
         }
@@ -695,9 +693,13 @@ namespace VeilBreakers.Capture
             {
                 _currentCaptureTarget = _boundMonsters[0];
             }
-            else if (outcome != CaptureOutcome.BERSERK)
+            else
             {
-                EndCapturePhase();
+                _currentCaptureTarget = null;
+                if (outcome != CaptureOutcome.BERSERK)
+                {
+                    EndCapturePhase();
+                }
             }
         }
 

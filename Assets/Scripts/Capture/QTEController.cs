@@ -151,15 +151,18 @@ namespace VeilBreakers.Capture
 
         private void OnDisable()
         {
-            // Clear event subscribers to prevent memory leaks
-            OnQTEStarted = null;
-            OnCountdownTick = null;
-            OnQTEActive = null;
-            OnQTEComplete = null;
-            OnBarPositionChanged = null;
+            // NOTE: Do NOT set events to null - that breaks the event pattern
+            // by clearing ALL subscribers globally. Subscribers clean up in their own OnDestroy.
 
-            // Stop any running coroutines
-            StopAllCoroutines();
+            // Stop tracked coroutine and clear reference
+            if (_resetCoroutine != null)
+            {
+                StopCoroutine(_resetCoroutine);
+                _resetCoroutine = null;
+            }
+
+            // Reset state
+            _state = QTEState.IDLE;
         }
 
         private void OnApplicationQuit()
@@ -362,6 +365,7 @@ namespace VeilBreakers.Capture
         {
             yield return new WaitForSecondsRealtime(0.5f);
             _state = QTEState.IDLE;
+            _resetCoroutine = null; // Clear reference after coroutine completes
         }
 
         // =============================================================================
