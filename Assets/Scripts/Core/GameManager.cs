@@ -177,6 +177,18 @@ namespace VeilBreakers.Core
             }
         }
 
+        /// <summary>
+        /// Reset all game state for starting a new game
+        /// </summary>
+        public void ResetGame()
+        {
+            CurrentState = GameState.MainMenu;
+            CurrentHero = null;
+            Party.Clear();
+            Currency = 0;
+            Debug.Log("[GameManager] Game state reset");
+        }
+
         // =============================================================================
         // HERO MANAGEMENT
         // =============================================================================

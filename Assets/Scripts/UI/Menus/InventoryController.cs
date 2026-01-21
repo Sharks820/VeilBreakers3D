@@ -240,7 +240,7 @@ namespace VeilBreakers.UI.Menus
             else
             {
                 _allItems = new List<ItemData>();
-                ErrorLogger.Warning("InventoryController: GameDatabase not available");
+                ErrorLogger.Warn("InventoryController: GameDatabase not available");
             }
 
             // Load player inventory from GameManager or SaveManager

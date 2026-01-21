@@ -261,7 +261,10 @@ namespace VeilBreakers.UI.Menus
             portrait.style.width = 50;
             portrait.style.height = 50;
             portrait.style.backgroundColor = new Color(25f/255f, 20f/255f, 35f/255f);
-            portrait.style.borderRadius = new StyleLength(4);
+            portrait.style.borderTopLeftRadius = new StyleLength(4);
+            portrait.style.borderTopRightRadius = new StyleLength(4);
+            portrait.style.borderBottomRightRadius = new StyleLength(4);
+            portrait.style.borderBottomLeftRadius = new StyleLength(4);
             portrait.style.marginRight = 12;
 
             // Try to find portrait from mapping
@@ -339,7 +342,10 @@ namespace VeilBreakers.UI.Menus
             var indicator = new VisualElement();
             indicator.style.width = 12;
             indicator.style.height = 12;
-            indicator.style.borderRadius = new StyleLength(6);
+            indicator.style.borderTopLeftRadius = new StyleLength(6);
+            indicator.style.borderTopRightRadius = new StyleLength(6);
+            indicator.style.borderBottomRightRadius = new StyleLength(6);
+            indicator.style.borderBottomLeftRadius = new StyleLength(6);
             indicator.style.backgroundColor = ThemeManager.Instance.GetBrandColor(brand);
             return indicator;
         }
@@ -385,7 +391,11 @@ namespace VeilBreakers.UI.Menus
             {
                 var prevCard = _heroCards[_selectedHeroIndex];
                 prevCard.style.backgroundColor = new Color(25f/255f, 20f/255f, 35f/255f);
-                prevCard.style.borderColor = new Color(60f/255f, 50f/255f, 70f/255f);
+                var prevBorderColor = new Color(60f/255f, 50f/255f, 70f/255f);
+                prevCard.style.borderTopColor = prevBorderColor;
+                prevCard.style.borderRightColor = prevBorderColor;
+                prevCard.style.borderBottomColor = prevBorderColor;
+                prevCard.style.borderLeftColor = prevBorderColor;
 
                 var prevIndicator = prevCard.Q("select-indicator");
                 if (prevIndicator != null)
@@ -397,7 +407,11 @@ namespace VeilBreakers.UI.Menus
             {
                 var newCard = _heroCards[newIndex];
                 newCard.style.backgroundColor = new Color(40f/255f, 32f/255f, 55f/255f);
-                newCard.style.borderColor = new Color(120f/255f, 60f/255f, 160f/255f);
+                var newBorderColor = new Color(120f/255f, 60f/255f, 160f/255f);
+                newCard.style.borderTopColor = newBorderColor;
+                newCard.style.borderRightColor = newBorderColor;
+                newCard.style.borderBottomColor = newBorderColor;
+                newCard.style.borderLeftColor = newBorderColor;
 
                 var newIndicator = newCard.Q("select-indicator");
                 if (newIndicator != null)
