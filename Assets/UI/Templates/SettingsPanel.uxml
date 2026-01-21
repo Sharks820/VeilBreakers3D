@@ -1,0 +1,153 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/Styles/VeilBreakers.uss?fileID=7433441132597879392&amp;guid=placeholder" />
+
+    <ui:VisualElement name="settings-root" class="vb-root" style="flex-grow: 1; justify-content: center; align-items: center;">
+
+        <!-- Darkened background -->
+        <ui:VisualElement name="background-overlay" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.7);" />
+
+        <!-- Settings Panel -->
+        <ui:VisualElement name="settings-panel" class="vb-panel-dark" style="width: 600px; max-height: 80%;">
+
+            <!-- Header -->
+            <ui:VisualElement name="header" class="vb-row vb-space-between" style="margin-bottom: 24px;">
+                <ui:Label text="SETTINGS" class="vb-title" />
+                <ui:Button text="X" name="btn-close" class="vb-button" style="width: 40px; height: 40px; font-size: 20px;" />
+            </ui:VisualElement>
+
+            <!-- Tab buttons -->
+            <ui:VisualElement name="tab-container" class="vb-row" style="margin-bottom: 24px;">
+                <ui:Button text="AUDIO" name="tab-audio" class="vb-button" style="flex-grow: 1; margin-right: 8px;" />
+                <ui:Button text="GRAPHICS" name="tab-graphics" class="vb-button" style="flex-grow: 1; margin-right: 8px;" />
+                <ui:Button text="CONTROLS" name="tab-controls" class="vb-button" style="flex-grow: 1;" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="vb-divider-horizontal" />
+
+            <!-- Content area with scroll -->
+            <ui:ScrollView name="settings-content" class="vb-scrollview" style="flex-grow: 1; min-height: 300px;">
+
+                <!-- AUDIO TAB -->
+                <ui:VisualElement name="audio-settings" class="vb-column" style="padding: 16px;">
+
+                    <!-- Master Volume -->
+                    <ui:VisualElement class="vb-row vb-space-between" style="margin-bottom: 20px;">
+                        <ui:Label text="Master Volume" class="vb-text" style="width: 150px;" />
+                        <ui:Slider name="slider-master" class="vb-slider" low-value="0" high-value="100" value="80" style="flex-grow: 1; margin-left: 16px;" />
+                        <ui:Label name="label-master-value" text="80%" class="vb-text" style="width: 50px; -unity-text-align: middle-right;" />
+                    </ui:VisualElement>
+
+                    <!-- Music Volume -->
+                    <ui:VisualElement class="vb-row vb-space-between" style="margin-bottom: 20px;">
+                        <ui:Label text="Music" class="vb-text" style="width: 150px;" />
+                        <ui:Slider name="slider-music" class="vb-slider" low-value="0" high-value="100" value="70" style="flex-grow: 1; margin-left: 16px;" />
+                        <ui:Label name="label-music-value" text="70%" class="vb-text" style="width: 50px; -unity-text-align: middle-right;" />
+                    </ui:VisualElement>
+
+                    <!-- SFX Volume -->
+                    <ui:VisualElement class="vb-row vb-space-between" style="margin-bottom: 20px;">
+                        <ui:Label text="Sound Effects" class="vb-text" style="width: 150px;" />
+                        <ui:Slider name="slider-sfx" class="vb-slider" low-value="0" high-value="100" value="80" style="flex-grow: 1; margin-left: 16px;" />
+                        <ui:Label name="label-sfx-value" text="80%" class="vb-text" style="width: 50px; -unity-text-align: middle-right;" />
+                    </ui:VisualElement>
+
+                    <!-- Voice Volume -->
+                    <ui:VisualElement class="vb-row vb-space-between" style="margin-bottom: 20px;">
+                        <ui:Label text="Voice" class="vb-text" style="width: 150px;" />
+                        <ui:Slider name="slider-voice" class="vb-slider" low-value="0" high-value="100" value="100" style="flex-grow: 1; margin-left: 16px;" />
+                        <ui:Label name="label-voice-value" text="100%" class="vb-text" style="width: 50px; -unity-text-align: middle-right;" />
+                    </ui:VisualElement>
+
+                    <!-- Mute All Toggle -->
+                    <ui:Toggle name="toggle-mute" label="Mute All Audio" class="vb-toggle" style="margin-top: 16px;" />
+
+                </ui:VisualElement>
+
+                <!-- GRAPHICS TAB (hidden by default) -->
+                <ui:VisualElement name="graphics-settings" class="vb-column" style="padding: 16px; display: none;">
+
+                    <!-- Resolution -->
+                    <ui:VisualElement class="vb-row vb-space-between" style="margin-bottom: 20px;">
+                        <ui:Label text="Resolution" class="vb-text" style="width: 150px;" />
+                        <ui:DropdownField name="dropdown-resolution" class="vb-dropdown" style="flex-grow: 1; margin-left: 16px;" />
+                    </ui:VisualElement>
+
+                    <!-- Fullscreen -->
+                    <ui:VisualElement class="vb-row vb-space-between" style="margin-bottom: 20px;">
+                        <ui:Label text="Display Mode" class="vb-text" style="width: 150px;" />
+                        <ui:DropdownField name="dropdown-fullscreen" class="vb-dropdown" choices="Fullscreen,Windowed,Borderless" style="flex-grow: 1; margin-left: 16px;" />
+                    </ui:VisualElement>
+
+                    <!-- Quality -->
+                    <ui:VisualElement class="vb-row vb-space-between" style="margin-bottom: 20px;">
+                        <ui:Label text="Quality" class="vb-text" style="width: 150px;" />
+                        <ui:DropdownField name="dropdown-quality" class="vb-dropdown" choices="Low,Medium,High,Ultra" style="flex-grow: 1; margin-left: 16px;" />
+                    </ui:VisualElement>
+
+                    <!-- VSync -->
+                    <ui:Toggle name="toggle-vsync" label="VSync" class="vb-toggle" style="margin-bottom: 20px;" />
+
+                    <!-- Show FPS -->
+                    <ui:Toggle name="toggle-fps" label="Show FPS Counter" class="vb-toggle" />
+
+                </ui:VisualElement>
+
+                <!-- CONTROLS TAB (hidden by default) -->
+                <ui:VisualElement name="controls-settings" class="vb-column" style="padding: 16px; display: none;">
+
+                    <!-- Mouse Sensitivity -->
+                    <ui:VisualElement class="vb-row vb-space-between" style="margin-bottom: 20px;">
+                        <ui:Label text="Mouse Sensitivity" class="vb-text" style="width: 150px;" />
+                        <ui:Slider name="slider-sensitivity" class="vb-slider" low-value="1" high-value="100" value="50" style="flex-grow: 1; margin-left: 16px;" />
+                        <ui:Label name="label-sensitivity-value" text="50" class="vb-text" style="width: 50px; -unity-text-align: middle-right;" />
+                    </ui:VisualElement>
+
+                    <!-- Invert Y -->
+                    <ui:Toggle name="toggle-invert-y" label="Invert Y-Axis" class="vb-toggle" style="margin-bottom: 20px;" />
+
+                    <!-- Keybindings info -->
+                    <ui:Label text="Keybindings" class="vb-text-highlight" style="margin-bottom: 12px; margin-top: 16px;" />
+                    <ui:Label text="Press a key to rebind (coming soon)" class="vb-text-secondary" style="margin-bottom: 16px;" />
+
+                    <!-- Key list -->
+                    <ui:VisualElement class="vb-row vb-space-between vb-card" style="margin-bottom: 8px;">
+                        <ui:Label text="Move Forward" class="vb-text" />
+                        <ui:Label text="W" class="vb-text-highlight" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="vb-row vb-space-between vb-card" style="margin-bottom: 8px;">
+                        <ui:Label text="Move Back" class="vb-text" />
+                        <ui:Label text="S" class="vb-text-highlight" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="vb-row vb-space-between vb-card" style="margin-bottom: 8px;">
+                        <ui:Label text="Move Left" class="vb-text" />
+                        <ui:Label text="A" class="vb-text-highlight" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="vb-row vb-space-between vb-card" style="margin-bottom: 8px;">
+                        <ui:Label text="Move Right" class="vb-text" />
+                        <ui:Label text="D" class="vb-text-highlight" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="vb-row vb-space-between vb-card" style="margin-bottom: 8px;">
+                        <ui:Label text="Interact" class="vb-text" />
+                        <ui:Label text="E" class="vb-text-highlight" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="vb-row vb-space-between vb-card" style="margin-bottom: 8px;">
+                        <ui:Label text="Cycle Target" class="vb-text" />
+                        <ui:Label text="Tab" class="vb-text-highlight" />
+                    </ui:VisualElement>
+
+                </ui:VisualElement>
+
+            </ui:ScrollView>
+
+            <ui:VisualElement class="vb-divider-horizontal" style="margin-top: 16px;" />
+
+            <!-- Bottom buttons -->
+            <ui:VisualElement name="button-container" class="vb-row" style="justify-content: flex-end; margin-top: 16px;">
+                <ui:Button text="RESET DEFAULTS" name="btn-reset" class="vb-button" style="margin-right: 16px;" />
+                <ui:Button text="APPLY" name="btn-apply" class="vb-button vb-button-primary" />
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

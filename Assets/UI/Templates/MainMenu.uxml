@@ -1,0 +1,131 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/Styles/VeilBreakers.uss?fileID=7433441132597879392&amp;guid=placeholder" />
+    <Style src="project://database/Assets/UI/Styles/VeilBreakersTheme.uss?fileID=7433441132597879392&amp;guid=placeholder" />
+
+    <ui:VisualElement name="menu-root" class="vb-root" style="flex-grow: 1;">
+
+        <!-- ====================================================================
+             BACKGROUND LAYERS (for parallax/animation effects)
+             ==================================================================== -->
+
+        <!-- Deep background - darkest layer -->
+        <ui:VisualElement name="bg-layer-0" class="menu-bg-layer" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgb(8, 6, 12);" />
+
+        <!-- Veil effect layer - subtle purple gradient -->
+        <ui:VisualElement name="bg-veil-layer" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0;">
+            <ui:VisualElement style="position: absolute; left: 0; top: 0; right: 0; bottom: 50%; background-image: none; background-color: rgba(120, 60, 160, 0.05);" />
+            <ui:VisualElement style="position: absolute; left: 0; top: 50%; right: 0; bottom: 0; background-color: rgba(60, 0, 100, 0.1);" />
+        </ui:VisualElement>
+
+        <!-- Ambient particles placeholder (controlled by script) -->
+        <ui:VisualElement name="particle-container" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden;" />
+
+        <!-- Vignette overlay -->
+        <ui:VisualElement name="vignette" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; border-width: 0; background-color: transparent;">
+            <!-- Top shadow -->
+            <ui:VisualElement style="position: absolute; left: 0; top: 0; right: 0; height: 200px; background-color: rgba(0, 0, 0, 0.4);" />
+            <!-- Bottom shadow -->
+            <ui:VisualElement style="position: absolute; left: 0; bottom: 0; right: 0; height: 150px; background-color: rgba(0, 0, 0, 0.5);" />
+            <!-- Left shadow -->
+            <ui:VisualElement style="position: absolute; left: 0; top: 0; bottom: 0; width: 100px; background-color: rgba(0, 0, 0, 0.3);" />
+            <!-- Right shadow -->
+            <ui:VisualElement style="position: absolute; right: 0; top: 0; bottom: 0; width: 100px; background-color: rgba(0, 0, 0, 0.3);" />
+        </ui:VisualElement>
+
+        <!-- ====================================================================
+             MAIN CONTENT
+             ==================================================================== -->
+
+        <ui:VisualElement name="content-container" style="flex-grow: 1; flex-direction: row;">
+
+            <!-- Left side - Title and tagline (60% width) -->
+            <ui:VisualElement name="left-panel" style="flex-grow: 1; justify-content: center; padding-left: 80px;">
+
+                <!-- Title section -->
+                <ui:VisualElement name="title-section" style="margin-bottom: 24px;">
+
+                    <!-- Logo placeholder (can be replaced with image) -->
+                    <ui:VisualElement name="logo-container" style="height: 120px; margin-bottom: 16px;">
+                        <ui:Label text="VEILBREAKERS" name="game-title" class="vb-header" style="font-size: 72px; color: rgb(235, 225, 215); letter-spacing: 6px; -unity-text-align: middle-left; text-shadow: 0 0 20px rgba(120, 60, 160, 0.5);" />
+                    </ui:VisualElement>
+
+                    <!-- Tagline with corruption glow -->
+                    <ui:VisualElement name="tagline-container" style="flex-direction: row; align-items: center;">
+                        <ui:VisualElement style="width: 60px; height: 2px; background-color: rgb(120, 60, 160); margin-right: 16px;" />
+                        <ui:Label text="Break the Veil. Bind the Fallen." name="tagline" style="color: rgb(165, 155, 145); font-size: 18px; letter-spacing: 3px; -unity-font-style: italic;" />
+                    </ui:VisualElement>
+
+                </ui:VisualElement>
+
+                <!-- News/Updates ticker (optional) -->
+                <ui:VisualElement name="news-section" style="margin-top: 40px; max-width: 500px; display: none;">
+                    <ui:Label text="LATEST UPDATE" style="color: rgb(120, 60, 160); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
+                    <ui:Label text="Version 1.0 - The Veil Awakens" style="color: rgb(165, 155, 145); font-size: 14px;" />
+                </ui:VisualElement>
+
+            </ui:VisualElement>
+
+            <!-- Right side - Menu buttons (40% width) -->
+            <ui:VisualElement name="right-panel" style="width: 400px; justify-content: center; align-items: flex-end; padding-right: 80px;">
+
+                <!-- Menu container with subtle panel effect -->
+                <ui:VisualElement name="button-container" style="width: 280px; padding: 32px; background-color: rgba(15, 12, 22, 0.7); border-radius: 8px; border-width: 1px; border-color: rgba(60, 50, 75, 0.5);">
+
+                    <!-- Continue button (shown if save exists) -->
+                    <ui:Button text="CONTINUE" name="btn-continue" class="vb-button menu-button-main" style="display: none; margin-bottom: 12px;">
+                        <ui:VisualElement class="button-glow" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; border-radius: 4px; opacity: 0;" />
+                    </ui:Button>
+
+                    <!-- New Game button -->
+                    <ui:Button text="NEW GAME" name="btn-new-game" class="vb-button menu-button-main" style="margin-bottom: 12px;">
+                        <ui:VisualElement class="button-glow" />
+                    </ui:Button>
+
+                    <!-- Divider -->
+                    <ui:VisualElement style="height: 1px; background-color: rgba(60, 50, 75, 0.5); margin: 8px 0 16px 0;" />
+
+                    <!-- Settings button -->
+                    <ui:Button text="SETTINGS" name="btn-settings" class="vb-button menu-button-secondary" style="margin-bottom: 8px;" />
+
+                    <!-- Credits button -->
+                    <ui:Button text="CREDITS" name="btn-credits" class="vb-button menu-button-secondary" style="margin-bottom: 8px;" />
+
+                    <!-- Exit button -->
+                    <ui:Button text="EXIT" name="btn-exit" class="vb-button menu-button-secondary" />
+
+                </ui:VisualElement>
+
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+        <!-- ====================================================================
+             FOOTER
+             ==================================================================== -->
+
+        <ui:VisualElement name="footer" style="position: absolute; left: 0; right: 0; bottom: 0; height: 60px; flex-direction: row; justify-content: space-between; align-items: center; padding: 0 40px;">
+
+            <!-- Copyright -->
+            <ui:Label text="2024 VeilBreakers" style="color: rgb(75, 68, 65); font-size: 12px;" />
+
+            <!-- Social links placeholder -->
+            <ui:VisualElement name="social-links" style="flex-direction: row;">
+                <!-- Icons would go here -->
+            </ui:VisualElement>
+
+            <!-- Version -->
+            <ui:Label text="v0.1.0 Alpha" name="version-label" style="color: rgb(75, 68, 65); font-size: 12px;" />
+
+        </ui:VisualElement>
+
+        <!-- ====================================================================
+             LOADING OVERLAY (for transitions)
+             ==================================================================== -->
+
+        <ui:VisualElement name="loading-overlay" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgb(8, 6, 12); display: none; justify-content: center; align-items: center;">
+            <ui:VisualElement name="loading-spinner" style="width: 60px; height: 60px; border-width: 3px; border-color: rgb(120, 60, 160); border-radius: 50%;" />
+            <ui:Label text="Loading..." style="color: rgb(165, 155, 145); font-size: 16px; margin-top: 20px;" />
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>
