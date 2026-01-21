@@ -1,0 +1,214 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/Styles/VeilBreakers.uss?fileID=7433441132597879392&amp;guid=placeholder" />
+    <Style src="project://database/Assets/UI/Styles/VeilBreakersTheme.uss?fileID=7433441132597879392&amp;guid=placeholder" />
+
+    <ui:VisualElement name="collection-root" class="vb-root" style="flex-grow: 1;">
+
+        <!-- ====================================================================
+             BACKGROUND
+             ==================================================================== -->
+
+        <ui:VisualElement name="background" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgb(8, 6, 12);" />
+
+        <!-- Veil ambient effect -->
+        <ui:VisualElement name="veil-effect" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(120, 60, 160, 0.03);" />
+
+        <!-- ====================================================================
+             HEADER
+             ==================================================================== -->
+
+        <ui:VisualElement name="header" style="position: absolute; left: 0; top: 0; right: 0; height: 70px; flex-direction: row; justify-content: space-between; align-items: center; padding: 0 30px; background-color: rgba(0, 0, 0, 0.6); border-bottom-width: 1px; border-bottom-color: rgba(60, 50, 75, 0.5);">
+
+            <!-- Back button -->
+            <ui:Button text="BACK" name="btn-back" class="vb-button" style="width: 100px;" />
+
+            <!-- Title -->
+            <ui:Label text="MONSTER COLLECTION" class="vb-title" style="font-size: 24px; letter-spacing: 4px; color: rgb(235, 225, 215);" />
+
+            <!-- Collection count -->
+            <ui:Label name="collection-count" text="0 / 100" style="color: rgb(165, 155, 145); font-size: 16px;" />
+
+        </ui:VisualElement>
+
+        <!-- ====================================================================
+             MAIN CONTENT AREA
+             ==================================================================== -->
+
+        <ui:VisualElement name="content" style="flex-grow: 1; flex-direction: row; margin-top: 70px; padding: 20px;">
+
+            <!-- ================================================================
+                 LEFT PANEL - Filters + Monster Grid
+                 ================================================================ -->
+
+            <ui:VisualElement name="monsters-panel" style="flex-grow: 1; margin-right: 20px;">
+
+                <!-- Filter Row -->
+                <ui:VisualElement name="filter-row" class="vb-row" style="margin-bottom: 16px; background-color: rgba(15, 12, 22, 0.8); border-radius: 8px; padding: 12px; flex-wrap: wrap;">
+
+                    <!-- Brand Filter -->
+                    <ui:VisualElement class="vb-column" style="margin-right: 20px;">
+                        <ui:Label text="BRAND" style="color: rgb(165, 155, 145); font-size: 10px; letter-spacing: 1px; margin-bottom: 4px;" />
+                        <ui:DropdownField name="filter-brand" class="vb-dropdown" style="min-width: 120px;" />
+                    </ui:VisualElement>
+
+                    <!-- Rarity Filter -->
+                    <ui:VisualElement class="vb-column" style="margin-right: 20px;">
+                        <ui:Label text="RARITY" style="color: rgb(165, 155, 145); font-size: 10px; letter-spacing: 1px; margin-bottom: 4px;" />
+                        <ui:DropdownField name="filter-rarity" class="vb-dropdown" style="min-width: 120px;" />
+                    </ui:VisualElement>
+
+                    <!-- Sort -->
+                    <ui:VisualElement class="vb-column" style="margin-right: 20px;">
+                        <ui:Label text="SORT BY" style="color: rgb(165, 155, 145); font-size: 10px; letter-spacing: 1px; margin-bottom: 4px;" />
+                        <ui:DropdownField name="sort-dropdown" class="vb-dropdown" style="min-width: 120px;" />
+                    </ui:VisualElement>
+
+                    <!-- Search -->
+                    <ui:VisualElement class="vb-column" style="flex-grow: 1;">
+                        <ui:Label text="SEARCH" style="color: rgb(165, 155, 145); font-size: 10px; letter-spacing: 1px; margin-bottom: 4px;" />
+                        <ui:TextField name="search-field" class="vb-text-field" style="flex-grow: 1;" />
+                    </ui:VisualElement>
+
+                </ui:VisualElement>
+
+                <!-- Monster Grid Container -->
+                <ui:VisualElement name="grid-container" style="flex-grow: 1; background-color: rgba(15, 12, 22, 0.6); border-radius: 8px; border-width: 1px; border-color: rgba(60, 50, 75, 0.3); padding: 12px;">
+
+                    <ui:ScrollView name="monster-scroll" class="vb-scrollview" style="flex-grow: 1;">
+
+                        <ui:VisualElement name="monster-grid" style="flex-direction: row; flex-wrap: wrap; padding: 4px;">
+                            <!-- Monster cards will be populated dynamically -->
+                        </ui:VisualElement>
+
+                    </ui:ScrollView>
+
+                    <!-- Empty state -->
+                    <ui:VisualElement name="empty-state" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; justify-content: center; align-items: center; display: none;">
+                        <ui:Label text="No monsters captured yet" style="color: rgb(75, 68, 65); font-size: 18px; letter-spacing: 1px; margin-bottom: 8px;" />
+                        <ui:Label text="Explore the Veil to find creatures" style="color: rgb(60, 55, 50); font-size: 14px;" />
+                    </ui:VisualElement>
+
+                </ui:VisualElement>
+
+            </ui:VisualElement>
+
+            <!-- ================================================================
+                 RIGHT PANEL - Monster Details
+                 ================================================================ -->
+
+            <ui:VisualElement name="details-panel" style="width: 360px; background-color: rgba(15, 12, 22, 0.8); border-radius: 8px; border-width: 1px; border-color: rgba(60, 50, 75, 0.3); padding: 20px;">
+
+                <!-- Monster Portrait & Name -->
+                <ui:VisualElement name="monster-header" style="align-items: center; margin-bottom: 20px;">
+
+                    <!-- Portrait with corruption glow -->
+                    <ui:VisualElement name="portrait-frame" style="width: 120px; height: 120px; margin-bottom: 12px; background-color: rgb(25, 20, 35); border-radius: 8px; border-width: 3px; border-color: rgb(60, 50, 75); justify-content: center; align-items: center;">
+                        <ui:VisualElement name="monster-portrait" style="width: 100px; height: 100px; background-color: rgb(40, 32, 50);" />
+                    </ui:VisualElement>
+
+                    <ui:Label name="monster-name" text="Select a Monster" class="vb-title" style="font-size: 22px; -unity-text-align: middle-center;" />
+
+                    <!-- Level display -->
+                    <ui:VisualElement name="level-display" class="vb-row" style="margin-top: 4px;">
+                        <ui:Label text="Lv." style="color: rgb(165, 155, 145); font-size: 14px;" />
+                        <ui:Label name="monster-level" text="1" style="color: rgb(220, 180, 50); font-size: 16px; -unity-font-style: bold; margin-left: 4px;" />
+                    </ui:VisualElement>
+
+                </ui:VisualElement>
+
+                <ui:VisualElement class="vb-divider-horizontal" style="margin-bottom: 16px;" />
+
+                <!-- Brand Section -->
+                <ui:VisualElement name="brand-section" style="margin-bottom: 16px;">
+                    <ui:Label text="BRAND" style="color: rgb(120, 60, 160); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
+
+                    <ui:VisualElement class="vb-row" style="flex-wrap: wrap;">
+                        <ui:VisualElement name="primary-brand-badge" class="brand-badge" style="margin-right: 8px; margin-bottom: 4px;">
+                            <ui:VisualElement name="primary-brand-icon" class="brand-icon" style="width: 20px; height: 20px; border-radius: 4px; margin-right: 6px;" />
+                            <ui:Label name="primary-brand-name" text="None" style="color: rgb(235, 225, 215); font-size: 13px;" />
+                        </ui:VisualElement>
+                        <ui:VisualElement name="secondary-brand-badge" class="brand-badge" style="margin-bottom: 4px;">
+                            <ui:VisualElement name="secondary-brand-icon" class="brand-icon" style="width: 20px; height: 20px; border-radius: 4px; margin-right: 6px;" />
+                            <ui:Label name="secondary-brand-name" text="None" style="color: rgb(200, 190, 180); font-size: 13px;" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- Corruption Bar -->
+                <ui:VisualElement name="corruption-section" style="margin-bottom: 16px;">
+                    <ui:VisualElement class="vb-row" style="justify-content: space-between; margin-bottom: 6px;">
+                        <ui:Label text="CORRUPTION" style="color: rgb(120, 60, 160); font-size: 12px; letter-spacing: 2px;" />
+                        <ui:Label name="corruption-percent" text="0%" style="color: rgb(160, 80, 120); font-size: 12px; -unity-font-style: bold;" />
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="corruption-bar-bg" style="height: 12px; background-color: rgb(25, 20, 35); border-radius: 6px; overflow: hidden;">
+                        <ui:VisualElement name="corruption-bar-fill" style="width: 0%; height: 100%; background-color: rgb(160, 60, 120); border-radius: 6px;" />
+                    </ui:VisualElement>
+
+                    <ui:Label name="corruption-state" text="Purified" style="color: rgb(80, 180, 120); font-size: 11px; margin-top: 4px; -unity-text-align: middle-center;" />
+                </ui:VisualElement>
+
+                <!-- Stats Section -->
+                <ui:VisualElement name="stats-section" style="margin-bottom: 16px;">
+                    <ui:Label text="STATS" style="color: rgb(120, 60, 160); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
+
+                    <ui:VisualElement name="stats-grid" style="flex-direction: row; flex-wrap: wrap;">
+                        <!-- HP -->
+                        <ui:VisualElement class="monster-stat-item" style="width: 50%; padding: 4px;">
+                            <ui:Label text="HP" style="color: rgb(165, 155, 145); font-size: 11px;" />
+                            <ui:Label name="stat-hp" text="0" style="color: rgb(180, 50, 50); font-size: 16px; -unity-font-style: bold;" />
+                        </ui:VisualElement>
+                        <!-- MP -->
+                        <ui:VisualElement class="monster-stat-item" style="width: 50%; padding: 4px;">
+                            <ui:Label text="MP" style="color: rgb(165, 155, 145); font-size: 11px;" />
+                            <ui:Label name="stat-mp" text="0" style="color: rgb(60, 120, 200); font-size: 16px; -unity-font-style: bold;" />
+                        </ui:VisualElement>
+                        <!-- Attack -->
+                        <ui:VisualElement class="monster-stat-item" style="width: 50%; padding: 4px;">
+                            <ui:Label text="ATK" style="color: rgb(165, 155, 145); font-size: 11px;" />
+                            <ui:Label name="stat-attack" text="0" style="color: rgb(220, 120, 40); font-size: 16px; -unity-font-style: bold;" />
+                        </ui:VisualElement>
+                        <!-- Defense -->
+                        <ui:VisualElement class="monster-stat-item" style="width: 50%; padding: 4px;">
+                            <ui:Label text="DEF" style="color: rgb(165, 155, 145); font-size: 11px;" />
+                            <ui:Label name="stat-defense" text="0" style="color: rgb(140, 150, 165); font-size: 16px; -unity-font-style: bold;" />
+                        </ui:VisualElement>
+                        <!-- Magic -->
+                        <ui:VisualElement class="monster-stat-item" style="width: 50%; padding: 4px;">
+                            <ui:Label text="MAG" style="color: rgb(165, 155, 145); font-size: 11px;" />
+                            <ui:Label name="stat-magic" text="0" style="color: rgb(160, 80, 200); font-size: 16px; -unity-font-style: bold;" />
+                        </ui:VisualElement>
+                        <!-- Speed -->
+                        <ui:VisualElement class="monster-stat-item" style="width: 50%; padding: 4px;">
+                            <ui:Label text="SPD" style="color: rgb(165, 155, 145); font-size: 11px;" />
+                            <ui:Label name="stat-speed" text="0" style="color: rgb(60, 180, 140); font-size: 16px; -unity-font-style: bold;" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- Skills Section -->
+                <ui:VisualElement name="skills-section" style="flex-grow: 1; margin-bottom: 16px;">
+                    <ui:Label text="SKILLS" style="color: rgb(120, 60, 160); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
+
+                    <ui:ScrollView name="skills-scroll" style="max-height: 120px;">
+                        <ui:VisualElement name="skills-list" class="vb-column">
+                            <!-- Skills populated dynamically -->
+                        </ui:VisualElement>
+                    </ui:ScrollView>
+                </ui:VisualElement>
+
+                <!-- Action Buttons -->
+                <ui:VisualElement name="action-buttons" class="vb-column" style="margin-top: auto;">
+                    <ui:Button text="VIEW DETAILS" name="btn-details" class="vb-button vb-button-primary" style="margin-bottom: 8px;" />
+                    <ui:VisualElement class="vb-row">
+                        <ui:Button text="ADD TO PARTY" name="btn-party" class="vb-button" style="flex-grow: 1; margin-right: 8px;" />
+                        <ui:Button text="RELEASE" name="btn-release" class="vb-button vb-button-danger" style="width: 100px;" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

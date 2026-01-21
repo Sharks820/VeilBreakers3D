@@ -4,6 +4,15 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid:
+  - enabled: 1
+    path: Assets/Scenes/CharacterSelect.unity
+    guid:
+  - enabled: 1
+    path: Assets/Scenes/TestArena.unity
+    guid:
   m_configObjects:
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: add534cb8c66ae64ab9a9cbe66facc96, type: 2}

@@ -1,0 +1,114 @@
+using UnityEngine;
+using UnityEngine.UIElements;
+
+namespace VeilBreakers.UI.Core
+{
+    /// <summary>
+    /// Auto-setup for UI scenes. Automatically loads and assigns UI assets at runtime.
+    /// Add this to any scene and it will set up the UI system automatically.
+    /// </summary>
+    public class UIAutoSetup : MonoBehaviour
+    {
+        [Header("Auto-Load Settings")]
+        [SerializeField] private bool _autoLoadAssets = true;
+        [SerializeField] private string _menuToLoad = "MainMenu";
+
+        [Header("Manual Overrides (Optional)")]
+        [SerializeField] private VisualTreeAsset _manualTemplate;
+        [SerializeField] private PanelSettings _manualPanelSettings;
+
+        private UIDocument _uiDocument;
+
+        private void Awake()
+        {
+            SetupUI();
+        }
+
+        private void SetupUI()
+        {
+            // Get or create UIDocument
+            _uiDocument = GetComponent<UIDocument>();
+            if (_uiDocument == null)
+            {
+                _uiDocument = gameObject.AddComponent<UIDocument>();
+            }
+
+            // Load panel settings
+            PanelSettings panelSettings = _manualPanelSettings;
+            if (panelSettings == null)
+            {
+                panelSettings = Resources.Load<PanelSettings>("UI/VeilBreakersPanelSettings");
+                if (panelSettings == null)
+                {
+                    // Create default panel settings at runtime
+                    panelSettings = ScriptableObject.CreateInstance<PanelSettings>();
+                    panelSettings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
+                    panelSettings.referenceResolution = new Vector2Int(1920, 1080);
+                    Debug.LogWarning("[UIAutoSetup] Using runtime-created PanelSettings. For better performance, assign one in Inspector.");
+                }
+            }
+            _uiDocument.panelSettings = panelSettings;
+
+            // Load template
+            VisualTreeAsset template = _manualTemplate;
+            if (template == null && _autoLoadAssets)
+            {
+                template = Resources.Load<VisualTreeAsset>($"UI/Templates/{_menuToLoad}");
+                if (template == null)
+                {
+                    Debug.LogError($"[UIAutoSetup] Could not load template: UI/Templates/{_menuToLoad}");
+                    CreateFallbackUI();
+                    return;
+                }
+            }
+
+            if (template != null)
+            {
+                _uiDocument.visualTreeAsset = template;
+            }
+
+            // Load stylesheets
+            var root = _uiDocument.rootVisualElement;
+
+            var themeStyle = Resources.Load<StyleSheet>("UI/Styles/VeilBreakersTheme");
+            if (themeStyle != null)
+                root.styleSheets.Add(themeStyle);
+
+            var componentStyle = Resources.Load<StyleSheet>("UI/Styles/VeilBreakers");
+            if (componentStyle != null)
+                root.styleSheets.Add(componentStyle);
+
+            Debug.Log($"[UIAutoSetup] UI initialized: {_menuToLoad}");
+        }
+
+        private void CreateFallbackUI()
+        {
+            var root = _uiDocument.rootVisualElement;
+            root.style.backgroundColor = new Color(0.05f, 0.03f, 0.08f);
+            root.style.justifyContent = Justify.Center;
+            root.style.alignItems = Align.Center;
+
+            var container = new VisualElement();
+            container.style.alignItems = Align.Center;
+            root.Add(container);
+
+            var title = new Label("VEILBREAKERS");
+            title.style.fontSize = 48;
+            title.style.color = new Color(0.9f, 0.85f, 0.8f);
+            title.style.unityFontStyleAndWeight = FontStyle.Bold;
+            container.Add(title);
+
+            var error = new Label($"Could not load UI template: {_menuToLoad}");
+            error.style.fontSize = 16;
+            error.style.color = new Color(0.8f, 0.4f, 0.4f);
+            error.style.marginTop = 20;
+            container.Add(error);
+
+            var hint = new Label("Check that UI assets are in Resources/UI/ folder");
+            hint.style.fontSize = 14;
+            hint.style.color = new Color(0.6f, 0.6f, 0.6f);
+            hint.style.marginTop = 10;
+            container.Add(hint);
+        }
+    }
+}
