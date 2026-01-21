@@ -1092,3 +1092,214 @@
     border-width: 0;
     color: rgb(200, 190, 180);
 }
+
+/* =============================================================================
+   VERA DIALOGUE UI
+   ============================================================================= */
+
+/* Main dialogue box */
+.dialogue-box {
+    background-color: rgba(12, 10, 18, 0.95);
+    border-width: 2px;
+    border-color: rgb(60, 50, 75);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.dialogue-box-glitched {
+    border-color: rgb(160, 60, 120);
+}
+
+/* Glitch overlay effect */
+.dialogue-glitch-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(160, 60, 120, 0.1);
+    border-radius: 12px;
+}
+
+/* VERA Portrait */
+.vera-portrait-frame {
+    width: 100px;
+    height: 100px;
+    background-color: rgb(20, 16, 28);
+    border-radius: 50px;
+    border-width: 3px;
+    border-color: rgb(120, 60, 160);
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.vera-portrait-frame-glitched {
+    border-color: rgb(160, 60, 120);
+}
+
+.vera-portrait-glow {
+    position: absolute;
+    left: -4px;
+    top: -4px;
+    right: -4px;
+    bottom: -4px;
+    border-radius: 54px;
+    border-width: 2px;
+    border-color: rgba(120, 200, 150, 0.5);
+}
+
+.vera-portrait-glow-corrupted {
+    border-color: rgba(160, 60, 120, 0.7);
+}
+
+.vera-portrait {
+    width: 80px;
+    height: 80px;
+    border-radius: 40px;
+    background-color: rgb(60, 50, 75);
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.vera-scanlines {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(160, 60, 120, 0.3);
+    border-radius: 50px;
+}
+
+.vera-name {
+    color: rgb(120, 200, 150);
+    font-size: 14px;
+    letter-spacing: 3px;
+    -unity-font-style: bold;
+}
+
+.vera-name-glitched {
+    color: rgb(160, 60, 120);
+}
+
+/* Integrity pip indicator */
+.integrity-pip {
+    width: 12px;
+    height: 12px;
+    border-radius: 6px;
+    background-color: rgb(120, 200, 150);
+}
+
+.integrity-pip-warning {
+    background-color: rgb(220, 180, 60);
+}
+
+.integrity-pip-critical {
+    background-color: rgb(200, 60, 80);
+}
+
+.integrity-pip-corrupted {
+    background-color: rgb(160, 60, 120);
+}
+
+/* Dialogue text */
+.dialogue-text {
+    color: rgb(220, 215, 210);
+    font-size: 16px;
+    white-space: normal;
+    line-height: 1.5;
+}
+
+.dialogue-text-glitched {
+    color: rgb(200, 140, 170);
+}
+
+/* Continue indicator */
+.continue-hint {
+    color: rgb(100, 90, 85);
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+.continue-arrow {
+    width: 0;
+    height: 0;
+    margin-left: 8px;
+    border-left-width: 6px;
+    border-right-width: 6px;
+    border-top-width: 8px;
+    border-left-color: transparent;
+    border-right-color: transparent;
+    border-top-color: rgb(100, 90, 85);
+}
+
+/* Choices container */
+.dialogue-choices {
+    background-color: rgba(8, 6, 12, 0.5);
+}
+
+/* Choice button */
+.dialogue-choice {
+    padding: 12px 20px;
+    margin-bottom: 8px;
+    background-color: rgb(25, 20, 35);
+    border-width: 1px;
+    border-color: rgb(60, 50, 75);
+    border-radius: 6px;
+    transition-duration: 0.15s;
+}
+
+.dialogue-choice:hover {
+    background-color: rgb(40, 32, 50);
+    border-color: rgb(120, 60, 160);
+}
+
+.dialogue-choice:active {
+    background-color: rgb(50, 40, 60);
+}
+
+.dialogue-choice-text {
+    color: rgb(200, 190, 180);
+    font-size: 14px;
+}
+
+.dialogue-choice:hover .dialogue-choice-text {
+    color: rgb(235, 225, 215);
+}
+
+/* Choice with consequence indicator */
+.dialogue-choice-consequence {
+    border-left-width: 3px;
+    border-left-color: rgb(220, 180, 60);
+}
+
+.dialogue-choice-dangerous {
+    border-left-color: rgb(200, 60, 80);
+}
+
+/* Veil Integrity bar */
+.integrity-bar-bg {
+    background-color: rgb(25, 20, 35);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.integrity-bar-fill {
+    height: 100%;
+    background-color: rgb(120, 200, 150);
+    border-radius: 4px;
+    transition-duration: 0.3s;
+    transition-property: width, background-color;
+}
+
+.integrity-bar-fill-warning {
+    background-color: rgb(220, 180, 60);
+}
+
+.integrity-bar-fill-critical {
+    background-color: rgb(200, 60, 80);
+}
+
+.integrity-bar-fill-corrupted {
+    background-color: rgb(160, 60, 120);
+}
