@@ -310,6 +310,38 @@ namespace VeilBreakers.Core
         }
 
         /// <summary>
+        /// Get all monsters as a list
+        /// </summary>
+        public List<MonsterData> GetAllMonsters()
+        {
+            return new List<MonsterData>(_monsters.Values);
+        }
+
+        /// <summary>
+        /// Get all heroes as a list
+        /// </summary>
+        public List<HeroData> GetAllHeroes()
+        {
+            return new List<HeroData>(_heroes.Values);
+        }
+
+        /// <summary>
+        /// Get all items as a list
+        /// </summary>
+        public List<ItemData> GetAllItems()
+        {
+            return new List<ItemData>(_items.Values);
+        }
+
+        /// <summary>
+        /// Get all skills as a list
+        /// </summary>
+        public List<SkillData> GetAllSkills()
+        {
+            return new List<SkillData>(_skills.Values);
+        }
+
+        /// <summary>
         /// Get skills for a monster's innate skill list
         /// </summary>
         public List<SkillData> GetMonsterInnateSkills(MonsterData monster)
