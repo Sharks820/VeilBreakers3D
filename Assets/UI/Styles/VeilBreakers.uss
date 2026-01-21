@@ -943,3 +943,152 @@
 .vb-button-danger:active {
     background-color: rgb(100, 30, 30);
 }
+
+/* =============================================================================
+   MONSTER COLLECTION UI
+   ============================================================================= */
+
+/* Monster card in grid */
+.monster-card {
+    width: 100px;
+    height: 120px;
+    margin: 6px;
+    background-color: rgb(25, 20, 35);
+    border-width: 2px;
+    border-color: rgb(45, 38, 55);
+    border-radius: 8px;
+    padding: 8px;
+    flex-direction: column;
+    align-items: center;
+    transition-duration: 0.15s;
+}
+
+.monster-card:hover {
+    border-color: rgb(120, 60, 160);
+    background-color: rgb(35, 28, 45);
+    scale: 1.02;
+}
+
+.monster-card-selected {
+    border-color: rgb(160, 100, 200);
+    background-color: rgb(45, 35, 60);
+}
+
+/* Monster portrait in card */
+.monster-card-portrait {
+    width: 64px;
+    height: 64px;
+    background-color: rgb(35, 28, 45);
+    border-radius: 4px;
+    margin-bottom: 6px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.monster-card-name {
+    color: rgb(200, 190, 180);
+    font-size: 11px;
+    -unity-text-align: middle-center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 84px;
+}
+
+.monster-card-level {
+    color: rgb(165, 155, 145);
+    font-size: 10px;
+}
+
+/* Corruption glow effects */
+.corruption-low {
+    border-color: rgb(60, 120, 80);
+}
+
+.corruption-medium {
+    border-color: rgb(180, 150, 60);
+}
+
+.corruption-high {
+    border-color: rgb(180, 80, 80);
+}
+
+.corruption-critical {
+    border-color: rgb(160, 60, 120);
+    border-width: 3px;
+}
+
+/* Corruption bar */
+.corruption-bar-bg {
+    height: 12px;
+    background-color: rgb(25, 20, 35);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+/* Monster stat item */
+.monster-stat-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 4px;
+}
+
+/* Skill display in list */
+.monster-skill {
+    flex-direction: row;
+    align-items: center;
+    padding: 8px;
+    margin-bottom: 4px;
+    background-color: rgb(30, 24, 40);
+    border-radius: 4px;
+    border-left-width: 3px;
+    border-left-color: rgb(120, 60, 160);
+}
+
+.monster-skill:hover {
+    background-color: rgb(40, 32, 50);
+}
+
+.monster-skill-icon {
+    width: 24px;
+    height: 24px;
+    background-color: rgb(45, 38, 55);
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+.monster-skill-name {
+    color: rgb(200, 190, 180);
+    font-size: 13px;
+    flex-grow: 1;
+}
+
+.monster-skill-brand {
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+}
+
+/* Text field styling */
+.vb-text-field {
+    background-color: rgb(25, 20, 35);
+    border-color: rgb(60, 50, 75);
+    border-width: 1px;
+    border-radius: 4px;
+    padding: 6px 12px;
+    color: rgb(200, 190, 180);
+    font-size: 13px;
+}
+
+.vb-text-field:hover {
+    border-color: rgb(80, 60, 100);
+}
+
+.vb-text-field:focus {
+    border-color: rgb(120, 60, 160);
+}
+
+.vb-text-field > .unity-text-field__input {
+    background-color: transparent;
+    border-width: 0;
+    color: rgb(200, 190, 180);
+}
