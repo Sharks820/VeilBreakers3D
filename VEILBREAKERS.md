@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.92** | Last updated: 2026-01-20
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v1.95** | Last updated: 2026-01-20
 
 ---
 
@@ -337,6 +337,112 @@ Use Addressables for:
 - Audio files
 - Large textures
 - Level assets
+
+---
+
+## 🎨 UI TOOLKIT SYSTEM (v1.94 - COMPLETE)
+
+### Overview
+Complete AAA menu system built with Unity UI Toolkit (USS/UXML).
+
+**Files:**
+- `Assets/UI/Styles/VeilBreakers.uss` - Core stylesheet (700+ lines)
+- `Assets/UI/Styles/VeilBreakersTheme.uss` - Theme extensions
+- `Assets/UI/Templates/*.uxml` - UI document templates
+
+### Completed UI Screens
+
+| Screen | Controller | UXML Template | Status |
+|--------|------------|---------------|--------|
+| **Main Menu** | `MainMenuController.cs` | `MainMenu.uxml` | ✅ Complete |
+| **Settings** | `SettingsPanelController.cs` | `SettingsPanel.uxml` | ✅ Complete |
+| **Character Select** | `CharacterSelectController.cs` | `CharacterSelect.uxml` | ✅ Complete |
+| **Inventory** | `InventoryController.cs` | `Inventory.uxml` | ✅ Complete |
+| **Monster Collection** | `MonsterCollectionController.cs` | `MonsterCollection.uxml` | ✅ Complete |
+| **VERA Dialogue** | `VERADialogueController.cs` | `Dialogue.uxml` | ✅ Complete |
+
+### UI Architecture
+
+```
+Assets/UI/
+├── Styles/
+│   ├── VeilBreakers.uss      # Core styles, all UI components
+│   └── VeilBreakersTheme.uss # Shared theme variables
+├── Templates/
+│   ├── MainMenu.uxml         # Main menu layout
+│   ├── SettingsPanel.uxml    # Settings with tabs
+│   ├── CharacterSelect.uxml  # Hero selection grid
+│   ├── Inventory.uxml        # Item management
+│   ├── MonsterCollection.uxml # Captured monsters
+│   └── Dialogue.uxml         # VERA dialogue system
+│
+Assets/Scripts/UI/
+├── Core/
+│   ├── ThemeManager.cs       # Theme switching, USS variables
+│   └── UIAnimationController.cs # Transitions, animations
+└── Menus/
+    ├── MainMenuController.cs
+    ├── SettingsPanelController.cs
+    ├── CharacterSelectController.cs
+    ├── InventoryController.cs
+    ├── MonsterCollectionController.cs
+    └── VERADialogueController.cs
+```
+
+### USS Class Conventions
+
+| Prefix | Purpose | Example |
+|--------|---------|---------|
+| `.vb-` | VeilBreakers core component | `.vb-button`, `.vb-panel` |
+| `.menu-` | Menu-specific styles | `.menu-item`, `.menu-title` |
+| `.dialogue-` | Dialogue UI styles | `.dialogue-box`, `.dialogue-text` |
+| `.vera-` | VERA portrait/effects | `.vera-portrait`, `.vera-scanlines` |
+| `.inventory-` | Inventory grid styles | `.inventory-tab`, `.item-slot` |
+| `.monster-` | Monster collection | `.monster-card`, `.monster-skill` |
+| `.rarity-` | Rarity border colors | `.rarity-rare`, `.rarity-legendary` |
+| `.corruption-` | Corruption level states | `.corruption-low`, `.corruption-critical` |
+| `.integrity-` | Veil Integrity states | `.integrity-pip`, `.integrity-bar-fill` |
+
+### Asset Mapping Pattern
+Controllers use mapping classes to connect JSON data with Unity assets:
+
+```csharp
+[Serializable]
+public class HeroModelMapping
+{
+    public string heroId;        // Matches HeroData.hero_id from JSON
+    public Sprite portrait;      // Unity asset reference
+    public GameObject modelPrefab;
+}
+
+// In Inspector: Drag assets for each hero_id
+[SerializeField] private List<HeroModelMapping> _heroMappings;
+```
+
+### VERA Dialogue Features
+- **Typewriter effect** with punctuation pauses
+- **Glitch effects** (character swapping, scanlines, flickering)
+- **Veil Integrity bar** with dynamic color states
+- **Choice system** with consequence indicators
+
+### Rarity Colors (Item/Monster)
+| Rarity | Border Color |
+|--------|--------------|
+| COMMON | `#555555` (gray) |
+| UNCOMMON | `#40ff40` (green) |
+| RARE | `#4080ff` (blue) |
+| EPIC | `#a040ff` (purple) |
+| LEGENDARY | `#ffa040` (orange) |
+| MYTHIC | `#ff4080` (crimson) |
+
+### Corruption State Colors
+| State | Range | Bar Color |
+|-------|-------|-----------|
+| ASCENDED | 0-10% | `#40ff80` (bright green) |
+| Purified | 11-25% | `#80c060` (green) |
+| Unstable | 26-50% | `#c0c040` (yellow) |
+| Corrupted | 51-75% | `#c06040` (orange) |
+| ABYSSAL | 76-100% | `#a020ff` (purple) |
 
 ---
 
