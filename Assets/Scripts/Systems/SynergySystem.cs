@@ -77,12 +77,10 @@ namespace VeilBreakers.Systems
             }
 
             // Determine tier based on match count
-            return matchCount switch
-            {
-                3 => SynergyTier.FULL,
-                2 => SynergyTier.PARTIAL,
-                _ => SynergyTier.NEUTRAL
-            };
+            // Note: >= 3 handles parties with 3+ strong brand members
+            if (matchCount >= 3) return SynergyTier.FULL;
+            if (matchCount == 2) return SynergyTier.PARTIAL;
+            return SynergyTier.NEUTRAL;
         }
 
         /// <summary>

@@ -109,11 +109,14 @@ namespace VeilBreakers.Core
                 if (jsonAsset != null)
                 {
                     var wrapper = JsonUtility.FromJson<MonsterDataWrapper>("{\"monsters\":" + jsonAsset.text + "}");
-                    foreach (var monster in wrapper.monsters)
+                    if (wrapper?.monsters != null)
                     {
-                        if (!string.IsNullOrEmpty(monster.monster_id))
+                        foreach (var monster in wrapper.monsters)
                         {
-                            _monsters[monster.monster_id] = monster;
+                            if (!string.IsNullOrEmpty(monster.monster_id))
+                            {
+                                _monsters[monster.monster_id] = monster;
+                            }
                         }
                     }
                 }
@@ -136,11 +139,14 @@ namespace VeilBreakers.Core
                 if (jsonAsset != null)
                 {
                     var wrapper = JsonUtility.FromJson<SkillDataWrapper>("{\"skills\":" + jsonAsset.text + "}");
-                    foreach (var skill in wrapper.skills)
+                    if (wrapper?.skills != null)
                     {
-                        if (!string.IsNullOrEmpty(skill.skill_id))
+                        foreach (var skill in wrapper.skills)
                         {
-                            _skills[skill.skill_id] = skill;
+                            if (!string.IsNullOrEmpty(skill.skill_id))
+                            {
+                                _skills[skill.skill_id] = skill;
+                            }
                         }
                     }
                 }
@@ -163,11 +169,14 @@ namespace VeilBreakers.Core
                 if (jsonAsset != null)
                 {
                     var wrapper = JsonUtility.FromJson<HeroDataWrapper>("{\"heroes\":" + jsonAsset.text + "}");
-                    foreach (var hero in wrapper.heroes)
+                    if (wrapper?.heroes != null)
                     {
-                        if (!string.IsNullOrEmpty(hero.hero_id))
+                        foreach (var hero in wrapper.heroes)
                         {
-                            _heroes[hero.hero_id] = hero;
+                            if (!string.IsNullOrEmpty(hero.hero_id))
+                            {
+                                _heroes[hero.hero_id] = hero;
+                            }
                         }
                     }
                 }
@@ -190,11 +199,14 @@ namespace VeilBreakers.Core
                 if (jsonAsset != null)
                 {
                     var wrapper = JsonUtility.FromJson<ItemDataWrapper>("{\"items\":" + jsonAsset.text + "}");
-                    foreach (var item in wrapper.items)
+                    if (wrapper?.items != null)
                     {
-                        if (!string.IsNullOrEmpty(item.item_id))
+                        foreach (var item in wrapper.items)
                         {
-                            _items[item.item_id] = item;
+                            if (!string.IsNullOrEmpty(item.item_id))
+                            {
+                                _items[item.item_id] = item;
+                            }
                         }
                     }
                 }
