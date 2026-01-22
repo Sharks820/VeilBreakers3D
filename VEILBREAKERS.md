@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.01** | Last updated: 2026-01-21
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.02** | Last updated: 2026-01-21
 
 ---
 
@@ -1396,11 +1396,69 @@ All designs complete - IMPLEMENTATION ONLY tomorrow!
 - Auto-creates GameBootstrap, TestArenaManager, spawn points, UI Canvas
 - Run All System Tests and System Health Check menu options
 
-**Next Session Priorities:**
-1. Monster Ultimates design
-2. Balance review of hero abilities
-3. UI Prefab implementation
-4. Start Menu flow
+---
+
+## SESSION HANDOFF (v2.01 - 2026-01-21)
+
+### What Was Completed This Session
+
+**Bug Fixes:**
+- Fixed `GameDatabase.cs` - Added null checks for all 4 JSON wrapper arrays
+- Fixed `SynergySystem.cs` - Tier logic now uses `>= 3` instead of `== 3` for FULL tier
+
+**UI Auto-Bootstrap System Created:**
+- `MenuBootstrap.cs` - Uses `[RuntimeInitializeOnLoadMethod]` to auto-create UI at runtime
+- `UIAutoSetup.cs` - Alternative Resources-based asset loading system
+- UI assets copied to `Assets/Resources/UI/` for runtime loading
+
+**Scenes Created (Assets/Scenes/):**
+| Scene | Purpose | Auto-Loads |
+|-------|---------|------------|
+| `MainMenu.unity` | Main menu with buttons | MainMenu.uxml + MainMenuController |
+| `CharacterSelect.unity` | Character/party selection | CharacterSelect.uxml + CharacterSelectController |
+| `TestArena.unity` | 3D gameplay arena with floor/lighting | N/A (gameplay scene) |
+
+**Build Settings Updated:**
+- All 3 scenes added to EditorBuildSettings
+- MainMenu is scene index 0 (default start scene)
+
+### How to Test UI
+
+1. Open Unity
+2. Open `Assets/Scenes/MainMenu.unity`
+3. Press Play
+4. Menu auto-initializes (no manual setup needed)
+
+### Known State
+
+| System | Status |
+|--------|--------|
+| Code Migration | 92% complete |
+| UI System | Working (auto-bootstrap) |
+| Combat System | Code complete, needs visual testing |
+| Save System | Code complete |
+| Audio System | Code complete |
+
+### Next Session Priorities
+
+1. **Test the UI in Unity** - Verify MainMenu loads and buttons work
+2. **Add 3D visuals** - Characters/monsters in TestArena
+3. **VERA dialogue system** - Connect to UI
+4. **Combat HUD** - Integrate with BattleManager
+
+### Files Created This Session
+
+```
+Assets/Scripts/UI/Core/MenuBootstrap.cs      # Auto-bootstraps UI on scene load
+Assets/Scripts/UI/Core/UIAutoSetup.cs        # Alternative manual setup
+Assets/UI/VeilBreakersPanelSettings.asset    # UI scaling settings
+Assets/Resources/UI/VeilBreakersPanelSettings.asset
+Assets/Resources/UI/Templates/*.uxml         # All UXML templates
+Assets/Resources/UI/Styles/*.uss             # All stylesheets
+Assets/Scenes/MainMenu.unity
+Assets/Scenes/CharacterSelect.unity
+Assets/Scenes/TestArena.unity
+```
 
 ---
 
