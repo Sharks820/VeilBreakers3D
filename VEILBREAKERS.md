@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.03** | Last updated: 2026-01-22
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.04** | Last updated: 2026-01-22
 
 ---
 
@@ -1398,7 +1398,7 @@ All designs complete - IMPLEMENTATION ONLY tomorrow!
 
 ---
 
-## SESSION HANDOFF (v2.03 - 2026-01-22)
+## SESSION HANDOFF (v2.04 - 2026-01-22)
 
 ### What Was Done This Session
 
@@ -1410,6 +1410,32 @@ All designs complete - IMPLEMENTATION ONLY tomorrow!
 - **PowerShell 7 + Windows Terminal** is the most powerful combo for Unity game dev
 - Native .NET/C# integration, object pipeline, Unity CLI designed for Windows shells
 - WezTerm is an alternative if Shift+Enter in Claude Code is needed
+
+**New Plugins Installed (Community Recommended):**
+- **claude-hud** - Shows context %, active tools, running agents, todo progress (always visible)
+- **dx** (ykdojo) - 40+ tips, `/dx:clone`, `/dx:gha`, handoff docs
+
+**New Skills Created:**
+- **`/mockup-ui`** - MANDATORY before any UI work, generates FLUX AI image mockups
+- **`/draw-diagram`** - MANDATORY before system design, shows ASCII/Mermaid diagrams
+
+**Keyboard Shortcuts (Important):**
+| Key | Action |
+|-----|--------|
+| `Ctrl+O` | Toggle verbose mode (see Claude's thinking) |
+| `Ctrl+T` | Toggle task list display |
+| `Shift+Tab` | Toggle Plan Mode |
+| `/fork` | Clone conversation |
+| `/clear` | Fresh context (use often!) |
+
+**CLAUDE.md Updated:**
+- Added Protocol 6.5: Visual Preview Before Implementation (MANDATORY)
+- Added Protocol 6.6: Workflow Visibility Plugins
+- Added mockup-ui and draw-diagram to skills table
+
+---
+
+## SESSION HANDOFF (v2.03 - 2026-01-22)
 
 ---
 

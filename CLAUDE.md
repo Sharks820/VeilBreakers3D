@@ -87,6 +87,41 @@ When completing migration tasks:
 - Game function/story/big script changes
 - Delete ANY file (archive only, never delete)
 
+## 6.5 MANDATORY: Visual Preview Before Implementation (NEW)
+
+**BEFORE writing ANY UI or visual code, you MUST:**
+
+1. **Use `/mockup-ui`** to generate an AI image mockup with FLUX
+2. **Use `/draw-diagram`** to show architecture/data flow
+3. **Get user approval** before writing code
+
+**Triggers:**
+| User Says | YOU MUST DO |
+|-----------|-------------|
+| "Add UI for..." | `/mockup-ui` FIRST |
+| "Create a screen..." | `/mockup-ui` FIRST |
+| "Design the..." | `/mockup-ui` FIRST |
+| "Implement [system]..." | `/draw-diagram` FIRST |
+| "Add [feature]..." | `/draw-diagram` FIRST |
+
+**NEVER skip visual preview. User wants to SEE before you BUILD.**
+
+## 6.6 MANDATORY: Workflow Visibility Plugins (NEW)
+
+**These plugins are INSTALLED and must be ACTIVE:**
+
+| Plugin | What It Shows | Status |
+|--------|---------------|--------|
+| **claude-hud** | Context %, active tools, agents, todos | ✅ Installed |
+| **dx** | Clone conversations, handoffs, GHA analysis | ✅ Installed |
+
+**Keyboard shortcuts to remind user:**
+- `Ctrl+O` - Toggle verbose mode (see thinking)
+- `Ctrl+T` - Toggle task list
+- `Shift+Tab` - Toggle Plan Mode
+- `/fork` - Clone conversation
+- `/clear` - Fresh context
+
 ## 7. Git Organization Protocol (MANDATORY)
 
 ### Branch Naming Convention
@@ -356,6 +391,8 @@ For full MCP functionality, ensure these are set:
 
 | Skill | Trigger | Purpose |
 |-------|---------|---------|
+| **mockup-ui** | ANY UI work | **MANDATORY** - Generate FLUX image before coding UI |
+| **draw-diagram** | ANY system design | **MANDATORY** - Show ASCII/Mermaid diagram before coding |
 | **unity-component-design** | "Create a new component for..." | Design MonoBehaviour/ScriptableObject architecture |
 | **unity-performance-check** | Before commits | Quick performance red flags check |
 | **veilbreakers-balance-check** | Changing damage/rates | Validate game balance changes won't break game |
@@ -363,6 +400,13 @@ For full MCP functionality, ensure these are set:
 | **unity-editor-control** | "Run the game", "Check compile errors" | Unity Editor interaction via MCP |
 | **generate-game-asset** | "Create a sprite for..." | AI art generation via HuggingFace |
 | **github-workflow** | "Create PR", "Check CI status" | GitHub operations via MCP |
+
+## Installed Plugins (Community Recommended)
+
+| Plugin | Purpose | Commands |
+|--------|---------|----------|
+| **claude-hud** | Shows context %, tools, agents, todos | Auto-active in status line |
+| **dx** | Clone convos, handoffs, GHA analysis | `/dx:clone`, `/dx:gha`, `/dx:handoff` |
 
 ## 11. Agent Orchestration Protocol (MANDATORY)
 
