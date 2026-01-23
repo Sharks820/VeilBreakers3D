@@ -1,70 +1,79 @@
 ---
 name: mockup-ui
-description: Generate UI mockup images for VeilBreakers using AI before implementation
+description: Generate UI mockups for VeilBreakers before implementation (ASCII layout + optional FLUX)
 ---
 
 # UI Mockup Generator for VeilBreakers
 
-Generate visual mockups using FLUX AI before writing any UI code.
+Show visual layout mockups BEFORE writing any UI code.
 
 ## When to Use
 - Before implementing any new UI screen
 - When designing HUD elements
-- For monster/character portraits
 - Menu layouts and panels
+- Any visual component
 
 ## Process
 
 1. **Understand the request** - What UI element needs mockup?
-2. **Generate prompt** following VeilBreakers style guide
-3. **Call FLUX** via mcp-hfspace to generate image
-4. **Show result** for user approval before coding
+2. **Create ASCII layout** showing placement, sizes, elements
+3. **Optionally try FLUX** if AI image would help (may not work)
+4. **Get user approval** before coding
 
-## VeilBreakers Style Guide
-
-**Art Direction:**
-- Dark fantasy horror aesthetic
-- Deep blacks, purples, crimsons
-- Glowing neon accents (cyan, magenta, orange)
-- Hand-painted/painterly quality
-- Atmospheric fog and particles
-- Dramatic rim lighting
-
-**UI Specific:**
-- Semi-transparent dark panels
-- Glowing borders on interactive elements
-- Corruption effects (cracks, tendrils) for high corruption
-- Clean readability despite dark theme
-
-## Prompt Template
+## ASCII UI Mockup Format
 
 ```
-dark fantasy horror game UI, [ELEMENT DESCRIPTION],
-semi-transparent dark panel, glowing [COLOR] accents,
-dramatic lighting, atmospheric, high detail,
-game interface mockup, 1920x1080, professional quality
+┌─────────────────────────────────────────────────────────┐
+│                     SCREEN NAME                         │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│   ┌─────────────┐                    ┌──────────────┐   │
+│   │  Element 1  │                    │  Element 2   │   │
+│   │  (size/pos) │                    │  (size/pos)  │   │
+│   └─────────────┘                    └──────────────┘   │
+│                                                         │
+│   ┌─────────────────────────────────────────────────┐   │
+│   │              Main Content Area                  │   │
+│   │              (width x height)                   │   │
+│   └─────────────────────────────────────────────────┘   │
+│                                                         │
+│   [ Button 1 ]    [ Button 2 ]    [ Button 3 ]          │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
 ```
 
-## Example Usage
+## Example: Health Bar with Corruption
 
-User: `/mockup-ui health bar with corruption indicator`
-
-Generate:
 ```
-dark fantasy horror game UI, health bar with dual indicators,
-red HP bar with purple corruption meter below,
-semi-transparent dark panel, glowing purple corruption cracks,
-dramatic lighting, atmospheric, high detail,
-game interface mockup, 1920x1080, professional quality
+┌──────────────────────────────────────┐
+│  MONSTER NAME           Lv.45       │
+├──────────────────────────────────────┤
+│  HP  [████████████░░░░░░] 847/1200  │
+│  COR [██████░░░░░░░░░░░░]  35%      │
+│       ↑ purple, cracks when >50%    │
+└──────────────────────────────────────┘
+Width: 300px | Position: top-left floating
+Colors: HP=red, Corruption=purple, BG=semi-transparent black
 ```
 
-Then call: `mcp__mcp-hfspace__FLUX_1-schnell-infer` with the prompt
+## VeilBreakers Style Notes
 
-## After Generation
+**Colors:**
+- HP Bar: Red (#ff4040)
+- Corruption: Purple (#a020ff)
+- Backgrounds: Semi-transparent black (rgba 0,0,0,0.7)
+- Accents: Glowing borders (cyan, magenta, orange)
+
+**Effects:**
+- Corruption >50%: Add crack effects
+- Corruption >75%: Add tendril animations
+- Low HP: Pulse effect
+
+## After Mockup
 
 Ask user:
-1. Does this match your vision?
-2. Any adjustments needed?
+1. Does this layout work?
+2. Any size/position adjustments?
 3. Ready to implement?
 
 Only proceed to code after approval.
