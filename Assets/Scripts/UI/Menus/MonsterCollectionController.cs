@@ -504,7 +504,8 @@ namespace VeilBreakers.UI.Menus
 
         private void OnMonsterCardClicked(int index)
         {
-            if (index < 0 || index >= _filteredMonsters.Count) return;
+            // Validate index against BOTH lists (they should be synced, but be defensive)
+            if (index < 0 || index >= _filteredMonsters.Count || index >= _monsterCards.Count) return;
 
             // Update visual selection
             if (_selectedIndex >= 0 && _selectedIndex < _monsterCards.Count)

@@ -204,7 +204,10 @@ namespace VeilBreakers.Combat
         {
             _isDefending = true;
             _guardTarget = action != DefenseAction.DEFEND_SELF ? guardTarget : null;
-            Abilities.currentDefenseAction = action;
+            if (Abilities != null)
+            {
+                Abilities.currentDefenseAction = action;
+            }
         }
 
         /// <summary>
