@@ -176,29 +176,17 @@ namespace VeilBreakers.UI.Combat
         {
             if (_player?.Abilities == null) return;
 
-            // Skill slots start at index 2 (after Basic Attack and Defend)
-            // Map UI slot indices to AbilitySlot enum values:
-            // Slot 2 -> SKILL_1 (2), Slot 3 -> SKILL_2 (3), Slot 4 -> SKILL_3 (4)
-            // Slot 5 -> SKILL_3 (4) fallback, Slot 6 -> ULTIMATE (5)
-            for (int i = 2; i < _slots.Count; i++)
+            // 6-slot ability bar layout:
+            // Slot 0 -> BASIC_ATTACK (0) - no cooldown
+            // Slot 1 -> DEFEND (1) - no cooldown
+            // Slot 2 -> SKILL_1 (2)
+            // Slot 3 -> SKILL_2 (3)
+            // Slot 4 -> SKILL_3 (4)
+            // Slot 5 -> ULTIMATE (5)
+            for (int i = 2; i < _slots.Count && i <= 5; i++)
             {
-                int abilityIndex;
-                if (i == 6)
-                {
-                    // Ultimate slot maps to AbilitySlot.ULTIMATE (5)
-                    abilityIndex = (int)Data.AbilitySlot.ULTIMATE;
-                }
-                else if (i >= 2 && i <= 4)
-                {
-                    // Skill slots 2-4 map directly to SKILL_1-SKILL_3 (enum values 2-4)
-                    abilityIndex = i;
-                }
-                else
-                {
-                    // Slot 5 (Skill 4) - use SKILL_3 as fallback since no SKILL_4 in enum
-                    abilityIndex = (int)Data.AbilitySlot.SKILL_3;
-                }
-
+                // Direct mapping: UI slot index matches AbilitySlot enum value
+                int abilityIndex = i;
                 float remaining = _player.Abilities.GetCooldownRemaining(abilityIndex);
                 float total = _player.Abilities.GetCooldownDuration(abilityIndex);
                 _slots[i].SetCooldown(remaining, total);
