@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.04** | Last updated: 2026-01-22
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.05** | Last updated: 2026-01-24
 
 ---
 
@@ -148,25 +148,24 @@ screenshot_2026-01-15_monster_hollow_ingame.png
 
 **ALL Claude sessions have access to these tools. USE THEM.**
 
-### Configuration Status (Verified 2026-01-19)
+### Configuration Status (Verified 2026-01-24)
 ```
-✅ All 8 local MCPs configured in .mcp.json
+✅ 6 local MCPs configured in .mcp.json (cleaned 2026-01-24)
 ✅ All npm packages verified (versions confirmed)
-✅ All 4 environment variables set
+✅ 2 environment variables set (GITHUB_TOKEN, NOTION_API_KEY)
 ✅ Blender addon installed (port 9876)
 ✅ Documentation synced
+⚠️ Removed: mcp-hfspace, fish-audio (non-functional)
 ```
 
-### Local MCPs (8 Total)
+### Local MCPs (6 Total)
 | MCP | Trigger | What It Does |
 |-----|---------|--------------|
-| **sequential-thinking** | "ultrathink", "analyze", "complex" | Multi-step problem solving, game balance |
+| **sequential-thinking** | "analyze", "complex" | Multi-step problem solving, game balance |
 | **mcp-unity** | "Unity", "compile", "screenshot" | Control Unity Editor directly |
 | **github** | "PR", "issue", "merge" | GitHub operations |
-| **mcp-hfspace** | "generate image", "sprite" | FREE AI 2D art via FLUX |
 | **blender** | "3D model", "mesh", "render" | Control Blender for 3D |
 | **image-process** | "crop", "resize" | Image manipulation |
-| **fish-audio** | "voice", "VERA", "dialogue" | FREE AI voice via Fish Audio (#1 TTS quality) |
 | **notion** | "track", "backlog", "database", "doc" | Project management, monster DB, design docs |
 
 ### Plugin MCPs (Auto-loaded)
@@ -191,17 +190,15 @@ screenshot_2026-01-15_monster_hollow_ingame.png
 - **documentation-writer** - Doc updates
 
 ### Environment Variables (Set in system)
-- `HF_TOKEN` ✅ - HuggingFace (FREE image gen via FLUX)
 - `GITHUB_TOKEN` ✅ - GitHub operations
-- `NOTION_API_KEY` ✅ - Notion project management
-- `FISH_AUDIO_API_KEY` ✅ - Fish Audio (FREE tier, voice generation)
+- `NOTION_API_KEY` ⚠️ - Notion project management (needs setup)
 
 **Blender Addon:** Must install addon.py from github.com/ahujasid/blender-mcp (port 9876)
 
-### Audio Stack (FREE)
+### Audio Stack (FREE - Web Only)
 | Type | Service | Status |
 |------|---------|--------|
-| **Voice** | Fish Audio MCP | ✅ Configured (FREE tier) |
+| **Voice** | ElevenLabs / PlayHT | ⚠️ No MCP (use web or local TTS) |
 | **Music** | Udio | ⚠️ No MCP (use web: udio.com, 1,200 free/month) |
 | **SFX** | SFX Engine | ⚠️ No MCP (use web: sfxengine.com, unlimited free) |
 
@@ -839,7 +836,7 @@ Successful Quick Time Event adds +5-15% to capture chance.
 
 ## MCP & Plugin Arsenal
 
-### Active MCP Servers (5 Local + 5 Plugin)
+### Active MCP Servers (6 Local + 5 Plugin)
 
 **Local (.mcp.json):**
 | Server | Purpose | Usage Trigger |
@@ -847,8 +844,9 @@ Successful Quick Time Event adds +5-15% to capture chance.
 | sequential-thinking | Complex problem decomposition | "Design...", "Plan...", system architecture |
 | image-process | Image manipulation (crop, resize) | 2D UI asset pipeline |
 | **mcp-unity** | Unity Editor control | Run builds, get debug output, scene manipulation |
-| **game-asset-generator** | AI asset generation | Generate sprites, textures, 3D models (FREE via HuggingFace) |
+| **blender** | 3D modeling via Blender | Create/edit 3D models, render |
 | **github** | GitHub integration | PRs, issues, CI/CD, code review (PAT-based) |
+| **notion** | Project management | Track tasks, design docs, backlog |
 
 **Plugin-provided:**
 | Server | Purpose | Usage Trigger |

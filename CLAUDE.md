@@ -91,7 +91,7 @@ When completing migration tasks:
 
 **BEFORE writing ANY UI or visual code, you MUST:**
 
-1. **Use `/mockup-ui`** to generate an AI image mockup with FLUX
+1. **Use `/mockup-ui`** to create a visual mockup (ASCII layout recommended)
 2. **Use `/draw-diagram`** to show architecture/data flow
 3. **Get user approval** before writing code
 
@@ -262,16 +262,11 @@ If you catch yourself NOT using an MCP when its trigger applies, STOP and USE IT
 #### ASSET CREATION (Use Proactively)
 | MCP | Trigger Keywords | MANDATORY Usage |
 |-----|------------------|-----------------|
-| **mcp-hfspace** | "generate image", "create sprite", "monster art", "UI art", "concept art" | AI image generation via FLUX. Use for ALL 2D art needs - monsters, UI, concepts |
 | **blender** | "3D model", "mesh", "render", "Blender", "sculpt", "material", "texture 3D" | Create/edit 3D models directly in Blender. Use for converting 2D art to 3D |
 | **image-process** | "crop", "resize", "rotate", "convert format", "sprite sheet" | Process existing images - resize for Unity, crop sprites, convert formats |
 
-#### AUDIO & VOICE (FREE Stack)
-| MCP | Trigger Keywords | MANDATORY Usage |
-|-----|------------------|-----------------|
-| **fish-audio** | "voice", "VERA voice", "dialogue", "narration", "character voice" | Generate voice lines via Fish Audio (FREE tier, #1 TTS quality). USE FOR ALL VOICE |
-
-**Note:** Music and SFX have no MCP - use directly:
+#### AUDIO & ASSETS (External Tools)
+**Note:** No MCP for 2D art, voice, music, or SFX currently. Use external tools directly:
 - **Music:** [Udio](https://udio.com) - 1,200 free songs/month, commercial OK
 - **SFX:** [SFX Engine](https://sfxengine.com) - unlimited free, commercial OK
 
@@ -302,8 +297,6 @@ USER REQUEST RECEIVED
 │                                                           │
 │ Does request mention ANY of these?                        │
 │ • "3D model/mesh/Blender" → USE blender MCP               │
-│ • "voice/dialogue/VERA" → USE fish-audio MCP              │
-│ • "generate image/sprite/art" → USE mcp-hfspace           │
 │ • "Unity/scene/build/compile" → USE mcp-unity             │
 │ • "complex/ultrathink/analyze" → USE sequential-thinking  │
 │ • "PR/issue/GitHub" → USE github MCP                      │
@@ -319,9 +312,6 @@ USER REQUEST RECEIVED
 │ WRONG: "I could use the blender MCP to..."                │
 │ RIGHT: *Actually calls blender MCP tool*                  │
 │                                                           │
-│ WRONG: "The fish-audio MCP can generate voice..."         │
-│ RIGHT: *Actually generates voice with fish-audio MCP*     │
-│                                                           │
 │ WRONG: "I'll remember this for next session..."           │
 │ RIGHT: *Actually writes it to Notion database*            │
 └───────────────────────────────────────────────────────────┘
@@ -335,8 +325,8 @@ USER REQUEST RECEIVED
 |------|-------------|-----------|---------------|
 | Create 3D model | **blender** | - | Don't describe how to model manually |
 | Generate music | Use [Udio](https://udio.com) | - | Don't suggest royalty-free sites (Udio is FREE) |
-| Generate voice line | **fish-audio** | - | Don't skip VERA voice generation |
-| Generate 2D art | **mcp-hfspace** | image-process | Don't suggest finding stock art |
+| Generate voice line | External (ElevenLabs, etc.) | - | No MCP currently - use external tools |
+| Generate 2D art | External (MidJourney, etc.) | - | No MCP currently - use external tools |
 | Check Unity errors | **mcp-unity** | - | Don't ask user to check manually |
 | Take game screenshot | **mcp-unity** | - | Don't ask user to screenshot |
 | Create PR | **github** | commit-commands | Don't give manual instructions |
@@ -361,7 +351,6 @@ For full MCP functionality, ensure these are set:
 
 | Variable | MCP | Status | How to Get |
 |----------|-----|--------|------------|
-| `HF_TOKEN` | mcp-hfspace | ✅ Set | [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) |
 | `GITHUB_TOKEN` | github | ✅ Set | GitHub Personal Access Token |
 | `SUNO_API_KEY` | audio | ⚠️ Optional | [suno.ai](https://suno.ai) Settings → API |
 | `ELEVENLABS_API_KEY` | audio | ⚠️ Optional | [elevenlabs.io](https://elevenlabs.io) Profile → API Key |
@@ -391,14 +380,14 @@ For full MCP functionality, ensure these are set:
 
 | Skill | Trigger | Purpose |
 |-------|---------|---------|
-| **mockup-ui** | ANY UI work | **MANDATORY** - Generate FLUX image before coding UI |
+| **mockup-ui** | ANY UI work | **MANDATORY** - Create ASCII layout mockup before coding UI |
 | **draw-diagram** | ANY system design | **MANDATORY** - Show ASCII/Mermaid diagram before coding |
 | **unity-component-design** | "Create a new component for..." | Design MonoBehaviour/ScriptableObject architecture |
 | **unity-performance-check** | Before commits | Quick performance red flags check |
 | **veilbreakers-balance-check** | Changing damage/rates | Validate game balance changes won't break game |
 | **veilbreakers-vera-test** | Modifying VERA dialogue | Test VERA dual personality consistency |
 | **unity-editor-control** | "Run the game", "Check compile errors" | Unity Editor interaction via MCP |
-| **generate-game-asset** | "Create a sprite for..." | AI art generation via HuggingFace |
+| **generate-game-asset** | "Create a sprite for..." | AI art prompts (external tools needed) |
 | **github-workflow** | "Create PR", "Check CI status" | GitHub operations via MCP |
 
 ## Installed Plugins (Community Recommended)

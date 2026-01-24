@@ -19,15 +19,6 @@
       ],
       "description": "Unity Editor control - screenshots, scenes, GameObjects, builds, console output, prefabs, components"
     },
-    "mcp-hfspace": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@llmindset/mcp-hfspace"],
-      "env": {
-        "HF_TOKEN": "${HF_TOKEN}"
-      },
-      "description": "FREE AI image generation via FLUX - monster art, UI sprites, concept art"
-    },
     "github": {
       "type": "stdio",
       "command": "npx",
@@ -45,15 +36,6 @@
         "BLENDER_PORT": "9876"
       },
       "description": "3D modeling - create/edit models, scenes, materials, render from Blender"
-    },
-    "fish-audio": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@alanse/fish-audio-mcp-server"],
-      "env": {
-        "FISH_AUDIO_API_KEY": "${FISH_AUDIO_API_KEY}"
-      },
-      "description": "FREE AI voice generation - VERA dialogue, character voices, narration"
     },
     "notion": {
       "type": "stdio",
