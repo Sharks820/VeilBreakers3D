@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using VeilBreakers.Combat;
 using VeilBreakers.Data;
+using VeilBreakers.Systems;
 
 namespace VeilBreakers.AI
 {
@@ -236,9 +237,16 @@ namespace VeilBreakers.AI
             }
 
             // Brand effectiveness bonus (from brand system)
-            // TODO: Integrate with BrandSystem when available
-            // float brandEffectiveness = BrandSystem.GetEffectiveness(self.Brand, target.Brand);
-            // multiplier *= brandEffectiveness;
+            // AI prioritizes targets they have type advantage against
+            float brandEffectiveness = BrandSystem.GetEffectiveness(self.Brand, target.Brand);
+            if (brandEffectiveness >= BrandSystem.SUPER_EFFECTIVE)
+            {
+                multiplier *= 1.5f; // Heavily prioritize 2x damage targets
+            }
+            else if (brandEffectiveness <= BrandSystem.NOT_EFFECTIVE)
+            {
+                multiplier *= 0.6f; // Deprioritize 0.5x damage targets
+            }
 
             // Priority bonus
             multiplier *= (1f + (rule.priority / 100f));

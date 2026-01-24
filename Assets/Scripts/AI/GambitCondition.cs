@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using VeilBreakers.Combat;
 using VeilBreakers.Data;
+using VeilBreakers.Systems;
 
 namespace VeilBreakers.AI
 {
@@ -312,8 +314,8 @@ namespace VeilBreakers.AI
 
         public bool IsCasting(Combatant target)
         {
-            // TODO: Implement casting detection when cast system is added
-            return false;
+            if (target == null) return false;
+            return target.IsCasting;
         }
 
         public bool IsHealer(Combatant target)
@@ -368,11 +370,42 @@ namespace VeilBreakers.AI
             return highestEnemy == target;
         }
 
+        // Clustering radius for AOE targeting (in world units)
+        private const float CLUSTER_RADIUS = 5f;
+
         public int GetClusteredEnemyCount(Combatant self)
         {
-            // TODO: Implement spatial clustering when positioning system is added
-            // For now, return total enemy count
-            return GetEnemyCount(self);
+            if (_enemies == null || _enemies.Length == 0) return 0;
+
+            // Find the position that would hit the most enemies
+            int maxCluster = 0;
+
+            for (int i = 0; i < _enemies.Length; i++)
+            {
+                var center = _enemies[i];
+                if (center == null || !center.IsAlive) continue;
+
+                // Count how many enemies are within cluster radius of this enemy
+                int clusterCount = 0;
+                for (int j = 0; j < _enemies.Length; j++)
+                {
+                    var other = _enemies[j];
+                    if (other == null || !other.IsAlive) continue;
+
+                    float distance = Vector3.Distance(center.transform.position, other.transform.position);
+                    if (distance <= CLUSTER_RADIUS)
+                    {
+                        clusterCount++;
+                    }
+                }
+
+                if (clusterCount > maxCluster)
+                {
+                    maxCluster = clusterCount;
+                }
+            }
+
+            return maxCluster;
         }
 
         public int GetEnemyCount(Combatant self)
@@ -400,8 +433,10 @@ namespace VeilBreakers.AI
 
         public bool IsAbilityReady(Combatant self, AbilitySlot slot)
         {
-            // TODO: Implement cooldown check when ability system is integrated
-            return true;
+            if (self == null || self.Abilities == null) return false;
+
+            var ability = self.Abilities.GetAbility(slot);
+            return ability?.isReady ?? false;
         }
 
         public Combatant[] GetAllies() => _allies;
@@ -468,6 +503,83 @@ namespace VeilBreakers.AI
             }
 
             return highest;
+        }
+
+        /// <summary>
+        /// Gets the best target for an AOE attack (center of largest cluster).
+        /// </summary>
+        public Combatant GetBestClusterTarget()
+        {
+            if (_enemies == null || _enemies.Length == 0) return null;
+
+            Combatant bestCenter = null;
+            int maxCluster = 0;
+
+            for (int i = 0; i < _enemies.Length; i++)
+            {
+                var center = _enemies[i];
+                if (center == null || !center.IsAlive) continue;
+
+                int clusterCount = 0;
+                for (int j = 0; j < _enemies.Length; j++)
+                {
+                    var other = _enemies[j];
+                    if (other == null || !other.IsAlive) continue;
+
+                    float distance = Vector3.Distance(center.transform.position, other.transform.position);
+                    if (distance <= CLUSTER_RADIUS)
+                    {
+                        clusterCount++;
+                    }
+                }
+
+                if (clusterCount > maxCluster)
+                {
+                    maxCluster = clusterCount;
+                    bestCenter = center;
+                }
+            }
+
+            return bestCenter;
+        }
+
+        /// <summary>
+        /// Gets all enemies within cluster radius of a target.
+        /// </summary>
+        public void GetEnemiesInCluster(Combatant center, List<Combatant> results)
+        {
+            results.Clear();
+            if (center == null || _enemies == null) return;
+
+            for (int i = 0; i < _enemies.Length; i++)
+            {
+                var enemy = _enemies[i];
+                if (enemy == null || !enemy.IsAlive) continue;
+
+                float distance = Vector3.Distance(center.transform.position, enemy.transform.position);
+                if (distance <= CLUSTER_RADIUS)
+                {
+                    results.Add(enemy);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks if target has brand weakness to attacker.
+        /// </summary>
+        public bool HasBrandAdvantage(Combatant attacker, Combatant defender)
+        {
+            if (attacker == null || defender == null) return false;
+            return BrandSystem.HasAdvantage(attacker.Brand, defender.Brand);
+        }
+
+        /// <summary>
+        /// Checks if target has brand resistance to attacker.
+        /// </summary>
+        public bool HasBrandDisadvantage(Combatant attacker, Combatant defender)
+        {
+            if (attacker == null || defender == null) return false;
+            return BrandSystem.HasDisadvantage(attacker.Brand, defender.Brand);
         }
     }
 }

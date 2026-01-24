@@ -38,6 +38,10 @@ namespace VeilBreakers.Combat
         [SerializeField] private bool _isAlive = true;
         [SerializeField] private bool _isDefending = false;
         [SerializeField] private Combatant _guardTarget = null;
+        [SerializeField] private bool _isCasting = false;
+        [SerializeField] private float _currentCastTime = 0f;
+        [SerializeField] private float _maxCastTime = 0f;
+        [SerializeField] private string _currentCastAbilityId = null;
 
         // Abilities
         public AbilityLoadout Abilities { get; private set; }
@@ -57,6 +61,9 @@ namespace VeilBreakers.Combat
         public bool IsAlive => _isAlive;
         public bool IsDefending => _isDefending;
         public Combatant GuardTarget => _guardTarget;
+        public bool IsCasting => _isCasting;
+        public float CastProgress => _maxCastTime > 0 ? _currentCastTime / _maxCastTime : 0f;
+        public string CurrentCastAbilityId => _currentCastAbilityId;
 
         public int Level => _level;
         public MonsterRarity Rarity => _rarity;
@@ -237,6 +244,61 @@ namespace VeilBreakers.Combat
         public void UpdateCooldowns(float deltaTime)
         {
             Abilities?.UpdateAllCooldowns(deltaTime);
+        }
+
+        // =============================================================================
+        // CASTING SYSTEM
+        // =============================================================================
+
+        /// <summary>
+        /// Start casting an ability with a cast time.
+        /// </summary>
+        public void StartCasting(string abilityId, float castTime)
+        {
+            _isCasting = true;
+            _currentCastAbilityId = abilityId;
+            _maxCastTime = castTime;
+            _currentCastTime = 0f;
+        }
+
+        /// <summary>
+        /// Update casting progress (call each frame during combat).
+        /// Returns true when cast is complete.
+        /// </summary>
+        public bool UpdateCasting(float deltaTime)
+        {
+            if (!_isCasting) return false;
+
+            _currentCastTime += deltaTime;
+            if (_currentCastTime >= _maxCastTime)
+            {
+                CompleteCast();
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Complete the current cast (called automatically or manually).
+        /// </summary>
+        public void CompleteCast()
+        {
+            _isCasting = false;
+            _currentCastTime = 0f;
+            _maxCastTime = 0f;
+            _currentCastAbilityId = null;
+        }
+
+        /// <summary>
+        /// Interrupt the current cast (called when stunned/interrupted).
+        /// </summary>
+        public void InterruptCast()
+        {
+            if (_isCasting)
+            {
+                Debug.Log($"[Combatant] {_displayName}'s cast was interrupted!");
+                CompleteCast();
+            }
         }
 
         // =============================================================================
