@@ -87,8 +87,8 @@ namespace VeilBreakers.Combat
         /// </summary>
         public void StartBattle(List<Combatant> players, List<Combatant> enemies, Path championPath)
         {
-            _playerParty = players;
-            _enemyParty = enemies;
+            _playerParty = players ?? new List<Combatant>();
+            _enemyParty = enemies ?? new List<Combatant>();
             _championPath = championPath;
 
             // Set player (first in party who is marked as player)
@@ -197,8 +197,9 @@ namespace VeilBreakers.Combat
         /// </summary>
         public void ExecuteAbility(Combatant user, AbilitySlot slot, Combatant target)
         {
-            if (!user.IsAlive) return;
+            if (user == null || !user.IsAlive) return;
             if (user.Abilities == null) return;
+            if (target == null) return;
 
             var ability = user.Abilities.GetAbility(slot);
             if (ability == null || !ability.isReady) return;
@@ -382,6 +383,8 @@ namespace VeilBreakers.Combat
         /// </summary>
         private Combatant GetGuardInterceptor(Combatant target)
         {
+            if (target == null) return null;
+            
             // Check player party (no LINQ to avoid allocations)
             for (int i = 0; i < _playerParty.Count; i++)
             {
