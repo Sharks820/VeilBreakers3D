@@ -701,7 +701,11 @@ namespace VeilBreakers.Managers
             foreach (var target in _tempTargetList)
             {
                 if (target == null)
+                {
+                    // Clean up destroyed target entries to prevent memory leak
+                    _effectsByTarget.Remove(target);
                     continue;
+                }
 
                 if (!_effectsByTarget.TryGetValue(target, out var effects))
                     continue;

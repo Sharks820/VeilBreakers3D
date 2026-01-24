@@ -15,7 +15,7 @@
     "mcp-unity": {
       "command": "node",
       "args": [
-        "C:/Users/Conner/Downloads/VeilBreakers3D/Library/PackageCache/com.gamelovers.mcp-unity@5dbd851fc5/Server~/build/index.js"
+        "C:/Users/Conner/OneDrive/Documents/VeilBreakers3DCurrent/Library/PackageCache/com.gamelovers.mcp-unity@5dbd851fc5/Server~/build/index.js"
       ],
       "description": "Unity Editor control - screenshots, scenes, GameObjects, builds, console output, prefabs, components"
     },

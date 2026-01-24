@@ -289,9 +289,14 @@ namespace VeilBreakers.Utils
 
         /// <summary>
         /// Remap a value from one range to another.
+        /// Returns toMin if fromMin equals fromMax (avoids division by zero).
         /// </summary>
         public static float Remap(this float value, float fromMin, float fromMax, float toMin, float toMax)
         {
+            // Guard against division by zero when source range is zero
+            if (Mathf.Approximately(fromMax, fromMin))
+                return toMin;
+
             return (value - fromMin) / (fromMax - fromMin) * (toMax - toMin) + toMin;
         }
 
