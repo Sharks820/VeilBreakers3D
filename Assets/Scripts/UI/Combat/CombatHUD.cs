@@ -149,7 +149,7 @@ namespace VeilBreakers.UI.Combat
             }
 
             // Set initial target
-            if (_enemies.Length > 0)
+            if (_enemies.Length > 0 && _enemies[0] != null)
             {
                 SetTarget(_enemies[0]);
             }

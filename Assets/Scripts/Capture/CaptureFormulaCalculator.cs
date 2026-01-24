@@ -91,11 +91,18 @@ namespace VeilBreakers.Capture
         /// </summary>
         private static float GetHPModifier(float hpPercent)
         {
-            if (hpPercent <= 0.10f) return CaptureFormulaConfig.HPBonuses[0];      // 5-10%: +15%
-            if (hpPercent <= 0.20f) return CaptureFormulaConfig.HPBonuses[1];      // 11-20%: +10%
-            if (hpPercent <= 0.30f) return CaptureFormulaConfig.HPBonuses[2];      // 21-30%: +5%
-            if (hpPercent <= 0.40f) return CaptureFormulaConfig.HPBonuses[3];      // 31-40%: +0%
-            return CaptureFormulaConfig.HPBonuses[4];                              // 41-50%: -5%
+            var bonuses = CaptureFormulaConfig.HPBonuses;
+            if (bonuses == null || bonuses.Length < 5)
+            {
+                Debug.LogError("[CaptureFormulaCalculator] HPBonuses array not properly configured");
+                return 0f;
+            }
+            
+            if (hpPercent <= 0.10f) return bonuses[0];      // 5-10%: +15%
+            if (hpPercent <= 0.20f) return bonuses[1];      // 11-20%: +10%
+            if (hpPercent <= 0.30f) return bonuses[2];      // 21-30%: +5%
+            if (hpPercent <= 0.40f) return bonuses[3];      // 31-40%: +0%
+            return bonuses[4];                              // 41-50%: -5%
         }
 
         /// <summary>
@@ -185,18 +192,25 @@ namespace VeilBreakers.Capture
         public static float GetBerserkChance(BoundMonsterData monster, int playerLevel)
         {
             // Base berserk chance based on corruption
+            var berserkChances = CaptureFailureConfig.BerserkChance;
+            if (berserkChances == null || berserkChances.Length < 3)
+            {
+                Debug.LogError("[CaptureFormulaCalculator] BerserkChance array not properly configured");
+                return 0.5f;
+            }
+            
             float baseBerserk;
             if (monster.currentCorruption <= 25f)
             {
-                baseBerserk = CaptureFailureConfig.BerserkChance[0]; // Low: 30%
+                baseBerserk = berserkChances[0]; // Low: 30%
             }
             else if (monster.currentCorruption <= 50f)
             {
-                baseBerserk = CaptureFailureConfig.BerserkChance[1]; // Mid: 50%
+                baseBerserk = berserkChances[1]; // Mid: 50%
             }
             else
             {
-                baseBerserk = CaptureFailureConfig.BerserkChance[2]; // High: 70%
+                baseBerserk = berserkChances[2]; // High: 70%
             }
 
             // Modifiers for high rarity

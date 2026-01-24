@@ -101,7 +101,7 @@ namespace VeilBreakers.Combat
                     break;
                 }
             }
-            if (_player == null && _playerParty.Count > 0)
+            if (_player == null && _playerParty.Count > 0 && _playerParty[0] != null)
             {
                 _player = _playerParty[0];
             }
