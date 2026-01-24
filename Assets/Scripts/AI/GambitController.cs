@@ -262,6 +262,13 @@ namespace VeilBreakers.AI
         /// </summary>
         private Combatant GetAutoUltimateTarget()
         {
+            // Guard against null personality or battle context
+            if (_personality == null || _battleContext == null)
+            {
+                Debug.LogWarning("[GambitController] Cannot get ultimate target: personality or context is null");
+                return null;
+            }
+
             switch (_personality.ultimateTargetMode)
             {
                 case AIPersonality.UltimateTargetMode.LOWEST_HP_ENEMY:

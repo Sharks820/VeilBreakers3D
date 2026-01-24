@@ -143,6 +143,9 @@ namespace VeilBreakers.Data
         /// </summary>
         public int GetStatAtLevel(Stat stat, int level)
         {
+            // Validate level input (minimum 1, maximum 100 for safety)
+            level = Mathf.Clamp(level, 1, 100);
+
             int baseStat = stat switch
             {
                 Stat.HP => base_hp,
@@ -156,6 +159,9 @@ namespace VeilBreakers.Data
                 _ => 0
             };
 
+            // Guard against zero/negative base stat
+            if (baseStat <= 0) return 1;
+
             float growth = stat switch
             {
                 Stat.HP => hp_growth,
@@ -168,7 +174,19 @@ namespace VeilBreakers.Data
                 _ => 1.0f
             };
 
-            return Mathf.RoundToInt(baseStat * Mathf.Pow(growth, level - 1));
+            // Clamp growth rate to prevent exponential overflow (0.5 to 1.5 range)
+            growth = Mathf.Clamp(growth, 0.5f, 1.5f);
+
+            // Calculate with overflow protection
+            float growthMultiplier = Mathf.Pow(growth, level - 1);
+
+            // Clamp multiplier to prevent overflow (max 1000x base stat)
+            growthMultiplier = Mathf.Min(growthMultiplier, 1000f);
+
+            float result = baseStat * growthMultiplier;
+
+            // Clamp final result to valid int range with minimum of 1
+            return Mathf.Clamp(Mathf.RoundToInt(result), 1, int.MaxValue / 2);
         }
     }
 
