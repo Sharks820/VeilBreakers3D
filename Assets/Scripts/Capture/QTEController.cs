@@ -279,7 +279,7 @@ namespace VeilBreakers.Capture
         {
             // Use unscaled time so time slow doesn't affect QTE
             float delta = Time.unscaledDeltaTime;
-            float moveSpeed = 1f / _cycleDuration;
+            float moveSpeed = 1f / Mathf.Max(0.1f, _cycleDuration);
 
             // Move bar
             if (_barMovingRight)
