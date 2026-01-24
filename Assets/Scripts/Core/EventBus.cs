@@ -253,6 +253,36 @@ namespace VeilBreakers.Core
             => OnMainQuestCompleted?.Invoke(questId);
 
         // =============================================================================
+        // SCENE EVENTS
+        // =============================================================================
+
+        public static event Action<string> OnSceneLoadStarted;      // sceneName
+        public static event Action<float> OnSceneLoadProgress;      // progress (0-1)
+        public static event Action<string> OnSceneLoadCompleted;    // sceneName
+        public static event Action<string, string> OnSceneTransition;  // fromScene, toScene
+        public static event Action OnFadeOutStarted;
+        public static event Action OnFadeOutCompleted;
+        public static event Action OnFadeInStarted;
+        public static event Action OnFadeInCompleted;
+
+        public static void SceneLoadStarted(string sceneName)
+            => OnSceneLoadStarted?.Invoke(sceneName);
+        public static void SceneLoadProgress(float progress)
+            => OnSceneLoadProgress?.Invoke(progress);
+        public static void SceneLoadCompleted(string sceneName)
+            => OnSceneLoadCompleted?.Invoke(sceneName);
+        public static void SceneTransition(string fromScene, string toScene)
+            => OnSceneTransition?.Invoke(fromScene, toScene);
+        public static void FadeOutStarted()
+            => OnFadeOutStarted?.Invoke();
+        public static void FadeOutCompleted()
+            => OnFadeOutCompleted?.Invoke();
+        public static void FadeInStarted()
+            => OnFadeInStarted?.Invoke();
+        public static void FadeInCompleted()
+            => OnFadeInCompleted?.Invoke();
+
+        // =============================================================================
         // CLEANUP
         // =============================================================================
 
@@ -324,6 +354,15 @@ namespace VeilBreakers.Core
             OnTutorialCompleted = null;
             OnBossDefeated = null;
             OnMainQuestCompleted = null;
+
+            OnSceneLoadStarted = null;
+            OnSceneLoadProgress = null;
+            OnSceneLoadCompleted = null;
+            OnSceneTransition = null;
+            OnFadeOutStarted = null;
+            OnFadeOutCompleted = null;
+            OnFadeInStarted = null;
+            OnFadeInCompleted = null;
 
             Debug.Log("[EventBus] All listeners cleared");
         }
