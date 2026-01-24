@@ -282,6 +282,14 @@ namespace VeilBreakers.Managers
         private IEnumerator FadeOutRoutine()
         {
             EventBus.FadeOutStarted();
+
+            // Guard against missing fade canvas (headless builds, early destruction)
+            if (_fadeCanvasGroup == null)
+            {
+                Debug.LogWarning("[VBSceneManager] FadeCanvasGroup is null, skipping fade out");
+                yield break;
+            }
+
             _fadeCanvasGroup.blocksRaycasts = true;
 
             float duration = Mathf.Max(0.01f, _fadeOutDuration);
@@ -300,6 +308,13 @@ namespace VeilBreakers.Managers
         private IEnumerator FadeInRoutine()
         {
             EventBus.FadeInStarted();
+
+            // Guard against missing fade canvas (headless builds, early destruction)
+            if (_fadeCanvasGroup == null)
+            {
+                Debug.LogWarning("[VBSceneManager] FadeCanvasGroup is null, skipping fade in");
+                yield break;
+            }
 
             float duration = Mathf.Max(0.01f, _fadeInDuration);
             float elapsed = 0f;

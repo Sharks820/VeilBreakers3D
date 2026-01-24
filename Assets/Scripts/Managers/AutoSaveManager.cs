@@ -203,7 +203,15 @@ namespace VeilBreakers.Managers
                 if (_logAutoSaves)
                     Debug.Log($"[AutoSaveManager] Auto-saving: {reason}");
 
-                bool success = await SaveManager.Instance.AutoSaveAsync(reason);
+                // Cache reference to avoid null between await points
+                var saveManager = SaveManager.Instance;
+                if (saveManager == null)
+                {
+                    Debug.LogWarning($"[AutoSaveManager] SaveManager destroyed during auto-save: {reason}");
+                    return;
+                }
+
+                bool success = await saveManager.AutoSaveAsync(reason);
 
                 if (_logAutoSaves)
                 {
