@@ -284,11 +284,12 @@ namespace VeilBreakers.Managers
             EventBus.FadeOutStarted();
             _fadeCanvasGroup.blocksRaycasts = true;
 
+            float duration = Mathf.Max(0.01f, _fadeOutDuration);
             float elapsed = 0f;
-            while (elapsed < _fadeOutDuration)
+            while (elapsed < duration)
             {
                 elapsed += Time.unscaledDeltaTime;
-                _fadeCanvasGroup.alpha = Mathf.Clamp01(elapsed / _fadeOutDuration);
+                _fadeCanvasGroup.alpha = Mathf.Clamp01(elapsed / duration);
                 yield return null;
             }
 
@@ -300,11 +301,12 @@ namespace VeilBreakers.Managers
         {
             EventBus.FadeInStarted();
 
+            float duration = Mathf.Max(0.01f, _fadeInDuration);
             float elapsed = 0f;
-            while (elapsed < _fadeInDuration)
+            while (elapsed < duration)
             {
                 elapsed += Time.unscaledDeltaTime;
-                _fadeCanvasGroup.alpha = 1f - Mathf.Clamp01(elapsed / _fadeInDuration);
+                _fadeCanvasGroup.alpha = 1f - Mathf.Clamp01(elapsed / duration);
                 yield return null;
             }
 

@@ -162,6 +162,7 @@ namespace VeilBreakers.Audio
         {
             Debug.Log("[AudioBattleIntegration] Battle ended - triggering audio");
 
+            if (BattleManager.Instance == null) return;
             var state = BattleManager.Instance.State;
 
             // Play victory/defeat stinger

@@ -348,7 +348,8 @@ namespace VeilBreakers.Combat
         /// </summary>
         private void ApplySkillStatusEffects(Combatant caster, Combatant target, SkillData skill)
         {
-            if (skill.status_effects == null || skill.status_effects.Count == 0)
+            if (caster == null || target == null) return;
+            if (skill == null || skill.status_effects == null || skill.status_effects.Count == 0)
                 return;
 
             var statusManager = Managers.StatusEffectManager.Instance;
@@ -361,6 +362,7 @@ namespace VeilBreakers.Combat
             for (int i = 0; i < skill.status_effects.Count; i++)
             {
                 var effectEntry = skill.status_effects[i];
+                if (effectEntry == null) continue;
 
                 // Check chance to apply
                 if (effectEntry.chance < 1f && UnityEngine.Random.value > effectEntry.chance)
