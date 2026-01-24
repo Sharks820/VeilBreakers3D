@@ -384,7 +384,7 @@ namespace VeilBreakers.Capture
             float okayWidth = 0.20f;
 
             // Harder for higher rarity
-            float rarityMod = 1f - ((int)rarity * 0.1f);
+            float rarityMod = Mathf.Clamp(1f - ((int)rarity * 0.1f), 0.3f, 1f);
             perfectWidth *= rarityMod;
             goodWidth *= rarityMod;
             okayWidth *= rarityMod;

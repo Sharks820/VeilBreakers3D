@@ -316,7 +316,7 @@ namespace VeilBreakers.Capture
             if (unit == _player) return true;
             for (int i = 0; i < _allies.Length; i++)
             {
-                if (_allies[i] == unit) return true;
+                if (_allies[i] != null && _allies[i] == unit) return true;
             }
             return false;
         }
@@ -615,7 +615,7 @@ namespace VeilBreakers.Capture
             var gameManager = GameManager.Instance;
             if (gameManager != null)
             {
-                string monsterId = monster.combatant.MonsterId;
+                string monsterId = monster.combatant?.MonsterId;
                 if (!string.IsNullOrEmpty(monsterId))
                 {
                     bool added = gameManager.AddToParty(

@@ -139,7 +139,7 @@ namespace VeilBreakers.Capture
         public const float HIGH_CORRUPTION_PENALTY = -0.15f;  // -15% (harder bind)
 
         // Rarity modifiers
-        public static readonly float[] RarityModifiers = { 0f, -0.05f, -0.10f, -0.15f, -0.15f };
+        public static readonly float[] RarityModifiers = { 0f, -0.05f, -0.10f, -0.15f, -0.15f, -0.20f };
 
         // Speed modifier (per 10 points above base)
         public const float HIGH_SPEED_PENALTY = -0.05f;
