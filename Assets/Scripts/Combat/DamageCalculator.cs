@@ -28,6 +28,14 @@ namespace VeilBreakers.Combat
         {
             var result = new DamageResult();
 
+            // Guard against null combatants
+            if (attacker == null || defender == null)
+            {
+                Debug.LogWarning("[DamageCalculator] Null combatant in damage calculation");
+                result.finalDamage = basePower > 0 ? basePower : 1;
+                return result;
+            }
+
             // Get offensive and defensive stats
             int offensiveStat = damageType == DamageType.MAGICAL ? attacker.Magic : attacker.Attack;
             int defensiveStat = damageType == DamageType.MAGICAL ? defender.Resistance : defender.Defense;
@@ -75,6 +83,11 @@ namespace VeilBreakers.Combat
         /// </summary>
         public static int CalculateHeal(Combatant healer, int basePower)
         {
+            if (healer == null)
+            {
+                return Mathf.Max(1, basePower);
+            }
+
             float healing = basePower * (1f + healer.Magic * 0.01f);
             healing *= Random.Range(VARIANCE_MIN, VARIANCE_MAX);
             return Mathf.RoundToInt(healing);
