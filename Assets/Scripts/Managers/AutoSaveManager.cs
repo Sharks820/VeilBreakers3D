@@ -9,15 +9,8 @@ namespace VeilBreakers.Managers
     /// Manages automatic save triggers based on game events.
     /// Hooks into EventBus to auto-save at checkpoints.
     /// </summary>
-    public class AutoSaveManager : MonoBehaviour
+    public class AutoSaveManager : SingletonMonoBehaviour<AutoSaveManager>
     {
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        private static AutoSaveManager _instance;
-        public static AutoSaveManager Instance => _instance;
-
         // =============================================================================
         // CONFIGURATION
         // =============================================================================
@@ -71,18 +64,6 @@ namespace VeilBreakers.Managers
         // =============================================================================
         // UNITY LIFECYCLE
         // =============================================================================
-
-        private void Awake()
-        {
-            if (_instance != null && _instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
 
         private void OnEnable()
         {

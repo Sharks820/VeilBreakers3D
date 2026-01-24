@@ -14,7 +14,7 @@
       "Bash(claude plugin list:*)"
     ]
   },
-  "outputStyle": "Explanatory",
+  "outputStyle": "default",
   "remote": {
     "defaultEnvironmentId": "env_01NyVnhhN2s4mBnjQQkdk8oM"
   }

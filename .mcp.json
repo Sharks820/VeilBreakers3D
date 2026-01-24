@@ -6,12 +6,6 @@
       "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
       "description": "Complex problem breakdown, multi-step reasoning, game balance calculations"
     },
-    "image-process": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "image-process-mcp-server"],
-      "description": "Crop, resize, rotate, convert image formats for game assets"
-    },
     "mcp-unity": {
       "command": "node",
       "args": [
@@ -27,6 +21,15 @@
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
       },
       "description": "GitHub operations - PRs, issues, commits, CI status"
+    }
+  },
+  "_disabled": {
+    "_comment": "Re-enable these by moving them back to mcpServers",
+    "image-process": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "image-process-mcp-server"],
+      "description": "Crop, resize, rotate, convert image formats for game assets"
     },
     "blender": {
       "type": "stdio",

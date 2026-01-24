@@ -9,25 +9,8 @@ namespace VeilBreakers.Managers
     /// Manages shrine discovery and save zone checking.
     /// Works with SaveManager to control when manual saves are allowed.
     /// </summary>
-    public class ShrineManager : MonoBehaviour
+    public class ShrineManager : SingletonMonoBehaviour<ShrineManager>
     {
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        private static ShrineManager _instance;
-        public static ShrineManager Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    Debug.LogError("[ShrineManager] Instance not found! Ensure ShrineManager exists in scene.");
-                }
-                return _instance;
-            }
-        }
-
         // =============================================================================
         // CONFIGURATION
         // =============================================================================
@@ -72,26 +55,9 @@ namespace VeilBreakers.Managers
         // UNITY LIFECYCLE
         // =============================================================================
 
-        private void Awake()
+        protected override void OnSingletonAwake()
         {
-            if (_instance != null && _instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
-
             LoadDiscoveredShrines();
-        }
-
-        private void OnDestroy()
-        {
-            if (_instance == this)
-            {
-                _instance = null;
-            }
         }
 
 #if UNITY_EDITOR

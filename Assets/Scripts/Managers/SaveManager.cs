@@ -13,24 +13,8 @@ namespace VeilBreakers.Managers
     /// Manages all save/load operations for VeilBreakers.
     /// Singleton MonoBehaviour with async operations and bulletproof corruption prevention.
     /// </summary>
-    public class SaveManager : MonoBehaviour
+    public class SaveManager : SingletonMonoBehaviour<SaveManager>
     {
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        private static SaveManager _instance;
-        public static SaveManager Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    Debug.LogError("[SaveManager] Instance not found! Ensure SaveManager exists in scene.");
-                }
-                return _instance;
-            }
-        }
 
         // =============================================================================
         // CONSTANTS
@@ -81,27 +65,14 @@ namespace VeilBreakers.Managers
         // UNITY LIFECYCLE
         // =============================================================================
 
-        private void Awake()
+        protected override void OnSingletonAwake()
         {
-            if (_instance != null && _instance != this)
-            {
-                Debug.LogWarning("[SaveManager] Duplicate instance destroyed");
-                Destroy(gameObject);
-                return;
-            }
-
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
-
             Initialize();
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
-            if (_instance == this)
-            {
-                _instance = null;
-            }
+            base.OnDestroy();
             _saveMutex?.Dispose();
         }
 

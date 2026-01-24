@@ -12,25 +12,8 @@ namespace VeilBreakers.Managers
     /// Manages all status effects in combat.
     /// Handles application, updates, removal, and validation.
     /// </summary>
-    public class StatusEffectManager : MonoBehaviour
+    public class StatusEffectManager : SingletonMonoBehaviour<StatusEffectManager>
     {
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        private static StatusEffectManager _instance;
-        public static StatusEffectManager Instance
-        {
-            get
-            {
-                if (_instance == null && !_isQuitting)
-                {
-                    Debug.LogError("[StatusEffectManager] Instance not found!");
-                }
-                return _instance;
-            }
-        }
-
         // =============================================================================
         // CONFIGURATION
         // =============================================================================
@@ -61,9 +44,6 @@ namespace VeilBreakers.Managers
         private readonly List<StatusEffectInstance> _tempEffectList = new List<StatusEffectInstance>();
         private readonly List<(GameObject, StatusEffectInstance)> _tempRemoveList = new List<(GameObject, StatusEffectInstance)>();
 
-        /// <summary>Application quit flag to suppress errors during shutdown</summary>
-        private static bool _isQuitting = false;
-
         // =============================================================================
         // EVENTS
         // =============================================================================
@@ -84,30 +64,9 @@ namespace VeilBreakers.Managers
         // UNITY LIFECYCLE
         // =============================================================================
 
-        private void Awake()
+        protected override void OnSingletonAwake()
         {
-            if (_instance != null && _instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
             LoadEffectDataCache();
-        }
-
-        private void OnDestroy()
-        {
-            if (_instance == this)
-            {
-                _instance = null;
-            }
-        }
-
-        private void OnApplicationQuit()
-        {
-            _isQuitting = true;
         }
 
         private void Update()

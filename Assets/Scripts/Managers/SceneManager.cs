@@ -10,14 +10,8 @@ namespace VeilBreakers.Managers
     /// Manages scene loading, transitions, and loading screens.
     /// Handles async loading with fade effects and progress callbacks.
     /// </summary>
-    public class VBSceneManager : MonoBehaviour
+    public class VBSceneManager : SingletonMonoBehaviour<VBSceneManager>
     {
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        public static VBSceneManager Instance { get; private set; }
-
         // =============================================================================
         // SCENE NAMES (Constants)
         // =============================================================================
@@ -68,19 +62,9 @@ namespace VeilBreakers.Managers
         // UNITY LIFECYCLE
         // =============================================================================
 
-        private void Awake()
+        protected override void OnSingletonAwake()
         {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-
             _currentSceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-
             CreateFadeCanvas();
         }
 
