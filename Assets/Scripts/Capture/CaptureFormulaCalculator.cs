@@ -23,6 +23,21 @@ namespace VeilBreakers.Capture
         {
             var result = new CaptureCalculationResult();
 
+            // Guard against null monster
+            if (monster == null)
+            {
+                Debug.LogWarning("[CaptureFormulaCalculator] Null monster in capture calculation");
+                result.finalChance = 0f;
+                return result;
+            }
+
+            // Guard against no item selected
+            if (item == CaptureItem.NONE)
+            {
+                result.finalChance = 0f;
+                return result;
+            }
+
             // Get item effectiveness as base (already includes rarity factor)
             result.itemModifier = GetItemModifier(item, monster.rarity);
 
@@ -179,6 +194,13 @@ namespace VeilBreakers.Capture
         /// </summary>
         public static CaptureOutcome DetermineFailureOutcome(BoundMonsterData monster, int playerLevel)
         {
+            // Guard against null monster - default to flee
+            if (monster == null)
+            {
+                Debug.LogWarning("[CaptureFormulaCalculator] Null monster in failure outcome determination");
+                return CaptureOutcome.FLEE;
+            }
+
             float berserkChance = GetBerserkChance(monster, playerLevel);
 
             // Random roll
@@ -191,6 +213,13 @@ namespace VeilBreakers.Capture
         /// </summary>
         public static float GetBerserkChance(BoundMonsterData monster, int playerLevel)
         {
+            // Guard against null monster
+            if (monster == null)
+            {
+                Debug.LogWarning("[CaptureFormulaCalculator] Null monster in berserk chance calculation");
+                return 0.5f; // Default 50% if invalid
+            }
+
             // Base berserk chance based on corruption
             var berserkChances = CaptureFailureConfig.BerserkChance;
             if (berserkChances == null || berserkChances.Length < 3)
