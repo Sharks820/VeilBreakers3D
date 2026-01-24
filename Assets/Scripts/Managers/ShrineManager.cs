@@ -189,7 +189,7 @@ namespace VeilBreakers.Managers
             _isInShrineZone = nearestShrine != null;
 
             // Fire events on state change
-            if (_isInShrineZone && !wasInZone)
+            if (_isInShrineZone && !wasInZone && _currentShrine != null)
             {
                 EventBus.ShrineEntered(_currentShrine.shrineId);
                 Debug.Log($"[ShrineManager] Entered shrine zone: {_currentShrine.shrineName}");

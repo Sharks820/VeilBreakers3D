@@ -274,8 +274,16 @@ namespace VeilBreakers.Managers
             {
                 using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
-                    byte[] data = new byte[stream.Length];
-                    await stream.ReadAsync(data, 0, (int)stream.Length);
+                    // Guard against integer overflow on large files (>2GB)
+                    if (stream.Length > int.MaxValue)
+                    {
+                        Debug.LogError($"[SaveFileHandler] File too large to read: {stream.Length} bytes");
+                        return null;
+                    }
+
+                    int length = (int)stream.Length;
+                    byte[] data = new byte[length];
+                    await stream.ReadAsync(data, 0, length);
                     return data;
                 }
             }

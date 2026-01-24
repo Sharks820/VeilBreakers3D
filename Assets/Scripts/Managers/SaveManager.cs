@@ -259,9 +259,9 @@ namespace VeilBreakers.Managers
                     // Assign migrated data BEFORE saving (fixes race condition)
                     _currentSave = data;
 
-                    // Save migrated data
+                    // Save migrated data (skip mutex since we already hold it)
                     Debug.Log("[SaveManager] Saving migrated data...");
-                    await SaveInternalAsync(slot, path);
+                    await SaveInternalCoreAsync(slot, path);
                 }
                 else
                 {
@@ -445,6 +445,27 @@ namespace VeilBreakers.Managers
                 return false;
             }
 
+            try
+            {
+                return await SaveInternalCoreAsync(slot, path);
+            }
+            finally
+            {
+                _saveMutex.Release();
+            }
+        }
+
+        /// <summary>
+        /// Core save logic without mutex acquisition (for use when mutex is already held).
+        /// </summary>
+        private async Task<bool> SaveInternalCoreAsync(int slot, string path)
+        {
+            if (_currentSave == null)
+            {
+                Debug.LogError("[SaveManager] No save data to save");
+                return false;
+            }
+
             _isSaving = true;
             EventBus.SaveStarted(slot);
 
@@ -485,7 +506,6 @@ namespace VeilBreakers.Managers
             finally
             {
                 _isSaving = false;
-                _saveMutex.Release();
             }
         }
 

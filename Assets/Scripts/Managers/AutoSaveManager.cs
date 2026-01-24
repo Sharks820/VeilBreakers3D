@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using UnityEngine;
 using VeilBreakers.Core;
 
@@ -189,11 +190,11 @@ namespace VeilBreakers.Managers
                 return;
             }
 
-            // Perform auto-save
-            PerformAutoSave(reason);
+            // Perform auto-save (fire-and-forget with explicit discard)
+            _ = PerformAutoSaveAsync(reason);
         }
 
-        private async void PerformAutoSave(string reason)
+        private async Task PerformAutoSaveAsync(string reason)
         {
             try
             {
@@ -228,7 +229,7 @@ namespace VeilBreakers.Managers
         public void ForceAutoSave(string reason)
         {
             if (!_isEnabled || SaveManager.Instance == null) return;
-            PerformAutoSave($"forced:{reason}");
+            _ = PerformAutoSaveAsync($"forced:{reason}");
         }
 
         /// <summary>

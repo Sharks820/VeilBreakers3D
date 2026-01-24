@@ -353,11 +353,15 @@ namespace VeilBreakers.Managers
             for (int i = 1; i < _tempEffectList.Count; i++)
             {
                 var key = _tempEffectList[i];
+                if (key == null) continue;
                 int keyPriority = key.effectData?.cleansePriority ?? 0;
                 int j = i - 1;
-                while (j >= 0 && (_tempEffectList[j].effectData?.cleansePriority ?? 0) < keyPriority)
+                while (j >= 0)
                 {
-                    _tempEffectList[j + 1] = _tempEffectList[j];
+                    var compareItem = _tempEffectList[j];
+                    if (compareItem == null || (compareItem.effectData?.cleansePriority ?? 0) >= keyPriority)
+                        break;
+                    _tempEffectList[j + 1] = compareItem;
                     j--;
                 }
                 _tempEffectList[j + 1] = key;
