@@ -31,6 +31,36 @@ namespace VeilBreakers.Systems
             { Brand.VOID,   (new[] { Brand.SURGE, Brand.DREAD }, new[] { Brand.GRACE, Brand.MEND }) }
         };
 
+
+        // Hybrid brands map to their primary parent brand for effectiveness calculations
+        private static readonly Dictionary<Brand, Brand> HybridToParentBrand = new Dictionary<Brand, Brand>
+        {
+            { Brand.BLOODIRON, Brand.IRON },      // Iron + blood aspects
+            { Brand.RAVENOUS, Brand.SAVAGE },     // Savage + hunger aspects
+            { Brand.CORROSIVE, Brand.VENOM },     // Venom + decay aspects
+            { Brand.TERRORFLUX, Brand.DREAD },    // Dread + chaos aspects
+            { Brand.VENOMSTRIKE, Brand.VENOM },   // Venom + strike aspects
+            { Brand.NIGHTLEECH, Brand.LEECH }     // Leech + darkness aspects
+        };
+
+        /// <summary>
+        /// Resolve a brand to its core type (hybrid brands return their parent).
+        /// </summary>
+        public static Brand GetCoreBrand(Brand brand)
+        {
+            if (HybridToParentBrand.TryGetValue(brand, out var parent))
+                return parent;
+            return brand;
+        }
+
+        /// <summary>
+        /// Check if a brand is a hybrid brand.
+        /// </summary>
+        public static bool IsHybridBrand(Brand brand)
+        {
+            return HybridToParentBrand.ContainsKey(brand);
+        }
+
         /// <summary>
         /// Get damage multiplier between attacker and defender brands
         /// </summary>
@@ -39,17 +69,21 @@ namespace VeilBreakers.Systems
             if (attacker == Brand.NONE || defender == Brand.NONE)
                 return NEUTRAL;
 
-            if (!EffectivenessMatrix.TryGetValue(attacker, out var matrix))
+            // Resolve hybrid brands to their parent brands for effectiveness lookup
+            var coreAttacker = GetCoreBrand(attacker);
+            var coreDefender = GetCoreBrand(defender);
+
+            if (!EffectivenessMatrix.TryGetValue(coreAttacker, out var matrix))
                 return NEUTRAL;
 
             foreach (var strong in matrix.strong)
             {
-                if (strong == defender) return SUPER_EFFECTIVE;
+                if (strong == coreDefender) return SUPER_EFFECTIVE;
             }
 
             foreach (var weak in matrix.weak)
             {
-                if (weak == defender) return NOT_EFFECTIVE;
+                if (weak == coreDefender) return NOT_EFFECTIVE;
             }
 
             return NEUTRAL;
@@ -76,7 +110,10 @@ namespace VeilBreakers.Systems
         /// </summary>
         public static Color GetBrandColor(Brand brand)
         {
-            return brand switch
+            // Resolve to core brand for hybrid support
+            var coreBrand = GetCoreBrand(brand);
+            
+            return coreBrand switch
             {
                 Brand.IRON =>   new Color(0.6f, 0.6f, 0.7f),    // Steel gray
                 Brand.SAVAGE => new Color(0.9f, 0.2f, 0.1f),    // Blood red
@@ -105,6 +142,21 @@ namespace VeilBreakers.Systems
         /// </summary>
         public static string GetBrandArchetype(Brand brand)
         {
+            // Handle hybrid brands with specific archetypes
+            if (IsHybridBrand(brand))
+            {
+                return brand switch
+                {
+                    Brand.BLOODIRON => "Blood Knight",
+                    Brand.RAVENOUS => "Devourer",
+                    Brand.CORROSIVE => "Decay Bringer",
+                    Brand.TERRORFLUX => "Nightmare Weaver",
+                    Brand.VENOMSTRIKE => "Toxic Assassin",
+                    Brand.NIGHTLEECH => "Shadow Drainer",
+                    _ => "Unknown"
+                };
+            }
+            
             return brand switch
             {
                 Brand.IRON =>   "Defensive Wall",

@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
+using VeilBreakers.UI.Menus;
 
 namespace VeilBreakers.UI.Core
 {

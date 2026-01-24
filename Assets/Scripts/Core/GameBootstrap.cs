@@ -152,7 +152,7 @@ namespace VeilBreakers.Core
                 var am = amObj.AddComponent<AudioManager>();
                 if (_audioConfig != null)
                 {
-                    // Config will be set via inspector on the manager
+                    am.SetConfig(_audioConfig);
                 }
                 if (_dontDestroyOnLoad) DontDestroyOnLoad(amObj);
                 Log("  - Created AudioManager");

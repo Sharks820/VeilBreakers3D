@@ -251,7 +251,10 @@ namespace VeilBreakers.UI.Menus
             card.AddToClassList("vb-card");
             card.style.flexDirection = FlexDirection.Row;
             card.style.alignItems = Align.Center;
-            card.style.padding = 12;
+            card.style.paddingTop = 12;
+            card.style.paddingBottom = 12;
+            card.style.paddingLeft = 12;
+            card.style.paddingRight = 12;
             card.style.marginBottom = 8;
             card.style.cursor = StyleKeyword.Initial;
 

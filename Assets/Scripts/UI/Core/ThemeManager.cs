@@ -66,52 +66,52 @@ namespace VeilBreakers.UI.Core
         {
             _brandColors = new Dictionary<Brand, BrandColorSet>
             {
-                { Brand.Iron, new BrandColorSet(
+                { Brand.IRON, new BrandColorSet(
                     new Color(140/255f, 150/255f, 165/255f),
                     new Color(180/255f, 190/255f, 205/255f),
                     new Color(80/255f, 90/255f, 100/255f))
                 },
-                { Brand.Savage, new BrandColorSet(
+                { Brand.SAVAGE, new BrandColorSet(
                     new Color(180/255f, 45/255f, 45/255f),
                     new Color(220/255f, 70/255f, 70/255f),
                     new Color(120/255f, 25/255f, 25/255f))
                 },
-                { Brand.Surge, new BrandColorSet(
+                { Brand.SURGE, new BrandColorSet(
                     new Color(60/255f, 140/255f, 220/255f),
                     new Color(100/255f, 180/255f, 255/255f),
                     new Color(30/255f, 80/255f, 140/255f))
                 },
-                { Brand.Venom, new BrandColorSet(
+                { Brand.VENOM, new BrandColorSet(
                     new Color(80/255f, 180/255f, 60/255f),
                     new Color(120/255f, 220/255f, 100/255f),
                     new Color(40/255f, 100/255f, 30/255f))
                 },
-                { Brand.Dread, new BrandColorSet(
+                { Brand.DREAD, new BrandColorSet(
                     new Color(120/255f, 60/255f, 160/255f),
                     new Color(160/255f, 100/255f, 200/255f),
                     new Color(70/255f, 30/255f, 100/255f))
                 },
-                { Brand.Leech, new BrandColorSet(
+                { Brand.LEECH, new BrandColorSet(
                     new Color(140/255f, 40/255f, 80/255f),
                     new Color(180/255f, 60/255f, 110/255f),
                     new Color(90/255f, 20/255f, 50/255f))
                 },
-                { Brand.Grace, new BrandColorSet(
+                { Brand.GRACE, new BrandColorSet(
                     new Color(220/255f, 220/255f, 240/255f),
                     new Color(255/255f, 255/255f, 255/255f),
                     new Color(160/255f, 160/255f, 180/255f))
                 },
-                { Brand.Mend, new BrandColorSet(
+                { Brand.MEND, new BrandColorSet(
                     new Color(200/255f, 170/255f, 80/255f),
                     new Color(240/255f, 210/255f, 120/255f),
                     new Color(140/255f, 110/255f, 40/255f))
                 },
-                { Brand.Ruin, new BrandColorSet(
+                { Brand.RUIN, new BrandColorSet(
                     new Color(220/255f, 120/255f, 40/255f),
                     new Color(255/255f, 160/255f, 80/255f),
                     new Color(160/255f, 70/255f, 20/255f))
                 },
-                { Brand.Void, new BrandColorSet(
+                { Brand.VOID, new BrandColorSet(
                     new Color(40/255f, 20/255f, 60/255f),
                     new Color(100/255f, 60/255f, 140/255f),
                     new Color(15/255f, 5/255f, 25/255f))
@@ -128,7 +128,7 @@ namespace VeilBreakers.UI.Core
             {
                 return colors;
             }
-            return _brandColors[Brand.Dread]; // Default fallback
+            return _brandColors[Brand.DREAD]; // Default fallback
         }
 
         /// <summary>
@@ -172,27 +172,27 @@ namespace VeilBreakers.UI.Core
         {
             return state switch
             {
-                CorruptionState.Ascended => new CorruptionColorSet(
+                CorruptionState.ASCENDED => new CorruptionColorSet(
                     new Color(255/255f, 215/255f, 0),
                     new Color(255/255f, 240/255f, 100/255f),
                     new Color(255/255f, 215/255f, 0, 0.15f)),
 
-                CorruptionState.Purified => new CorruptionColorSet(
+                CorruptionState.PURIFIED => new CorruptionColorSet(
                     new Color(180/255f, 210/255f, 255/255f),
                     new Color(220/255f, 240/255f, 255/255f),
                     new Color(180/255f, 210/255f, 255/255f, 0.15f)),
 
-                CorruptionState.Unstable => new CorruptionColorSet(
+                CorruptionState.UNSTABLE => new CorruptionColorSet(
                     new Color(160/255f, 160/255f, 170/255f),
                     new Color(200/255f, 200/255f, 210/255f),
                     new Color(160/255f, 160/255f, 170/255f, 0.15f)),
 
-                CorruptionState.Corrupted => new CorruptionColorSet(
+                CorruptionState.CORRUPTED => new CorruptionColorSet(
                     new Color(140/255f, 60/255f, 180/255f),
                     new Color(180/255f, 100/255f, 220/255f),
                     new Color(140/255f, 60/255f, 180/255f, 0.2f)),
 
-                CorruptionState.Abyssal or CorruptionState.Untamed => new CorruptionColorSet(
+                CorruptionState.ABYSSAL => new CorruptionColorSet(
                     new Color(60/255f, 0, 100/255f),
                     new Color(100/255f, 40/255f, 160/255f),
                     new Color(60/255f, 0, 100/255f, 0.3f)),
@@ -211,11 +211,11 @@ namespace VeilBreakers.UI.Core
         {
             CorruptionState state = percent switch
             {
-                <= 10 => CorruptionState.Ascended,
-                <= 25 => CorruptionState.Purified,
-                <= 50 => CorruptionState.Unstable,
-                <= 75 => CorruptionState.Corrupted,
-                _ => CorruptionState.Abyssal
+                <= 10 => CorruptionState.ASCENDED,
+                <= 25 => CorruptionState.PURIFIED,
+                <= 50 => CorruptionState.UNSTABLE,
+                <= 75 => CorruptionState.CORRUPTED,
+                _ => CorruptionState.ABYSSAL
             };
             return GetCorruptionColors(state);
         }
@@ -224,21 +224,20 @@ namespace VeilBreakers.UI.Core
         // RARITY COLORS
         // =============================================================================
 
-        public enum Rarity { Common, Uncommon, Rare, Epic, Legendary, Mythic }
-
         /// <summary>
         /// Get color for item/monster rarity.
+        /// Uses VeilBreakers.Data.Rarity enum.
         /// </summary>
         public Color GetRarityColor(Rarity rarity)
         {
             return rarity switch
             {
-                Rarity.Common => new Color(180/255f, 180/255f, 180/255f),
-                Rarity.Uncommon => new Color(80/255f, 180/255f, 80/255f),
-                Rarity.Rare => new Color(80/255f, 140/255f, 220/255f),
-                Rarity.Epic => new Color(160/255f, 80/255f, 200/255f),
-                Rarity.Legendary => new Color(255/255f, 180/255f, 0),
-                Rarity.Mythic => new Color(255/255f, 100/255f, 100/255f),
+                Rarity.COMMON => new Color(180/255f, 180/255f, 180/255f),
+                Rarity.UNCOMMON => new Color(80/255f, 180/255f, 80/255f),
+                Rarity.RARE => new Color(80/255f, 140/255f, 220/255f),
+                Rarity.EPIC => new Color(160/255f, 80/255f, 200/255f),
+                Rarity.LEGENDARY => new Color(255/255f, 180/255f, 0),
+                Rarity.MYTHIC => new Color(255/255f, 100/255f, 100/255f),
                 _ => Color.white
             };
         }

@@ -81,6 +81,17 @@ namespace VeilBreakers.Audio
         // =============================================================================
 
         public AudioConfig Config => _config;
+
+        /// <summary>
+        /// Set the AudioConfig at runtime (used by GameBootstrap).
+        /// </summary>
+        public void SetConfig(AudioConfig config)
+        {
+            if (config != null)
+            {
+                _config = config;
+            }
+        }
         public bool IsInitialized => _isInitialized;
         public float MasterVolume => _masterVolume;
         public float MusicVolume => _musicVolume;
