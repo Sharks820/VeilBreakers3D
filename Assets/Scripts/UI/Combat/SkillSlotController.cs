@@ -303,7 +303,7 @@ namespace VeilBreakers.UI.Combat
 
         private void CheckInput()
         {
-            if (Input.GetKeyDown(_keyCode))
+            if (_keyCode != KeyCode.None && Input.GetKeyDown(_keyCode))
             {
                 TriggerActivation();
             }

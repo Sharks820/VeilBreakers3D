@@ -478,8 +478,11 @@ namespace VeilBreakers.UI.Menus
 
                     yield return new WaitForSeconds(0.03f);
 
-                    // Replace with correct char
-                    _displayedText = _displayedText.Substring(0, _displayedText.Length - 1) + c;
+                    // Replace with correct char (defensive check for empty string)
+                    if (_displayedText.Length > 0)
+                        _displayedText = _displayedText.Substring(0, _displayedText.Length - 1) + c;
+                    else
+                        _displayedText = c.ToString();
                 }
                 else
                 {
