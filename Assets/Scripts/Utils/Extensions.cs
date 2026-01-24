@@ -196,6 +196,8 @@ namespace VeilBreakers.Utils
         /// </summary>
         public static void Shuffle<T>(this IList<T> list)
         {
+            if (list == null || list.Count <= 1) return;
+
             int n = list.Count;
             while (n > 1)
             {

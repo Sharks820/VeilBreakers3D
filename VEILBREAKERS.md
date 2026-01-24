@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.15** | Last updated: 2026-01-24
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.16** | Last updated: 2026-01-24
 
 ---
 
