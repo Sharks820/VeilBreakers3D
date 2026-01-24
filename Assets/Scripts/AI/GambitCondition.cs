@@ -581,5 +581,604 @@ namespace VeilBreakers.AI
             if (attacker == null || defender == null) return false;
             return BrandSystem.HasDisadvantage(attacker.Brand, defender.Brand);
         }
+
+        // =============================================================================
+        // ADVANCED AI INTELLIGENCE FEATURES
+        // =============================================================================
+
+        // Threat tracking data
+        private readonly Dictionary<Combatant, float> _threatScores = new Dictionary<Combatant, float>();
+        private readonly Dictionary<Combatant, float> _damageDealtRecently = new Dictionary<Combatant, float>();
+        private float _lastThreatUpdate = 0f;
+        private const float THREAT_DECAY_RATE = 0.9f; // 10% decay per update
+
+        /// <summary>
+        /// Record damage dealt by an enemy for threat tracking.
+        /// Call this from the combat system when enemies deal damage.
+        /// </summary>
+        public void RecordEnemyDamage(Combatant enemy, float damageAmount)
+        {
+            if (enemy == null) return;
+
+            if (_damageDealtRecently.ContainsKey(enemy))
+                _damageDealtRecently[enemy] += damageAmount;
+            else
+                _damageDealtRecently[enemy] = damageAmount;
+
+            UpdateThreatScores();
+        }
+
+        /// <summary>
+        /// Update threat scores based on recent damage dealt.
+        /// </summary>
+        private void UpdateThreatScores()
+        {
+            float currentTime = Time.time;
+
+            // Decay old threat scores
+            if (currentTime - _lastThreatUpdate > 1f)
+            {
+                var keys = new List<Combatant>(_threatScores.Keys);
+                foreach (var key in keys)
+                {
+                    _threatScores[key] *= THREAT_DECAY_RATE;
+                    if (_threatScores[key] < 1f)
+                        _threatScores.Remove(key);
+                }
+                _lastThreatUpdate = currentTime;
+            }
+
+            // Add recent damage to threat
+            foreach (var kvp in _damageDealtRecently)
+            {
+                if (_threatScores.ContainsKey(kvp.Key))
+                    _threatScores[kvp.Key] += kvp.Value;
+                else
+                    _threatScores[kvp.Key] = kvp.Value;
+            }
+            _damageDealtRecently.Clear();
+        }
+
+        /// <summary>
+        /// Get the highest threat enemy (most damage dealer).
+        /// </summary>
+        public Combatant GetHighestThreatEnemy()
+        {
+            if (_enemies == null || _enemies.Length == 0) return null;
+
+            Combatant highestThreat = null;
+            float highestScore = 0f;
+
+            for (int i = 0; i < _enemies.Length; i++)
+            {
+                var enemy = _enemies[i];
+                if (enemy == null || !enemy.IsAlive) continue;
+
+                float threatScore = GetThreatScore(enemy);
+                if (threatScore > highestScore)
+                {
+                    highestScore = threatScore;
+                    highestThreat = enemy;
+                }
+            }
+
+            // Fall back to highest HP if no threat data
+            return highestThreat ?? GetHighestHpEnemy();
+        }
+
+        /// <summary>
+        /// Get threat score for a specific combatant.
+        /// </summary>
+        public float GetThreatScore(Combatant combatant)
+        {
+            if (combatant == null) return 0f;
+
+            // Base threat from damage dealt
+            float baseThreat = _threatScores.TryGetValue(combatant, out float score) ? score : 0f;
+
+            // Bonus threat from dangerous brands
+            if (combatant.Brand == Brand.SAVAGE || combatant.Brand == Brand.RUIN)
+                baseThreat += 50f; // High damage dealers
+
+            // Bonus threat if casting
+            if (combatant.IsCasting)
+                baseThreat += 100f; // Casting = imminent big damage
+
+            return baseThreat;
+        }
+
+        /// <summary>
+        /// Check if an enemy is a high priority threat.
+        /// </summary>
+        public bool IsHighThreat(Combatant enemy)
+        {
+            if (enemy == null) return false;
+            float threshold = 100f; // Arbitrary threshold
+            return GetThreatScore(enemy) >= threshold;
+        }
+
+        /// <summary>
+        /// Estimate damage an action would deal to a target.
+        /// Used for overkill prevention.
+        /// </summary>
+        public float EstimateDamage(Combatant attacker, Combatant target, GambitAction.ActionType actionType)
+        {
+            if (attacker == null || target == null) return 0f;
+
+            // Base damage estimation from attack stat
+            float baseDamage = attacker.Attack;
+
+            // Action type multipliers
+            float actionMultiplier = actionType switch
+            {
+                GambitAction.ActionType.BASIC_ATTACK => 1.0f,
+                GambitAction.ActionType.USE_ABILITY => 1.5f,
+                GambitAction.ActionType.USE_ULTIMATE => 3.0f,
+                GambitAction.ActionType.EXECUTE => 2.5f,
+                _ => 1.0f
+            };
+
+            // Brand effectiveness
+            float brandMult = BrandSystem.GetEffectiveness(attacker.Brand, target.Brand);
+
+            // Estimate defense reduction
+            float defenseReduction = target.Defense > 0
+                ? Mathf.Min((float)attacker.Attack / target.Defense, 2f)
+                : 2f;
+
+            return baseDamage * actionMultiplier * brandMult * defenseReduction;
+        }
+
+        /// <summary>
+        /// Check if using a big ability would be overkill on the target.
+        /// Returns true if basic attack would likely kill.
+        /// </summary>
+        public bool WouldBeOverkill(Combatant attacker, Combatant target, GambitAction.ActionType actionType)
+        {
+            if (target == null) return false;
+
+            float estimatedDamage = EstimateDamage(attacker, target, GambitAction.ActionType.BASIC_ATTACK);
+            float targetCurrentHp = target.CurrentHp;
+
+            // If basic attack would kill, using ability is overkill
+            if (estimatedDamage >= targetCurrentHp &&
+                (actionType == GambitAction.ActionType.USE_ABILITY ||
+                 actionType == GambitAction.ActionType.USE_ULTIMATE))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Check if any ally recently applied a debuff to the target.
+        /// Used for combo detection.
+        /// </summary>
+        public bool HasRecentAllyDebuff(Combatant target)
+        {
+            if (target == null) return false;
+
+            // Check for key debuffs that enable combos
+            return HasStatus(target, StatusEffectType.ARMOR_SHRED) ||
+                   HasStatus(target, StatusEffectType.STUN) ||
+                   HasStatus(target, StatusEffectType.SLOW) ||
+                   HasStatus(target, StatusEffectType.WEAKNESS);
+        }
+
+        /// <summary>
+        /// Get the optimal ally to guard based on multiple factors.
+        /// </summary>
+        public Combatant GetOptimalGuardTarget(Combatant self)
+        {
+            Combatant bestTarget = null;
+            float bestScore = 0f;
+
+            for (int i = 0; i < _allies.Length; i++)
+            {
+                var ally = _allies[i];
+                if (ally == null || ally == self || !ally.IsAlive) continue;
+
+                float score = 0f;
+
+                // Lower HP = higher priority
+                score += (100f - ally.HpPercent) * 2f;
+
+                // Healer ally = higher priority (keep them alive)
+                if (IsHealer(ally))
+                    score += 50f;
+
+                // Being attacked = higher priority
+                if (_currentAttackTarget == ally)
+                    score += 100f;
+
+                // Low defense ally = higher priority
+                score += (50f - Mathf.Min(ally.Defense, 50)) * 0.5f;
+
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestTarget = ally;
+                }
+            }
+
+            return bestTarget;
+        }
+
+        /// <summary>
+        /// Check MP efficiency - should we save this ability for later?
+        /// </summary>
+        public bool ShouldConserveMp(Combatant self, int abilityCost)
+        {
+            if (self == null || self.MaxMp == 0) return false;
+
+            float mpPercent = self.MpPercent;
+
+            // If MP is low, only use abilities on critical moments
+            if (mpPercent < 0.2f) // Below 20%
+                return true;
+
+            // If the ability would use more than 25% of remaining MP, consider conserving
+            float mpRatio = (float)abilityCost / self.CurrentMp;
+            if (mpRatio > 0.25f && mpPercent < 0.5f)
+                return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// Get value score for using ultimate now vs waiting.
+        /// Higher score = better time to ultimate.
+        /// </summary>
+        public float GetUltimateTimingScore(Combatant self)
+        {
+            float score = 50f; // Base score
+
+            // Check for clustered enemies (AOE value)
+            int clusterSize = GetClusteredEnemyCount(self);
+            score += clusterSize * 15f;
+
+            // Check for low HP enemies (execute potential)
+            int lowHpEnemies = 0;
+            for (int i = 0; i < _enemies.Length; i++)
+            {
+                if (_enemies[i] != null && _enemies[i].IsAlive && _enemies[i].HpPercent < 30f)
+                    lowHpEnemies++;
+            }
+            score += lowHpEnemies * 20f;
+
+            // Check for critical allies (healing ult value)
+            int criticalAllies = 0;
+            for (int i = 0; i < _allies.Length; i++)
+            {
+                if (_allies[i] != null && _allies[i].IsAlive && _allies[i].HpPercent < 25f)
+                    criticalAllies++;
+            }
+            score += criticalAllies * 25f;
+
+            // Penalty if self is about to die (might waste ult)
+            if (self.HpPercent < 15f)
+                score -= 30f;
+
+            return score;
+        }
+
+        /// <summary>
+        /// Check if it's a good time to use ultimate based on brand.
+        /// </summary>
+        public bool IsGoodUltimateTime(Combatant self, float threshold = 80f)
+        {
+            return GetUltimateTimingScore(self) >= threshold;
+        }
+
+        /// <summary>
+        /// Get all enemies that we have brand advantage against.
+        /// Useful for target prioritization.
+        /// </summary>
+        public void GetVulnerableEnemies(Combatant self, List<Combatant> results)
+        {
+            results.Clear();
+            if (self == null || _enemies == null) return;
+
+            for (int i = 0; i < _enemies.Length; i++)
+            {
+                var enemy = _enemies[i];
+                if (enemy == null || !enemy.IsAlive) continue;
+
+                if (BrandSystem.HasAdvantage(self.Brand, enemy.Brand))
+                    results.Add(enemy);
+            }
+        }
+
+        // =============================================================================
+        // HEALER AI INTELLIGENCE
+        // =============================================================================
+
+        /// <summary>
+        /// Get the optimal heal target using smart triage logic.
+        /// Considers HP, incoming damage, role importance, and survival chance.
+        /// </summary>
+        public Combatant GetOptimalHealTarget(Combatant healer)
+        {
+            if (_allies == null || _allies.Length == 0) return null;
+
+            Combatant bestTarget = null;
+            float bestScore = float.MinValue;
+
+            for (int i = 0; i < _allies.Length; i++)
+            {
+                var ally = _allies[i];
+                if (ally == null || !ally.IsAlive) continue;
+
+                // Skip if at full HP (don't overheal)
+                if (ally.HpPercent >= 95f) continue;
+
+                float score = 0f;
+
+                // =================================================================
+                // HP-BASED URGENCY (primary factor)
+                // =================================================================
+                float hpDeficit = 100f - ally.HpPercent;
+                score += hpDeficit * 3f; // Higher weight for lower HP
+
+                // Critical threshold bonus (below 25% HP)
+                if (ally.HpPercent < 25f)
+                    score += 100f;
+                // Low threshold bonus (below 50% HP)
+                else if (ally.HpPercent < 50f)
+                    score += 50f;
+
+                // =================================================================
+                // TRIAGE: Can we actually save them?
+                // =================================================================
+                // Don't waste heal on someone who will die to next hit anyway
+                if (ally.HpPercent < 10f && ally != healer)
+                {
+                    // Check if any enemy is about to attack them
+                    if (_currentAttackTarget == ally)
+                    {
+                        // If they'll die even after heal, lower priority
+                        float estimatedHeal = healer.Magic * 2f; // Rough heal estimate
+                        float estimatedIncoming = GetHighestEnemyDamageEstimate();
+                        if (estimatedIncoming > ally.CurrentHp + estimatedHeal)
+                        {
+                            score -= 80f; // Deprioritize if heal won't save them
+                        }
+                    }
+                }
+
+                // =================================================================
+                // ROLE IMPORTANCE
+                // =================================================================
+                // Keep damage dealers alive for DPS checks
+                if (ally.Brand == Brand.SAVAGE || ally.Brand == Brand.RUIN ||
+                    ally.Brand == Brand.SURGE || ally.Brand == Brand.VENOM)
+                {
+                    score += 25f; // DPS priority
+                }
+
+                // Don't let the only healer die (includes self)
+                if (ally.Brand == Brand.GRACE || ally.Brand == Brand.MEND)
+                {
+                    score += 40f; // Healer priority
+                }
+
+                // Protect allies that are defending/guarding others
+                if (ally.IsDefending)
+                {
+                    score += 20f; // Active tank priority
+                }
+
+                // =================================================================
+                // INCOMING DAMAGE AWARENESS
+                // =================================================================
+                if (_currentAttackTarget == ally)
+                {
+                    score += 60f; // About to be hit - heal now!
+                }
+
+                // Debuffed allies (damage over time, etc.) need heals more
+                if (HasStatus(ally, StatusEffectType.POISON) ||
+                    HasStatus(ally, StatusEffectType.BURN) ||
+                    HasStatus(ally, StatusEffectType.BLEED))
+                {
+                    score += 30f; // Taking DOT damage
+                }
+
+                // =================================================================
+                // EFFICIENCY: Don't overheal
+                // =================================================================
+                if (ally.HpPercent > 75f)
+                {
+                    score -= 40f; // Reduce priority for high HP allies
+                }
+
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestTarget = ally;
+                }
+            }
+
+            // Fallback to lowest HP ally if no smart choice
+            return bestTarget ?? GetLowestHpAlly(healer);
+        }
+
+        /// <summary>
+        /// Estimate the highest damage any enemy could deal.
+        /// Used for triage decisions.
+        /// </summary>
+        private float GetHighestEnemyDamageEstimate()
+        {
+            float highest = 0f;
+            for (int i = 0; i < _enemies.Length; i++)
+            {
+                var enemy = _enemies[i];
+                if (enemy == null || !enemy.IsAlive) continue;
+
+                float estimate = enemy.Attack * 1.5f; // Assume ability-level damage
+                if (estimate > highest)
+                    highest = estimate;
+            }
+            return highest;
+        }
+
+        /// <summary>
+        /// Get optimal buff target for support abilities.
+        /// Prioritizes damage dealers and those about to act.
+        /// </summary>
+        public Combatant GetOptimalBuffTarget(Combatant self)
+        {
+            Combatant bestTarget = null;
+            float bestScore = 0f;
+
+            for (int i = 0; i < _allies.Length; i++)
+            {
+                var ally = _allies[i];
+                if (ally == null || ally == self || !ally.IsAlive) continue;
+
+                float score = 0f;
+
+                // Damage dealers benefit most from buffs
+                if (ally.Brand == Brand.SAVAGE || ally.Brand == Brand.RUIN ||
+                    ally.Brand == Brand.SURGE)
+                {
+                    score += 60f;
+                }
+
+                // High attack stat = high buff value
+                score += ally.Attack * 0.5f;
+
+                // Healthy allies = better buff targets (they'll survive to use it)
+                score += ally.HpPercent * 0.3f;
+
+                // Already buffed = lower priority (don't stack same buffs)
+                if (HasStatus(ally, StatusEffectType.ATTACK_UP) ||
+                    HasStatus(ally, StatusEffectType.CRIT_RATE_UP))
+                {
+                    score -= 50f;
+                }
+
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestTarget = ally;
+                }
+            }
+
+            return bestTarget;
+        }
+
+        /// <summary>
+        /// Get optimal cleanse target.
+        /// Prioritizes dangerous debuffs and important roles.
+        /// </summary>
+        public Combatant GetOptimalCleanseTarget(Combatant self)
+        {
+            Combatant bestTarget = null;
+            float bestScore = 0f;
+
+            for (int i = 0; i < _allies.Length; i++)
+            {
+                var ally = _allies[i];
+                if (ally == null || !ally.IsAlive) continue;
+
+                float score = 0f;
+
+                // Critical debuffs (MUST cleanse)
+                if (HasStatus(ally, StatusEffectType.DOOM) ||
+                    HasStatus(ally, StatusEffectType.CONDEMNED))
+                {
+                    score += 200f; // Maximum priority
+                }
+
+                // Crowd control (high priority)
+                if (HasStatus(ally, StatusEffectType.STUN) ||
+                    HasStatus(ally, StatusEffectType.CHARM) ||
+                    HasStatus(ally, StatusEffectType.CONFUSE))
+                {
+                    score += 100f;
+                }
+
+                // Damage debuffs (medium priority)
+                if (HasStatus(ally, StatusEffectType.POISON) ||
+                    HasStatus(ally, StatusEffectType.BURN) ||
+                    HasStatus(ally, StatusEffectType.BLEED))
+                {
+                    score += 50f;
+                }
+
+                // Stat debuffs (lower priority)
+                if (HasStatus(ally, StatusEffectType.WEAKNESS) ||
+                    HasStatus(ally, StatusEffectType.ARMOR_SHRED))
+                {
+                    score += 30f;
+                }
+
+                // Role importance bonus
+                if (ally.Brand == Brand.GRACE || ally.Brand == Brand.MEND)
+                    score += 20f; // Keep healers functional
+
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestTarget = ally;
+                }
+            }
+
+            return bestTarget;
+        }
+
+        /// <summary>
+        /// Find the best enemy to focus (considering all factors).
+        /// </summary>
+        public Combatant GetOptimalAttackTarget(Combatant self)
+        {
+            if (_enemies == null || _enemies.Length == 0) return null;
+
+            Combatant bestTarget = null;
+            float bestScore = float.MinValue;
+
+            for (int i = 0; i < _enemies.Length; i++)
+            {
+                var enemy = _enemies[i];
+                if (enemy == null || !enemy.IsAlive) continue;
+
+                float score = 0f;
+
+                // Low HP priority (execute potential)
+                score += (100f - enemy.HpPercent) * 2f;
+
+                // Brand advantage bonus
+                float effectiveness = BrandSystem.GetEffectiveness(self.Brand, enemy.Brand);
+                if (effectiveness >= BrandSystem.SUPER_EFFECTIVE)
+                    score += 50f;
+                else if (effectiveness <= BrandSystem.NOT_EFFECTIVE)
+                    score -= 30f;
+
+                // Healer priority
+                if (IsHealer(enemy))
+                    score += 30f;
+
+                // Debuffed enemy priority (combo potential)
+                if (HasStatus(enemy, StatusEffectType.ARMOR_SHRED))
+                    score += 40f;
+
+                // Casting enemy priority (interrupt or burst)
+                if (enemy.IsCasting)
+                    score += 35f;
+
+                // Threat priority
+                score += GetThreatScore(enemy) * 0.5f;
+
+                if (score > bestScore)
+                {
+                    bestScore = score;
+                    bestTarget = enemy;
+                }
+            }
+
+            return bestTarget;
+        }
     }
 }
