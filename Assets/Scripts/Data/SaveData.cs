@@ -175,10 +175,11 @@ namespace VeilBreakers.Data
         {
             if (party == null || party.Count == 0) return null;
 
-            SavedMonster strongest = party[0];
+            SavedMonster strongest = null;
             foreach (var monster in party)
             {
-                if (monster.level > strongest.level)
+                if (monster == null) continue;
+                if (strongest == null || monster.level > strongest.level)
                 {
                     strongest = monster;
                 }
