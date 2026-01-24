@@ -190,6 +190,7 @@ namespace VeilBreakers.AI
         private void EvaluateBucket(Combatant self, BattleContext context, PriorityBucket bucket)
         {
             var enemies = context.GetEnemies();
+            if (enemies == null) return; // Guard against null enemy array
 
             // Find all matching rules in this bucket
             _bucketRules.Clear();
@@ -247,6 +248,7 @@ namespace VeilBreakers.AI
         private void ScoreAllyTargetedRule(Combatant self, BattleContext context, GambitRule rule)
         {
             var allies = context.GetAllies();
+            if (allies == null) return; // Guard against null ally array
 
             for (int i = 0; i < allies.Length; i++)
             {
@@ -768,6 +770,12 @@ namespace VeilBreakers.AI
             if (!_personality.desperationBonus) return 1f;
 
             var allies = context.GetAllies();
+            if (allies == null || allies.Length == 0)
+            {
+                // No allies, use only self for desperation calculation
+                return 1f;
+            }
+
             float totalHp = 0f;
             float totalMaxHp = 0f;
 
