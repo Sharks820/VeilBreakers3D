@@ -31,31 +31,31 @@
                 <ui:VisualElement name="audio-settings" class="vb-column" style="padding: 16px;">
 
                     <!-- Master Volume -->
-                    <ui:VisualElement class="vb-row vb-space-between" style="margin-bottom: 20px;">
-                        <ui:Label text="Master Volume" class="vb-text" style="width: 150px;" />
-                        <ui:Slider name="slider-master" class="vb-slider" low-value="0" high-value="100" value="80" style="flex-grow: 1; margin-left: 16px;" />
-                        <ui:Label name="label-master-value" text="80%" class="vb-text" style="width: 50px; -unity-text-align: middle-right;" />
+                    <ui:VisualElement class="vb-row" style="margin-bottom: 20px; align-items: center;">
+                        <ui:Label text="Master Volume" class="vb-text" style="width: 150px; min-width: 150px; flex-shrink: 0;" />
+                        <ui:Slider name="slider-master" class="vb-slider" low-value="0" high-value="100" value="80" style="flex-grow: 1; margin: 0 16px;" />
+                        <ui:Label name="label-master-value" text="80%" class="vb-text" style="width: 50px; min-width: 50px; flex-shrink: 0; -unity-text-align: middle-right;" />
                     </ui:VisualElement>
 
                     <!-- Music Volume -->
-                    <ui:VisualElement class="vb-row vb-space-between" style="margin-bottom: 20px;">
-                        <ui:Label text="Music" class="vb-text" style="width: 150px;" />
-                        <ui:Slider name="slider-music" class="vb-slider" low-value="0" high-value="100" value="70" style="flex-grow: 1; margin-left: 16px;" />
-                        <ui:Label name="label-music-value" text="70%" class="vb-text" style="width: 50px; -unity-text-align: middle-right;" />
+                    <ui:VisualElement class="vb-row" style="margin-bottom: 20px; align-items: center;">
+                        <ui:Label text="Music" class="vb-text" style="width: 150px; min-width: 150px; flex-shrink: 0;" />
+                        <ui:Slider name="slider-music" class="vb-slider" low-value="0" high-value="100" value="70" style="flex-grow: 1; margin: 0 16px;" />
+                        <ui:Label name="label-music-value" text="70%" class="vb-text" style="width: 50px; min-width: 50px; flex-shrink: 0; -unity-text-align: middle-right;" />
                     </ui:VisualElement>
 
                     <!-- SFX Volume -->
-                    <ui:VisualElement class="vb-row vb-space-between" style="margin-bottom: 20px;">
-                        <ui:Label text="Sound Effects" class="vb-text" style="width: 150px;" />
-                        <ui:Slider name="slider-sfx" class="vb-slider" low-value="0" high-value="100" value="80" style="flex-grow: 1; margin-left: 16px;" />
-                        <ui:Label name="label-sfx-value" text="80%" class="vb-text" style="width: 50px; -unity-text-align: middle-right;" />
+                    <ui:VisualElement class="vb-row" style="margin-bottom: 20px; align-items: center;">
+                        <ui:Label text="Sound Effects" class="vb-text" style="width: 150px; min-width: 150px; flex-shrink: 0;" />
+                        <ui:Slider name="slider-sfx" class="vb-slider" low-value="0" high-value="100" value="80" style="flex-grow: 1; margin: 0 16px;" />
+                        <ui:Label name="label-sfx-value" text="80%" class="vb-text" style="width: 50px; min-width: 50px; flex-shrink: 0; -unity-text-align: middle-right;" />
                     </ui:VisualElement>
 
                     <!-- Voice Volume -->
-                    <ui:VisualElement class="vb-row vb-space-between" style="margin-bottom: 20px;">
-                        <ui:Label text="Voice" class="vb-text" style="width: 150px;" />
-                        <ui:Slider name="slider-voice" class="vb-slider" low-value="0" high-value="100" value="100" style="flex-grow: 1; margin-left: 16px;" />
-                        <ui:Label name="label-voice-value" text="100%" class="vb-text" style="width: 50px; -unity-text-align: middle-right;" />
+                    <ui:VisualElement class="vb-row" style="margin-bottom: 20px; align-items: center;">
+                        <ui:Label text="Voice" class="vb-text" style="width: 150px; min-width: 150px; flex-shrink: 0;" />
+                        <ui:Slider name="slider-voice" class="vb-slider" low-value="0" high-value="100" value="100" style="flex-grow: 1; margin: 0 16px;" />
+                        <ui:Label name="label-voice-value" text="100%" class="vb-text" style="width: 50px; min-width: 50px; flex-shrink: 0; -unity-text-align: middle-right;" />
                     </ui:VisualElement>
 
                     <!-- Mute All Toggle -->
@@ -67,21 +67,21 @@
                 <ui:VisualElement name="graphics-settings" class="vb-column" style="padding: 16px; display: none;">
 
                     <!-- Resolution -->
-                    <ui:VisualElement class="vb-row vb-space-between" style="margin-bottom: 20px;">
-                        <ui:Label text="Resolution" class="vb-text" style="width: 150px;" />
-                        <ui:DropdownField name="dropdown-resolution" class="vb-dropdown" style="flex-grow: 1; margin-left: 16px;" />
+                    <ui:VisualElement class="vb-row" style="margin-bottom: 20px; align-items: center;">
+                        <ui:Label text="Resolution" class="vb-text" style="width: 150px; min-width: 150px; flex-shrink: 0;" />
+                        <ui:DropdownField name="dropdown-resolution" class="vb-dropdown" style="flex-grow: 1; min-width: 200px; height: 36px;" />
                     </ui:VisualElement>
 
                     <!-- Fullscreen -->
-                    <ui:VisualElement class="vb-row vb-space-between" style="margin-bottom: 20px;">
-                        <ui:Label text="Display Mode" class="vb-text" style="width: 150px;" />
-                        <ui:DropdownField name="dropdown-fullscreen" class="vb-dropdown" choices="Fullscreen,Windowed,Borderless" style="flex-grow: 1; margin-left: 16px;" />
+                    <ui:VisualElement class="vb-row" style="margin-bottom: 20px; align-items: center;">
+                        <ui:Label text="Display Mode" class="vb-text" style="width: 150px; min-width: 150px; flex-shrink: 0;" />
+                        <ui:DropdownField name="dropdown-fullscreen" class="vb-dropdown" choices="Fullscreen,Windowed,Borderless" index="0" style="flex-grow: 1; min-width: 200px; height: 36px;" />
                     </ui:VisualElement>
 
                     <!-- Quality -->
-                    <ui:VisualElement class="vb-row vb-space-between" style="margin-bottom: 20px;">
-                        <ui:Label text="Quality" class="vb-text" style="width: 150px;" />
-                        <ui:DropdownField name="dropdown-quality" class="vb-dropdown" choices="Low,Medium,High,Ultra" style="flex-grow: 1; margin-left: 16px;" />
+                    <ui:VisualElement class="vb-row" style="margin-bottom: 20px; align-items: center;">
+                        <ui:Label text="Quality" class="vb-text" style="width: 150px; min-width: 150px; flex-shrink: 0;" />
+                        <ui:DropdownField name="dropdown-quality" class="vb-dropdown" choices="Low,Medium,High,Ultra" index="2" style="flex-grow: 1; min-width: 200px; height: 36px;" />
                     </ui:VisualElement>
 
                     <!-- VSync -->
@@ -96,10 +96,10 @@
                 <ui:VisualElement name="controls-settings" class="vb-column" style="padding: 16px; display: none;">
 
                     <!-- Mouse Sensitivity -->
-                    <ui:VisualElement class="vb-row vb-space-between" style="margin-bottom: 20px;">
-                        <ui:Label text="Mouse Sensitivity" class="vb-text" style="width: 150px;" />
-                        <ui:Slider name="slider-sensitivity" class="vb-slider" low-value="1" high-value="100" value="50" style="flex-grow: 1; margin-left: 16px;" />
-                        <ui:Label name="label-sensitivity-value" text="50" class="vb-text" style="width: 50px; -unity-text-align: middle-right;" />
+                    <ui:VisualElement class="vb-row" style="margin-bottom: 20px; align-items: center;">
+                        <ui:Label text="Mouse Sensitivity" class="vb-text" style="width: 150px; min-width: 150px; flex-shrink: 0;" />
+                        <ui:Slider name="slider-sensitivity" class="vb-slider" low-value="1" high-value="100" value="50" style="flex-grow: 1; margin: 0 16px;" />
+                        <ui:Label name="label-sensitivity-value" text="50" class="vb-text" style="width: 50px; min-width: 50px; flex-shrink: 0; -unity-text-align: middle-right;" />
                     </ui:VisualElement>
 
                     <!-- Invert Y -->

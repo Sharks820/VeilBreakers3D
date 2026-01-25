@@ -45,8 +45,8 @@
                 <ui:VisualElement name="title-section" style="margin-bottom: 24px;">
 
                     <!-- Logo placeholder (can be replaced with image) -->
-                    <ui:VisualElement name="logo-container" style="height: 120px; margin-bottom: 16px;">
-                        <ui:Label text="VEILBREAKERS" name="game-title" class="vb-header" style="font-size: 72px; color: rgb(235, 225, 215); letter-spacing: 6px; -unity-text-align: middle-left; text-shadow: 0 0 20px rgba(120, 60, 160, 0.5);" />
+                    <ui:VisualElement name="logo-container" style="height: 100px; margin-bottom: 16px; flex-shrink: 0;">
+                        <ui:Label text="VEILBREAKERS" name="game-title" class="vb-header" style="font-size: 56px; color: rgb(235, 225, 215); letter-spacing: 4px; -unity-text-align: middle-left; text-shadow: 0 0 20px rgba(120, 60, 160, 0.5); white-space: nowrap;" />
                     </ui:VisualElement>
 
                     <!-- Tagline with corruption glow -->
@@ -106,7 +106,7 @@
         <ui:VisualElement name="footer" style="position: absolute; left: 0; right: 0; bottom: 0; height: 60px; flex-direction: row; justify-content: space-between; align-items: center; padding: 0 40px;">
 
             <!-- Copyright -->
-            <ui:Label text="2024 VeilBreakers" style="color: rgb(75, 68, 65); font-size: 12px;" />
+            <ui:Label text="© 2026 VeilBreakers" style="color: rgb(75, 68, 65); font-size: 12px;" />
 
             <!-- Social links placeholder -->
             <ui:VisualElement name="social-links" style="flex-direction: row;">

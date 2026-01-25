@@ -128,39 +128,39 @@
 
                     <ui:VisualElement name="stats-container" class="vb-column">
                         <!-- Health -->
-                        <ui:VisualElement class="stat-row vb-row" style="margin-bottom: 8px;">
-                            <ui:Label text="Health" style="color: rgb(165, 155, 145); width: 80px; font-size: 14px;" />
-                            <ui:VisualElement class="stat-bar-bg" style="flex-grow: 1; height: 8px; background-color: rgb(25, 20, 35); border-radius: 4px; overflow: hidden;">
-                                <ui:VisualElement name="stat-health-fill" class="stat-bar-fill" style="width: 60%; height: 100%; background-color: rgb(180, 50, 50); border-radius: 4px;" />
+                        <ui:VisualElement class="stat-row" style="flex-direction: row; align-items: center; margin-bottom: 10px;">
+                            <ui:Label text="Health" style="color: rgb(165, 155, 145); width: 70px; min-width: 70px; flex-shrink: 0; font-size: 14px;" />
+                            <ui:VisualElement class="stat-bar-bg" style="flex-grow: 1; height: 10px; background-color: rgb(25, 20, 35); border-radius: 5px; overflow: hidden; margin: 0 12px;">
+                                <ui:VisualElement name="stat-health-fill" class="stat-bar-fill" style="width: 60%; height: 100%; background-color: rgb(180, 50, 50); border-radius: 5px;" />
                             </ui:VisualElement>
-                            <ui:Label name="stat-health-value" text="100" style="color: rgb(235, 225, 215); width: 40px; -unity-text-align: middle-right; font-size: 14px;" />
+                            <ui:Label name="stat-health-value" text="100" style="color: rgb(235, 225, 215); width: 40px; min-width: 40px; flex-shrink: 0; -unity-text-align: middle-right; font-size: 14px;" />
                         </ui:VisualElement>
 
                         <!-- Attack -->
-                        <ui:VisualElement class="stat-row vb-row" style="margin-bottom: 8px;">
-                            <ui:Label text="Attack" style="color: rgb(165, 155, 145); width: 80px; font-size: 14px;" />
-                            <ui:VisualElement class="stat-bar-bg" style="flex-grow: 1; height: 8px; background-color: rgb(25, 20, 35); border-radius: 4px; overflow: hidden;">
-                                <ui:VisualElement name="stat-attack-fill" class="stat-bar-fill" style="width: 50%; height: 100%; background-color: rgb(220, 120, 40); border-radius: 4px;" />
+                        <ui:VisualElement class="stat-row" style="flex-direction: row; align-items: center; margin-bottom: 10px;">
+                            <ui:Label text="Attack" style="color: rgb(165, 155, 145); width: 70px; min-width: 70px; flex-shrink: 0; font-size: 14px;" />
+                            <ui:VisualElement class="stat-bar-bg" style="flex-grow: 1; height: 10px; background-color: rgb(25, 20, 35); border-radius: 5px; overflow: hidden; margin: 0 12px;">
+                                <ui:VisualElement name="stat-attack-fill" class="stat-bar-fill" style="width: 50%; height: 100%; background-color: rgb(220, 120, 40); border-radius: 5px;" />
                             </ui:VisualElement>
-                            <ui:Label name="stat-attack-value" text="50" style="color: rgb(235, 225, 215); width: 40px; -unity-text-align: middle-right; font-size: 14px;" />
+                            <ui:Label name="stat-attack-value" text="50" style="color: rgb(235, 225, 215); width: 40px; min-width: 40px; flex-shrink: 0; -unity-text-align: middle-right; font-size: 14px;" />
                         </ui:VisualElement>
 
                         <!-- Defense -->
-                        <ui:VisualElement class="stat-row vb-row" style="margin-bottom: 8px;">
-                            <ui:Label text="Defense" style="color: rgb(165, 155, 145); width: 80px; font-size: 14px;" />
-                            <ui:VisualElement class="stat-bar-bg" style="flex-grow: 1; height: 8px; background-color: rgb(25, 20, 35); border-radius: 4px; overflow: hidden;">
-                                <ui:VisualElement name="stat-defense-fill" class="stat-bar-fill" style="width: 45%; height: 100%; background-color: rgb(140, 150, 165); border-radius: 4px;" />
+                        <ui:VisualElement class="stat-row" style="flex-direction: row; align-items: center; margin-bottom: 10px;">
+                            <ui:Label text="Defense" style="color: rgb(165, 155, 145); width: 70px; min-width: 70px; flex-shrink: 0; font-size: 14px;" />
+                            <ui:VisualElement class="stat-bar-bg" style="flex-grow: 1; height: 10px; background-color: rgb(25, 20, 35); border-radius: 5px; overflow: hidden; margin: 0 12px;">
+                                <ui:VisualElement name="stat-defense-fill" class="stat-bar-fill" style="width: 45%; height: 100%; background-color: rgb(140, 150, 165); border-radius: 5px;" />
                             </ui:VisualElement>
-                            <ui:Label name="stat-defense-value" text="45" style="color: rgb(235, 225, 215); width: 40px; -unity-text-align: middle-right; font-size: 14px;" />
+                            <ui:Label name="stat-defense-value" text="45" style="color: rgb(235, 225, 215); width: 40px; min-width: 40px; flex-shrink: 0; -unity-text-align: middle-right; font-size: 14px;" />
                         </ui:VisualElement>
 
                         <!-- Speed -->
-                        <ui:VisualElement class="stat-row vb-row" style="margin-bottom: 8px;">
-                            <ui:Label text="Speed" style="color: rgb(165, 155, 145); width: 80px; font-size: 14px;" />
-                            <ui:VisualElement class="stat-bar-bg" style="flex-grow: 1; height: 8px; background-color: rgb(25, 20, 35); border-radius: 4px; overflow: hidden;">
-                                <ui:VisualElement name="stat-speed-fill" class="stat-bar-fill" style="width: 70%; height: 100%; background-color: rgb(60, 140, 220); border-radius: 4px;" />
+                        <ui:VisualElement class="stat-row" style="flex-direction: row; align-items: center; margin-bottom: 10px;">
+                            <ui:Label text="Speed" style="color: rgb(165, 155, 145); width: 70px; min-width: 70px; flex-shrink: 0; font-size: 14px;" />
+                            <ui:VisualElement class="stat-bar-bg" style="flex-grow: 1; height: 10px; background-color: rgb(25, 20, 35); border-radius: 5px; overflow: hidden; margin: 0 12px;">
+                                <ui:VisualElement name="stat-speed-fill" class="stat-bar-fill" style="width: 70%; height: 100%; background-color: rgb(60, 140, 220); border-radius: 5px;" />
                             </ui:VisualElement>
-                            <ui:Label name="stat-speed-value" text="70" style="color: rgb(235, 225, 215); width: 40px; -unity-text-align: middle-right; font-size: 14px;" />
+                            <ui:Label name="stat-speed-value" text="70" style="color: rgb(235, 225, 215); width: 40px; min-width: 40px; flex-shrink: 0; -unity-text-align: middle-right; font-size: 14px;" />
                         </ui:VisualElement>
                     </ui:VisualElement>
                 </ui:VisualElement>
