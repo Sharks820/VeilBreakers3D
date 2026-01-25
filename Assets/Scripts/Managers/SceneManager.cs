@@ -18,6 +18,7 @@ namespace VeilBreakers.Managers
 
         public static class Scenes
         {
+            public const string Bootstrap = "Bootstrap";
             public const string MainMenu = "MainMenu";
             public const string CharacterSelect = "CharacterSelect";
             public const string TestArena = "TestArena";

@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using VeilBreakers.Managers;
 using VeilBreakers.Audio;
 using VeilBreakers.Combat;
 using VeilBreakers.Data;
@@ -27,6 +28,11 @@ namespace VeilBreakers.Core
         [SerializeField] private AudioConfig _audioConfig;
         [SerializeField] private bool _initializeOnAwake = true;
         [SerializeField] private bool _dontDestroyOnLoad = true;
+
+        [Header("Scene Loading")]
+        [SerializeField] private string _firstSceneToLoad = "MainMenu";
+        [SerializeField] private bool _autoLoadFirstScene = true;
+        [SerializeField] private float _minimumSplashTime = 1.0f;
 
         [Header("Debug")]
         [SerializeField] private bool _enableDebugLogs = true;
@@ -72,6 +78,30 @@ namespace VeilBreakers.Core
             {
                 StartCoroutine(RunTestsDelayed());
             }
+
+            if (_autoLoadFirstScene && _isInitialized)
+            {
+                StartCoroutine(LoadFirstSceneAfterDelay());
+            }
+        }
+
+        private IEnumerator LoadFirstSceneAfterDelay()
+        {
+            // Wait for minimum splash time (allows splash screen to be visible)
+            yield return new WaitForSeconds(_minimumSplashTime);
+
+            // Load the first scene
+            if (VBSceneManager.Instance != null)
+            {
+                Log($"Loading first scene: {_firstSceneToLoad}");
+                VBSceneManager.Instance.LoadSceneWithFade(_firstSceneToLoad);
+            }
+            else
+            {
+                // Fallback if VBSceneManager isn't ready
+                LogWarning("VBSceneManager not ready, using direct load");
+                UnityEngine.SceneManagement.SceneManager.LoadScene(_firstSceneToLoad);
+            }
         }
 
         // =============================================================================
@@ -94,14 +124,20 @@ namespace VeilBreakers.Core
             // Phase 1: Create core managers
             InitializeCoreManagers();
 
-            // Phase 2: Initialize audio system
+            // Phase 2: Initialize persistence systems (before anything that might save)
+            InitializePersistenceSystems();
+
+            // Phase 3: Initialize audio system
             InitializeAudioSystem();
 
-            // Phase 3: Load game data
+            // Phase 4: Load game data
             InitializeGameData();
 
-            // Phase 4: Initialize combat systems
+            // Phase 5: Initialize combat systems
             InitializeCombatSystems();
+
+            // Phase 6: Initialize gameplay systems
+            InitializeGameplaySystems();
 
             _isInitialized = true;
             Log("=== INITIALIZATION COMPLETE ===");
@@ -138,6 +174,50 @@ namespace VeilBreakers.Core
             else
             {
                 Log("  - GameDatabase exists");
+            }
+        }
+
+        private void InitializePersistenceSystems()
+        {
+            Log("Phase 2: Persistence Systems");
+
+            // VBSceneManager (needs to exist before any scene operations)
+            if (VBSceneManager.Instance == null)
+            {
+                var smObj = new GameObject("[VBSceneManager]");
+                smObj.AddComponent<VBSceneManager>();
+                if (_dontDestroyOnLoad) DontDestroyOnLoad(smObj);
+                Log("  - Created VBSceneManager");
+            }
+            else
+            {
+                Log("  - VBSceneManager exists");
+            }
+
+            // SaveManager
+            if (SaveManager.Instance == null)
+            {
+                var saveObj = new GameObject("[SaveManager]");
+                saveObj.AddComponent<SaveManager>();
+                if (_dontDestroyOnLoad) DontDestroyOnLoad(saveObj);
+                Log("  - Created SaveManager");
+            }
+            else
+            {
+                Log("  - SaveManager exists");
+            }
+
+            // AutoSaveManager
+            if (AutoSaveManager.Instance == null)
+            {
+                var autoSaveObj = new GameObject("[AutoSaveManager]");
+                autoSaveObj.AddComponent<AutoSaveManager>();
+                if (_dontDestroyOnLoad) DontDestroyOnLoad(autoSaveObj);
+                Log("  - Created AutoSaveManager");
+            }
+            else
+            {
+                Log("  - AutoSaveManager exists");
             }
         }
 
@@ -252,6 +332,37 @@ namespace VeilBreakers.Core
             }
         }
 
+        private void InitializeGameplaySystems()
+        {
+            Log("Phase 6: Gameplay Systems");
+
+            // StatusEffectManager
+            if (StatusEffectManager.Instance == null)
+            {
+                var seObj = new GameObject("[StatusEffectManager]");
+                seObj.AddComponent<StatusEffectManager>();
+                if (_dontDestroyOnLoad) DontDestroyOnLoad(seObj);
+                Log("  - Created StatusEffectManager");
+            }
+            else
+            {
+                Log("  - StatusEffectManager exists");
+            }
+
+            // ShrineManager
+            if (ShrineManager.Instance == null)
+            {
+                var shrineObj = new GameObject("[ShrineManager]");
+                shrineObj.AddComponent<ShrineManager>();
+                if (_dontDestroyOnLoad) DontDestroyOnLoad(shrineObj);
+                Log("  - Created ShrineManager");
+            }
+            else
+            {
+                Log("  - ShrineManager exists");
+            }
+        }
+
         // =============================================================================
         // TESTS
         // =============================================================================
@@ -272,6 +383,11 @@ namespace VeilBreakers.Core
             Log("  [OK] EventBus (static class)"); // EventBus is static, always available
             CheckManager("GameDatabase", GameDatabase.Instance != null);
 
+            // Check persistence
+            CheckManager("VBSceneManager", VBSceneManager.Instance != null);
+            CheckManager("SaveManager", SaveManager.Instance != null);
+            CheckManager("AutoSaveManager", AutoSaveManager.Instance != null);
+
             // Check audio
             CheckManager("AudioManager", AudioManager.Instance != null);
             CheckManager("MusicManager", MusicManager.Instance != null);
@@ -280,6 +396,10 @@ namespace VeilBreakers.Core
 
             // Check combat
             CheckManager("BattleManager", BattleManager.Instance != null);
+
+            // Check gameplay
+            CheckManager("StatusEffectManager", StatusEffectManager.Instance != null);
+            CheckManager("ShrineManager", ShrineManager.Instance != null);
 
             Log("=== HEALTH CHECK COMPLETE ===\n");
         }
