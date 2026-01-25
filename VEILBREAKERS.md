@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.34** | Last updated: 2026-01-24
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.35** | Last updated: 2026-01-24
 
 ---
 
@@ -1032,6 +1032,7 @@ battle, ui, art, audio, vera, monsters, critical
 
 | Date | Summary |
 |------|---------|
+| 2026-01-24 | v2.35: Rider IDE setup (added com.unity.ide.rider package), UI text fix - replaced placeholder GUIDs in 6 UXML files, added global font definition to USS |
 | 2025-12-29 | Consolidated memory to single VEILBREAKERS.md file |
 | 2025-12-29 | v2.3: Security fix - removed API keys from git history |
 | 2025-12-29 | v2.4: Screenshot organization - all screenshots to screenshots/ folder |

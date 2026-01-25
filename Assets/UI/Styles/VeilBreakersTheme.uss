@@ -3,6 +3,11 @@
    Design System Variables - The Foundation of AAA UI
    ============================================================================= */
 
+/* Global font for all UI elements */
+* {
+    -unity-font-definition: resource('Fonts & Materials/LiberationSans SDF');
+}
+
 :root {
     /* =========================================================================
        BRAND COLORS - The 10 Brands of VeilBreakers

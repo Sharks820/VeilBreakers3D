@@ -1,7 +1,9 @@
 {
   "dependencies": {
     "com.gamelovers.mcp-unity": "https://github.com/CoderGamester/mcp-unity.git",
+    "com.unity.adaptiveperformance": "5.1.6",
     "com.unity.addressables": "1.21.21",
+    "com.unity.ide.rider": "3.0.31",
     "com.unity.inputsystem": "1.7.0",
     "com.unity.test-framework": "1.4.5",
     "com.unity.textmeshpro": "3.0.6",
