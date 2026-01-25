@@ -90,6 +90,14 @@ namespace VeilBreakers.Core
             // Wait for minimum splash time (allows splash screen to be visible)
             yield return new WaitForSeconds(_minimumSplashTime);
 
+            // Wait for VBSceneManager to be ready (max 2 seconds)
+            float waitTime = 0f;
+            while (VBSceneManager.Instance == null && waitTime < 2f)
+            {
+                yield return null;
+                waitTime += Time.deltaTime;
+            }
+
             // Load the first scene
             if (VBSceneManager.Instance != null)
             {
