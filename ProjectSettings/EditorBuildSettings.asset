@@ -7,21 +7,24 @@ EditorBuildSettings:
   m_Scenes:
   - enabled: 1
     path: Assets/Scenes/Bootstrap.unity
-    guid:
+    guid: 063388655857a7446bebbaec8792d1f7
   - enabled: 1
     path: Assets/Scenes/MainMenu.unity
-    guid:
+    guid: 191e6d989f6928840ba822f9e699e9e0
   - enabled: 1
     path: Assets/Scenes/CharacterSelect.unity
-    guid:
+    guid: 902937231dff6d34ea9d814ac5c24774
   - enabled: 1
     path: Assets/Scenes/TestArena.unity
-    guid:
+    guid: af242539e08a3ed43bdad1df8ffefc39
   - enabled: 1
     path: Assets/Scenes/Battle.unity
-    guid:
+    guid: 2a08378f32ec91746810d47dbd62ffe3
   - enabled: 1
     path: Assets/Scenes/Overworld.unity
-    guid:
+    guid: db827a44b8bdd7c41b626bd534b8600e
   m_configObjects:
+    com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 2242da52f2649624794ca51f8cf18eb3, type: 2}
+    com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 613dbe84ad069474380f2e786fe71ff3, type: 2}
+    com.unity.addressableassets: {fileID: 11400000, guid: b7081ef8b1c8d0244a357e83d89c0dc6, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: add534cb8c66ae64ab9a9cbe66facc96, type: 2}

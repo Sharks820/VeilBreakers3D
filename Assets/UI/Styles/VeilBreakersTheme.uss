@@ -5,7 +5,7 @@
 
 /* Global font for all UI elements */
 * {
-    -unity-font-definition: resource('Fonts & Materials/LiberationSans SDF');
+    -unity-font-definition: url('project://database/Assets/UI/Fonts/Arial.ttf?fileID=12800000&guid=a1b82bd02ca673443b4c4c64ac746061&type=3');
 }
 
 :root {

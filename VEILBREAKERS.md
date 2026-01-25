@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.35** | Last updated: 2026-01-24
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.36** | Last updated: 2026-01-24
 
 ---
 
@@ -1032,6 +1032,7 @@ battle, ui, art, audio, vera, monsters, critical
 
 | Date | Summary |
 |------|---------|
+| 2026-01-25 | v2.36: Fixed UI Toolkit text rendering - USS was using TMP font (LiberationSans SDF) instead of TTF. Changed to Arial.ttf with proper Unity GUID reference. Added UITextSettingsSetup editor script. Addressables package auto-initialized. |
 | 2026-01-24 | v2.35: Rider IDE setup (added com.unity.ide.rider package), UI text fix - replaced placeholder GUIDs in 6 UXML files, added global font definition to USS |
 | 2025-12-29 | Consolidated memory to single VEILBREAKERS.md file |
 | 2025-12-29 | v2.3: Security fix - removed API keys from git history |
