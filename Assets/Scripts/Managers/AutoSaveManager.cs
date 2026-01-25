@@ -75,13 +75,10 @@ namespace VeilBreakers.Managers
             UnsubscribeFromEvents();
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
-            if (_instance == this)
-            {
-                _instance = null;
-            }
             UnsubscribeFromEvents();
+            base.OnDestroy();
         }
 
         // =============================================================================

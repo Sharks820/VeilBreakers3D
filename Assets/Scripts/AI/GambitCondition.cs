@@ -763,7 +763,7 @@ namespace VeilBreakers.AI
             return HasStatus(target, StatusEffectType.ARMOR_SHRED) ||
                    HasStatus(target, StatusEffectType.STUN) ||
                    HasStatus(target, StatusEffectType.SLOW) ||
-                   HasStatus(target, StatusEffectType.WEAKNESS);
+                   HasStatus(target, StatusEffectType.DEFENSE_DOWN);
         }
 
         /// <summary>
@@ -1109,7 +1109,7 @@ namespace VeilBreakers.AI
                 }
 
                 // Stat debuffs (lower priority)
-                if (HasStatus(ally, StatusEffectType.WEAKNESS) ||
+                if (HasStatus(ally, StatusEffectType.DEFENSE_DOWN) ||
                     HasStatus(ally, StatusEffectType.ARMOR_SHRED))
                 {
                     score += 30f;

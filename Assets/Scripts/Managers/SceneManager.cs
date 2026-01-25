@@ -75,13 +75,10 @@ namespace VeilBreakers.Managers
             UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
-            if (Instance == this)
-            {
-                UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
-                Instance = null;
-            }
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+            base.OnDestroy();
         }
 
         // =============================================================================
