@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.33** | Last updated: 2026-01-24
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.34** | Last updated: 2026-01-24
 
 ---
 
@@ -1079,10 +1079,11 @@ battle, ui, art, audio, vera, monsters, critical
 | 2026-01-19 | **v1.89: CRITICAL FIX - Unity Infinite Import Loop** - Fixed corrupted Unity project caused by Windows reserved filename "nul" in Assets/Scripts. Solution: backup Scripts folder, create fresh folder, copy all files EXCEPT nul/nul.meta, delete entire Library folder. Unity rebuilt cleanly. Added gotcha to CLAUDE.md: NEVER create files named nul/con/prn/aux/com1-9/lpt1-9. |
 | 2026-01-20 | **v1.94-1.98: AAA MENU UI SYSTEM** - Complete UI Toolkit implementation: VeilBreakers.uss (base styles), VeilBreakersTheme.uss (color theme), all UXML templates. Controllers: MainMenuController.cs, MainMenuBootstrap.cs, SettingsPanelController.cs, CharacterSelectController.cs, InventoryController.cs, MonsterCollectionController.cs, VERADialogueController.cs. Core: ThemeManager.cs, UIAnimationController.cs. Bug fixes: ErrorLogger.Warning→Warn, added GameManager.ResetGame(), fixed IStyle borderColor/borderRadius. Migration 49%→92%! |
 | 2026-01-24 | **v2.21: AI INTELLIGENCE SYSTEM** - Comprehensive intelligence scaling for monster AI. Smarts scale with Rarity+Level+Evolution (additive, not capped - trained Commons can match base Legendaries). Attack AI: combo detection, threat assessment, overkill prevention, ultimate timing. Healer AI: smart triage, role priority, DOT awareness, optimal buff/cleanse targets. Defender AI: defensive timing, anticipation, team awareness. BattleContext expanded: GetOptimalHealTarget, GetOptimalBuffTarget, GetOptimalCleanseTarget, threat tracking, damage estimation. Training now genuinely makes monsters smarter! |
+| 2026-01-24 | **v2.30-2.34: UI TOOLKIT FIXES** - Fixed compile errors (SingletonMonoBehaviour inheritance, StatusEffectType.WEAKNESS→DEFENSE_DOWN). Fixed UXML stylesheet GUIDs (were "placeholder"). Added Arial.ttf font for UI text rendering. Fixed PanelSettings scale mode (ScreenMatchMode=1, Match=1 for height-based scaling). Fixed Bootstrap scene loading (wait for VBSceneManager singleton). Scene flow: Bootstrap→MainMenu working. **GOTCHA: UXML files need valid GUIDs, not placeholders. UI Toolkit needs a font file in project!** |
 
 ---
 
-## CURRENT STATUS (2026-01-20)
+## CURRENT STATUS (2026-01-24)
 
 ### 🎯 CURRENT STATUS: Migration 92% Complete ✅
 
