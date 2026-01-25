@@ -20,7 +20,7 @@ namespace VeilBreakers.UI.Menus
 
         [Header("Scenes")]
         [SerializeField] private string _characterSelectScene = "CharacterSelect";
-        [SerializeField] private string _gameScene = "TestArena";
+        [SerializeField] private string _gameScene = "Overworld";
 
         // =============================================================================
         // UI ELEMENTS

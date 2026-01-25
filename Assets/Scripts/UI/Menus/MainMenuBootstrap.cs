@@ -297,7 +297,7 @@ namespace VeilBreakers.UI.Menus
         {
             Debug.Log("Continuing game...");
             // TODO: Load last save and transition to appropriate scene
-            StartCoroutine(TransitionToScene("GameWorld"));
+            StartCoroutine(TransitionToScene("Overworld"));
         }
 
         private void HandleSettingsClicked()
