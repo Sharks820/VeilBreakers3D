@@ -17,9 +17,9 @@
     "portrait_path": "assets/characters/heroes/bastion_portrait.png",
     "battle_sprite_path": "assets/characters/heroes/bastion_battle.png",
     "color_palette": {
-      "r": 0.48,
-      "g": 0.53,
-      "b": 0.58,
+      "r": 0.24,
+      "g": 0.55,
+      "b": 0.86,
       "a": 1
     },
     "base_hp": 65,
@@ -129,9 +129,9 @@
     "portrait_path": "assets/characters/heroes/mirage_portrait.png",
     "battle_sprite_path": "assets/characters/heroes/mirage_battle.png",
     "color_palette": {
-      "r": 0.36,
-      "g": 0.24,
-      "b": 0.55,
+      "r": 0.16,
+      "g": 0.78,
+      "b": 0.31,
       "a": 1
     },
     "base_hp": 35,

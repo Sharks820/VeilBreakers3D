@@ -19,7 +19,7 @@
                     <ui:VisualElement style="width: 4px; height: 24px; background-color: rgb(180, 40, 60); border-radius: 2px; margin-right: 14px;" />
                     <ui:Label text="SETTINGS" style="font-size: 26px; letter-spacing: 5px; color: rgb(235, 245, 240); -unity-font-style: bold;" />
                 </ui:VisualElement>
-                <ui:Button text="X" name="btn-close" style="width: 40px; height: 40px; font-size: 18px; background-color: transparent; border-width: 1px; border-color: rgba(180, 50, 70, 0.4); border-radius: 20px; color: rgb(180, 80, 90); -unity-text-align: middle-center; padding: 0;" />
+                <ui:Button text="X" name="btn-close" style="width: 40px; height: 40px; font-size: 18px; background-color: transparent; border-width: 1px; border-color: rgba(180, 50, 70, 0.4); border-radius: 20px; color: rgb(180, 80, 90); -unity-text-align: middle-center; align-items: center; justify-content: center; padding: 0; margin: 0;" />
             </ui:VisualElement>
 
             <!-- Tab Bar -->

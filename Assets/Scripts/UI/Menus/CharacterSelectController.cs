@@ -33,6 +33,44 @@ namespace VeilBreakers.UI.Menus
             public Sprite portrait;
         }
 
+        // Non-allocating event handler for hero cards
+        private class HeroCardEventHandler
+        {
+            private readonly CharacterSelectController _controller;
+            private readonly int _heroIndex;
+            private readonly VisualElement _card;
+            private readonly Color _heroColor;
+            private readonly Color _heroColorGlow;
+
+            public HeroCardEventHandler(CharacterSelectController controller, int index, VisualElement card, Color heroColor, Color heroColorGlow)
+            {
+                _controller = controller;
+                _heroIndex = index;
+                _card = card;
+                _heroColor = heroColor;
+                _heroColorGlow = heroColorGlow;
+            }
+
+            public void OnClick(ClickEvent evt) => _controller.OnHeroCardClicked(_heroIndex);
+
+            public void OnMouseEnter(MouseEnterEvent evt)
+            {
+                if (_controller._selectedHeroIndex != _heroIndex)
+                {
+                    _controller.ApplyHeroHover(_card, _heroColor, _heroColorGlow, 0.22f);
+                    UIAnimationController.Instance?.FadeSlideIn(_card, UIAnimationController.SlideDirection.Right, 4f, 0.12f);
+                }
+            }
+
+            public void OnMouseLeave(MouseLeaveEvent evt)
+            {
+                if (_controller._selectedHeroIndex != _heroIndex)
+                {
+                    _controller.ResetHeroCardVisual(_card, _heroColor);
+                }
+            }
+        }
+
         // Runtime hero list from GameDatabase
         private List<HeroData> _availableHeroes;
 
@@ -112,6 +150,7 @@ namespace VeilBreakers.UI.Menus
         private HeroData _selectedHero;
         private GameObject _currentPreviewModel;
         private List<VisualElement> _heroCards = new();
+        private List<HeroCardEventHandler> _heroCardHandlers = new(); // Cache event handlers (no allocation)
 
         // =============================================================================
         // EVENTS
@@ -258,6 +297,7 @@ namespace VeilBreakers.UI.Menus
 
             _heroList.Clear();
             _heroCards.Clear();
+            _heroCardHandlers.Clear(); // Clear event handlers (avoid memory leaks)
 
             // Load heroes from GameDatabase
             _availableHeroes = new List<HeroData>();
@@ -396,27 +436,14 @@ namespace VeilBreakers.UI.Menus
             selectIndicator.style.opacity = 0;
             card.Add(selectIndicator);
 
-            // Click handler
-            int capturedIndex = index;
-            card.RegisterCallback<ClickEvent>(evt => OnHeroCardClicked(capturedIndex));
+            // Create reusable event handler (no lambda allocation)
+            var handler = new HeroCardEventHandler(this, index, card, heroColor, heroColorGlow);
+            _heroCardHandlers.Add(handler);
 
-            // Hover effects - per-hero accent color
-            card.RegisterCallback<MouseEnterEvent>(evt =>
-            {
-                if (_selectedHeroIndex != capturedIndex)
-                {
-                    ApplyHeroHover(card, heroColor, heroColorGlow, 0.22f);
-                    UIAnimationController.Instance?.FadeSlideIn(card, UIAnimationController.SlideDirection.Right, 4f, 0.12f);
-                }
-            });
-
-            card.RegisterCallback<MouseLeaveEvent>(evt =>
-            {
-                if (_selectedHeroIndex != capturedIndex)
-                {
-                    ResetHeroCardVisual(card, heroColor);
-                }
-            });
+            // Register callbacks using handler methods (no lambda allocation)
+            card.RegisterCallback<ClickEvent>(handler.OnClick);
+            card.RegisterCallback<MouseEnterEvent>(handler.OnMouseEnter);
+            card.RegisterCallback<MouseLeaveEvent>(handler.OnMouseLeave);
 
             return card;
         }
