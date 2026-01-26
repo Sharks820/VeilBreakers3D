@@ -51,8 +51,8 @@
     --color-corruption-ascended: rgb(255, 215, 0);
     --color-corruption-purified: rgb(180, 220, 255);
     --color-corruption-unstable: rgb(180, 180, 180);
-    --color-corruption-corrupted: rgb(160, 80, 180);
-    --color-corruption-abyssal: rgb(80, 0, 120);
+    --color-corruption-corrupted: rgb(160, 50, 80);
+    --color-corruption-abyssal: rgb(80, 10, 40);
 
     /* Spacing */
     --spacing-xs: 4px;
@@ -770,12 +770,12 @@
 }
 
 .hero-card:hover {
-    background-color: rgb(35, 28, 45);
-    border-color: rgb(80, 65, 100);
+    background-color: rgb(40, 25, 32);
+    border-color: rgb(120, 50, 70);
 }
 
 .hero-card.selected {
-    background-color: rgb(40, 32, 55);
+    background-color: rgb(50, 25, 35);
     border-color: rgb(180, 40, 60);
 }
 
@@ -903,7 +903,7 @@
 }
 
 .inventory-tab-active:hover {
-    background-color: rgb(140, 80, 180);
+    background-color: rgb(160, 50, 80);
 }
 
 /* Item Grid Slots */
@@ -973,7 +973,7 @@
 }
 
 .rarity-epic {
-    border-color: rgb(160, 80, 200);
+    border-color: rgb(180, 50, 80);
 }
 
 .rarity-legendary {
@@ -1188,7 +1188,7 @@
 }
 
 .vb-text-field:hover {
-    border-color: rgb(80, 60, 100);
+    border-color: rgb(120, 50, 70);
 }
 
 .vb-text-field:focus {
@@ -1433,14 +1433,14 @@
 }
 
 .btn-primary:hover {
-    background-color: rgb(140, 80, 180);
-    border-color: rgb(180, 120, 220);
+    background-color: rgb(160, 50, 80);
+    border-color: rgb(220, 60, 80);
     scale: 1.02;
     translate: -2px 0;
 }
 
 .btn-primary:active {
-    background-color: rgb(100, 50, 140);
+    background-color: rgb(120, 30, 50);
     scale: 0.98;
 }
 
@@ -1448,9 +1448,9 @@
     min-height: 44px;
     font-size: 14px;
     letter-spacing: 2px;
-    background-color: rgba(40, 32, 55, 0.85);
+    background-color: rgba(40, 25, 30, 0.85);
     border-width: 1px;
-    border-color: rgba(100, 80, 130, 0.6);
+    border-color: rgba(130, 60, 70, 0.6);
     border-radius: 6px;
     color: rgb(165, 155, 145);
     padding: 10px 20px;
@@ -1725,7 +1725,7 @@
 }
 
 .settings-tab-active:hover {
-    background-color: rgb(140, 80, 180);
+    background-color: rgb(160, 50, 80);
 }
 
 /* Settings Row */
@@ -1807,7 +1807,7 @@
 }
 
 .aaa-slider:hover .unity-base-slider__dragger {
-    background-color: rgb(150, 90, 200);
+    background-color: rgb(170, 50, 80);
     scale: 1.1;
 }
 
@@ -1881,9 +1881,9 @@
 }
 
 .path-voidtouched {
-    background-color: rgba(100, 60, 160, 0.2);
-    border-color: rgba(100, 60, 160, 0.5);
-    color: rgb(160, 120, 200);
+    background-color: rgba(140, 40, 80, 0.2);
+    border-color: rgba(140, 40, 80, 0.5);
+    color: rgb(180, 80, 120);
 }
 
 .path-unchained {
@@ -1907,12 +1907,12 @@
 .brand-savage { background-color: rgb(180, 60, 60); border-color: rgb(220, 100, 100); }
 .brand-surge { background-color: rgb(60, 140, 200); border-color: rgb(100, 180, 240); }
 .brand-venom { background-color: rgb(80, 160, 80); border-color: rgb(120, 200, 120); }
-.brand-dread { background-color: rgb(80, 60, 100); border-color: rgb(120, 100, 140); }
+.brand-dread { background-color: rgb(140, 40, 80); border-color: rgb(180, 60, 100); }
 .brand-leech { background-color: rgb(160, 60, 120); border-color: rgb(200, 100, 160); }
 .brand-grace { background-color: rgb(200, 180, 120); border-color: rgb(240, 220, 160); }
 .brand-mend { background-color: rgb(100, 200, 180); border-color: rgb(140, 240, 220); }
-.brand-ruin { background-color: rgb(60, 40, 80); border-color: rgb(100, 80, 120); }
-.brand-void { background-color: rgb(40, 30, 50); border-color: rgb(80, 70, 90); }
+.brand-ruin { background-color: rgb(220, 120, 40); border-color: rgb(255, 160, 80); }
+.brand-void { background-color: rgb(50, 20, 35); border-color: rgb(100, 40, 60); }
 
 /* =============================================================================
    SYNERGY DISPLAY

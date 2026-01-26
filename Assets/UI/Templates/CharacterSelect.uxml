@@ -18,7 +18,7 @@
         <ui:VisualElement name="content" style="flex-grow: 1; flex-direction: row; margin-top: 70px; margin-bottom: 90px; padding: 20px;">
 
             <!-- Left Panel - Hero List -->
-            <ui:VisualElement name="hero-list-panel" style="width: 240px; padding: 16px; background-color: rgba(12, 9, 18, 0.9); border-width: 1px; border-color: rgba(80, 60, 100, 0.4); border-radius: 10px; margin-right: 16px;">
+            <ui:VisualElement name="hero-list-panel" style="width: 240px; padding: 16px; background-color: rgba(12, 9, 18, 0.9); border-width: 1px; border-color: rgba(120, 50, 70, 0.4); border-radius: 10px; margin-right: 16px;">
                 <ui:Label text="HEROES" style="font-size: 12px; letter-spacing: 2px; color: rgb(180, 40, 60); margin-bottom: 14px; -unity-font-style: bold;" />
                 <ui:ScrollView name="hero-scroll" style="flex-grow: 1;">
                     <ui:VisualElement name="hero-list" />
@@ -37,7 +37,7 @@
             </ui:VisualElement>
 
             <!-- Right Panel - Hero Details -->
-            <ui:VisualElement name="details-panel" style="width: 320px; padding: 16px; background-color: rgba(12, 9, 18, 0.9); border-width: 1px; border-color: rgba(80, 60, 100, 0.4); border-radius: 10px; margin-left: 16px; overflow: hidden;">
+            <ui:VisualElement name="details-panel" style="width: 320px; padding: 16px; background-color: rgba(12, 9, 18, 0.9); border-width: 1px; border-color: rgba(120, 50, 70, 0.4); border-radius: 10px; margin-left: 16px; overflow: hidden;">
                 <ui:ScrollView class="scrollview" style="flex-grow: 1;" mode="Vertical" vertical-scroller-visibility="AlwaysVisible" mouse-wheel-scroll-size="80">
                     <ui:VisualElement name="details-content" style="flex-direction: column; width: 100%; padding-right: 8px;">
 
@@ -45,7 +45,7 @@
                     <ui:Label name="hero-name" text="Select a Hero" style="font-size: 24px; color: rgb(235, 225, 215); -unity-font-style: bold; margin-bottom: 4px; flex-shrink: 0;" />
                     <ui:Label name="hero-title" text="" style="font-size: 12px; color: rgb(180, 40, 60); letter-spacing: 1px; margin-bottom: 16px; flex-shrink: 0;" />
 
-                    <ui:VisualElement style="height: 1px; background-color: rgba(80, 60, 100, 0.4); margin-bottom: 16px;" />
+                    <ui:VisualElement style="height: 1px; background-color: rgba(120, 50, 70, 0.4); margin-bottom: 16px;" />
 
                     <!-- Path Section -->
                     <ui:Label text="PATH" style="font-size: 10px; letter-spacing: 2px; color: rgb(90, 80, 75); margin-bottom: 8px; flex-shrink: 0;" />
@@ -57,11 +57,11 @@
                     <!-- Brand Affinity -->
                     <ui:Label text="BRAND AFFINITY" style="font-size: 10px; letter-spacing: 2px; color: rgb(90, 80, 75); margin-bottom: 8px; flex-shrink: 0;" />
                     <ui:VisualElement name="brand-display" style="flex-direction: row; margin-bottom: 16px; flex-shrink: 0;">
-                        <ui:VisualElement style="flex-direction: row; align-items: center; padding: 4px 10px; background-color: rgba(40, 32, 55, 0.6); border-radius: 4px; margin-right: 8px;">
+                        <ui:VisualElement style="flex-direction: row; align-items: center; padding: 4px 10px; background-color: rgba(50, 30, 40, 0.6); border-radius: 4px; margin-right: 8px;">
                             <ui:VisualElement name="brand-icon-1" style="width: 10px; height: 10px; border-radius: 5px; background-color: rgb(180, 40, 60); margin-right: 6px;" />
                             <ui:Label name="brand-name-1" text="--" style="font-size: 11px; color: rgb(165, 155, 145);" />
                         </ui:VisualElement>
-                        <ui:VisualElement style="flex-direction: row; align-items: center; padding: 4px 10px; background-color: rgba(40, 32, 55, 0.6); border-radius: 4px;">
+                        <ui:VisualElement style="flex-direction: row; align-items: center; padding: 4px 10px; background-color: rgba(50, 30, 40, 0.6); border-radius: 4px;">
                             <ui:VisualElement name="brand-icon-2" style="width: 10px; height: 10px; border-radius: 5px; background-color: rgb(100, 80, 70); margin-right: 6px;" />
                             <ui:Label name="brand-name-2" text="--" style="font-size: 11px; color: rgb(165, 155, 145);" />
                         </ui:VisualElement>
@@ -104,7 +104,7 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
 
-                    <ui:VisualElement style="height: 1px; background-color: rgba(80, 60, 100, 0.4); margin-bottom: 16px;" />
+                    <ui:VisualElement style="height: 1px; background-color: rgba(120, 50, 70, 0.4); margin-bottom: 16px;" />
 
                     <!-- Signature Monster Section -->
                     <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 12px;">
@@ -123,7 +123,7 @@
                             <ui:Label name="monster-type" text="Beast - Stalker" style="font-size: 11px; color: rgb(130, 120, 110); margin-bottom: 6px;" />
                             <ui:VisualElement style="flex-direction: row; margin-bottom: 6px;">
                                 <ui:VisualElement style="width: 10px; height: 10px; border-radius: 5px; background-color: rgb(180, 40, 60); margin-right: 4px;" />
-                                <ui:VisualElement style="width: 10px; height: 10px; border-radius: 5px; background-color: rgb(60, 20, 80);" />
+                                <ui:VisualElement style="width: 10px; height: 10px; border-radius: 5px; background-color: rgb(80, 30, 50);" />
                             </ui:VisualElement>
                             <ui:VisualElement style="flex-direction: row; align-items: center; padding: 3px 8px; background-color: rgba(60, 180, 160, 0.15); border-radius: 3px; align-self: flex-start;">
                                 <ui:Label text="PATH SYNERGY" style="font-size: 9px; letter-spacing: 1px; color: rgb(80, 200, 180);" />
@@ -138,12 +138,12 @@
                         <ui:Label name="monster-ability-desc" text="Vanish into shadows, then strike from behind dealing bonus damage." style="font-size: 11px; color: rgb(130, 120, 110); white-space: normal;" />
                     </ui:VisualElement>
 
-                    <ui:VisualElement style="height: 1px; background-color: rgba(80, 60, 100, 0.4); margin-bottom: 16px;" />
+                    <ui:VisualElement style="height: 1px; background-color: rgba(120, 50, 70, 0.4); margin-bottom: 16px;" />
 
                     <!-- Hero Innate Ability -->
                     <ui:Label text="HERO INNATE ABILITY" style="font-size: 10px; letter-spacing: 2px; color: rgb(90, 80, 75); margin-bottom: 10px;" />
                     <ui:VisualElement name="innate-ability" style="flex-direction: row; padding: 10px; background-color: rgba(30, 25, 40, 0.7); border-radius: 6px; flex-shrink: 0;">
-                        <ui:VisualElement style="width: 36px; height: 36px; background-color: rgba(45, 36, 62, 0.8); border-radius: 6px; margin-right: 10px; flex-shrink: 0;" />
+                        <ui:VisualElement style="width: 36px; height: 36px; background-color: rgba(60, 35, 45, 0.8); border-radius: 6px; margin-right: 10px; flex-shrink: 0;" />
                         <ui:VisualElement style="flex-grow: 1;">
                             <ui:Label name="innate-ability-name" text="Void Sight" style="font-size: 13px; color: rgb(200, 190, 180); -unity-font-style: bold; margin-bottom: 2px;" />
                             <ui:Label name="innate-ability-desc" text="See hidden enemies and weak points." style="font-size: 11px; color: rgb(130, 120, 110); white-space: normal;" />

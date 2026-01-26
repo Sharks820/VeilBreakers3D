@@ -5,8 +5,8 @@
     "title": "The Ironclad",
     "description": "Child of the Shield Wall - an ancient order sworn to hold the line against the Veil. Never retreats. Never leaves an ally behind.",
     "backstory": "Born in a fortress overlooking the nearest Veil breach, raised to the sound of monsters dying against the walls. At 16, during a breach event, they held a collapsed gatehouse alone for six hours while civilians evacuated. The Compact didn't recruit Bastion - they requested transfer, wanting to take the fight TO the corruption instead of just holding it back. Speaks in short sentences.",
-    "primary_brand": 1,
-    "primary_path": 0,
+    "primary_brand": 0,
+    "primary_path": 1,
     "role": "Tank",
     "hero_class": "VEILGUARD",
     "recommended_monsters": [
@@ -62,7 +62,7 @@
     "description": "Discovered they could take life to survive their wasting disease. Now uses that dark gift to heal others, acutely aware of the darkness within.",
     "backstory": "Marrow was dying from age 8. By 12, they'd accepted death. Then they touched a dying bird and felt its remaining life flow into them. The disease stopped. But so did the bird. Years of learning to control it followed - to take only what's freely given, to give back what they've stored. The Compact found them healing plague victims in a quarantined village, taking a little from many to give much to the sick. Speaks softly, moves gently.",
     "primary_brand": 5,
-    "primary_path": 2,
+    "primary_path": 3,
     "role": "Healer",
     "hero_class": "SOULWEAVER",
     "recommended_monsters": [
@@ -117,8 +117,8 @@
     "title": "The Illusionist",
     "description": "Something touched them near the Veil as a child. Now they see what isn't there, and can make others see it too. Reality is flexible around them.",
     "backstory": "No one knows where Mirage came from. They appeared at the Compact's gates three years ago, asking to join, knowing things they shouldn't know. Tests revealed they're human - mostly. The Compact keeps them close because the alternative - Mirage alone and unsupervised - is terrifying. They're genuinely trying to help, but their perception of 'help' is sometimes skewed. Finds humor in situations others find horrifying. May or may not be aware of conversations happening in other rooms.",
-    "primary_brand": 3,
-    "primary_path": 3,
+    "primary_brand": 4,
+    "primary_path": 4,
     "role": "Illusionist",
     "hero_class": "VOIDWALKER",
     "recommended_monsters": [
@@ -173,8 +173,8 @@
     "title": "The Beast Hunter",
     "description": "Born to a nomadic tribe that hunts corruption at the frontier. Every scar is a lesson learned, every trophy a victory remembered.",
     "backstory": "Rend earned their name at age 14 by single-handedly killing a Ravener that slaughtered half their hunting party. The Compact recruited them after they tracked and eliminated a pack of corrupted beasts terrorizing trade routes. Doesn't talk much - prefers to let actions speak. Fights with primal fury but tactical precision. Believes the only good corruption is dead corruption.",
-    "primary_brand": 0,
-    "primary_path": 1,
+    "primary_brand": 1,
+    "primary_path": 2,
     "role": "DPS",
     "hero_class": "BLOODHUNTER",
     "recommended_monsters": [
