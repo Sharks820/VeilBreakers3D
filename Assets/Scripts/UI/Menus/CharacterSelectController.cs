@@ -248,7 +248,6 @@ namespace VeilBreakers.UI.Menus
             var card = new VisualElement();
             card.name = $"hero-card-{index}";
             card.AddToClassList("hero-card");
-            card.AddToClassList("vb-card");
             card.style.flexDirection = FlexDirection.Row;
             card.style.alignItems = Align.Center;
             card.style.paddingTop = 12;
@@ -256,18 +255,33 @@ namespace VeilBreakers.UI.Menus
             card.style.paddingLeft = 12;
             card.style.paddingRight = 12;
             card.style.marginBottom = 8;
-            card.style.cursor = StyleKeyword.Initial;
+            card.style.backgroundColor = new Color(25f/255f, 20f/255f, 35f/255f);
+            card.style.borderTopWidth = 1;
+            card.style.borderBottomWidth = 1;
+            card.style.borderLeftWidth = 1;
+            card.style.borderRightWidth = 1;
+            card.style.borderTopColor = new Color(60f/255f, 50f/255f, 70f/255f);
+            card.style.borderBottomColor = new Color(60f/255f, 50f/255f, 70f/255f);
+            card.style.borderLeftColor = new Color(60f/255f, 50f/255f, 70f/255f);
+            card.style.borderRightColor = new Color(60f/255f, 50f/255f, 70f/255f);
+            card.style.borderTopLeftRadius = 6;
+            card.style.borderTopRightRadius = 6;
+            card.style.borderBottomLeftRadius = 6;
+            card.style.borderBottomRightRadius = 6;
 
-            // Portrait
+            // Portrait - use explicit sizing
             var portrait = new VisualElement();
-            portrait.AddToClassList("hero-card-portrait");
-            portrait.style.width = 50;
-            portrait.style.height = 50;
-            portrait.style.backgroundColor = new Color(25f/255f, 20f/255f, 35f/255f);
-            portrait.style.borderTopLeftRadius = new StyleLength(4);
-            portrait.style.borderTopRightRadius = new StyleLength(4);
-            portrait.style.borderBottomRightRadius = new StyleLength(4);
-            portrait.style.borderBottomLeftRadius = new StyleLength(4);
+            portrait.name = "portrait";
+            portrait.style.width = 48;
+            portrait.style.minWidth = 48;
+            portrait.style.height = 48;
+            portrait.style.minHeight = 48;
+            portrait.style.flexShrink = 0;
+            portrait.style.backgroundColor = new Color(35f/255f, 28f/255f, 45f/255f);
+            portrait.style.borderTopLeftRadius = 6;
+            portrait.style.borderTopRightRadius = 6;
+            portrait.style.borderBottomRightRadius = 6;
+            portrait.style.borderBottomLeftRadius = 6;
             portrait.style.marginRight = 12;
 
             // Try to find portrait from mapping
@@ -275,6 +289,7 @@ namespace VeilBreakers.UI.Menus
             if (mapping?.portrait != null)
             {
                 portrait.style.backgroundImage = new StyleBackground(mapping.portrait);
+                portrait.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
             }
 
             card.Add(portrait);
@@ -282,19 +297,21 @@ namespace VeilBreakers.UI.Menus
             // Info container
             var info = new VisualElement();
             info.style.flexGrow = 1;
+            info.style.flexShrink = 1;
+            info.style.overflow = Overflow.Hidden;
 
             // Name
             var nameLabel = new Label(hero.display_name);
-            nameLabel.AddToClassList("hero-card-name");
             nameLabel.style.color = new Color(235f/255f, 225f/255f, 215f/255f);
-            nameLabel.style.fontSize = 16;
+            nameLabel.style.fontSize = 15;
             nameLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
+            nameLabel.style.marginBottom = 4;
             info.Add(nameLabel);
 
-            // Brands
+            // Brands row
             var brandsRow = new VisualElement();
             brandsRow.style.flexDirection = FlexDirection.Row;
-            brandsRow.style.marginTop = 4;
+            brandsRow.style.alignItems = Align.Center;
 
             var primaryBrand = hero.GetPrimaryBrand();
             var primaryIndicator = CreateBrandIndicator(primaryBrand);
@@ -303,16 +320,17 @@ namespace VeilBreakers.UI.Menus
             info.Add(brandsRow);
             card.Add(info);
 
-            // Selection indicator
+            // Selection indicator (left bar)
             var selectIndicator = new VisualElement();
             selectIndicator.name = "select-indicator";
             selectIndicator.style.width = 4;
-            selectIndicator.style.height = StyleKeyword.Auto;
             selectIndicator.style.position = Position.Absolute;
             selectIndicator.style.left = 0;
             selectIndicator.style.top = 0;
             selectIndicator.style.bottom = 0;
-            selectIndicator.style.backgroundColor = new Color(120f/255f, 60f/255f, 160f/255f);
+            selectIndicator.style.backgroundColor = new Color(130f/255f, 70f/255f, 180f/255f);
+            selectIndicator.style.borderTopLeftRadius = 6;
+            selectIndicator.style.borderBottomLeftRadius = 6;
             selectIndicator.style.opacity = 0;
             card.Add(selectIndicator);
 
@@ -325,7 +343,11 @@ namespace VeilBreakers.UI.Menus
             {
                 if (_selectedHeroIndex != capturedIndex)
                 {
-                    card.style.backgroundColor = new Color(35f/255f, 28f/255f, 45f/255f);
+                    card.style.backgroundColor = new Color(40f/255f, 32f/255f, 50f/255f);
+                    card.style.borderTopColor = new Color(80f/255f, 60f/255f, 100f/255f);
+                    card.style.borderBottomColor = new Color(80f/255f, 60f/255f, 100f/255f);
+                    card.style.borderLeftColor = new Color(80f/255f, 60f/255f, 100f/255f);
+                    card.style.borderRightColor = new Color(80f/255f, 60f/255f, 100f/255f);
                 }
             });
 
@@ -334,6 +356,10 @@ namespace VeilBreakers.UI.Menus
                 if (_selectedHeroIndex != capturedIndex)
                 {
                     card.style.backgroundColor = new Color(25f/255f, 20f/255f, 35f/255f);
+                    card.style.borderTopColor = new Color(60f/255f, 50f/255f, 70f/255f);
+                    card.style.borderBottomColor = new Color(60f/255f, 50f/255f, 70f/255f);
+                    card.style.borderLeftColor = new Color(60f/255f, 50f/255f, 70f/255f);
+                    card.style.borderRightColor = new Color(60f/255f, 50f/255f, 70f/255f);
                 }
             });
 
