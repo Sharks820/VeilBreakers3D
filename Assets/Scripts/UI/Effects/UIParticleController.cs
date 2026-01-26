@@ -617,7 +617,7 @@ namespace VeilBreakers.UI.Effects
         var container = new VisualElement();
         container.style.position = Position.Absolute;
         container.style.width = 40;  // Float like embers use
-        container.style.height = 600;  // Fixed height like embers use fixed sizes
+        container.style.height = 600;  // Fixed height like embers use
         
         // Bolt element inside container (like ember core)
         var bolt = new VisualElement();
@@ -626,10 +626,10 @@ namespace VeilBreakers.UI.Effects
         bolt.style.height = 600;
         bolt.style.left = 0;
         bolt.style.top = 0;
-        bolt.style.backgroundColor = new Color(0f, 1f, 1f, 1f);  // CYAN
+        bolt.style.backgroundColor = _lightningColor;  // Original vivid crimson
         container.Add(bolt);
         
-        Debug.Log($"[VB:Lightning] Created bolt container - copied ember approach");
+        Debug.Log($"[VB:Lightning] Created bolt - CRIMSON (original design color)");
         
         return container;
     }

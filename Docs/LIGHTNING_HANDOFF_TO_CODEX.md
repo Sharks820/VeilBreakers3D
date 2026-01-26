@@ -63,8 +63,10 @@
 ### Attempt #1-3: Increase visibility (v2.62-2.64)
 - Increased lifetime 0.15s → 0.6s
 - Increased opacity 15% → 50%
-- Changed to BRIGHT CYAN color
+- Changed to BRIGHT CYAN color (MISTAKE - should be CRIMSON)
 - **Result:** Still invisible, width=NaN
+
+**NOTE:** Lightning was supposed to be CRIMSON, not cyan. Fixed in v2.75.
 
 ### Attempt #4-6: Container fixes (v2.65-2.67)
 - Added lightning to `_sparkContainer` (like embers)
@@ -109,7 +111,7 @@ private VisualElement CreateLightningBolt()
     bolt.style.height = 600;
     bolt.style.left = 0;
     bolt.style.top = 0;
-    bolt.style.backgroundColor = new Color(0f, 1f, 1f, 1f);  // CYAN
+    bolt.style.backgroundColor = _lightningColor;  // CRIMSON (original design)
     container.Add(bolt);
 
     Debug.Log($"[VB:Lightning] Created bolt container - copied ember approach");
