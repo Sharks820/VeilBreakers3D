@@ -848,7 +848,7 @@
 }
 
 .rarity-epic {
-    border-color: rgb(200, 60, 100);
+    border-color: rgb(160, 80, 200);
 }
 
 .rarity-legendary {

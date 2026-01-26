@@ -55,9 +55,9 @@
     --brand-ruin-dark: rgb(160, 70, 20);
 
     /* VOID - Nothingness and entropy */
-    --brand-void: rgb(50, 20, 35);
-    --brand-void-glow: rgb(100, 40, 60);
-    --brand-void-dark: rgb(25, 10, 18);
+    --brand-void: rgb(40, 20, 60);
+    --brand-void-glow: rgb(100, 60, 140);
+    --brand-void-dark: rgb(15, 5, 25);
 
     /* =========================================================================
        CORRUPTION STATE COLORS
@@ -95,7 +95,7 @@
     --rarity-common: rgb(180, 180, 180);
     --rarity-uncommon: rgb(80, 180, 80);
     --rarity-rare: rgb(80, 140, 220);
-    --rarity-epic: rgb(200, 60, 100);
+    --rarity-epic: rgb(160, 80, 200);
     --rarity-legendary: rgb(255, 180, 0);
     --rarity-mythic: rgb(255, 100, 100);
 

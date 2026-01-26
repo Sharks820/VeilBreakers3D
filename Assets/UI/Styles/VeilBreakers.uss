@@ -1971,7 +1971,7 @@
 .brand-surge { background-color: rgb(60, 140, 200); border-color: rgb(100, 180, 240); }
 .brand-venom { background-color: rgb(80, 160, 80); border-color: rgb(120, 200, 120); }
 .brand-dread { background-color: rgb(140, 40, 80); border-color: rgb(180, 60, 100); }
-.brand-leech { background-color: rgb(140, 40, 80); border-color: rgb(180, 60, 110); }
+.brand-leech { background-color: rgb(160, 60, 120); border-color: rgb(200, 100, 160); }
 .brand-grace { background-color: rgb(200, 180, 120); border-color: rgb(240, 220, 160); }
 .brand-mend { background-color: rgb(100, 200, 180); border-color: rgb(140, 240, 220); }
 .brand-ruin { background-color: rgb(220, 120, 40); border-color: rgb(255, 160, 80); }
