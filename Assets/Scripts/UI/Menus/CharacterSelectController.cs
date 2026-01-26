@@ -595,14 +595,64 @@ namespace VeilBreakers.UI.Menus
                 monsterIconFrame.style.borderLeftColor = heroColor;
             }
 
-            // Apply to path badge
+            // Apply to path badge - full color treatment
             if (_pathBadge != null)
             {
                 _pathBadge.style.borderTopColor = heroColor;
                 _pathBadge.style.borderRightColor = heroColor;
                 _pathBadge.style.borderBottomColor = heroColor;
                 _pathBadge.style.borderLeftColor = heroColor;
+                _pathBadge.style.backgroundColor = new Color(heroColor.r * 0.2f, heroColor.g * 0.2f, heroColor.b * 0.2f, 0.8f);
+
+                // Update the path indicator dot
+                var pathIndicator = _pathBadge.Q<VisualElement>();
+                if (pathIndicator != null)
+                    pathIndicator.style.backgroundColor = heroColor;
             }
+
+            // Apply to hero list panel border
+            var heroListPanel = _root?.Q<VisualElement>("hero-list-panel");
+            if (heroListPanel != null)
+            {
+                heroListPanel.style.borderTopColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.5f);
+                heroListPanel.style.borderRightColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.5f);
+                heroListPanel.style.borderBottomColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.5f);
+                heroListPanel.style.borderLeftColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.5f);
+            }
+
+            // Apply to signature monster card
+            var signatureMonsterCard = _root?.Q<VisualElement>("signature-monster-card");
+            if (signatureMonsterCard != null)
+            {
+                signatureMonsterCard.style.borderTopColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.5f);
+                signatureMonsterCard.style.borderRightColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.5f);
+                signatureMonsterCard.style.borderBottomColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.5f);
+                signatureMonsterCard.style.borderLeftColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.5f);
+            }
+
+            // Apply to header border
+            var header = _root?.Q<VisualElement>("header");
+            if (header != null)
+            {
+                header.style.borderBottomColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.4f);
+            }
+
+            // Apply to footer border
+            var footer = _root?.Q<VisualElement>("footer");
+            if (footer != null)
+            {
+                footer.style.borderTopColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.4f);
+            }
+
+            // Apply to hero title (below name)
+            if (_heroTitle != null)
+            {
+                _heroTitle.style.color = heroColor;
+            }
+
+            // Apply to brand icons
+            if (_brandIcon1 != null)
+                _brandIcon1.style.backgroundColor = heroColor;
 
             // Apply to stat bar fills
             ApplyHeroColorToStatBars(heroColor);
@@ -662,28 +712,17 @@ namespace VeilBreakers.UI.Menus
             if (_pathName != null)
             {
                 _pathName.text = path.ToString();
+                // Also color the path name text with hero color
+                var heroColor = GetHeroColor(hero);
+                _pathName.style.color = new Color(
+                    Mathf.Min(1f, heroColor.r * 1.2f + 0.2f),
+                    Mathf.Min(1f, heroColor.g * 1.2f + 0.2f),
+                    Mathf.Min(1f, heroColor.b * 1.2f + 0.2f),
+                    1f
+                );
             }
 
-            // Update path badge color based on path
-            if (_pathBadge != null)
-            {
-                var pathColor = GetPathColor(path);
-                var indicator = _pathBadge.Q<VisualElement>();
-                if (indicator != null)
-                    indicator.style.backgroundColor = pathColor;
-            }
-        }
-
-        private Color GetPathColor(Path path)
-        {
-            return path switch
-            {
-                Path.IRONBOUND => new Color(140f/255f, 150f/255f, 165f/255f),    // Steel gray
-                Path.FANGBORN => new Color(180f/255f, 45f/255f, 45f/255f),       // Blood red
-                Path.VOIDTOUCHED => new Color(100f/255f, 60f/255f, 140f/255f),   // Dark purple
-                Path.UNCHAINED => new Color(200f/255f, 170f/255f, 80f/255f),     // Gold
-                _ => new Color(165f/255f, 155f/255f, 145f/255f)
-            };
+            // Path badge is now updated in ApplyHeroThemeColors using hero color
         }
 
         private void UpdateBrandDisplay(HeroData hero)
