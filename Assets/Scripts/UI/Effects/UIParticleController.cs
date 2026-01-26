@@ -613,21 +613,25 @@ namespace VeilBreakers.UI.Effects
 
         private VisualElement CreateLightningBolt()
     {
+        // COPY EMBER APPROACH EXACTLY - simple container with child
+        var container = new VisualElement();
+        container.style.position = Position.Absolute;
+        container.style.width = 40;  // Float like embers use
+        container.style.height = 600;  // Fixed height like embers use fixed sizes
+        
+        // Bolt element inside container (like ember core)
         var bolt = new VisualElement();
-        bolt.name = "lightning-bolt";
         bolt.style.position = Position.Absolute;
-        bolt.style.width = 40;  // Float - implicit conversion to StyleLength (pixels)
-        bolt.style.height = _screenHeight;  // Use actual screen height in pixels
-        bolt.style.top = 0;
+        bolt.style.width = 40;
+        bolt.style.height = 600;
         bolt.style.left = 0;
+        bolt.style.top = 0;
         bolt.style.backgroundColor = new Color(0f, 1f, 1f, 1f);  // CYAN
-        bolt.style.visibility = Visibility.Visible;
-        bolt.style.display = DisplayStyle.Flex;
-        bolt.pickingMode = PickingMode.Ignore;
+        container.Add(bolt);
         
-        Debug.Log($"[VB:Lightning] Created bolt - width: 40 (float), height: {_screenHeight} (float)");
+        Debug.Log($"[VB:Lightning] Created bolt container - copied ember approach");
         
-        return bolt;
+        return container;
     }
 
         // =============================================================================
@@ -806,14 +810,12 @@ namespace VeilBreakers.UI.Effects
 
         private void TriggerLightningBolt()
     {
-        // Defensive: ensure container exists and is in hierarchy
         if (_sparkContainer == null || _sparkContainer.parent == null)
         {
-            Debug.LogWarning("[VB:Lightning] Spark container not properly initialized!");
+            Debug.LogWarning("[VB:Lightning] Container not initialized");
             return;
         }
 
-        // Find inactive bolt
         for (int i = 0; i < _lightningBolts.Count; i++)
         {
             var bolt = _lightningBolts[i];
@@ -823,57 +825,17 @@ namespace VeilBreakers.UI.Effects
                 bolt.Active = true;
                 bolt.Lifetime = 0f;
                 
-                // Force all visibility-related styles
                 bolt.Element.style.display = DisplayStyle.Flex;
-                bolt.Element.style.visibility = Visibility.Visible;
                 bolt.Element.style.left = xPos;
                 bolt.Element.style.opacity = 1f;
                 
-                // Force layout recalculation
-                bolt.Element.MarkDirtyRepaint();
-                
-                // COMPREHENSIVE DIAGNOSTICS - This will tell us EXACTLY what's wrong (or right)
-                var resolvedWidth = bolt.Element.resolvedStyle.width;
-                var resolvedHeight = bolt.Element.resolvedStyle.height;
-                var resolvedBg = bolt.Element.resolvedStyle.backgroundColor;
-                var containerBg = _sparkContainer.resolvedStyle.backgroundColor;
-                
-                Debug.Log($"[VB:Lightning] ═══════════════════════════════════════");
-                Debug.Log($"[VB:Lightning] BOLT #{i} DIAGNOSTIC:");
-                Debug.Log($"[VB:Lightning]   Position: X={xPos}");
-                Debug.Log($"[VB:Lightning]   Width: {resolvedWidth} {(float.IsNaN(resolvedWidth) ? "❌ NaN!" : "✓")}");
-                Debug.Log($"[VB:Lightning]   Height: {resolvedHeight} {(resolvedHeight == 0 ? "❌ ZERO!" : "✓")}");
-                Debug.Log($"[VB:Lightning]   BG Color: {resolvedBg}");
-                Debug.Log($"[VB:Lightning]   Display: {bolt.Element.style.display.value}");
-                Debug.Log($"[VB:Lightning]   Visibility: {bolt.Element.style.visibility.value}");
-                Debug.Log($"[VB:Lightning] CONTAINER DIAGNOSTIC:");
-                Debug.Log($"[VB:Lightning]   Container BG: {containerBg} {(containerBg.a > 0 ? "⚠️ NOT TRANSPARENT!" : "✓")}");
-                Debug.Log($"[VB:Lightning]   Container Width: {_sparkContainer.resolvedStyle.width}");
-                Debug.Log($"[VB:Lightning]   Container Height: {_sparkContainer.resolvedStyle.height}");
-                Debug.Log($"[VB:Lightning] ═══════════════════════════════════════");
-                
-                // VERDICT
-                if (float.IsNaN(resolvedWidth))
-                {
-                    Debug.LogError("[VB:Lightning] ❌ STILL BROKEN: Width is NaN!");
-                }
-                else if (resolvedHeight == 0)
-                {
-                    Debug.LogError("[VB:Lightning] ❌ STILL BROKEN: Height is 0!");
-                }
-                else if (containerBg.a > 0)
-                {
-                    Debug.LogWarning("[VB:Lightning] ⚠️ PURPLE SCREEN: Container background not transparent!");
-                }
-                else
-                {
-                    Debug.Log("[VB:Lightning] ✅ ALL CHECKS PASSED - Lightning SHOULD be visible!");
-                }
+                // SIMPLE diagnostic - just check width once
+                var w = bolt.Element.resolvedStyle.width;
+                Debug.Log($"[VB:Lightning] Bolt #{i} triggered, width={w}");
                 
                 return;
             }
         }
-        Debug.LogWarning("[VB:Lightning] All lightning bolts active, cannot trigger new one");
     }
 
         // =============================================================================
