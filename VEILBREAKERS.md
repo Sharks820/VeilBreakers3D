@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.59** | Last updated: 2026-01-26
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.60** | Last updated: 2026-01-26
 
 ---
 
@@ -1533,6 +1533,71 @@ Assets/Scenes/MainMenu.unity
 Assets/Scenes/CharacterSelect.unity
 Assets/Scenes/TestArena.unity
 ```
+
+---
+
+## SESSION HANDOFF (v2.60 - 2026-01-26)
+
+### CRITICAL DROPDOWN FIX (Issue Resolved)
+
+**Problem:**
+- Dropdowns appeared at the bottom of the entire settings panel instead of directly below the field
+- Clicking dropdowns caused the settings box to glitch and shrink
+- User reported: "WHEN I CLICK THE DAMN THING IT DROPS DOWN FROM THERE, NOT JUST RANDOMLY APPEARING UNDER THE WHOLE SETTINGS BOX"
+
+**Root Cause:**
+- Previous fix (v2.57) added CSS overrides for `.unity-popup-window` and `.unity-base-dropdown__container-outer`
+- These CSS rules fought Unity's native dropdown positioning logic
+- `position: relative` on container-outer caused parent to resize when dropdown appeared
+- `position: absolute` with z-index made dropdown appear at wrong screen location
+
+**Solution:**
+- **REMOVED all position/z-index CSS overrides** from dropdown classes
+- Let Unity's native positioning system handle dropdown placement
+- Kept styling (colors, borders, padding, shadows) but removed positioning
+- Unity now correctly calculates dropdown position relative to trigger element
+
+**CSS Changes:**
+```css
+/* BEFORE (v2.57-v2.59) - BROKEN */
+.unity-popup-window {
+    position: absolute !important;
+    z-index: 9999 !important;
+}
+.unity-base-dropdown__container-outer {
+    position: relative/absolute !important;  /* Both tried, both failed */
+    z-index: 10000 !important;
+}
+
+/* AFTER (v2.60) - WORKS */
+.unity-base-dropdown__container-outer {
+    /* NO position, NO z-index - Unity handles it */
+    background-color: rgb(18, 14, 18);
+    border-color: rgb(180, 40, 60);
+    /* ...styling only... */
+}
+```
+
+**Affected Dropdowns (All Now Working):**
+- Resolution dropdown (Display Mode settings)
+- Display Mode dropdown (Fullscreen/Windowed/Borderless)
+- Quality Preset dropdown (Low/Medium/High/Ultra)
+
+### Files Modified This Session
+
+```
+Assets/UI/Styles/VeilBreakers.uss                    # Removed dropdown positioning overrides
+Assets/Scripts/UI/Effects/UIParticleController.cs    # Complete rewrite (v2.59)
+```
+
+### Lesson Learned
+
+**DO NOT override Unity UI Toolkit's positioning system for dropdown popups.** Unity dynamically calculates popup positions based on trigger element location and available screen space. CSS overrides break this calculation and cause:
+- Wrong positioning (appearing at bottom of panel instead of below field)
+- Parent container resizing glitches
+- Z-index fighting between CSS and Unity's runtime styles
+
+**Rule:** Only style appearance (colors, borders, shadows), never override position/z-index for Unity-managed popups.
 
 ---
 
