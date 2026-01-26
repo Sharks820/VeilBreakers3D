@@ -10,29 +10,28 @@
 
 ---
 
-## ⚠️ CRITICAL - Unity Editor Fix Required
+## ⚠️ CRITICAL - Unity Editor Manual Fix REQUIRED (Purple Screen)
 
-### Problem: "No Theme Style Sheet set to PanelSettings"
+### Problem: "No Theme Style Sheet set to PanelSettings" + Purple Screen
 
-This error means UI won't render properly. You need to **manually set the theme in Unity Editor**:
+The purple screen is Unity's debug visualization for broken UI panels.
+**I updated the .asset file but Unity won't reload it while running.**
 
-### Fix Steps:
-1. In Unity, go to Project window
-2. Navigate to: `Assets/UI/` or `Assets/Resources/UI/`
-3. Find: `VeilBreakersPanelSettings.asset`
-4. Click on it to select
-5. In Inspector panel, find "Theme Style Sheet" field
-6. Click the circle button next to it
-7. Select: `VeilBreakersTheme` (from `Assets/UI/Styles/VeilBreakersTheme.uss`)
-8. Click Apply or save scene
+### YOU MUST DO THIS MANUALLY IN UNITY EDITOR:
 
-**Alternative Path:**
-- If VeilBreakersTheme is in `Assets/Resources/UI/Styles/`, use that one instead
+1. **STOP Play Mode** (if running)
+2. In Unity, go to Project window
+3. Navigate to: `Assets/UI/`
+4. Find: `VeilBreakersPanelSettings.asset`
+5. **Right-click → Reimport** (forces Unity to reload the file)
+6. OR: Click on it → Inspector → Theme USS field should now show `VeilBreakersTheme`
+7. If field is still empty, click circle button and select `VeilBreakersTheme.uss`
+8. Save (Ctrl+S)
 
-### Why This Happened:
-- Theme Style Sheet reference was lost (possibly during Unity 6 migration)
-- This is a Unity asset setting, cannot be fixed via code
-- Must be set manually in Unity Editor
+**Why Manual Fix Required:**
+- Unity caches asset references and won't reload .asset files during Play Mode
+- Code changes updated the file, but Unity needs to be told to reimport it
+- This MUST be done in Editor, not via code
 
 ---
 

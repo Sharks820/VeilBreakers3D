@@ -613,19 +613,19 @@ namespace VeilBreakers.UI.Effects
 
         private VisualElement CreateLightningBolt()
     {
-        // SIMPLIFIED: Single element IS the bolt (no nesting)
         var bolt = new VisualElement();
         bolt.name = "lightning-bolt";
         bolt.style.position = Position.Absolute;
-        bolt.style.width = new Length(40, LengthUnit.Pixel);  // DIRECT Length, not StyleLength!
-        bolt.style.height = new Length(100, LengthUnit.Percent);  // DIRECT Length!
+        bolt.style.width = 40;  // Float - implicit conversion to StyleLength (pixels)
+        bolt.style.height = _screenHeight;  // Use actual screen height in pixels
         bolt.style.top = 0;
-        bolt.style.left = 0;  // Will be set when triggered
-        bolt.style.backgroundColor = new Color(0f, 1f, 1f, 1f);  // BRIGHT CYAN
+        bolt.style.left = 0;
+        bolt.style.backgroundColor = new Color(0f, 1f, 1f, 1f);  // CYAN
         bolt.style.visibility = Visibility.Visible;
+        bolt.style.display = DisplayStyle.Flex;
         bolt.pickingMode = PickingMode.Ignore;
         
-        Debug.Log($"[VB:Lightning] Created bolt - width: 40px (direct Length), height: 100%");
+        Debug.Log($"[VB:Lightning] Created bolt - width: 40 (float), height: {_screenHeight} (float)");
         
         return bolt;
     }
