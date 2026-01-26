@@ -1166,7 +1166,7 @@
 }
 
 .corruption-critical {
-    border-color: rgb(160, 60, 120);
+    border-color: rgb(180, 40, 60);
     border-width: 3px;
 }
 
@@ -1260,7 +1260,7 @@
 }
 
 .dialogue-box-glitched {
-    border-color: rgb(160, 60, 120);
+    border-color: rgb(180, 40, 60);
 }
 
 /* Glitch overlay effect */
@@ -1288,7 +1288,7 @@
 }
 
 .vera-portrait-frame-glitched {
-    border-color: rgb(160, 60, 120);
+    border-color: rgb(180, 40, 60);
 }
 
 .vera-portrait-glow {
@@ -1332,7 +1332,7 @@
 }
 
 .vera-name-glitched {
-    color: rgb(160, 60, 120);
+    color: rgb(180, 40, 60);
 }
 
 /* Integrity pip indicator */
@@ -1352,7 +1352,7 @@
 }
 
 .integrity-pip-corrupted {
-    background-color: rgb(160, 60, 120);
+    background-color: rgb(180, 40, 60);
 }
 
 /* Dialogue text */
@@ -1454,7 +1454,7 @@
 }
 
 .integrity-bar-fill-corrupted {
-    background-color: rgb(160, 60, 120);
+    background-color: rgb(180, 40, 60);
 }
 
 /* =============================================================================
@@ -1946,7 +1946,7 @@
 .path-voidtouched {
     background-color: rgba(140, 40, 80, 0.2);
     border-color: rgba(140, 40, 80, 0.5);
-    color: rgb(180, 80, 120);
+    color: rgb(180, 60, 80);
 }
 
 .path-unchained {
@@ -1971,7 +1971,7 @@
 .brand-surge { background-color: rgb(60, 140, 200); border-color: rgb(100, 180, 240); }
 .brand-venom { background-color: rgb(80, 160, 80); border-color: rgb(120, 200, 120); }
 .brand-dread { background-color: rgb(140, 40, 80); border-color: rgb(180, 60, 100); }
-.brand-leech { background-color: rgb(160, 60, 120); border-color: rgb(200, 100, 160); }
+.brand-leech { background-color: rgb(140, 40, 80); border-color: rgb(180, 60, 110); }
 .brand-grace { background-color: rgb(200, 180, 120); border-color: rgb(240, 220, 160); }
 .brand-mend { background-color: rgb(100, 200, 180); border-color: rgb(140, 240, 220); }
 .brand-ruin { background-color: rgb(220, 120, 40); border-color: rgb(255, 160, 80); }

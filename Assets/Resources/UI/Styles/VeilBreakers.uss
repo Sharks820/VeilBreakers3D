@@ -13,11 +13,11 @@
     --color-background-medium: rgb(28, 20, 25);
     --color-background-light: rgb(45, 30, 38);
 
-    /* Accent Colors - Corruption/Brand themed */
+    /* Accent Colors - VeilBreakers Crimson Theme */
     --color-accent-red: rgb(180, 40, 60);
     --color-accent-red-glow: rgb(220, 60, 80);
-    --color-accent-purple: rgb(180, 40, 60);
-    --color-accent-purple-glow: rgb(160, 80, 200);
+    --color-accent-crimson: rgb(180, 40, 60);
+    --color-accent-crimson-glow: rgb(220, 60, 80);
     --color-accent-gold: rgb(200, 160, 80);
     --color-accent-cyan: rgb(60, 180, 200);
 
@@ -43,8 +43,8 @@
     --color-corruption-ascended: rgb(255, 215, 0);
     --color-corruption-purified: rgb(180, 220, 255);
     --color-corruption-unstable: rgb(180, 180, 180);
-    --color-corruption-corrupted: rgb(160, 80, 180);
-    --color-corruption-abyssal: rgb(80, 0, 120);
+    --color-corruption-corrupted: rgb(160, 40, 70);
+    --color-corruption-abyssal: rgb(70, 5, 20);
 
     /* Spacing */
     --spacing-xs: 4px;
@@ -136,7 +136,7 @@
 
 .vb-panel-glow {
     background-color: var(--color-panel);
-    border-color: var(--color-accent-purple);
+    border-color: var(--color-accent-crimson);
     border-width: 2px;
     border-radius: var(--radius-md);
     padding: var(--spacing-md);
@@ -175,13 +175,13 @@
 
 .vb-button:hover {
     background-color: var(--color-background-medium);
-    border-color: var(--color-accent-purple);
+    border-color: var(--color-accent-crimson);
     color: var(--color-text-highlight);
     scale: 1.02;
 }
 
 .vb-button:active {
-    background-color: var(--color-accent-purple);
+    background-color: var(--color-accent-crimson);
     scale: 0.98;
 }
 
@@ -204,8 +204,8 @@
 }
 
 .vb-button-secondary {
-    background-color: var(--color-accent-purple);
-    border-color: var(--color-accent-purple-glow);
+    background-color: var(--color-accent-crimson);
+    border-color: var(--color-accent-crimson-glow);
     color: white;
 }
 
@@ -231,7 +231,7 @@
 }
 
 .vb-textfield:focus {
-    border-color: var(--color-accent-purple);
+    border-color: var(--color-accent-crimson);
 }
 
 .vb-textfield > .unity-text-field__input {
@@ -249,7 +249,7 @@
 }
 
 .vb-slider .unity-base-slider__dragger {
-    background-color: var(--color-accent-purple);
+    background-color: var(--color-accent-crimson);
     border-radius: 50%;
     width: 20px;
     height: 20px;
@@ -263,7 +263,7 @@
 }
 
 .vb-slider .unity-base-slider__drag-container {
-    background-color: var(--color-accent-purple-glow);
+    background-color: var(--color-accent-crimson-glow);
     border-radius: var(--radius-sm);
 }
 
@@ -286,8 +286,8 @@
 }
 
 .vb-toggle:checked .unity-toggle__checkmark {
-    background-color: var(--color-accent-purple);
-    border-color: var(--color-accent-purple-glow);
+    background-color: var(--color-accent-crimson);
+    border-color: var(--color-accent-crimson-glow);
 }
 
 .vb-toggle .unity-toggle__text {
@@ -330,7 +330,7 @@
 }
 
 .vb-scrollview .unity-scroller--vertical .unity-base-slider__dragger {
-    background-color: var(--color-accent-purple);
+    background-color: var(--color-accent-crimson);
     border-radius: var(--radius-sm);
     width: 8px;
     margin-left: 2px;
@@ -355,7 +355,7 @@
 }
 
 .vb-progressbar-fill {
-    background-color: var(--color-accent-purple);
+    background-color: var(--color-accent-crimson);
     height: 100%;
     transition-duration: 0.3s;
 }
@@ -391,8 +391,8 @@
 }
 
 .vb-list-item:selected {
-    background-color: var(--color-accent-purple);
-    border-color: var(--color-accent-purple-glow);
+    background-color: var(--color-accent-crimson);
+    border-color: var(--color-accent-crimson-glow);
 }
 
 .vb-grid {
@@ -418,7 +418,7 @@
 
 .vb-tooltip {
     background-color: rgba(10, 8, 15, 0.98);
-    border-color: var(--color-accent-purple);
+    border-color: var(--color-accent-crimson);
     border-width: 1px;
     border-radius: var(--radius-sm);
     padding: var(--spacing-sm) var(--spacing-md);
@@ -563,13 +563,13 @@
 
 .menu-button-main:hover {
     background-color: rgb(200, 60, 80);
-    border-color: rgb(180, 120, 220);
+    border-color: rgb(220, 60, 80);
     scale: 1.02;
     translate: -2px 0;
 }
 
 .menu-button-main:active {
-    background-color: rgb(100, 50, 140);
+    background-color: rgb(140, 30, 50);
     scale: 0.98;
 }
 
@@ -848,7 +848,7 @@
 }
 
 .rarity-epic {
-    border-color: rgb(160, 80, 200);
+    border-color: rgb(200, 60, 100);
 }
 
 .rarity-legendary {
@@ -1013,7 +1013,7 @@
 }
 
 .corruption-critical {
-    border-color: rgb(160, 60, 120);
+    border-color: rgb(180, 40, 60);
     border-width: 3px;
 }
 
@@ -1107,7 +1107,7 @@
 }
 
 .dialogue-box-glitched {
-    border-color: rgb(160, 60, 120);
+    border-color: rgb(180, 40, 60);
 }
 
 /* Glitch overlay effect */
@@ -1117,7 +1117,7 @@
     top: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(160, 60, 120, 0.1);
+    background-color: rgba(180, 40, 60, 0.1);
     border-radius: 12px;
 }
 
@@ -1135,7 +1135,7 @@
 }
 
 .vera-portrait-frame-glitched {
-    border-color: rgb(160, 60, 120);
+    border-color: rgb(180, 40, 60);
 }
 
 .vera-portrait-glow {
@@ -1150,7 +1150,7 @@
 }
 
 .vera-portrait-glow-corrupted {
-    border-color: rgba(160, 60, 120, 0.7);
+    border-color: rgba(180, 40, 60, 0.7);
 }
 
 .vera-portrait {
@@ -1167,7 +1167,7 @@
     top: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(160, 60, 120, 0.3);
+    background-color: rgba(180, 40, 60, 0.3);
     border-radius: 50px;
 }
 
@@ -1179,7 +1179,7 @@
 }
 
 .vera-name-glitched {
-    color: rgb(160, 60, 120);
+    color: rgb(180, 40, 60);
 }
 
 /* Integrity pip indicator */
@@ -1199,7 +1199,7 @@
 }
 
 .integrity-pip-corrupted {
-    background-color: rgb(160, 60, 120);
+    background-color: rgb(180, 40, 60);
 }
 
 /* Dialogue text */
@@ -1211,7 +1211,7 @@
 }
 
 .dialogue-text-glitched {
-    color: rgb(200, 140, 170);
+    color: rgb(200, 120, 130);
 }
 
 /* Continue indicator */
@@ -1301,5 +1301,5 @@
 }
 
 .integrity-bar-fill-corrupted {
-    background-color: rgb(160, 60, 120);
+    background-color: rgb(180, 40, 60);
 }

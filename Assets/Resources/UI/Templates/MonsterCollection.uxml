@@ -138,11 +138,11 @@
                 <ui:VisualElement name="corruption-section" style="margin-bottom: 16px;">
                     <ui:VisualElement class="vb-row" style="justify-content: space-between; margin-bottom: 6px;">
                         <ui:Label text="CORRUPTION" style="color: rgb(180, 40, 60); font-size: 12px; letter-spacing: 2px;" />
-                        <ui:Label name="corruption-percent" text="0%" style="color: rgb(160, 80, 120); font-size: 12px; -unity-font-style: bold;" />
+                        <ui:Label name="corruption-percent" text="0%" style="color: rgb(180, 40, 60); font-size: 12px; -unity-font-style: bold;" />
                     </ui:VisualElement>
 
                     <ui:VisualElement class="corruption-bar-bg" style="height: 12px; background-color: rgb(25, 20, 35); border-radius: 6px; overflow: hidden;">
-                        <ui:VisualElement name="corruption-bar-fill" style="width: 0%; height: 100%; background-color: rgb(160, 60, 120); border-radius: 6px;" />
+                        <ui:VisualElement name="corruption-bar-fill" style="width: 0%; height: 100%; background-color: rgb(180, 40, 60); border-radius: 6px;" />
                     </ui:VisualElement>
 
                     <ui:Label name="corruption-state" text="Purified" style="color: rgb(80, 180, 120); font-size: 11px; margin-top: 4px; -unity-text-align: middle-center;" />
@@ -176,7 +176,7 @@
                         <!-- Magic -->
                         <ui:VisualElement class="monster-stat-item" style="width: 50%; padding: 4px;">
                             <ui:Label text="MAG" style="color: rgb(165, 155, 145); font-size: 11px;" />
-                            <ui:Label name="stat-magic" text="0" style="color: rgb(160, 80, 200); font-size: 16px; -unity-font-style: bold;" />
+                            <ui:Label name="stat-magic" text="0" style="color: rgb(100, 180, 255); font-size: 16px; -unity-font-style: bold;" />
                         </ui:VisualElement>
                         <!-- Speed -->
                         <ui:VisualElement class="monster-stat-item" style="width: 50%; padding: 4px;">
