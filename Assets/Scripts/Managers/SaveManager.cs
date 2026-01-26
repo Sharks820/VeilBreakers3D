@@ -182,9 +182,9 @@ namespace VeilBreakers.Managers
                 return false;
             }
 
-            if (!await _saveMutex.WaitAsync(0))
+            if (!await _saveMutex.WaitAsync(5000)) // 5 second timeout
             {
-                Debug.LogWarning("[SaveManager] Save/Load already in progress");
+                Debug.LogError("[SaveManager] Save/Load operation timeout - took longer than 5 seconds");
                 return false;
             }
 
@@ -410,9 +410,9 @@ namespace VeilBreakers.Managers
                 return false;
             }
 
-            if (!await _saveMutex.WaitAsync(0))
+            if (!await _saveMutex.WaitAsync(5000)) // 5 second timeout
             {
-                Debug.LogWarning("[SaveManager] Save already in progress");
+                Debug.LogError("[SaveManager] Save/Load operation timeout - took longer than 5 seconds");
                 return false;
             }
 

@@ -301,8 +301,8 @@ namespace VeilBreakers.Managers
         {
             try
             {
-                string bak2 = filePath.Replace(".sav", ".bak2");
-                string bak1 = filePath.Replace(".sav", ".bak1");
+                string bak2 = IOPath.ChangeExtension(filePath, ".bak2");
+                string bak1 = IOPath.ChangeExtension(filePath, ".bak1");
 
                 // Delete oldest backup
                 if (File.Exists(bak2))
@@ -335,8 +335,8 @@ namespace VeilBreakers.Managers
         /// </summary>
         public static async Task<byte[]> TryRecoverFromBackup(string filePath)
         {
-            string bak1 = filePath.Replace(".sav", ".bak1");
-            string bak2 = filePath.Replace(".sav", ".bak2");
+            string bak1 = IOPath.ChangeExtension(filePath, ".bak1");
+            string bak2 = IOPath.ChangeExtension(filePath, ".bak2");
 
             // Try bak1 first (most recent)
             if (File.Exists(bak1))
