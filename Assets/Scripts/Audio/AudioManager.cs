@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Audio;
 
 namespace VeilBreakers.Audio
 {
@@ -37,6 +38,16 @@ namespace VeilBreakers.Audio
 
         [Header("Configuration")]
         [SerializeField] private AudioConfig _config;
+
+        [Header("Audio Mixer (Unity Native)")]
+        [SerializeField] private AudioMixer _audioMixer;
+
+        // Mixer exposed parameter names (must match AudioMixer setup)
+        private const string MIXER_MASTER = "MasterVolume";
+        private const string MIXER_MUSIC = "MusicVolume";
+        private const string MIXER_SFX = "SFXVolume";
+        private const string MIXER_VOICE = "VoiceVolume";
+        private const string MIXER_AMBIENT = "AmbientVolume";
 
         [Header("Volume Settings")]
         [SerializeField] private float _masterVolume = 0.8f;
@@ -432,12 +443,42 @@ namespace VeilBreakers.Audio
 
         private void ApplyVolumeSettings()
         {
-            // FMOD Integration:
+            // Unity AudioMixer Integration
+            if (_audioMixer != null)
+            {
+                // Convert linear 0-1 volume to decibels (-80dB to 0dB)
+                // log10(0) = -infinity, so clamp at a small value
+                _audioMixer.SetFloat(MIXER_MASTER, LinearToDecibel(_masterVolume));
+                _audioMixer.SetFloat(MIXER_MUSIC, LinearToDecibel(_musicVolume));
+                _audioMixer.SetFloat(MIXER_SFX, LinearToDecibel(_sfxVolume));
+                _audioMixer.SetFloat(MIXER_VOICE, LinearToDecibel(_voiceVolume));
+                _audioMixer.SetFloat(MIXER_AMBIENT, LinearToDecibel(_ambientVolume));
+            }
+
+            // FMOD Integration (for future use):
             // FMODUnity.RuntimeManager.GetBus("bus:/Master").setVolume(_masterVolume);
             // FMODUnity.RuntimeManager.GetBus("bus:/Music").setVolume(_musicVolume * _masterVolume);
             // FMODUnity.RuntimeManager.GetBus("bus:/SFX").setVolume(_sfxVolume * _masterVolume);
             // FMODUnity.RuntimeManager.GetBus("bus:/Voice").setVolume(_voiceVolume * _masterVolume);
             // FMODUnity.RuntimeManager.GetBus("bus:/Ambient").setVolume(_ambientVolume * _masterVolume);
+        }
+
+        /// <summary>
+        /// Convert linear volume (0-1) to decibels (-80 to 0).
+        /// </summary>
+        private float LinearToDecibel(float linear)
+        {
+            // Clamp to avoid log(0)
+            linear = Mathf.Clamp(linear, 0.0001f, 1f);
+            return Mathf.Log10(linear) * 20f;
+        }
+
+        /// <summary>
+        /// Convert decibels (-80 to 0) to linear volume (0-1).
+        /// </summary>
+        private float DecibelToLinear(float decibel)
+        {
+            return Mathf.Pow(10f, decibel / 20f);
         }
 
         // =============================================================================

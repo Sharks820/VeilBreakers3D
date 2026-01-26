@@ -163,6 +163,16 @@ namespace VeilBreakers.Core
         }
 
         /// <summary>
+        /// Log settings-related messages (volume, graphics, controls, etc.)
+        /// </summary>
+        [Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        public static void Settings(string message)
+        {
+            if (_minLevel <= LogLevel.Debug)
+                Debug.Log($"[VB:Settings] {message}");
+        }
+
+        /// <summary>
         /// Log an AI/Gambit system message.
         /// </summary>
         [Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
