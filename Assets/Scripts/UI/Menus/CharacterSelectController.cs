@@ -407,15 +407,48 @@ namespace VeilBreakers.UI.Menus
             nameLabel.style.color = new Color(235f/255f, 225f/255f, 215f/255f);
             nameLabel.style.fontSize = 15;
             nameLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-            nameLabel.style.marginBottom = 4;
+            nameLabel.style.marginBottom = 2;
             info.Add(nameLabel);
 
-            // Brands row
+            // Brand and Path affinity row
+            var affinityRow = new VisualElement();
+            affinityRow.style.flexDirection = FlexDirection.Row;
+            affinityRow.style.alignItems = Align.Center;
+            affinityRow.style.marginBottom = 4;
+
+            // Brand name
+            var primaryBrand = hero.GetPrimaryBrand();
+            var brandLabel = new Label(primaryBrand.ToString());
+            brandLabel.style.color = new Color(heroColor.r * 0.9f + 0.1f, heroColor.g * 0.9f + 0.1f, heroColor.b * 0.9f + 0.1f, 1f);
+            brandLabel.style.fontSize = 9;
+            brandLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
+            brandLabel.style.letterSpacing = 1;
+            affinityRow.Add(brandLabel);
+
+            // Separator
+            var separator = new Label("•");
+            separator.style.color = new Color(100f/255f, 90f/255f, 85f/255f);
+            separator.style.fontSize = 9;
+            separator.style.marginLeft = 4;
+            separator.style.marginRight = 4;
+            affinityRow.Add(separator);
+
+            // Path name
+            var primaryPath = hero.GetPrimaryPath();
+            var pathLabel = new Label(primaryPath.ToString());
+            pathLabel.style.color = new Color(140f/255f, 130f/255f, 120f/255f);
+            pathLabel.style.fontSize = 9;
+            pathLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
+            pathLabel.style.letterSpacing = 1;
+            affinityRow.Add(pathLabel);
+
+            info.Add(affinityRow);
+
+            // Brands row (visual indicators)
             var brandsRow = new VisualElement();
             brandsRow.style.flexDirection = FlexDirection.Row;
             brandsRow.style.alignItems = Align.Center;
 
-            var primaryBrand = hero.GetPrimaryBrand();
             var primaryIndicator = CreateBrandIndicator(primaryBrand);
             brandsRow.Add(primaryIndicator);
 
