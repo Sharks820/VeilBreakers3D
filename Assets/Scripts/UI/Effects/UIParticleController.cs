@@ -214,6 +214,7 @@ namespace VeilBreakers.UI.Effects
             _sparkContainer.style.overflow = Overflow.Visible; // CRITICAL - allow content to show
             _sparkContainer.pickingMode = PickingMode.Ignore; // Don't block clicks
             _sparkContainer.style.display = DisplayStyle.Flex; // Explicitly visible
+            _sparkContainer.style.backgroundColor = Color.clear; // TRANSPARENT - don't block UI below!
             // Add AFTER all other UI initialization
             // We'll add it at the very end after creating particles
             Debug.Log("[VB:Lightning] Created new spark-container (will add last)");
@@ -278,6 +279,7 @@ namespace VeilBreakers.UI.Effects
         _sparkContainer.style.overflow = Overflow.Visible;
         _sparkContainer.pickingMode = PickingMode.Ignore;
         _sparkContainer.style.display = DisplayStyle.Flex;
+        _sparkContainer.style.backgroundColor = Color.clear; // TRANSPARENT!
         Debug.Log("[VB:Lightning] Created new spark-container in Initialize(root)");
 
         _screenWidth = Screen.width;
