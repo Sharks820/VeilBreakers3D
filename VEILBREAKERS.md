@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.48** | Last updated: 2026-01-26
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.51** | Last updated: 2026-01-26
 
 ---
 
@@ -1002,6 +1002,15 @@ battle, ui, art, audio, vera, monsters, critical
 - **Object pooling** for frequently spawned objects
 - **Addressables** for async asset loading
 - **Library folder corruption** - Delete entire Library/ to fix import loops (Unity rebuilds it)
+- **AAA Menu Animations (v2.51)** - Lightweight dramatic animations using coroutines + easing functions
+  - Elastic/Bounce/BackOut easing for "WOW" factor without lag
+  - Staggered button entrances (0.15s delay between each)
+  - Hover glow effects via dynamic CSS class application
+  - Keep animations lightweight: no heavy particles, just smooth interpolation
+- **UI Theme vs Game Systems** - CRITICAL distinction:
+  - UI theme colors (buttons, panels, tooltips) can change for visual redesign
+  - Game system colors (brands, rarities) are GAMEPLAY MECHANICS - don't touch!
+  - Example: VOID brand purple is a game system, menu button purple is UI theme
 
 ### MCP LESSONS (Active)
 - **Greptile** uses Bearer token auth, NOT OAuth. Add with: `claude mcp add --transport http greptile https://api.greptile.com/mcp --header "Authorization: Bearer [key]"`
