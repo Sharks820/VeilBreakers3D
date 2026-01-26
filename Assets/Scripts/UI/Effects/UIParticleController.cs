@@ -617,15 +617,15 @@ namespace VeilBreakers.UI.Effects
         var bolt = new VisualElement();
         bolt.name = "lightning-bolt";
         bolt.style.position = Position.Absolute;
-        bolt.style.width = new StyleLength(new Length(40, LengthUnit.Pixel));  // EXPLICIT pixel unit
-        bolt.style.height = new StyleLength(new Length(100, LengthUnit.Percent));  // EXPLICIT percent unit
+        bolt.style.width = new Length(40, LengthUnit.Pixel);  // DIRECT Length, not StyleLength!
+        bolt.style.height = new Length(100, LengthUnit.Percent);  // DIRECT Length!
         bolt.style.top = 0;
         bolt.style.left = 0;  // Will be set when triggered
         bolt.style.backgroundColor = new Color(0f, 1f, 1f, 1f);  // BRIGHT CYAN
         bolt.style.visibility = Visibility.Visible;
         bolt.pickingMode = PickingMode.Ignore;
         
-        Debug.Log($"[VB:Lightning] Created bolt with EXPLICIT units - width: 40px, height: 100%");
+        Debug.Log($"[VB:Lightning] Created bolt - width: 40px (direct Length), height: 100%");
         
         return bolt;
     }
