@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.51** | Last updated: 2026-01-26
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.52** | Last updated: 2026-01-26
 
 ---
 
@@ -1011,6 +1011,15 @@ battle, ui, art, audio, vera, monsters, critical
   - UI theme colors (buttons, panels, tooltips) can change for visual redesign
   - Game system colors (brands, rarities) are GAMEPLAY MECHANICS - don't touch!
   - Example: VOID brand purple is a game system, menu button purple is UI theme
+- **Comprehensive Bug Analysis (v2.52)** - Full codebase audit completed:
+  - Analyzed 87+ C# files across all systems
+  - Found 2 CRITICAL (SaveFileHandler path, SaveManager mutex)
+  - Found 7 HIGH (GC allocations in combat, lambda closures, singleton patterns)
+  - Found 19 MEDIUM/LOW optimization opportunities
+  - Overall code quality: GOOD - solid architecture, proper event handling
+  - Report saved to: `Docs/BUG_AND_OPTIMIZATION_REPORT.md`
+  - Key strengths: pre-allocated buffers, cached objects, proper Unity lifecycle
+  - Main improvements: standardize singletons, remove combat allocations
 
 ### MCP LESSONS (Active)
 - **Greptile** uses Bearer token auth, NOT OAuth. Add with: `claude mcp add --transport http greptile https://api.greptile.com/mcp --header "Authorization: Bearer [key]"`
