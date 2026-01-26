@@ -50,10 +50,10 @@
             <ui:VisualElement name="button-container" style="width: 320px; padding: 32px; background-color: rgba(12, 9, 18, 0.9); border-width: 1px; border-color: rgba(130, 70, 180, 0.3); border-radius: 12px;">
 
                 <!-- NEW GAME Button -->
-                <ui:Button text="NEW GAME" name="btn-new-game" style="width: 100%; height: 54px; margin-bottom: 12px; font-size: 16px; letter-spacing: 3px; -unity-font-style: bold; background-color: rgb(120, 60, 160); border-color: rgb(160, 100, 200); border-width: 2px; border-radius: 8px; color: rgb(235, 225, 215);" />
+                <ui:Button text="NEW GAME" name="btn-new-game" style="width: 100%; height: 54px; margin-bottom: 12px; font-size: 16px; letter-spacing: 3px; -unity-font-style: bold; -unity-text-align: middle-center; background-color: rgb(120, 60, 160); border-color: rgb(160, 100, 200); border-width: 2px; border-radius: 8px; color: rgb(235, 225, 215);" />
 
                 <!-- CONTINUE Button -->
-                <ui:Button text="CONTINUE" name="btn-continue" style="display: none; width: 100%; height: 54px; margin-bottom: 12px; font-size: 16px; letter-spacing: 3px; -unity-font-style: bold; background-color: rgb(120, 60, 160); border-color: rgb(160, 100, 200); border-width: 2px; border-radius: 8px; color: rgb(235, 225, 215);" />
+                <ui:Button text="CONTINUE" name="btn-continue" style="display: none; width: 100%; height: 54px; margin-bottom: 12px; font-size: 16px; letter-spacing: 3px; -unity-font-style: bold; -unity-text-align: middle-center; background-color: rgb(120, 60, 160); border-color: rgb(160, 100, 200); border-width: 2px; border-radius: 8px; color: rgb(235, 225, 215);" />
 
                 <!-- Divider -->
                 <ui:VisualElement style="flex-direction: row; align-items: center; margin: 16px 0;">
@@ -63,13 +63,13 @@
                 </ui:VisualElement>
 
                 <!-- SETTINGS Button -->
-                <ui:Button text="SETTINGS" name="btn-settings" style="width: 100%; height: 44px; margin-bottom: 8px; font-size: 14px; letter-spacing: 2px; background-color: rgba(40, 32, 55, 0.8); border-color: rgba(100, 80, 130, 0.5); border-width: 1px; border-radius: 6px; color: rgb(165, 155, 145);" />
+                <ui:Button text="SETTINGS" name="btn-settings" style="width: 100%; height: 44px; margin-bottom: 8px; font-size: 14px; letter-spacing: 2px; -unity-text-align: middle-center; background-color: rgba(40, 32, 55, 0.8); border-color: rgba(100, 80, 130, 0.5); border-width: 1px; border-radius: 6px; color: rgb(165, 155, 145);" />
 
                 <!-- CREDITS Button -->
-                <ui:Button text="CREDITS" name="btn-credits" style="width: 100%; height: 44px; margin-bottom: 8px; font-size: 14px; letter-spacing: 2px; background-color: rgba(40, 32, 55, 0.8); border-color: rgba(100, 80, 130, 0.5); border-width: 1px; border-radius: 6px; color: rgb(165, 155, 145);" />
+                <ui:Button text="CREDITS" name="btn-credits" style="width: 100%; height: 44px; margin-bottom: 8px; font-size: 14px; letter-spacing: 2px; -unity-text-align: middle-center; background-color: rgba(40, 32, 55, 0.8); border-color: rgba(100, 80, 130, 0.5); border-width: 1px; border-radius: 6px; color: rgb(165, 155, 145);" />
 
                 <!-- EXIT Button -->
-                <ui:Button text="EXIT" name="btn-exit" style="width: 100%; height: 40px; font-size: 12px; letter-spacing: 1px; background-color: transparent; border-color: rgba(180, 50, 70, 0.3); border-width: 1px; border-radius: 4px; color: rgb(120, 100, 95);" />
+                <ui:Button text="EXIT" name="btn-exit" style="width: 100%; height: 40px; font-size: 12px; letter-spacing: 1px; -unity-text-align: middle-center; background-color: transparent; border-color: rgba(180, 50, 70, 0.3); border-width: 1px; border-radius: 4px; color: rgb(120, 100, 95);" />
 
             </ui:VisualElement>
 

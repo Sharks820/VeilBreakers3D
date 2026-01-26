@@ -24,10 +24,10 @@
 
             <!-- Tab Bar -->
             <ui:VisualElement name="tab-container" style="flex-direction: row; margin-bottom: 20px; background-color: rgba(20, 16, 28, 0.6); border-radius: 6px; padding: 4px;">
-                <ui:Button text="AUDIO" name="tab-audio" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; background-color: rgb(120, 60, 160); border-width: 0; border-radius: 4px; color: rgb(235, 225, 215); margin-right: 4px;" />
-                <ui:Button text="GRAPHICS" name="tab-graphics" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; background-color: transparent; border-width: 0; border-radius: 4px; color: rgb(120, 110, 100); margin-right: 4px;" />
-                <ui:Button text="CONTROLS" name="tab-controls" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; background-color: transparent; border-width: 0; border-radius: 4px; color: rgb(120, 110, 100); margin-right: 4px;" />
-                <ui:Button text="GAMEPLAY" name="tab-gameplay" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; background-color: transparent; border-width: 0; border-radius: 4px; color: rgb(120, 110, 100);" />
+                <ui:Button text="AUDIO" name="tab-audio" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; background-color: rgb(120, 60, 160); border-width: 0; border-radius: 4px; color: rgb(235, 225, 215); margin-right: 4px;" />
+                <ui:Button text="GRAPHICS" name="tab-graphics" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; background-color: transparent; border-width: 0; border-radius: 4px; color: rgb(120, 110, 100); margin-right: 4px;" />
+                <ui:Button text="CONTROLS" name="tab-controls" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; background-color: transparent; border-width: 0; border-radius: 4px; color: rgb(120, 110, 100); margin-right: 4px;" />
+                <ui:Button text="GAMEPLAY" name="tab-gameplay" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; background-color: transparent; border-width: 0; border-radius: 4px; color: rgb(120, 110, 100);" />
             </ui:VisualElement>
 
             <!-- Content ScrollView -->
@@ -200,8 +200,8 @@
 
             <!-- Bottom Buttons -->
             <ui:VisualElement style="flex-direction: row; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top-width: 1px; border-top-color: rgba(130, 70, 180, 0.2);">
-                <ui:Button text="RESET DEFAULTS" name="btn-reset" style="height: 40px; padding: 0 20px; font-size: 12px; letter-spacing: 1px; background-color: transparent; border-width: 1px; border-color: rgba(130, 70, 180, 0.3); border-radius: 4px; color: rgb(120, 110, 100); margin-right: 12px;" />
-                <ui:Button text="APPLY" name="btn-apply" style="height: 40px; padding: 0 32px; font-size: 14px; letter-spacing: 2px; -unity-font-style: bold; background-color: rgb(120, 60, 160); border-color: rgb(160, 100, 200); border-width: 2px; border-radius: 6px; color: rgb(235, 225, 215);" />
+                <ui:Button text="RESET DEFAULTS" name="btn-reset" style="height: 40px; padding: 0 20px; font-size: 12px; letter-spacing: 1px; -unity-text-align: middle-center; background-color: transparent; border-width: 1px; border-color: rgba(130, 70, 180, 0.3); border-radius: 4px; color: rgb(120, 110, 100); margin-right: 12px;" />
+                <ui:Button text="APPLY" name="btn-apply" style="height: 40px; padding: 0 32px; font-size: 14px; letter-spacing: 2px; -unity-font-style: bold; -unity-text-align: middle-center; background-color: rgb(120, 60, 160); border-color: rgb(160, 100, 200); border-width: 2px; border-radius: 6px; color: rgb(235, 225, 215);" />
             </ui:VisualElement>
 
         </ui:VisualElement>
