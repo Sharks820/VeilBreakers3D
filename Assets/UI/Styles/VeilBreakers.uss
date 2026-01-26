@@ -344,31 +344,52 @@
     padding: 0;
 }
 
-/* Dropdown popup menu styling */
+/* Dropdown popup menu styling - CRITICAL: position absolute fixes positioning bug */
 .unity-base-dropdown__container-outer {
-    background-color: rgb(20, 16, 28);
-    border-color: rgb(80, 65, 100);
+    position: absolute;
+    background-color: rgb(18, 14, 26);
+    border-color: rgb(120, 60, 160);
     border-width: 2px;
-    border-radius: 4px;
+    border-radius: 8px;
+    padding: 4px;
+    margin-top: 4px;
+    overflow: visible;
+    min-width: 180px;
 }
 
 .unity-base-dropdown__container-inner {
-    background-color: rgb(20, 16, 28);
+    background-color: rgb(18, 14, 26);
+    padding: 4px;
 }
 
 .unity-base-dropdown__item {
     background-color: transparent;
-    padding: 8px 12px;
-    margin: 2px 4px;
-    border-radius: 4px;
+    padding: 10px 16px;
+    margin: 2px 0;
+    border-radius: 6px;
+    transition-duration: 0.15s;
 }
 
 .unity-base-dropdown__item:hover {
-    background-color: rgb(40, 32, 50);
+    background-color: rgba(120, 60, 160, 0.3);
 }
 
 .unity-base-dropdown__item:checked {
     background-color: rgb(120, 60, 160);
+}
+
+/* Dropdown scroll view fix */
+.unity-base-dropdown .unity-scroll-view {
+    max-height: 300px;
+}
+
+.unity-base-dropdown .unity-scroller--vertical {
+    width: 8px;
+}
+
+.unity-base-dropdown .unity-scroller--vertical .unity-base-slider__dragger {
+    background-color: rgb(120, 60, 160);
+    border-radius: 4px;
 }
 
 .unity-base-dropdown__label {
@@ -1356,4 +1377,619 @@
 
 .integrity-bar-fill-corrupted {
     background-color: rgb(160, 60, 120);
+}
+
+/* =============================================================================
+   AAA MENU BUTTON STYLES
+   ============================================================================= */
+
+/* Primary button with glow effect */
+.btn-primary {
+    min-height: 54px;
+    font-size: 16px;
+    letter-spacing: 3px;
+    -unity-font-style: bold;
+    background-color: rgba(120, 60, 160, 0.9);
+    border-width: 2px;
+    border-color: rgb(160, 100, 200);
+    border-radius: 8px;
+    color: rgb(235, 225, 215);
+    padding: 14px 24px;
+    transition-duration: 0.2s;
+    transition-property: background-color, border-color, scale, translate;
+}
+
+.btn-primary:hover {
+    background-color: rgb(140, 80, 180);
+    border-color: rgb(180, 120, 220);
+    scale: 1.02;
+    translate: -2px 0;
+}
+
+.btn-primary:active {
+    background-color: rgb(100, 50, 140);
+    scale: 0.98;
+}
+
+.btn-secondary {
+    min-height: 44px;
+    font-size: 14px;
+    letter-spacing: 2px;
+    background-color: rgba(40, 32, 55, 0.85);
+    border-width: 1px;
+    border-color: rgba(100, 80, 130, 0.6);
+    border-radius: 6px;
+    color: rgb(165, 155, 145);
+    padding: 10px 20px;
+    transition-duration: 0.15s;
+    transition-property: background-color, border-color, color, translate;
+}
+
+.btn-secondary:hover {
+    background-color: rgba(60, 50, 80, 0.9);
+    border-color: rgba(130, 70, 180, 0.8);
+    color: rgb(200, 190, 180);
+    translate: -2px 0;
+}
+
+.btn-secondary:active {
+    background-color: rgb(50, 40, 65);
+}
+
+.btn-tertiary {
+    min-height: 40px;
+    font-size: 12px;
+    letter-spacing: 1px;
+    background-color: transparent;
+    border-width: 1px;
+    border-color: rgba(80, 60, 100, 0.4);
+    border-radius: 4px;
+    color: rgb(120, 110, 100);
+    padding: 8px 16px;
+    transition-duration: 0.15s;
+}
+
+.btn-tertiary:hover {
+    background-color: rgba(180, 50, 70, 0.2);
+    border-color: rgba(180, 50, 70, 0.5);
+    color: rgb(180, 50, 70);
+}
+
+/* =============================================================================
+   AAA TITLE STYLES
+   ============================================================================= */
+
+.title-hero {
+    font-size: 68px;
+    letter-spacing: 8px;
+    -unity-font-style: bold;
+    color: rgb(235, 225, 215);
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgba(130, 70, 180, 0.5);
+}
+
+.title-tagline {
+    font-size: 14px;
+    letter-spacing: 3px;
+    color: rgb(165, 155, 145);
+    -unity-font-style: italic;
+}
+
+/* =============================================================================
+   AAA BACKGROUND & VIGNETTE STYLES
+   ============================================================================= */
+
+.bg-void {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgb(8, 6, 12);
+}
+
+.bg-vignette-top {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    height: 35%;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.bg-vignette-bottom {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    height: 35%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.bg-vignette-left {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 25%;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.bg-vignette-right {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 25%;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* =============================================================================
+   AAA DECORATED ELEMENTS
+   ============================================================================= */
+
+.divider-decorated {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.divider-line {
+    flex-grow: 1;
+    height: 1px;
+    background-color: rgba(130, 70, 180, 0.3);
+}
+
+.divider-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(130, 70, 180, 0.5);
+}
+
+/* =============================================================================
+   AAA FOOTER STYLES
+   ============================================================================= */
+
+.footer {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 40px;
+    background-color: rgba(8, 6, 12, 0.8);
+    border-top-width: 1px;
+    border-top-color: rgba(130, 70, 180, 0.2);
+}
+
+.footer-text {
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: rgb(80, 70, 65);
+}
+
+/* =============================================================================
+   AAA LOADING OVERLAY
+   ============================================================================= */
+
+.loading-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(8, 6, 12, 0.95);
+    justify-content: center;
+    align-items: center;
+}
+
+.loading-spinner {
+    width: 48px;
+    height: 48px;
+    border-width: 3px;
+    border-color: rgba(130, 70, 180, 0.3);
+    border-top-color: rgb(130, 70, 180);
+    border-radius: 50%;
+    margin-bottom: 20px;
+}
+
+.loading-text {
+    font-size: 14px;
+    letter-spacing: 4px;
+    color: rgb(130, 70, 180);
+}
+
+/* =============================================================================
+   AAA PARTICLE LAYERS
+   ============================================================================= */
+
+.particle-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+}
+
+/* =============================================================================
+   AAA SETTINGS PANEL STYLES
+   ============================================================================= */
+
+.settings-panel-container {
+    background-color: rgba(12, 9, 18, 0.95);
+    border-width: 2px;
+    border-color: rgba(130, 70, 180, 0.4);
+    border-radius: 16px;
+    padding: 32px;
+    width: 700px;
+    max-height: 85%;
+}
+
+.settings-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(130, 70, 180, 0.3);
+}
+
+.settings-title {
+    font-size: 28px;
+    letter-spacing: 6px;
+    -unity-font-style: bold;
+    color: rgb(235, 225, 215);
+}
+
+.settings-close-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 24px;
+    background-color: transparent;
+    border-width: 1px;
+    border-color: rgba(180, 50, 70, 0.3);
+    border-radius: 50%;
+    color: rgb(180, 50, 70);
+    transition-duration: 0.15s;
+}
+
+.settings-close-btn:hover {
+    background-color: rgba(180, 50, 70, 0.2);
+    border-color: rgb(180, 50, 70);
+}
+
+/* Settings Tab Bar */
+.settings-tab-bar {
+    flex-direction: row;
+    margin-bottom: 24px;
+    background-color: rgba(20, 16, 28, 0.5);
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.settings-tab {
+    flex-grow: 1;
+    min-height: 44px;
+    font-size: 13px;
+    letter-spacing: 2px;
+    background-color: transparent;
+    border-width: 0;
+    border-radius: 6px;
+    color: rgb(120, 110, 100);
+    margin: 0 2px;
+    transition-duration: 0.15s;
+}
+
+.settings-tab:hover {
+    background-color: rgba(130, 70, 180, 0.15);
+    color: rgb(165, 155, 145);
+}
+
+.settings-tab-active {
+    background-color: rgb(120, 60, 160);
+    color: rgb(235, 225, 215);
+}
+
+.settings-tab-active:hover {
+    background-color: rgb(140, 80, 180);
+}
+
+/* Settings Row */
+.settings-row {
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 0;
+    margin-bottom: 8px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(60, 50, 75, 0.2);
+}
+
+.settings-label {
+    width: 180px;
+    min-width: 180px;
+    flex-shrink: 0;
+    font-size: 14px;
+    color: rgb(165, 155, 145);
+    letter-spacing: 1px;
+}
+
+.settings-control {
+    flex-grow: 1;
+    margin: 0 16px;
+}
+
+.settings-value {
+    width: 60px;
+    min-width: 60px;
+    flex-shrink: 0;
+    font-size: 14px;
+    color: rgb(130, 70, 180);
+    -unity-text-align: middle-right;
+    -unity-font-style: bold;
+}
+
+/* Settings Section Header */
+.settings-section-header {
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: rgb(130, 70, 180);
+    margin-top: 24px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(130, 70, 180, 0.3);
+}
+
+/* Settings Button Row */
+.settings-button-row {
+    flex-direction: row;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top-width: 1px;
+    border-top-color: rgba(130, 70, 180, 0.2);
+}
+
+/* AAA Slider Style */
+.aaa-slider {
+    min-height: 24px;
+}
+
+.aaa-slider .unity-base-slider__tracker {
+    background-color: rgba(40, 32, 55, 0.8);
+    border-radius: 6px;
+    height: 8px;
+}
+
+.aaa-slider .unity-base-slider__dragger {
+    background-color: rgb(130, 70, 180);
+    border-width: 2px;
+    border-color: rgb(160, 100, 200);
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    margin-top: -7px;
+    transition-duration: 0.1s;
+}
+
+.aaa-slider:hover .unity-base-slider__dragger {
+    background-color: rgb(150, 90, 200);
+    scale: 1.1;
+}
+
+.aaa-slider .unity-base-slider__drag-container {
+    background-color: rgb(130, 70, 180);
+    border-radius: 6px;
+}
+
+/* AAA Toggle Style */
+.aaa-toggle {
+    flex-direction: row;
+    align-items: center;
+}
+
+.aaa-toggle .unity-toggle__input {
+    background-color: rgba(40, 32, 55, 0.8);
+    border-color: rgba(80, 60, 100, 0.5);
+    border-width: 2px;
+    border-radius: 14px;
+    width: 52px;
+    height: 28px;
+    padding: 2px;
+    transition-duration: 0.2s;
+}
+
+.aaa-toggle:checked .unity-toggle__input {
+    background-color: rgba(120, 60, 160, 0.5);
+    border-color: rgb(130, 70, 180);
+}
+
+.aaa-toggle .unity-toggle__checkmark {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: rgb(100, 90, 80);
+    transition-duration: 0.2s;
+    translate: 0 0;
+}
+
+.aaa-toggle:checked .unity-toggle__checkmark {
+    background-color: rgb(130, 70, 180);
+    translate: 24px 0;
+}
+
+.aaa-toggle .unity-toggle__text {
+    color: rgb(165, 155, 145);
+    font-size: 14px;
+    margin-left: 12px;
+}
+
+/* =============================================================================
+   PATH BADGE STYLES
+   ============================================================================= */
+
+.path-badge {
+    padding: 6px 14px;
+    border-radius: 4px;
+    border-width: 1px;
+}
+
+.path-ironbound {
+    background-color: rgba(140, 120, 100, 0.2);
+    border-color: rgba(140, 120, 100, 0.5);
+    color: rgb(200, 180, 160);
+}
+
+.path-fangborn {
+    background-color: rgba(160, 80, 80, 0.2);
+    border-color: rgba(160, 80, 80, 0.5);
+    color: rgb(200, 120, 120);
+}
+
+.path-voidtouched {
+    background-color: rgba(100, 60, 160, 0.2);
+    border-color: rgba(100, 60, 160, 0.5);
+    color: rgb(160, 120, 200);
+}
+
+.path-unchained {
+    background-color: rgba(60, 140, 160, 0.2);
+    border-color: rgba(60, 140, 160, 0.5);
+    color: rgb(100, 180, 200);
+}
+
+/* =============================================================================
+   BRAND COLOR INDICATORS
+   ============================================================================= */
+
+.brand-indicator {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border-width: 2px;
+}
+
+.brand-iron { background-color: rgb(140, 130, 120); border-color: rgb(180, 170, 160); }
+.brand-savage { background-color: rgb(180, 60, 60); border-color: rgb(220, 100, 100); }
+.brand-surge { background-color: rgb(60, 140, 200); border-color: rgb(100, 180, 240); }
+.brand-venom { background-color: rgb(80, 160, 80); border-color: rgb(120, 200, 120); }
+.brand-dread { background-color: rgb(80, 60, 100); border-color: rgb(120, 100, 140); }
+.brand-leech { background-color: rgb(160, 60, 120); border-color: rgb(200, 100, 160); }
+.brand-grace { background-color: rgb(200, 180, 120); border-color: rgb(240, 220, 160); }
+.brand-mend { background-color: rgb(100, 200, 180); border-color: rgb(140, 240, 220); }
+.brand-ruin { background-color: rgb(60, 40, 80); border-color: rgb(100, 80, 120); }
+.brand-void { background-color: rgb(40, 30, 50); border-color: rgb(80, 70, 90); }
+
+/* =============================================================================
+   SYNERGY DISPLAY
+   ============================================================================= */
+
+.synergy-badge {
+    padding: 8px 16px;
+    border-radius: 6px;
+    border-width: 2px;
+}
+
+.synergy-full {
+    background-color: rgba(80, 200, 120, 0.15);
+    border-color: rgb(80, 200, 120);
+}
+
+.synergy-partial {
+    background-color: rgba(200, 180, 80, 0.15);
+    border-color: rgb(200, 180, 80);
+}
+
+.synergy-neutral {
+    background-color: rgba(120, 120, 120, 0.15);
+    border-color: rgb(120, 120, 120);
+}
+
+.synergy-anti {
+    background-color: rgba(200, 80, 80, 0.15);
+    border-color: rgb(200, 80, 80);
+}
+
+/* =============================================================================
+   MONSTER CARD AAA STYLES
+   ============================================================================= */
+
+.monster-card-aaa {
+    background-color: rgba(25, 20, 35, 0.9);
+    border-width: 2px;
+    border-color: rgba(80, 60, 100, 0.5);
+    border-radius: 12px;
+    padding: 16px;
+    transition-duration: 0.2s;
+}
+
+.monster-card-aaa:hover {
+    background-color: rgba(35, 28, 50, 0.95);
+    border-color: rgba(130, 70, 180, 0.7);
+    translate: 0 -2px;
+}
+
+.monster-portrait-frame {
+    width: 120px;
+    height: 120px;
+    background-color: rgba(20, 16, 28, 0.8);
+    border-width: 3px;
+    border-color: rgba(130, 70, 180, 0.4);
+    border-radius: 8px;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.monster-portrait-placeholder {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(80, 60, 100, 0.3);
+    justify-content: center;
+    align-items: center;
+}
+
+.monster-portrait-placeholder-text {
+    font-size: 48px;
+    color: rgba(130, 70, 180, 0.5);
+}
+
+/* =============================================================================
+   HERO SUMMARY CARD
+   ============================================================================= */
+
+.hero-summary-card {
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(18, 14, 26, 0.9);
+    border-width: 1px;
+    border-color: rgba(130, 70, 180, 0.3);
+    border-radius: 8px;
+    padding: 16px 24px;
+}
+
+.hero-summary-portrait {
+    width: 64px;
+    height: 64px;
+    background-color: rgba(40, 32, 55, 0.8);
+    border-radius: 8px;
+    margin-right: 16px;
+}
+
+.hero-summary-info {
+    flex-grow: 1;
+}
+
+.hero-summary-name {
+    font-size: 18px;
+    -unity-font-style: bold;
+    color: rgb(235, 225, 215);
+    margin-bottom: 4px;
+}
+
+.hero-summary-path {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: rgb(130, 70, 180);
 }
