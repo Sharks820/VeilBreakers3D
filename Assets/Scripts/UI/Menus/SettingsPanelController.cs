@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
@@ -231,6 +232,7 @@ namespace VeilBreakers.UI.Menus
 
             // Bind events
             BindEvents();
+            ConfigureDropdownPopupFixes();
 
             ErrorLogger.UI("SettingsPanel initialized");
         }
@@ -654,6 +656,7 @@ namespace VeilBreakers.UI.Menus
             // Setup
             PopulateResolutions();
             BindEvents();
+            ConfigureDropdownPopupFixes();
             LoadSettings();
             UpdateUIFromSettings();
             ShowTab(0);
@@ -662,6 +665,103 @@ namespace VeilBreakers.UI.Menus
         }
 
         public SettingsData GetCurrentSettings() => _currentSettings.Clone();
+
+        private void ConfigureDropdownPopupFixes()
+        {
+            ConfigureDropdownPopupFix(_dropdownResolution);
+            ConfigureDropdownPopupFix(_dropdownFullscreen);
+            ConfigureDropdownPopupFix(_dropdownQuality);
+        }
+
+        private void ConfigureDropdownPopupFix(DropdownField dropdown)
+        {
+            if (dropdown == null) return;
+
+            dropdown.RegisterCallback<PointerDownEvent>(_ => SchedulePopupPosition(dropdown));
+            dropdown.RegisterCallback<KeyDownEvent>(evt =>
+            {
+                if (evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.Space)
+                {
+                    SchedulePopupPosition(dropdown);
+                }
+            });
+        }
+
+        private void SchedulePopupPosition(DropdownField dropdown)
+        {
+            dropdown.schedule.Execute(() =>
+            {
+                var panel = dropdown.panel;
+                if (panel == null) return;
+                var panelRoot = panel.visualTree;
+                if (panelRoot == null) return;
+
+                var popups = panelRoot.Query<VisualElement>(className: "unity-base-dropdown__container-outer").ToList();
+                if (popups.Count == 0) return;
+
+                var popup = popups[popups.Count - 1];
+                if (popup.userData == dropdown && popup.resolvedStyle.display != DisplayStyle.None)
+                {
+                    return;
+                }
+                popup.userData = dropdown;
+                popup.style.position = Position.Absolute;
+                popup.style.right = StyleKeyword.Null;
+                popup.style.bottom = StyleKeyword.Null;
+                popup.style.translate = new Translate(0, 0);
+                popup.style.opacity = 0;
+
+                popup.schedule.Execute(() => PositionPopup(dropdown, popup)).ExecuteLater(0);
+                popup.schedule.Execute(() => RevealPopup(dropdown, popup)).ExecuteLater(0);
+                popup.RegisterCallback<GeometryChangedEvent>(OnPopupGeometryChanged);
+                void OnPopupGeometryChanged(GeometryChangedEvent evt)
+                {
+                    PositionPopup(dropdown, popup);
+                    RevealPopup(dropdown, popup);
+                    popup.UnregisterCallback<GeometryChangedEvent>(OnPopupGeometryChanged);
+                }
+            }).ExecuteLater(0);
+        }
+
+        private void PositionPopup(DropdownField dropdown, VisualElement popup)
+        {
+            var panel = dropdown.panel;
+            if (panel == null) return;
+            var panelRoot = panel.visualTree;
+            if (panelRoot == null) return;
+
+            var fieldBounds = dropdown.worldBound;
+            if (fieldBounds.height <= 0 || fieldBounds.width <= 0)
+            {
+                return;
+            }
+
+            float panelHeight = panelRoot.resolvedStyle.height;
+            if (panelHeight <= 0)
+            {
+                panelHeight = Screen.height;
+            }
+
+            float popupHeight = popup.resolvedStyle.height;
+            float below = fieldBounds.y + fieldBounds.height;
+            float above = fieldBounds.y - popupHeight;
+            float targetY = below;
+
+            if (popupHeight > 0 && panelHeight > 0 && (below + popupHeight) > panelHeight && above >= 0)
+            {
+                targetY = above;
+            }
+
+            popup.style.left = fieldBounds.x;
+            popup.style.top = targetY;
+            popup.style.width = fieldBounds.width;
+        }
+
+        private void RevealPopup(DropdownField dropdown, VisualElement popup)
+        {
+            if (popup.resolvedStyle.opacity >= 1f) return;
+            popup.style.opacity = 1f;
+        }
     }
 
     // =============================================================================

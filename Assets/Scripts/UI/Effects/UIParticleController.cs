@@ -61,11 +61,25 @@ namespace VeilBreakers.UI.Effects
         
         // Object pooling for optimization
         private Queue<VisualElement> _particlePool;
+        private bool _poolInitialized;
         private const int kPoolSize = 150; // Increased for more particles
 
         // Lightning timing
         private float _nextLightningTime;
         private const float kLightningInterval = 2.5f; // More frequent lightning flashes
+        private const int kMaxLightningSegments = 24; // More segments for smoother paths
+        private const float kLightningMinSegLength = 18f;
+        private const float kLightningMaxSegLength = 55f;
+
+        // AAA QUALITY: Much thicker, more dramatic lightning
+        private const float kLightningMinThickness = 8f;   // Increased from 1.2 → 8 (6.7x thicker!)
+        private const float kLightningMaxThickness = 18f;  // Increased from 3 → 18 (6x thicker!)
+        private const float kLightningGlowPadding = 20f;   // Increased from 7 → 20 (3x bigger glow!)
+        private const float kLightningMaxAngleJitter = 3.5f; // More dramatic jitter
+
+        // Branch parameters
+        private const float kBranchMinThickness = 3f;
+        private const float kBranchMaxThickness = 9f;
 
         // =============================================================================
         // DATA STRUCTURES
@@ -97,10 +111,26 @@ namespace VeilBreakers.UI.Effects
 
         private class LightningData
         {
-            public VisualElement Element;
+            public VisualElement Root;
+            public List<LightningSegment> Segments;
             public float Lifetime;
             public float MaxLifetime;
             public bool Active;
+        }
+
+        private class LightningSegment
+        {
+            public VisualElement Container;
+            public VisualElement Glow;
+            public VisualElement Core;
+            public float BaseAlpha;
+            public float FlickerSpeed;
+            public float FlickerOffset;
+            public float BaseX;
+            public float BaseY;
+            public float BaseLength;
+            public float BaseThickness;
+            public float BaseAngle;
         }
 
         // =============================================================================
@@ -122,7 +152,7 @@ namespace VeilBreakers.UI.Effects
             _veilPulses = new List<VisualElement>(3);
             _particlePool = new Queue<VisualElement>(kPoolSize);
             
-            _nextLightningTime = Time.time + Random.Range(2f, 4f);
+            _nextLightningTime = Time.unscaledTime + Random.Range(2f, 4f);
         }
 
         private void OnEnable()
@@ -137,7 +167,8 @@ namespace VeilBreakers.UI.Effects
         {
             if (!_isInitialized) return;
 
-            float deltaTime = Time.deltaTime;
+            float deltaTime = Time.unscaledDeltaTime;
+            float timeNow = Time.unscaledTime;
 
             UpdateEmbers(deltaTime);
             UpdateDustParticles(deltaTime);
@@ -146,10 +177,10 @@ namespace VeilBreakers.UI.Effects
             UpdateVeilPulses(deltaTime);
             
             // Trigger random lightning
-            if (Time.time >= _nextLightningTime)
+            if (timeNow >= _nextLightningTime)
             {
                 TriggerLightningBolt();
-                _nextLightningTime = Time.time + Random.Range(kLightningInterval, kLightningInterval * 2f);
+                _nextLightningTime = timeNow + Random.Range(kLightningInterval, kLightningInterval * 2f);
             }
         }
 
@@ -168,6 +199,8 @@ namespace VeilBreakers.UI.Effects
 
             _root = _uiDocument.rootVisualElement;
             if (_root == null) return;
+
+            PrepareForInitialize();
 
             _particleContainer = _root.Q<VisualElement>("particle-container");
             _emberContainer = _root.Q<VisualElement>("ember-container");
@@ -222,6 +255,7 @@ namespace VeilBreakers.UI.Effects
             // Get screen dimensions
             _screenWidth = Screen.width;
             _screenHeight = Screen.height;
+            _nextLightningTime = Time.unscaledTime + Random.Range(2f, 4f);
 
             // Find veil pulse elements
             var veilPulseLayer = _root.Q<VisualElement>("veil-pulse-layer");
@@ -244,9 +278,14 @@ namespace VeilBreakers.UI.Effects
             CreateSparks();
             CreateLightningBolts();
             
-            // NOW add spark container as THE LAST CHILD so it renders ON TOP
-            _root.Add(_sparkContainer);
-            _sparkContainer.BringToFront();
+            if (_particleContainer != null)
+            {
+                _particleContainer.Add(_sparkContainer);
+            }
+            else
+            {
+                _root.Add(_sparkContainer);
+            }
             
             Debug.Log($"[VB:Lightning] Initialization complete. Added spark-container as LAST child. Screen: {_screenWidth}x{_screenHeight}, Bolts: {_lightningBolts.Count}, Container child count: {_root.childCount}");
 
@@ -257,6 +296,8 @@ namespace VeilBreakers.UI.Effects
     {
         _root = root;
         if (_root == null) return;
+
+        PrepareForInitialize();
 
         _particleContainer = _root.Q<VisualElement>("particle-container");
         _emberContainer = _root.Q<VisualElement>("ember-container");
@@ -284,6 +325,7 @@ namespace VeilBreakers.UI.Effects
 
         _screenWidth = Screen.width;
         _screenHeight = Screen.height;
+        _nextLightningTime = Time.unscaledTime + Random.Range(2f, 4f);
 
         var veilPulseLayer = _root.Q<VisualElement>("veil-pulse-layer");
         if (veilPulseLayer != null)
@@ -302,14 +344,24 @@ namespace VeilBreakers.UI.Effects
         CreateSparks();
         CreateLightningBolts();
         
-        // Add spark container LAST so it renders on top
-        _root.Add(_sparkContainer);
-        _sparkContainer.BringToFront();
+        if (_particleContainer != null)
+        {
+            _particleContainer.Add(_sparkContainer);
+        }
+        else
+        {
+            _root.Add(_sparkContainer);
+        }
         
         Debug.Log($"[VB:Lightning] Initialize(root) complete. Added spark-container as LAST child.");
 
         _isInitialized = true;
     }
+
+        private void PrepareForInitialize()
+        {
+            ClearParticles();
+        }
 
         // =============================================================================
         // OBJECT POOLING (OPTIMIZATION)
@@ -317,12 +369,14 @@ namespace VeilBreakers.UI.Effects
 
         private void InitializeObjectPool()
         {
+            if (_poolInitialized) return;
             for (int i = 0; i < kPoolSize; i++)
             {
                 var element = new VisualElement();
                 element.style.display = DisplayStyle.None;
                 _particlePool.Enqueue(element);
             }
+            _poolInitialized = true;
         }
 
         private VisualElement GetPooledParticle()
@@ -457,36 +511,27 @@ namespace VeilBreakers.UI.Effects
         }
 
         private void CreateLightningBolts()
-    {
-        if (_sparkContainer == null)
         {
-            Debug.LogError("[VB:Lightning] ERROR - _sparkContainer is NULL! Cannot create lightning.");
-            return;
-        }
-
-        for (int i = 0; i < _lightningBoltCount; i++)
-        {
-            var bolt = CreateLightningBolt();
-            bolt.style.display = DisplayStyle.None; // Hidden until triggered
-            bolt.pickingMode = PickingMode.Ignore; // Don't block clicks (NOT .style)
-
-            var data = new LightningData
+            if (_sparkContainer == null)
             {
-                Element = bolt,
-                Lifetime = 0f,
-                MaxLifetime = 0.6f, // Longer flash for visibility
-                Active = false
-            };
+                Debug.LogError("[VB:Lightning] ERROR - _sparkContainer is NULL! Cannot create lightning.");
+                return;
+            }
 
-            // Add to SPARK CONTAINER like other particles use containers
-            _sparkContainer.Add(bolt);
-            _lightningBolts.Add(data);
+            for (int i = 0; i < _lightningBoltCount; i++)
+            {
+                var bolt = CreateLightningBolt();
+                bolt.Root.style.display = DisplayStyle.None; // Hidden until triggered
+                bolt.Root.pickingMode = PickingMode.Ignore; // Don't block clicks
+
+                _sparkContainer.Add(bolt.Root);
+                _lightningBolts.Add(bolt);
+                
+                Debug.Log($"[VB:Lightning] Added bolt #{i} to _sparkContainer (jagged segments)");
+            }
             
-            Debug.Log($"[VB:Lightning] Added bolt #{i} to _sparkContainer (like embers use _emberContainer)");
+            Debug.Log($"[VB:Lightning] Created {_lightningBoltCount} bolts in _sparkContainer, container child count: {_sparkContainer.childCount}");
         }
-        
-        Debug.Log($"[VB:Lightning] Created {_lightningBoltCount} bolts in _sparkContainer, container child count: {_sparkContainer.childCount}");
-    }
 
         // =============================================================================
         // ENHANCED PARTICLE RENDERING
@@ -611,28 +656,45 @@ namespace VeilBreakers.UI.Effects
             return container;
         }
 
-        private VisualElement CreateLightningBolt()
-    {
-        // COPY EMBER APPROACH EXACTLY - simple container with child
-        var container = new VisualElement();
-        container.style.position = Position.Absolute;
-        container.style.width = 40;  // Float like embers use
-        container.style.height = 600;  // Fixed height like embers use
-        
-        // Bolt element inside container (like ember core)
-        var bolt = new VisualElement();
-        bolt.style.position = Position.Absolute;
-        bolt.style.width = 40;
-        bolt.style.height = 600;
-        bolt.style.left = 0;
-        bolt.style.top = 0;
-        bolt.style.backgroundColor = _lightningColor;  // Original vivid crimson
-        container.Add(bolt);
-        
-        Debug.Log($"[VB:Lightning] Created bolt - CRIMSON (original design color)");
-        
-        return container;
-    }
+        private LightningData CreateLightningBolt()
+        {
+            // IMAGE-BASED LIGHTNING (v2.75+)
+            // Load random lightning sprite from Resources
+            int spriteIndex = Random.Range(1, 11); // lightning_bolt_01 through lightning_bolt_10
+            string spritePath = $"UI/Lightning/lightning_bolt_{spriteIndex:D2}";
+            
+            Sprite lightningSprite = Resources.Load<Sprite>(spritePath);
+            
+            if (lightningSprite == null)
+            {
+                Debug.LogError($"[VB:Lightning] Failed to load sprite: {spritePath}");
+                return null;
+            }
+            
+            // Single image element for the lightning bolt
+            var boltElement = new VisualElement();
+            boltElement.style.position = Position.Absolute;
+            boltElement.style.width = 40;  // Width in pixels
+            boltElement.style.height = 600; // Tall vertical bolt
+            
+            // Apply sprite as background
+            boltElement.style.backgroundImage = new StyleBackground(lightningSprite);
+            boltElement.style.unityBackgroundScaleMode = ScaleMode.StretchToFill;
+            
+            // Tint to CRIMSON (our brand color)
+            boltElement.style.unityBackgroundImageTintColor = _lightningColor;
+            
+            Debug.Log($"[VB:Lightning] Created sprite-based bolt: {spritePath}");
+            
+            return new LightningData
+            {
+                Root = boltElement,
+                Segments = new List<LightningSegment>(), // Empty - not used for sprites
+                Lifetime = 0f,
+                MaxLifetime = 0.6f,
+                Active = false
+            };
+        }
 
         // =============================================================================
         // PARTICLE UPDATES
@@ -650,7 +712,7 @@ namespace VeilBreakers.UI.Effects
                 ember.X += ember.SpeedX * deltaTime;
 
                 // Perlin noise for organic movement (no GC)
-                float noise = (Mathf.PerlinNoise(Time.time * 0.8f + i * 0.15f, 0f) - 0.5f) * 35f;
+                float noise = (Mathf.PerlinNoise(Time.unscaledTime * 0.8f + i * 0.15f, 0f) - 0.5f) * 35f;
                 ember.SpeedX += noise * deltaTime;
                 ember.SpeedX = Mathf.Clamp(ember.SpeedX, -12f, 12f);
 
@@ -659,7 +721,7 @@ namespace VeilBreakers.UI.Effects
                 ember.Element.style.rotate = new Rotate(ember.Rotation);
 
                 // Pulse alpha (faster flicker for ominous effect)
-                float time = Time.time * ember.AlphaSpeed;
+                float time = Time.unscaledTime * ember.AlphaSpeed;
                 float alpha = ember.Alpha * (0.4f + 0.6f * Mathf.Sin(time));
 
                 // Reset if off screen
@@ -690,15 +752,15 @@ namespace VeilBreakers.UI.Effects
                 dust.X += dust.SpeedX * deltaTime;
 
                 // Very subtle Perlin noise (no GC)
-                float noiseX = (Mathf.PerlinNoise(Time.time * 0.4f + i * 0.25f, 0f) - 0.5f) * 8f;
-                float noiseY = (Mathf.PerlinNoise(Time.time * 0.4f + i * 0.25f, 1f) - 0.5f) * 5f;
+                float noiseX = (Mathf.PerlinNoise(Time.unscaledTime * 0.4f + i * 0.25f, 0f) - 0.5f) * 8f;
+                float noiseY = (Mathf.PerlinNoise(Time.unscaledTime * 0.4f + i * 0.25f, 1f) - 0.5f) * 5f;
                 dust.SpeedX += noiseX * deltaTime;
                 dust.SpeedY += noiseY * deltaTime;
                 dust.SpeedX = Mathf.Clamp(dust.SpeedX, -6f, 6f);
                 dust.SpeedY = Mathf.Clamp(dust.SpeedY, -_dustSpeed, _dustSpeed * 0.5f);
 
                 // Very slow alpha pulse
-                float time = Time.time * dust.AlphaSpeed * 0.4f;
+                float time = Time.unscaledTime * dust.AlphaSpeed * 0.4f;
                 float alpha = dust.Alpha * (0.5f + 0.5f * Mathf.Sin(time));
 
                 // Wrap around screen
@@ -730,7 +792,7 @@ namespace VeilBreakers.UI.Effects
                 spark.Element.style.rotate = new Rotate(spark.Rotation);
 
                 // Fast flicker
-                float time = Time.time * spark.AlphaSpeed;
+                float time = Time.unscaledTime * spark.AlphaSpeed;
                 float alpha = spark.Alpha * (0.3f + 0.7f * Mathf.Abs(Mathf.Sin(time * 3f)));
 
                 // Reset if off screen (top)
@@ -759,35 +821,43 @@ namespace VeilBreakers.UI.Effects
 
                 bolt.Lifetime += deltaTime;
 
-                // FULL BRIGHTNESS for most of duration, only fade at very end
+                // SPRITE-BASED ANIMATION (v2.75+)
+                // Simple fade in/out with flicker
                 float t = bolt.Lifetime / bolt.MaxLifetime;
                 float alpha;
-                if (t < 0.8f)
+                
+                if (t < 0.1f)
                 {
-                    // Stay at FULL brightness for 80% of duration
-                    alpha = 1.0f;
+                    // Fast fade in
+                    alpha = t / 0.1f;
+                }
+                else if (t < 0.8f)
+                {
+                    // Hold bright with subtle flicker
+                    float flicker = 0.9f + 0.1f * Mathf.Sin(Time.unscaledTime * 15f);
+                    alpha = flicker;
                 }
                 else
                 {
-                    // Quick fade only in last 20%
-                    alpha = (1.0f - t) / 0.2f;
+                    // Fast fade out
+                    alpha = (1f - t) / 0.2f;
                 }
+                
                 alpha = Mathf.Clamp01(alpha);
-
-                bolt.Element.style.opacity = alpha;
+                bolt.Root.style.opacity = alpha;
 
                 // Deactivate when done
                 if (bolt.Lifetime >= bolt.MaxLifetime)
                 {
                     bolt.Active = false;
-                    bolt.Element.style.display = DisplayStyle.None;
+                    bolt.Root.style.display = DisplayStyle.None;
                 }
             }
         }
 
         private void UpdateVeilPulses(float deltaTime)
         {
-            float time = Time.time * _veilPulseSpeed;
+            float time = Time.unscaledTime * _veilPulseSpeed;
 
             for (int i = 0; i < _veilPulses.Count; i++)
             {
@@ -821,22 +891,187 @@ namespace VeilBreakers.UI.Effects
             var bolt = _lightningBolts[i];
             if (!bolt.Active)
             {
-                float xPos = Random.Range(50f, _screenWidth - 50f);
                 bolt.Active = true;
                 bolt.Lifetime = 0f;
+                bolt.MaxLifetime = Random.Range(0.45f, 0.75f);
                 
-                bolt.Element.style.display = DisplayStyle.Flex;
-                bolt.Element.style.left = xPos;
-                bolt.Element.style.opacity = 1f;
+                GenerateLightningPath(bolt);
+                bolt.Root.style.display = DisplayStyle.Flex;
+                bolt.Root.style.opacity = 1f;
                 
                 // SIMPLE diagnostic - just check width once
-                var w = bolt.Element.resolvedStyle.width;
+                var w = bolt.Root.resolvedStyle.width;
                 Debug.Log($"[VB:Lightning] Bolt #{i} triggered, width={w}");
                 
                 return;
             }
         }
     }
+
+        private void GenerateLightningPath(LightningData bolt)
+        {
+            float startX = Random.Range(90f, _screenWidth - 90f);
+            float endX = Mathf.Clamp(startX + Random.Range(-280f, 280f), 80f, _screenWidth - 80f);
+            float topY = -20f;
+            float bottomY = _screenHeight + 40f;
+
+            // AAA QUALITY: More points for smoother curves, more dramatic noise
+            int pointCount = Random.Range(11, 16);
+            float step = (bottomY - topY) / Mathf.Max(1, pointCount - 1);
+            float noiseFreq = Random.Range(3.0f, 6.0f);
+            float noiseAmp = Random.Range(90f, 180f); // Doubled amplitude for MORE jaggedness!
+            float noiseSeed = Random.Range(0f, 1000f);
+
+            var points = new List<Vector2>(pointCount);
+            for (int i = 0; i < pointCount; i++)
+            {
+                float t = i / (float)(pointCount - 1);
+                float y = topY + step * i;
+                float drift = Mathf.Lerp(startX, endX, t);
+                float noise = (Mathf.PerlinNoise(noiseSeed, t * noiseFreq) - 0.5f) * noiseAmp;
+                float jag = Random.Range(-40f, 40f); // Doubled jag for MORE chaos!
+                float x = Mathf.Clamp(drift + noise + jag, 40f, _screenWidth - 40f);
+                points.Add(new Vector2(x, y));
+            }
+
+            int mainSegments = Mathf.Min(points.Count - 1, bolt.Segments.Count);
+            for (int i = 0; i < bolt.Segments.Count; i++)
+            {
+                var segment = bolt.Segments[i];
+                if (i >= mainSegments)
+                {
+                    segment.Container.style.display = DisplayStyle.None;
+                    continue;
+                }
+
+                Vector2 a = points[i];
+                Vector2 b = points[i + 1];
+                float length = Vector2.Distance(a, b);
+                float angle = Mathf.Atan2(b.x - a.x, b.y - a.y) * Mathf.Rad2Deg;
+                float t = i / (float)Mathf.Max(1, mainSegments - 1);
+
+                // AAA QUALITY: Thicker main bolt with variation
+                float thickness = Mathf.Lerp(kLightningMaxThickness, kLightningMinThickness, t) + Random.Range(-1f, 1f);
+                thickness = Mathf.Clamp(thickness, kLightningMinThickness, kLightningMaxThickness);
+
+                float centerX = (a.x + b.x) * 0.5f;
+                float centerY = (a.y + b.y) * 0.5f;
+
+                segment.Container.style.display = DisplayStyle.Flex;
+                segment.Container.style.left = centerX - (thickness * 0.5f);
+                segment.Container.style.top = centerY - (length * 0.5f);
+                segment.Container.style.width = thickness;
+                segment.Container.style.height = length;
+                segment.Container.style.rotate = new Rotate(new Angle(angle, AngleUnit.Degree));
+
+                segment.BaseX = centerX - (thickness * 0.5f);
+                segment.BaseY = centerY - (length * 0.5f);
+                segment.BaseThickness = thickness;
+                segment.BaseLength = length;
+                segment.BaseAngle = angle;
+                segment.BaseAlpha = Mathf.Lerp(1f, 0.7f, t) * Random.Range(0.85f, 1f); // Brighter!
+                segment.FlickerSpeed = Random.Range(15f, 24f); // Faster flicker for more energy!
+                segment.FlickerOffset = Random.Range(0f, 6.28318f);
+
+                // AAA QUALITY: Much brighter glow and core!
+                var glowColor = new Color(_lightningColor.r, _lightningColor.g, _lightningColor.b, 0.7f); // 0.4 → 0.7 (75% more opaque!)
+                var coreColor = Color.Lerp(_lightningColor, Color.white, 0.75f); // 0.45 → 0.75 (almost pure white!)
+
+                segment.Glow.style.left = -kLightningGlowPadding;
+                segment.Glow.style.top = -kLightningGlowPadding;
+                segment.Glow.style.width = thickness + (kLightningGlowPadding * 2f);
+                segment.Glow.style.height = length + (kLightningGlowPadding * 2f);
+                segment.Glow.style.backgroundColor = glowColor;
+
+                segment.Core.style.left = 0;
+                segment.Core.style.top = 0;
+                segment.Core.style.width = thickness;
+                segment.Core.style.height = length;
+                segment.Core.style.backgroundColor = coreColor;
+            }
+
+            // AAA QUALITY: Create 2-3 dramatic branches with proper thickness!
+            int branchStartIndex = mainSegments;
+            int available = bolt.Segments.Count - branchStartIndex;
+            int segmentsUsed = 0;
+
+            // Try to create 2-3 branches
+            int branchesToCreate = Mathf.Min(Random.Range(2, 4), available / 2);
+            for (int branchNum = 0; branchNum < branchesToCreate && segmentsUsed < available; branchNum++)
+            {
+                int segsPerBranch = Random.Range(2, 4);
+                if (segmentsUsed + segsPerBranch > available) break;
+
+                // Attach at different points along main bolt
+                int attachIndex = Random.Range(2 + branchNum, Mathf.Max(3, pointCount - 3));
+                Vector2 attach = points[Mathf.Clamp(attachIndex, 0, points.Count - 1)];
+
+                float branchLength = Random.Range(100f, 200f); // Longer branches!
+                Vector2 dir = new Vector2(Random.Range(-1f, 1f), Random.Range(0.3f, 0.95f)).normalized;
+                Vector2 p0 = attach;
+                Vector2 p1 = attach + dir * (branchLength * 0.5f) + new Vector2(Random.Range(-25f, 25f), Random.Range(-15f, 15f));
+                Vector2 p2 = attach + dir * branchLength + new Vector2(Random.Range(-35f, 35f), Random.Range(-20f, 20f));
+
+                var branchPoints = new List<Vector2> { p0, p1, p2 };
+                int branchCount = Mathf.Min(branchPoints.Count - 1, segsPerBranch);
+
+                for (int i = 0; i < branchCount; i++)
+                {
+                    var segment = bolt.Segments[branchStartIndex + segmentsUsed + i];
+                    Vector2 a = branchPoints[i];
+                    Vector2 b = branchPoints[i + 1];
+                    float length = Vector2.Distance(a, b);
+                    float angle = Mathf.Atan2(b.x - a.x, b.y - a.y) * Mathf.Rad2Deg;
+
+                    // AAA QUALITY: Much thicker branches!
+                    float t = i / (float)Mathf.Max(1, branchCount - 1);
+                    float thickness = Mathf.Lerp(kBranchMaxThickness, kBranchMinThickness, t);
+
+                    float centerX = (a.x + b.x) * 0.5f;
+                    float centerY = (a.y + b.y) * 0.5f;
+
+                    segment.Container.style.display = DisplayStyle.Flex;
+                    segment.Container.style.left = centerX - (thickness * 0.5f);
+                    segment.Container.style.top = centerY - (length * 0.5f);
+                    segment.Container.style.width = thickness;
+                    segment.Container.style.height = length;
+                    segment.Container.style.rotate = new Rotate(new Angle(angle, AngleUnit.Degree));
+
+                    segment.BaseX = centerX - (thickness * 0.5f);
+                    segment.BaseY = centerY - (length * 0.5f);
+                    segment.BaseThickness = thickness;
+                    segment.BaseLength = length;
+                    segment.BaseAngle = angle;
+                    segment.BaseAlpha = Random.Range(0.7f, 0.95f); // Brighter branches!
+                    segment.FlickerSpeed = Random.Range(14f, 22f);
+                    segment.FlickerOffset = Random.Range(0f, 6.28318f);
+
+                    // AAA QUALITY: Brighter branch glow and core!
+                    var glowColor = new Color(_lightningColor.r, _lightningColor.g, _lightningColor.b, 0.5f); // 0.25 → 0.5 (2x brighter!)
+                    var coreColor = Color.Lerp(_lightningColor, Color.white, 0.65f); // 0.35 → 0.65 (much whiter!)
+
+                    segment.Glow.style.left = -kLightningGlowPadding;
+                    segment.Glow.style.top = -kLightningGlowPadding;
+                    segment.Glow.style.width = thickness + (kLightningGlowPadding * 2f);
+                    segment.Glow.style.height = length + (kLightningGlowPadding * 2f);
+                    segment.Glow.style.backgroundColor = glowColor;
+
+                    segment.Core.style.left = 0;
+                    segment.Core.style.top = 0;
+                    segment.Core.style.width = thickness;
+                    segment.Core.style.height = length;
+                    segment.Core.style.backgroundColor = coreColor;
+                }
+
+                segmentsUsed += branchCount;
+            }
+
+            // Hide unused segments
+            for (int i = branchStartIndex + segmentsUsed; i < bolt.Segments.Count; i++)
+            {
+                bolt.Segments[i].Container.style.display = DisplayStyle.None;
+            }
+        }
 
         // =============================================================================
         // CLEANUP
@@ -864,7 +1099,7 @@ namespace VeilBreakers.UI.Effects
 
             foreach (var bolt in _lightningBolts)
             {
-                bolt.Element?.RemoveFromHierarchy();
+                bolt.Root?.RemoveFromHierarchy();
             }
             _lightningBolts.Clear();
 
@@ -907,7 +1142,7 @@ namespace VeilBreakers.UI.Effects
     /// <summary>
     /// Diagnostic method to inspect lightning bolt states and positions
     /// </summary>
-    public void DiagnoseLightning()
+        public void DiagnoseLightning()
     {
         Debug.Log("=== LIGHTNING DIAGNOSTIC START ===");
         Debug.Log($"Screen size: {_screenWidth} x {_screenHeight}");
@@ -936,12 +1171,12 @@ namespace VeilBreakers.UI.Effects
             var bolt = _lightningBolts[i];
             Debug.Log($"  Bolt #{i}:");
             Debug.Log($"    Active: {bolt.Active}");
-            Debug.Log($"    Display: {bolt.Element.style.display.value}");
-            Debug.Log($"    Position: ({bolt.Element.style.left.value}, {bolt.Element.style.top.value})");
-            Debug.Log($"    Size: {bolt.Element.style.width.value} x {bolt.Element.style.height.value}");
-            Debug.Log($"    Opacity: {bolt.Element.style.opacity.value}");
-            Debug.Log($"    Background Color: {bolt.Element.style.backgroundColor.value}");
-            Debug.Log($"    Parent: {(bolt.Element.parent != null ? bolt.Element.parent.name : "NULL")}");
+            Debug.Log($"    Display: {bolt.Root.style.display.value}");
+            Debug.Log($"    Position: ({bolt.Root.style.left.value}, {bolt.Root.style.top.value})");
+            Debug.Log($"    Size: {bolt.Root.style.width.value} x {bolt.Root.style.height.value}");
+            Debug.Log($"    Opacity: {bolt.Root.style.opacity.value}");
+            Debug.Log($"    Parent: {(bolt.Root.parent != null ? bolt.Root.parent.name : "NULL")}");
+            Debug.Log($"    Segments: {bolt.Segments?.Count ?? 0}");
         }
         Debug.Log("=== LIGHTNING DIAGNOSTIC END ===");
     }

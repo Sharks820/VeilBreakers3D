@@ -52,6 +52,17 @@ namespace VeilBreakers.UI.Menus
         private void Awake()
         {
             _uiDocument = GetComponent<UIDocument>();
+            Time.timeScale = 1f;
+
+            if (_uiDocument != null && _uiDocument.panelSettings == null)
+            {
+                var panelSettings = Resources.Load<PanelSettings>("UI/VeilBreakersPanelSettings");
+                if (panelSettings != null)
+                {
+                    _uiDocument.panelSettings = panelSettings;
+                }
+            }
+
         }
 
         private void Start()
