@@ -1,6 +1,26 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.62** | Last updated: 2026-01-26
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.74** | Last updated: 2026-01-26
+
+---
+
+## 🚨 CRITICAL ISSUE - HANDOFF TO CODEX
+
+**Lightning system broken after 12+ fix attempts. Game freezing as of v2.73.**
+
+**Handoff document:** `Docs/LIGHTNING_HANDOFF_TO_CODEX.md`
+
+**Issues:**
+1. Lightning bolts not rendering (`resolvedStyle.width=NaN`)
+2. Purple screen on bottom half of UI
+3. Game freezing (started in v2.73-2.74)
+
+**Last stable commit:** `2838ebb` (v2.62) - before lightning changes
+
+**Emergency revert if needed:**
+```bash
+git reset --hard 2838ebb
+```
 
 ---
 
