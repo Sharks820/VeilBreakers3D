@@ -375,7 +375,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 236ad01b21b84e04c86b81f822c1d76e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _uiDocument: {fileID: 0}
+  _uiDocument: {fileID: 1100000002}
   _emberCount: 15
   _dustCount: 25
   _emberSpeed: 30
