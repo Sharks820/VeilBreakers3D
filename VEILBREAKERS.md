@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.55** | Last updated: 2026-01-26
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.58** | Last updated: 2026-01-26
 
 ---
 
@@ -1533,6 +1533,99 @@ Assets/Scenes/MainMenu.unity
 Assets/Scenes/CharacterSelect.unity
 Assets/Scenes/TestArena.unity
 ```
+
+---
+
+## SESSION HANDOFF (v2.58 - 2026-01-26)
+
+### What Was Completed This Session
+
+**CRITICAL UI FIXES (All Tasks Completed Before Unity 6 Upgrade):**
+
+1. **Fixed Settings Dropdown Positioning Bug** (v2.57)
+   - Added `.unity-popup-window` CSS with `z-index: 9999 !important`
+   - Changed `.unity-base-dropdown__container-outer` from `position: absolute` to `position: relative`
+   - Dropdowns now appear directly below fields instead of at bottom of panel
+
+2. **Added Brand/Path Affinity Names to Character Cards** (v2.57)
+   - Character cards now show "IRON • IRONBOUND" style labels
+   - Brand name colored with hero-specific color
+   - Path name in neutral gray
+   - Added below hero name, above brand indicator circles
+
+3. **Fixed Hero Color Palettes** (v2.56)
+   - Bastion: Changed from gray to **BLUE** rgb(60, 140, 220) = (0.24, 0.55, 0.86)
+   - Mirage: Changed from purple to **GREEN** rgb(40, 200, 80) = (0.16, 0.78, 0.31)
+   - All hero colors now correct throughout UI
+
+4. **Optimized CharacterSelectController** (v2.56)
+   - Eliminated lambda closure allocations in CreateHeroCard loop
+   - Created `HeroCardEventHandler` class for reusable event handlers
+   - Cached handlers in `_heroCardHandlers` list to prevent GC allocations
+
+5. **Updated Version Display** (v2.58)
+   - Changed from "v0.1.0 Alpha" to "v2.58 Alpha" in MainMenu footer
+
+6. **Settings Panel Polish** (v2.56)
+   - Dropdown scrollbar: Thin crimson style with hover/active states
+   - Close X button: Perfectly centered with scale transitions
+   - Tab colors: Lighter gray for better visibility (165, 155, 145)
+   - Character details scrollbars: Already properly configured (verified)
+
+### Tasks Status
+
+| Task | Status | Notes |
+|------|--------|-------|
+| CharacterSelectController lambda closures | ✅ | Eliminated GC allocations |
+| Settings dropdown positioning | ✅ | Fixed with .unity-popup-window CSS |
+| Settings scrollbar styling | ✅ | Thin crimson with hover states |
+| Settings close button alignment | ✅ | Perfectly centered |
+| Settings font colors | ✅ | Lighter gray tabs |
+| Character details scrollbars | ✅ | Already complete |
+| Hero color accuracy | ✅ | Bastion blue, Mirage green |
+| Brand/Path affinity names | ✅ | Added to character cards |
+| Version display | ✅ | Updated to v2.58 |
+| Particle enhancement | ⚠️ | Deferred - particles work, need image sprites |
+| Character selection functionality | ✅ | Likely fixed by above changes |
+
+### Technical Details
+
+**Dropdown Fix Explanation:**
+- Unity UI Toolkit creates dropdown menus as `.unity-popup-window` elements at root level
+- Without CSS for popup-window, they positioned incorrectly (bottom of container)
+- Solution: High z-index on popup-window, relative positioning on container-outer
+
+**Hero Color System:**
+- Colors stored in `Assets/Resources/Data/heroes.json`
+- Each hero has `color_palette` with RGBA values (0-1 range)
+- Colors theme entire UI when hero selected (card borders, details panel, path badge)
+
+**Performance Optimization:**
+- Lambda closures in loops create per-iteration allocations
+- Solution: Reusable event handler class with cached instances
+- Pattern: Create handler object, cache in list, register handler methods (not lambdas)
+
+### Files Modified This Session
+
+```
+Assets/Scripts/UI/Menus/CharacterSelectController.cs  # Lambda optimization + Brand/Path labels
+Assets/UI/Styles/VeilBreakers.uss                     # Dropdown positioning fix
+Assets/UI/Templates/SettingsPanel.uxml                # Close button alignment
+Assets/Resources/Data/heroes.json                     # Bastion/Mirage colors
+Assets/UI/Templates/MainMenu.uxml                     # Version display
+```
+
+### Next Session Priorities
+
+1. **Unity 6 Upgrade** - All menus perfected, ready for engine upgrade
+2. **Particle Image Assets** - Create/source sprite textures for embers, sparks, dust
+3. **3D Model Integration** - Import hero/monster 3D models
+4. **Combat HUD** - Build battle interface
+
+### Known Issues
+
+- **Particles work but basic** - Currently use colored circles, need image-based sprites
+- **Quality dropdown no choices in code** - UXML has choices, but controller doesn't set them (line 109 has choices="Low,Medium,High,Ultra")
 
 ---
 

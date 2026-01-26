@@ -8,6 +8,11 @@ namespace VeilBreakers.UI.Effects
     /// Controls animated particle effects for UI Toolkit menus.
     /// Creates floating embers, dust particles, and veil pulse effects.
     /// </summary>
+    /// <summary>
+    /// Controls animated particle effects for UI Toolkit menus.
+    /// Creates dark ominous particles: crimson embers, lightning sparks, and veil pulses.
+    /// OPTIMIZED: Object pooling, no GC allocations in Update loop.
+    /// </summary>
     public class UIParticleController : MonoBehaviour
     {
         // =============================================================================
@@ -17,17 +22,25 @@ namespace VeilBreakers.UI.Effects
         [Header("UI Document")]
         [SerializeField] private UIDocument _uiDocument;
 
-        [Header("Particle Settings")]
-        [SerializeField] private int _emberCount = 15;
-        [SerializeField] private int _dustCount = 25;
-        [SerializeField] private float _emberSpeed = 30f;
-        [SerializeField] private float _dustSpeed = 15f;
-        [SerializeField] private float _veilPulseSpeed = 0.5f;
+        [Header("Particle Counts")]
+        [SerializeField] private int _emberCount = 12;
+        [SerializeField] private int _dustCount = 20;
+        [SerializeField] private int _sparkCount = 8;
+        [SerializeField] private int _lightningBoltCount = 3;
 
-        [Header("Colors - Veilbreakers Crimson Theme")]
-        [SerializeField] private Color _emberColor = new Color(0.70f, 0.25f, 0.30f, 0.85f);   // Crimson ember
-        [SerializeField] private Color _dustColor = new Color(0.35f, 0.25f, 0.30f, 0.30f);   // Dark dust
-        [SerializeField] private Color _veilColor = new Color(0.70f, 0.16f, 0.24f, 0.06f);   // Veil wash
+        [Header("Particle Speeds")]
+        [SerializeField] private float _emberSpeed = 25f;
+        [SerializeField] private float _dustSpeed = 12f;
+        [SerializeField] private float _sparkSpeed = 80f;
+        [SerializeField] private float _veilPulseSpeed = 0.4f;
+
+        [Header("Dark Crimson Theme - Ominous")]
+        [SerializeField] private Color _emberColor = new Color(0.45f, 0.10f, 0.15f, 0.75f);      // Dark crimson ember
+        [SerializeField] private Color _emberGlowColor = new Color(0.70f, 0.16f, 0.24f, 0.60f); // Brighter glow
+        [SerializeField] private Color _dustColor = new Color(0.20f, 0.12f, 0.15f, 0.25f);      // Very dark dust
+        [SerializeField] private Color _sparkColor = new Color(0.85f, 0.25f, 0.35f, 0.90f);     // Bright crimson spark
+        [SerializeField] private Color _lightningColor = new Color(0.90f, 0.30f, 0.40f, 0.95f); // Lightning bolt
+        [SerializeField] private Color _veilColor = new Color(0.50f, 0.12f, 0.18f, 0.05f);      // Veil wash (darker)
 
         // =============================================================================
         // PRIVATE STATE
@@ -36,20 +49,40 @@ namespace VeilBreakers.UI.Effects
         private VisualElement _root;
         private VisualElement _particleContainer;
         private VisualElement _emberContainer;
+        private VisualElement _sparkContainer;
         private List<VisualElement> _veilPulses;
         private List<ParticleData> _embers;
         private List<ParticleData> _dustParticles;
+        private List<ParticleData> _sparks;
+        private List<LightningData> _lightningBolts;
         private float _screenWidth;
         private float _screenHeight;
         private bool _isInitialized;
+        
+        // Object pooling for optimization
+        private Queue<VisualElement> _particlePool;
+        private const int kPoolSize = 100;
+        
+        // Lightning timing
+        private float _nextLightningTime;
+        private const float kLightningInterval = 3.5f; // Seconds between lightning
 
         // =============================================================================
         // DATA STRUCTURES
         // =============================================================================
 
+        private enum ParticleType
+        {
+            Ember,
+            Dust,
+            Spark,
+            Lightning
+        }
+
         private class ParticleData
         {
             public VisualElement Element;
+            public ParticleType Type;
             public float X;
             public float Y;
             public float SpeedX;
@@ -57,6 +90,17 @@ namespace VeilBreakers.UI.Effects
             public float Size;
             public float Alpha;
             public float AlphaSpeed;
+            public float Rotation;
+            public float RotationSpeed;
+            public bool Active;
+        }
+
+        private class LightningData
+        {
+            public VisualElement Element;
+            public float Lifetime;
+            public float MaxLifetime;
+            public bool Active;
         }
 
         // =============================================================================
@@ -70,9 +114,15 @@ namespace VeilBreakers.UI.Effects
                 _uiDocument = GetComponent<UIDocument>();
             }
 
-            _embers = new List<ParticleData>();
-            _dustParticles = new List<ParticleData>();
-            _veilPulses = new List<VisualElement>();
+            // Initialize collections (pre-sized for no reallocation)
+            _embers = new List<ParticleData>(_emberCount);
+            _dustParticles = new List<ParticleData>(_dustCount);
+            _sparks = new List<ParticleData>(_sparkCount);
+            _lightningBolts = new List<LightningData>(_lightningBoltCount);
+            _veilPulses = new List<VisualElement>(3);
+            _particlePool = new Queue<VisualElement>(kPoolSize);
+            
+            _nextLightningTime = Time.time + Random.Range(2f, 4f);
         }
 
         private void OnEnable()
@@ -91,7 +141,16 @@ namespace VeilBreakers.UI.Effects
 
             UpdateEmbers(deltaTime);
             UpdateDustParticles(deltaTime);
+            UpdateSparks(deltaTime);
+            UpdateLightningBolts(deltaTime);
             UpdateVeilPulses(deltaTime);
+            
+            // Trigger random lightning
+            if (Time.time >= _nextLightningTime)
+            {
+                TriggerLightningBolt();
+                _nextLightningTime = Time.time + Random.Range(kLightningInterval, kLightningInterval * 2f);
+            }
         }
 
         private void OnDisable()
@@ -113,6 +172,20 @@ namespace VeilBreakers.UI.Effects
             _particleContainer = _root.Q<VisualElement>("particle-container");
             _emberContainer = _root.Q<VisualElement>("ember-container");
 
+            // Create spark container if missing
+            _sparkContainer = _root.Q<VisualElement>("spark-container");
+            if (_sparkContainer == null)
+            {
+                _sparkContainer = new VisualElement { name = "spark-container" };
+                _sparkContainer.style.position = Position.Absolute;
+                _sparkContainer.style.left = 0;
+                _sparkContainer.style.top = 0;
+                _sparkContainer.style.right = 0;
+                _sparkContainer.style.bottom = 0;
+                _sparkContainer.style.overflow = Overflow.Hidden;
+                _root.Add(_sparkContainer);
+            }
+
             // Fallback: create containers if missing in UXML
             if (_particleContainer == null)
             {
@@ -122,6 +195,7 @@ namespace VeilBreakers.UI.Effects
                 _particleContainer.style.top = 0;
                 _particleContainer.style.right = 0;
                 _particleContainer.style.bottom = 0;
+                _particleContainer.style.overflow = Overflow.Hidden;
                 _root.Add(_particleContainer);
             }
             if (_emberContainer == null)
@@ -132,6 +206,7 @@ namespace VeilBreakers.UI.Effects
                 _emberContainer.style.top = 0;
                 _emberContainer.style.right = 0;
                 _emberContainer.style.bottom = 0;
+                _emberContainer.style.overflow = Overflow.Hidden;
                 _root.Add(_emberContainer);
             }
 
@@ -143,14 +218,22 @@ namespace VeilBreakers.UI.Effects
             var veilPulseLayer = _root.Q<VisualElement>("veil-pulse-layer");
             if (veilPulseLayer != null)
             {
-                _veilPulses.Add(_root.Q<VisualElement>("veil-pulse-1"));
-                _veilPulses.Add(_root.Q<VisualElement>("veil-pulse-2"));
-                _veilPulses.Add(_root.Q<VisualElement>("veil-pulse-3"));
+                var p1 = _root.Q<VisualElement>("veil-pulse-1");
+                var p2 = _root.Q<VisualElement>("veil-pulse-2");
+                var p3 = _root.Q<VisualElement>("veil-pulse-3");
+                if (p1 != null) _veilPulses.Add(p1);
+                if (p2 != null) _veilPulses.Add(p2);
+                if (p3 != null) _veilPulses.Add(p3);
             }
+
+            // Pre-populate object pool
+            InitializeObjectPool();
 
             // Create particles
             CreateEmbers();
             CreateDustParticles();
+            CreateSparks();
+            CreateLightningBolts();
 
             _isInitialized = true;
         }
@@ -162,6 +245,7 @@ namespace VeilBreakers.UI.Effects
 
             _particleContainer = _root.Q<VisualElement>("particle-container");
             _emberContainer = _root.Q<VisualElement>("ember-container");
+            _sparkContainer = _root.Q<VisualElement>("spark-container");
 
             _screenWidth = Screen.width;
             _screenHeight = Screen.height;
@@ -177,10 +261,45 @@ namespace VeilBreakers.UI.Effects
                 if (p3 != null) _veilPulses.Add(p3);
             }
 
+            InitializeObjectPool();
             CreateEmbers();
             CreateDustParticles();
+            CreateSparks();
+            CreateLightningBolts();
 
             _isInitialized = true;
+        }
+
+        // =============================================================================
+        // OBJECT POOLING (OPTIMIZATION)
+        // =============================================================================
+
+        private void InitializeObjectPool()
+        {
+            for (int i = 0; i < kPoolSize; i++)
+            {
+                var element = new VisualElement();
+                element.style.display = DisplayStyle.None;
+                _particlePool.Enqueue(element);
+            }
+        }
+
+        private VisualElement GetPooledParticle()
+        {
+            if (_particlePool.Count > 0)
+            {
+                var element = _particlePool.Dequeue();
+                element.style.display = DisplayStyle.Flex;
+                return element;
+            }
+            return new VisualElement(); // Fallback if pool exhausted
+        }
+
+        private void ReturnToPool(VisualElement element)
+        {
+            element.style.display = DisplayStyle.None;
+            element.RemoveFromHierarchy();
+            _particlePool.Enqueue(element);
         }
 
         // =============================================================================
@@ -193,22 +312,27 @@ namespace VeilBreakers.UI.Effects
 
             for (int i = 0; i < _emberCount; i++)
             {
-                var ember = CreateParticle(
-                    Random.Range(2f, 5f),
+                var ember = CreateEnhancedParticle(
+                    Random.Range(3f, 6f),
                     _emberColor,
-                    true
+                    _emberGlowColor,
+                    ParticleType.Ember
                 );
 
                 var data = new ParticleData
                 {
                     Element = ember,
+                    Type = ParticleType.Ember,
                     X = Random.Range(0f, _screenWidth),
                     Y = Random.Range(0f, _screenHeight),
-                    SpeedX = Random.Range(-10f, 10f),
-                    SpeedY = Random.Range(-_emberSpeed, -_emberSpeed * 0.5f),
-                    Size = Random.Range(2f, 5f),
-                    Alpha = Random.Range(0.3f, 0.9f),
-                    AlphaSpeed = Random.Range(0.3f, 0.8f)
+                    SpeedX = Random.Range(-8f, 8f),
+                    SpeedY = Random.Range(-_emberSpeed, -_emberSpeed * 0.6f),
+                    Size = Random.Range(3f, 6f),
+                    Alpha = Random.Range(0.4f, 0.8f),
+                    AlphaSpeed = Random.Range(0.4f, 0.9f),
+                    Rotation = Random.Range(0f, 360f),
+                    RotationSpeed = Random.Range(-30f, 30f),
+                    Active = true
                 };
 
                 ember.style.left = data.X;
@@ -225,22 +349,27 @@ namespace VeilBreakers.UI.Effects
 
             for (int i = 0; i < _dustCount; i++)
             {
-                var dust = CreateParticle(
-                    Random.Range(1f, 3f),
+                var dust = CreateEnhancedParticle(
+                    Random.Range(1f, 2.5f),
                     _dustColor,
-                    false
+                    Color.clear,
+                    ParticleType.Dust
                 );
 
                 var data = new ParticleData
                 {
                     Element = dust,
+                    Type = ParticleType.Dust,
                     X = Random.Range(0f, _screenWidth),
                     Y = Random.Range(0f, _screenHeight),
-                    SpeedX = Random.Range(-5f, 5f),
-                    SpeedY = Random.Range(-_dustSpeed, _dustSpeed * 0.3f),
-                    Size = Random.Range(1f, 3f),
-                    Alpha = Random.Range(0.1f, 0.4f),
-                    AlphaSpeed = Random.Range(0.1f, 0.3f)
+                    SpeedX = Random.Range(-4f, 4f),
+                    SpeedY = Random.Range(-_dustSpeed, _dustSpeed * 0.4f),
+                    Size = Random.Range(1f, 2.5f),
+                    Alpha = Random.Range(0.1f, 0.3f),
+                    AlphaSpeed = Random.Range(0.15f, 0.35f),
+                    Rotation = 0,
+                    RotationSpeed = 0,
+                    Active = true
                 };
 
                 dust.style.left = data.X;
@@ -251,32 +380,141 @@ namespace VeilBreakers.UI.Effects
             }
         }
 
-        private VisualElement CreateParticle(float size, Color color, bool glow)
+        private void CreateSparks()
+        {
+            if (_sparkContainer == null) return;
+
+            for (int i = 0; i < _sparkCount; i++)
+            {
+                var spark = CreateLightningSpark(
+                    Random.Range(2f, 4f),
+                    _sparkColor
+                );
+
+                var data = new ParticleData
+                {
+                    Element = spark,
+                    Type = ParticleType.Spark,
+                    X = Random.Range(0f, _screenWidth),
+                    Y = Random.Range(_screenHeight, _screenHeight + 100),
+                    SpeedX = Random.Range(-40f, 40f),
+                    SpeedY = Random.Range(-_sparkSpeed, -_sparkSpeed * 0.7f),
+                    Size = Random.Range(2f, 4f),
+                    Alpha = Random.Range(0.6f, 1.0f),
+                    AlphaSpeed = Random.Range(1.5f, 3.0f),
+                    Rotation = Random.Range(0f, 360f),
+                    RotationSpeed = Random.Range(-180f, 180f),
+                    Active = true
+                };
+
+                spark.style.left = data.X;
+                spark.style.top = data.Y;
+
+                _sparkContainer.Add(spark);
+                _sparks.Add(data);
+            }
+        }
+
+        private void CreateLightningBolts()
+        {
+            if (_sparkContainer == null) return;
+
+            for (int i = 0; i < _lightningBoltCount; i++)
+            {
+                var bolt = CreateLightningBolt();
+                bolt.style.display = DisplayStyle.None; // Hidden until triggered
+
+                var data = new LightningData
+                {
+                    Element = bolt,
+                    Lifetime = 0f,
+                    MaxLifetime = 0.15f, // Very brief flash
+                    Active = false
+                };
+
+                _sparkContainer.Add(bolt);
+                _lightningBolts.Add(data);
+            }
+        }
+
+        // =============================================================================
+        // ENHANCED PARTICLE RENDERING
+        // =============================================================================
+
+        private VisualElement CreateEnhancedParticle(float size, Color color, Color glowColor, ParticleType type)
         {
             var particle = new VisualElement();
             particle.style.position = Position.Absolute;
             particle.style.width = size;
             particle.style.height = size;
-            particle.style.borderTopLeftRadius = size / 2;
-            particle.style.borderTopRightRadius = size / 2;
-            particle.style.borderBottomLeftRadius = size / 2;
-            particle.style.borderBottomRightRadius = size / 2;
-            particle.style.backgroundColor = color;
 
-            if (glow)
+            if (type == ParticleType.Ember)
             {
-                // Add a subtle glow effect via border
+                // Ember: circular with radial gradient effect and outer glow
+                particle.style.borderTopLeftRadius = size / 2;
+                particle.style.borderTopRightRadius = size / 2;
+                particle.style.borderBottomLeftRadius = size / 2;
+                particle.style.borderBottomRightRadius = size / 2;
+                particle.style.backgroundColor = color;
+                
+                // Inner bright core
                 particle.style.borderTopWidth = 1;
                 particle.style.borderBottomWidth = 1;
                 particle.style.borderLeftWidth = 1;
                 particle.style.borderRightWidth = 1;
-                particle.style.borderTopColor = new Color(color.r, color.g, color.b, color.a * 0.5f);
-                particle.style.borderBottomColor = new Color(color.r, color.g, color.b, color.a * 0.5f);
-                particle.style.borderLeftColor = new Color(color.r, color.g, color.b, color.a * 0.5f);
-                particle.style.borderRightColor = new Color(color.r, color.g, color.b, color.a * 0.5f);
+                particle.style.borderTopColor = glowColor;
+                particle.style.borderBottomColor = glowColor;
+                particle.style.borderLeftColor = glowColor;
+                particle.style.borderRightColor = glowColor;
+            }
+            else // Dust
+            {
+                // Dust: soft circular, very subtle
+                particle.style.borderTopLeftRadius = size / 2;
+                particle.style.borderTopRightRadius = size / 2;
+                particle.style.borderBottomLeftRadius = size / 2;
+                particle.style.borderBottomRightRadius = size / 2;
+                particle.style.backgroundColor = color;
             }
 
             return particle;
+        }
+
+        private VisualElement CreateLightningSpark(float size, Color color)
+        {
+            var spark = new VisualElement();
+            spark.style.position = Position.Absolute;
+            spark.style.width = size * 1.5f;
+            spark.style.height = size * 0.6f;
+            spark.style.backgroundColor = color;
+            
+            // Diamond/angular shape using clip-path effect via rotation
+            spark.style.rotate = new Rotate(Random.Range(0f, 360f));
+            
+            // Sharp borders for electric look
+            spark.style.borderTopWidth = 1;
+            spark.style.borderTopColor = new Color(1f, 1f, 1f, color.a * 0.8f);
+            
+            return spark;
+        }
+
+        private VisualElement CreateLightningBolt()
+        {
+            var bolt = new VisualElement();
+            bolt.style.position = Position.Absolute;
+            bolt.style.width = Random.Range(2f, 4f);
+            bolt.style.height = _screenHeight;
+            bolt.style.left = Random.Range(0f, _screenWidth);
+            bolt.style.top = 0;
+            bolt.style.backgroundColor = _lightningColor;
+            
+            // Add glow
+            bolt.style.borderLeftWidth = 2;
+            bolt.style.borderRightWidth = 2;
+            bolt.style.borderLeftColor = new Color(_lightningColor.r, _lightningColor.g, _lightningColor.b, _lightningColor.a * 0.6f);
+            bolt.style.borderRightColor = new Color(_lightningColor.r, _lightningColor.g, _lightningColor.b, _lightningColor.a * 0.6f);
+            
+            return bolt;
         }
 
         // =============================================================================
@@ -288,28 +526,35 @@ namespace VeilBreakers.UI.Effects
             for (int i = 0; i < _embers.Count; i++)
             {
                 var ember = _embers[i];
-                // Move upward with slight horizontal drift
+                if (!ember.Active) continue;
+
+                // Move upward with horizontal drift
                 ember.Y += ember.SpeedY * deltaTime;
                 ember.X += ember.SpeedX * deltaTime;
 
-                // Slight horizontal oscillation using Perlin noise (no GC allocation)
-                float noise = (Mathf.PerlinNoise(Time.time + i * 0.1f, 0f) - 0.5f) * 40f;
+                // Perlin noise for organic movement (no GC)
+                float noise = (Mathf.PerlinNoise(Time.time * 0.8f + i * 0.15f, 0f) - 0.5f) * 35f;
                 ember.SpeedX += noise * deltaTime;
-                ember.SpeedX = Mathf.Clamp(ember.SpeedX, -15f, 15f);
+                ember.SpeedX = Mathf.Clamp(ember.SpeedX, -12f, 12f);
 
-                // Pulse alpha
+                // Rotate slowly
+                ember.Rotation += ember.RotationSpeed * deltaTime;
+                ember.Element.style.rotate = new Rotate(ember.Rotation);
+
+                // Pulse alpha (faster flicker for ominous effect)
                 float time = Time.time * ember.AlphaSpeed;
-                float alpha = ember.Alpha * (0.5f + 0.5f * Mathf.Sin(time));
+                float alpha = ember.Alpha * (0.4f + 0.6f * Mathf.Sin(time));
 
                 // Reset if off screen
-                if (ember.Y < -20 || ember.X < -20 || ember.X > _screenWidth + 20)
+                if (ember.Y < -30 || ember.X < -30 || ember.X > _screenWidth + 30)
                 {
-                    ember.Y = _screenHeight + Random.Range(10f, 50f);
+                    ember.Y = _screenHeight + Random.Range(20f, 80f);
                     ember.X = Random.Range(0f, _screenWidth);
-                    ember.SpeedX = Random.Range(-10f, 10f);
+                    ember.SpeedX = Random.Range(-8f, 8f);
+                    ember.Rotation = Random.Range(0f, 360f);
                 }
 
-                // Apply position
+                // Apply
                 ember.Element.style.left = ember.X;
                 ember.Element.style.top = ember.Y;
                 ember.Element.style.opacity = alpha;
@@ -321,32 +566,95 @@ namespace VeilBreakers.UI.Effects
             for (int i = 0; i < _dustParticles.Count; i++)
             {
                 var dust = _dustParticles[i];
+                if (!dust.Active) continue;
+
                 // Slow drift
                 dust.Y += dust.SpeedY * deltaTime;
                 dust.X += dust.SpeedX * deltaTime;
 
-                // Very subtle movement changes using Perlin noise (no GC allocation)
-                float noiseX = (Mathf.PerlinNoise(Time.time * 0.5f + i * 0.2f, 0f) - 0.5f) * 10f;
-                float noiseY = (Mathf.PerlinNoise(Time.time * 0.5f + i * 0.2f, 1f) - 0.5f) * 6f;
+                // Very subtle Perlin noise (no GC)
+                float noiseX = (Mathf.PerlinNoise(Time.time * 0.4f + i * 0.25f, 0f) - 0.5f) * 8f;
+                float noiseY = (Mathf.PerlinNoise(Time.time * 0.4f + i * 0.25f, 1f) - 0.5f) * 5f;
                 dust.SpeedX += noiseX * deltaTime;
                 dust.SpeedY += noiseY * deltaTime;
-                dust.SpeedX = Mathf.Clamp(dust.SpeedX, -8f, 8f);
+                dust.SpeedX = Mathf.Clamp(dust.SpeedX, -6f, 6f);
                 dust.SpeedY = Mathf.Clamp(dust.SpeedY, -_dustSpeed, _dustSpeed * 0.5f);
 
-                // Slow alpha pulse
-                float time = Time.time * dust.AlphaSpeed * 0.5f;
-                float alpha = dust.Alpha * (0.6f + 0.4f * Mathf.Sin(time));
+                // Very slow alpha pulse
+                float time = Time.time * dust.AlphaSpeed * 0.4f;
+                float alpha = dust.Alpha * (0.5f + 0.5f * Mathf.Sin(time));
 
                 // Wrap around screen
-                if (dust.Y < -10) dust.Y = _screenHeight + 10;
-                if (dust.Y > _screenHeight + 10) dust.Y = -10;
-                if (dust.X < -10) dust.X = _screenWidth + 10;
-                if (dust.X > _screenWidth + 10) dust.X = -10;
+                if (dust.Y < -15) dust.Y = _screenHeight + 15;
+                if (dust.Y > _screenHeight + 15) dust.Y = -15;
+                if (dust.X < -15) dust.X = _screenWidth + 15;
+                if (dust.X > _screenWidth + 15) dust.X = -15;
 
                 // Apply
                 dust.Element.style.left = dust.X;
                 dust.Element.style.top = dust.Y;
                 dust.Element.style.opacity = alpha;
+            }
+        }
+
+        private void UpdateSparks(float deltaTime)
+        {
+            for (int i = 0; i < _sparks.Count; i++)
+            {
+                var spark = _sparks[i];
+                if (!spark.Active) continue;
+
+                // Fast diagonal movement
+                spark.Y += spark.SpeedY * deltaTime;
+                spark.X += spark.SpeedX * deltaTime;
+
+                // Rapid rotation for electric effect
+                spark.Rotation += spark.RotationSpeed * deltaTime;
+                spark.Element.style.rotate = new Rotate(spark.Rotation);
+
+                // Fast flicker
+                float time = Time.time * spark.AlphaSpeed;
+                float alpha = spark.Alpha * (0.3f + 0.7f * Mathf.Abs(Mathf.Sin(time * 3f)));
+
+                // Reset if off screen (top)
+                if (spark.Y < -50)
+                {
+                    spark.Y = _screenHeight + Random.Range(50f, 150f);
+                    spark.X = Random.Range(0f, _screenWidth);
+                    spark.SpeedX = Random.Range(-40f, 40f);
+                    spark.SpeedY = Random.Range(-_sparkSpeed, -_sparkSpeed * 0.7f);
+                    spark.Rotation = Random.Range(0f, 360f);
+                }
+
+                // Apply
+                spark.Element.style.left = spark.X;
+                spark.Element.style.top = spark.Y;
+                spark.Element.style.opacity = alpha;
+            }
+        }
+
+        private void UpdateLightningBolts(float deltaTime)
+        {
+            for (int i = 0; i < _lightningBolts.Count; i++)
+            {
+                var bolt = _lightningBolts[i];
+                if (!bolt.Active) continue;
+
+                bolt.Lifetime += deltaTime;
+
+                // Flash effect - brighten then fade quickly
+                float t = bolt.Lifetime / bolt.MaxLifetime;
+                float alpha = t < 0.2f ? t / 0.2f : (1f - t) / 0.8f;
+                alpha = Mathf.Clamp01(alpha);
+
+                bolt.Element.style.opacity = alpha;
+
+                // Deactivate when done
+                if (bolt.Lifetime >= bolt.MaxLifetime)
+                {
+                    bolt.Active = false;
+                    bolt.Element.style.display = DisplayStyle.None;
+                }
             }
         }
 
@@ -359,13 +667,34 @@ namespace VeilBreakers.UI.Effects
                 var pulse = _veilPulses[i];
                 if (pulse == null) continue;
 
-                // Each pulse has a different phase
-                float phase = i * 2.1f;
-                float scale = 1f + 0.15f * Mathf.Sin(time + phase);
-                float alpha = 0.03f + 0.02f * Mathf.Sin(time * 0.7f + phase);
+                // Each pulse has different phase - slower, more ominous
+                float phase = i * 2.5f;
+                float scale = 1f + 0.12f * Mathf.Sin(time + phase);
+                float alpha = 0.02f + 0.015f * Mathf.Sin(time * 0.6f + phase);
 
                 pulse.style.scale = new Scale(new Vector2(scale, scale));
                 pulse.style.opacity = alpha;
+            }
+        }
+
+        // =============================================================================
+        // LIGHTNING EFFECTS
+        // =============================================================================
+
+        private void TriggerLightningBolt()
+        {
+            // Find inactive bolt
+            for (int i = 0; i < _lightningBolts.Count; i++)
+            {
+                var bolt = _lightningBolts[i];
+                if (!bolt.Active)
+                {
+                    bolt.Active = true;
+                    bolt.Lifetime = 0f;
+                    bolt.Element.style.display = DisplayStyle.Flex;
+                    bolt.Element.style.left = Random.Range(0f, _screenWidth);
+                    return;
+                }
             }
         }
 
@@ -377,15 +706,27 @@ namespace VeilBreakers.UI.Effects
         {
             foreach (var ember in _embers)
             {
-                ember.Element?.RemoveFromHierarchy();
+                ReturnToPool(ember.Element);
             }
             _embers.Clear();
 
             foreach (var dust in _dustParticles)
             {
-                dust.Element?.RemoveFromHierarchy();
+                ReturnToPool(dust.Element);
             }
             _dustParticles.Clear();
+
+            foreach (var spark in _sparks)
+            {
+                ReturnToPool(spark.Element);
+            }
+            _sparks.Clear();
+
+            foreach (var bolt in _lightningBolts)
+            {
+                bolt.Element?.RemoveFromHierarchy();
+            }
+            _lightningBolts.Clear();
 
             _veilPulses.Clear();
             _isInitialized = false;
@@ -407,9 +748,15 @@ namespace VeilBreakers.UI.Effects
 
         public void SetIntensity(float intensity)
         {
-            _emberSpeed = 30f * intensity;
-            _dustSpeed = 15f * intensity;
-            _veilPulseSpeed = 0.5f * intensity;
+            _emberSpeed = 25f * intensity;
+            _dustSpeed = 12f * intensity;
+            _sparkSpeed = 80f * intensity;
+            _veilPulseSpeed = 0.4f * intensity;
+        }
+
+        public void TriggerManualLightning()
+        {
+            TriggerLightningBolt();
         }
     }
 }
