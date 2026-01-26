@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 19101, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: VeilBreakersPanelSettings
   m_EditorClassIdentifier: 
-  themeUss: {fileID: 0}
+  themeUss: {fileID: 7433441132597879392, guid: 0c75776285827f74db8942ace412c502,
+    type: 3}
   m_TargetTexture: {fileID: 0}
   m_ScaleMode: 1
   m_ReferenceSpritePixelsPerUnit: 100
