@@ -214,7 +214,7 @@ namespace VeilBreakers.UI.Effects
             _sparkContainer.style.overflow = Overflow.Visible; // CRITICAL - allow content to show
             _sparkContainer.pickingMode = PickingMode.Ignore; // Don't block clicks
             _sparkContainer.style.display = DisplayStyle.Flex; // Explicitly visible
-            _sparkContainer.style.backgroundColor = new Color(0, 0, 0, 0); // FULLY TRANSPARENT
+            _sparkContainer.style.backgroundColor = new StyleColor(StyleKeyword.Null); // Truly unset, not just transparent
             // Add AFTER all other UI initialization
             // We'll add it at the very end after creating particles
             Debug.Log("[VB:Lightning] Created new spark-container (will add last)");
@@ -279,7 +279,7 @@ namespace VeilBreakers.UI.Effects
         _sparkContainer.style.overflow = Overflow.Visible;
         _sparkContainer.pickingMode = PickingMode.Ignore;
         _sparkContainer.style.display = DisplayStyle.Flex;
-        _sparkContainer.style.backgroundColor = new Color(0, 0, 0, 0); // FULLY TRANSPARENT!
+        _sparkContainer.style.backgroundColor = new StyleColor(StyleKeyword.Null); // Truly unset!
         Debug.Log("[VB:Lightning] Created new spark-container in Initialize(root)");
 
         _screenWidth = Screen.width;
@@ -613,27 +613,21 @@ namespace VeilBreakers.UI.Effects
 
         private VisualElement CreateLightningBolt()
     {
-        // Container for multi-layer lightning bolt - TEST WITH BRIGHT CYAN FOR VISIBILITY
-        var container = new VisualElement();
-        container.style.position = Position.Absolute;
-        container.style.width = 40; // EXTREMELY wide - impossible to miss
-        container.style.height = _screenHeight;
-        container.style.left = Random.Range(0f, _screenWidth);
-        container.style.top = 0;
-        
-        // BRIGHT CYAN BOLT - will be visible against ANY background (dark OR light)
+        // SIMPLIFIED: Single element IS the bolt (no nesting)
         var bolt = new VisualElement();
+        bolt.name = "lightning-bolt";
         bolt.style.position = Position.Absolute;
         bolt.style.width = 40;
-        bolt.style.height = _screenHeight;
-        bolt.style.left = 0;
+        bolt.style.height = Length.Percent(100);  // Use percentage for reliable sizing
         bolt.style.top = 0;
-        bolt.style.backgroundColor = new Color(0f, 1f, 1f, 1f); // BRIGHT CYAN, FULL OPACITY
-        container.Add(bolt);
+        bolt.style.left = 0;  // Will be set when triggered
+        bolt.style.backgroundColor = new Color(0f, 1f, 1f, 1f);  // BRIGHT CYAN
+        bolt.style.visibility = Visibility.Visible;
+        bolt.pickingMode = PickingMode.Ignore;
         
-        Debug.Log($"[VB:Lightning] Created BRIGHT CYAN VISIBILITY TEST bolt - width: 40px, height: {_screenHeight}, color: CYAN (0,1,1,1)");
+        Debug.Log($"[VB:Lightning] Created simplified bolt - width: 40px, height: 100%");
         
-        return container;
+        return bolt;
     }
 
         // =============================================================================
@@ -811,26 +805,42 @@ namespace VeilBreakers.UI.Effects
         // =============================================================================
 
         private void TriggerLightningBolt()
+    {
+        // Defensive: ensure container exists and is in hierarchy
+        if (_sparkContainer == null || _sparkContainer.parent == null)
         {
-            // Find inactive bolt
-            for (int i = 0; i < _lightningBolts.Count; i++)
-            {
-                var bolt = _lightningBolts[i];
-                if (!bolt.Active)
-                {
-                    float xPos = Random.Range(0f, _screenWidth);
-                    bolt.Active = true;
-                    bolt.Lifetime = 0f;
-                    bolt.Element.style.display = DisplayStyle.Flex;
-                    bolt.Element.style.left = xPos;
-                    bolt.Element.style.opacity = 1f; // Force full opacity initially
-                    
-                    Debug.Log($"[VB:Lightning] Triggered bolt #{i} at X={xPos}, screenWidth={_screenWidth}, screenHeight={_screenHeight}");
-                    return;
-                }
-            }
-            Debug.LogWarning("[VB:Lightning] All lightning bolts active, cannot trigger new one");
+            Debug.LogWarning("[VB:Lightning] Spark container not properly initialized!");
+            return;
         }
+
+        // Find inactive bolt
+        for (int i = 0; i < _lightningBolts.Count; i++)
+        {
+            var bolt = _lightningBolts[i];
+            if (!bolt.Active)
+            {
+                float xPos = Random.Range(50f, _screenWidth - 50f);  // Keep away from edges
+                bolt.Active = true;
+                bolt.Lifetime = 0f;
+                
+                // Force all visibility-related styles
+                bolt.Element.style.display = DisplayStyle.Flex;
+                bolt.Element.style.visibility = Visibility.Visible;
+                bolt.Element.style.left = xPos;
+                bolt.Element.style.opacity = 1f;
+                
+                // Force layout recalculation
+                bolt.Element.MarkDirtyRepaint();
+                
+                Debug.Log($"[VB:Lightning] Triggered bolt #{i} at X={xPos}, " +
+                          $"display={bolt.Element.style.display.value}, " +
+                          $"visibility={bolt.Element.style.visibility.value}, " +
+                          $"resolvedStyle.width={bolt.Element.resolvedStyle.width}");
+                return;
+            }
+        }
+        Debug.LogWarning("[VB:Lightning] All lightning bolts active, cannot trigger new one");
+    }
 
         // =============================================================================
         // CLEANUP
