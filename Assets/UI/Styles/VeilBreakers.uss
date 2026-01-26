@@ -1866,17 +1866,16 @@
 }
 
 .settings-scroll {
-    overflow: visible !important; /* Allow dropdowns to escape */
-    position: relative;
-    z-index: 1;
+    overflow: visible;
 }
 
 .settings-scroll .unity-scroll-view__content-container {
-    overflow: visible !important; /* Critical: Allow dropdown popups to render outside ScrollView */
+    overflow: visible;
 }
 
 .settings-scroll .unity-scroll-view__content-viewport {
-    overflow: visible !important; /* Allow dropdown popups to escape viewport */
+    overflow: visible;
+    -unity-overflow-clip-box: content-box;
 }
 
 /* AAA Slider Style */
