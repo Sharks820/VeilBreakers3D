@@ -112,7 +112,7 @@
                         <ui:Label text="SIGNATURE MONSTER" style="font-size: 10px; letter-spacing: 2px; color: rgb(60, 180, 160); -unity-font-style: bold;" />
                     </ui:VisualElement>
 
-                    <ui:VisualElement name="signature-monster-card" style="flex-direction: row; padding: 12px; background-color: rgba(25, 20, 35, 0.8); border-width: 1px; border-color: rgba(60, 180, 160, 0.3); border-radius: 8px; margin-bottom: 12px; flex-shrink: 0;">
+                    <ui:VisualElement name="signature-monster-card" style="flex-direction: row; padding: 12px; background-color: rgba(30, 20, 25, 0.8); border-width: 1px; border-color: rgba(60, 180, 160, 0.3); border-radius: 8px; margin-bottom: 12px; flex-shrink: 0;">
                         <!-- Monster Portrait -->
                         <ui:VisualElement name="monster-portrait" style="width: 60px; height: 60px; background-color: rgba(40, 35, 55, 0.8); border-radius: 6px; margin-right: 12px; align-items: center; justify-content: center; flex-shrink: 0;">
                             <ui:Label text="M" style="font-size: 24px; color: rgba(180, 40, 60, 0.5);" />

@@ -11,13 +11,13 @@
         <ui:VisualElement name="background" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgb(8, 6, 12);" />
 
         <!-- Veil ambient effect -->
-        <ui:VisualElement name="veil-effect" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(120, 60, 160, 0.03);" />
+        <ui:VisualElement name="veil-effect" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(180, 40, 60, 0.03);" />
 
         <!-- ====================================================================
              HEADER
              ==================================================================== -->
 
-        <ui:VisualElement name="header" style="position: absolute; left: 0; top: 0; right: 0; height: 70px; flex-direction: row; justify-content: space-between; align-items: center; padding: 0 30px; background-color: rgba(0, 0, 0, 0.6); border-bottom-width: 1px; border-bottom-color: rgba(60, 50, 75, 0.5);">
+        <ui:VisualElement name="header" style="position: absolute; left: 0; top: 0; right: 0; height: 70px; flex-direction: row; justify-content: space-between; align-items: center; padding: 0 30px; background-color: rgba(0, 0, 0, 0.6); border-bottom-width: 1px; border-bottom-color: rgba(80, 45, 55, 0.5);">
 
             <!-- Back button -->
             <ui:Button text="BACK" name="btn-back" class="vb-button" style="width: 100px;" />
@@ -71,7 +71,7 @@
                 </ui:VisualElement>
 
                 <!-- Item Grid Container -->
-                <ui:VisualElement name="grid-container" style="flex-grow: 1; background-color: rgba(15, 12, 22, 0.6); border-radius: 8px; border-width: 1px; border-color: rgba(60, 50, 75, 0.3); padding: 12px;">
+                <ui:VisualElement name="grid-container" style="flex-grow: 1; background-color: rgba(15, 12, 22, 0.6); border-radius: 8px; border-width: 1px; border-color: rgba(80, 45, 55, 0.3); padding: 12px;">
 
                     <ui:ScrollView name="item-scroll" class="vb-scrollview" style="flex-grow: 1;">
 
@@ -94,7 +94,7 @@
                  RIGHT PANEL - Item Details
                  ================================================================ -->
 
-            <ui:VisualElement name="details-panel" style="width: 320px; background-color: rgba(15, 12, 22, 0.8); border-radius: 8px; border-width: 1px; border-color: rgba(60, 50, 75, 0.3); padding: 20px;">
+            <ui:VisualElement name="details-panel" style="width: 320px; background-color: rgba(15, 12, 22, 0.8); border-radius: 8px; border-width: 1px; border-color: rgba(80, 45, 55, 0.3); padding: 20px;">
 
                 <!-- Item Icon & Name -->
                 <ui:VisualElement name="item-header" class="vb-column" style="align-items: center; margin-bottom: 20px;">

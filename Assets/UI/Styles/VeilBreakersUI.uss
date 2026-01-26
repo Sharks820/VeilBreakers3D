@@ -372,7 +372,7 @@
 .btn-tertiary {
     min-height: 44px;
     padding: 10px 24px;
-    background-color: rgba(45, 36, 62, 0.8);
+    background-color: rgba(55, 32, 42, 0.8);
     border-width: 1px;
     border-color: var(--border-default);
     border-radius: 4px;
@@ -383,7 +383,7 @@
 }
 
 .btn-tertiary:hover {
-    background-color: rgba(55, 45, 75, 0.9);
+    background-color: rgba(65, 40, 50, 0.9);
     border-color: var(--border-strong);
     color: var(--text-primary);
     translate: -2px 0;
@@ -394,7 +394,7 @@
     width: 44px;
     height: 44px;
     padding: 0;
-    background-color: rgba(45, 36, 62, 0.6);
+    background-color: rgba(55, 32, 42, 0.6);
     border-width: 1px;
     border-color: var(--border-default);
     border-radius: 50%;
@@ -426,7 +426,7 @@
 .panel-glass-dark {
     background-color: rgba(8, 6, 12, 0.95);
     border-width: 2px;
-    border-color: rgba(75, 60, 100, 0.5);
+    border-color: rgba(100, 50, 65, 0.5);
     border-radius: 12px;
     padding: 24px;
 }
@@ -683,7 +683,7 @@
     background-color: rgba(40, 32, 50, 0.8);
     border-radius: 7px;
     border-width: 1px;
-    border-color: rgba(80, 60, 100, 0.3);
+    border-color: rgba(100, 50, 65, 0.3);
     cursor: link;
 }
 
@@ -889,7 +889,7 @@
     flex-direction: row;
     align-items: center;
     padding: 6px 12px;
-    background-color: rgba(45, 36, 62, 0.8);
+    background-color: rgba(55, 32, 42, 0.8);
     border-radius: 16px;
     margin-right: 8px;
 }
@@ -934,7 +934,7 @@
 
 .corruption-display {
     padding: 10px 16px;
-    background-color: rgba(140, 60, 180, 0.15);
+    background-color: rgba(160, 50, 80, 0.15);
     border-width: 1px;
     border-color: var(--corruption-corrupted);
     border-radius: 8px;

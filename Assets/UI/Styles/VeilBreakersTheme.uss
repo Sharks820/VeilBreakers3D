@@ -109,12 +109,12 @@
        ========================================================================= */
 
     /* Backgrounds - Layered depth system */
-    --surface-0: rgb(8, 6, 12);        /* Deepest background */
-    --surface-1: rgb(15, 12, 22);      /* Main background */
-    --surface-2: rgb(25, 20, 35);      /* Elevated panels */
-    --surface-3: rgb(38, 30, 50);      /* Cards, containers */
-    --surface-4: rgb(50, 40, 65);      /* Hover states */
-    --surface-5: rgb(65, 52, 82);      /* Active states */
+    --surface-0: rgb(10, 6, 8);        /* Deepest background */
+    --surface-1: rgb(18, 12, 15);      /* Main background */
+    --surface-2: rgb(28, 18, 22);      /* Elevated panels */
+    --surface-3: rgb(42, 28, 35);      /* Cards, containers */
+    --surface-4: rgb(55, 35, 45);      /* Hover states */
+    --surface-5: rgb(70, 45, 55);      /* Active states */
 
     /* Transparency variants for overlays */
     --surface-overlay-light: rgba(255, 255, 255, 0.05);

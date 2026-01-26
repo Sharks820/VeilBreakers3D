@@ -11,7 +11,7 @@
         <ui:VisualElement name="background" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgb(8, 6, 12);" />
 
         <!-- Veil ambient effect -->
-        <ui:VisualElement name="veil-effect" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(120, 60, 160, 0.03);" />
+        <ui:VisualElement name="veil-effect" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(180, 40, 60, 0.03);" />
 
         <!-- ====================================================================
              HEADER
