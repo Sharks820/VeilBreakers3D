@@ -617,15 +617,15 @@ namespace VeilBreakers.UI.Effects
         var bolt = new VisualElement();
         bolt.name = "lightning-bolt";
         bolt.style.position = Position.Absolute;
-        bolt.style.width = 40;
-        bolt.style.height = Length.Percent(100);  // Use percentage for reliable sizing
+        bolt.style.width = new StyleLength(new Length(40, LengthUnit.Pixel));  // EXPLICIT pixel unit
+        bolt.style.height = new StyleLength(new Length(100, LengthUnit.Percent));  // EXPLICIT percent unit
         bolt.style.top = 0;
         bolt.style.left = 0;  // Will be set when triggered
         bolt.style.backgroundColor = new Color(0f, 1f, 1f, 1f);  // BRIGHT CYAN
         bolt.style.visibility = Visibility.Visible;
         bolt.pickingMode = PickingMode.Ignore;
         
-        Debug.Log($"[VB:Lightning] Created simplified bolt - width: 40px, height: 100%");
+        Debug.Log($"[VB:Lightning] Created bolt with EXPLICIT units - width: 40px, height: 100%");
         
         return bolt;
     }
@@ -819,7 +819,7 @@ namespace VeilBreakers.UI.Effects
             var bolt = _lightningBolts[i];
             if (!bolt.Active)
             {
-                float xPos = Random.Range(50f, _screenWidth - 50f);  // Keep away from edges
+                float xPos = Random.Range(50f, _screenWidth - 50f);
                 bolt.Active = true;
                 bolt.Lifetime = 0f;
                 
@@ -832,10 +832,44 @@ namespace VeilBreakers.UI.Effects
                 // Force layout recalculation
                 bolt.Element.MarkDirtyRepaint();
                 
-                Debug.Log($"[VB:Lightning] Triggered bolt #{i} at X={xPos}, " +
-                          $"display={bolt.Element.style.display.value}, " +
-                          $"visibility={bolt.Element.style.visibility.value}, " +
-                          $"resolvedStyle.width={bolt.Element.resolvedStyle.width}");
+                // COMPREHENSIVE DIAGNOSTICS - This will tell us EXACTLY what's wrong (or right)
+                var resolvedWidth = bolt.Element.resolvedStyle.width;
+                var resolvedHeight = bolt.Element.resolvedStyle.height;
+                var resolvedBg = bolt.Element.resolvedStyle.backgroundColor;
+                var containerBg = _sparkContainer.resolvedStyle.backgroundColor;
+                
+                Debug.Log($"[VB:Lightning] ═══════════════════════════════════════");
+                Debug.Log($"[VB:Lightning] BOLT #{i} DIAGNOSTIC:");
+                Debug.Log($"[VB:Lightning]   Position: X={xPos}");
+                Debug.Log($"[VB:Lightning]   Width: {resolvedWidth} {(float.IsNaN(resolvedWidth) ? "❌ NaN!" : "✓")}");
+                Debug.Log($"[VB:Lightning]   Height: {resolvedHeight} {(resolvedHeight == 0 ? "❌ ZERO!" : "✓")}");
+                Debug.Log($"[VB:Lightning]   BG Color: {resolvedBg}");
+                Debug.Log($"[VB:Lightning]   Display: {bolt.Element.style.display.value}");
+                Debug.Log($"[VB:Lightning]   Visibility: {bolt.Element.style.visibility.value}");
+                Debug.Log($"[VB:Lightning] CONTAINER DIAGNOSTIC:");
+                Debug.Log($"[VB:Lightning]   Container BG: {containerBg} {(containerBg.a > 0 ? "⚠️ NOT TRANSPARENT!" : "✓")}");
+                Debug.Log($"[VB:Lightning]   Container Width: {_sparkContainer.resolvedStyle.width}");
+                Debug.Log($"[VB:Lightning]   Container Height: {_sparkContainer.resolvedStyle.height}");
+                Debug.Log($"[VB:Lightning] ═══════════════════════════════════════");
+                
+                // VERDICT
+                if (float.IsNaN(resolvedWidth))
+                {
+                    Debug.LogError("[VB:Lightning] ❌ STILL BROKEN: Width is NaN!");
+                }
+                else if (resolvedHeight == 0)
+                {
+                    Debug.LogError("[VB:Lightning] ❌ STILL BROKEN: Height is 0!");
+                }
+                else if (containerBg.a > 0)
+                {
+                    Debug.LogWarning("[VB:Lightning] ⚠️ PURPLE SCREEN: Container background not transparent!");
+                }
+                else
+                {
+                    Debug.Log("[VB:Lightning] ✅ ALL CHECKS PASSED - Lightning SHOULD be visible!");
+                }
+                
                 return;
             }
         }
