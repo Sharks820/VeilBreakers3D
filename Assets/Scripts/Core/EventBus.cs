@@ -289,8 +289,10 @@ namespace VeilBreakers.Core
         /// <summary>
         /// Clear all event subscribers (call during scene transitions or cleanup)
         /// </summary>
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
         public static void ClearAllListeners()
         {
+            Debug.LogWarning("[EventBus] Clearing all listeners - editor only!");
             OnGameStarted = null;
             OnGamePaused = null;
             OnGameResumed = null;

@@ -285,14 +285,16 @@ namespace VeilBreakers.UI.Effects
 
         private void UpdateEmbers(float deltaTime)
         {
-            foreach (var ember in _embers)
+            for (int i = 0; i < _embers.Count; i++)
             {
+                var ember = _embers[i];
                 // Move upward with slight horizontal drift
                 ember.Y += ember.SpeedY * deltaTime;
                 ember.X += ember.SpeedX * deltaTime;
 
-                // Slight horizontal oscillation
-                ember.SpeedX += Random.Range(-20f, 20f) * deltaTime;
+                // Slight horizontal oscillation using Perlin noise (no GC allocation)
+                float noise = (Mathf.PerlinNoise(Time.time + i * 0.1f, 0f) - 0.5f) * 40f;
+                ember.SpeedX += noise * deltaTime;
                 ember.SpeedX = Mathf.Clamp(ember.SpeedX, -15f, 15f);
 
                 // Pulse alpha
@@ -316,15 +318,18 @@ namespace VeilBreakers.UI.Effects
 
         private void UpdateDustParticles(float deltaTime)
         {
-            foreach (var dust in _dustParticles)
+            for (int i = 0; i < _dustParticles.Count; i++)
             {
+                var dust = _dustParticles[i];
                 // Slow drift
                 dust.Y += dust.SpeedY * deltaTime;
                 dust.X += dust.SpeedX * deltaTime;
 
-                // Very subtle movement changes
-                dust.SpeedX += Random.Range(-5f, 5f) * deltaTime;
-                dust.SpeedY += Random.Range(-3f, 3f) * deltaTime;
+                // Very subtle movement changes using Perlin noise (no GC allocation)
+                float noiseX = (Mathf.PerlinNoise(Time.time * 0.5f + i * 0.2f, 0f) - 0.5f) * 10f;
+                float noiseY = (Mathf.PerlinNoise(Time.time * 0.5f + i * 0.2f, 1f) - 0.5f) * 6f;
+                dust.SpeedX += noiseX * deltaTime;
+                dust.SpeedY += noiseY * deltaTime;
                 dust.SpeedX = Mathf.Clamp(dust.SpeedX, -8f, 8f);
                 dust.SpeedY = Mathf.Clamp(dust.SpeedY, -_dustSpeed, _dustSpeed * 0.5f);
 

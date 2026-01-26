@@ -1,6 +1,6 @@
 # VEILBREAKERS 3D - Comprehensive Bug & Optimization Report
 **Date:** 2026-01-26
-**Version:** v2.53
+**Version:** v2.54
 **Analyzed:** 87+ C# files across all systems
 
 ---
@@ -58,7 +58,7 @@ if (!await _saveMutex.WaitAsync(5000)) // 5 second timeout
 
 ## 🟠 HIGH SEVERITY ISSUES (7 Found)
 
-### 3. **UIParticleController.cs:295,318** - Per-Frame Random Allocation
+### 3. **UIParticleController.cs:295,318** - Per-Frame Random Allocation ✅ FIXED v2.54
 **Severity:** HIGH - Performance/GC pressure
 **File:** `Assets/Scripts/UI/Effects/UIParticleController.cs`
 
@@ -74,11 +74,11 @@ for (int i = 0; i < _embers.Count; i++)
 ```
 
 **Impact:** Reduces GC pressure, smoother frame times
-**Status:** 📋 TODO - Medium Priority
+**Status:** ✅ FIXED v2.54
 
 ---
 
-### 4. **GameManager.cs:23-30** - Lazy Singleton Creates Objects in Getter
+### 4. **GameManager.cs:23-30** - Lazy Singleton Creates Objects in Getter ✅ FIXED v2.54
 **Severity:** HIGH - Editor crashes, phantom objects
 **File:** `Assets/Scripts/Core/GameManager.cs`
 
@@ -103,11 +103,11 @@ public static GameManager Instance
 private void OnApplicationQuit() => _isQuitting = true;
 ```
 
-**Status:** ⚠️ SHOULD FIX SOON
+**Status:** ✅ FIXED v2.54
 
 ---
 
-### 5. **BattleManager.cs:447-449** - Array Allocation During Combat
+### 5. **BattleManager.cs:447-449** - Array Allocation During Combat ✅ FIXED v2.54
 **Severity:** HIGH - GC spikes in combat
 **File:** `Assets/Scripts/Combat/BattleManager.cs`
 
@@ -125,11 +125,11 @@ System.Array.Copy(_brandBuffer, partyBrands, brandCount);
 _currentSynergyTier = SynergySystem.GetSynergyTier(_championPath, _brandBuffer, brandCount);
 ```
 
-**Status:** 📋 TODO - Should fix before optimization pass
+**Status:** ✅ FIXED v2.54
 
 ---
 
-### 6. **EventBus.cs:292-366** - ClearAllListeners Dangerous Pattern
+### 6. **EventBus.cs:292-366** - ClearAllListeners Dangerous Pattern ✅ FIXED v2.54
 **Severity:** HIGH - System-wide event clearing
 **File:** `Assets/Scripts/Core/EventBus.cs`
 
@@ -145,7 +145,7 @@ public static void ClearAllListeners()
 }
 ```
 
-**Status:** ⚠️ ADD SAFETY GUARD
+**Status:** ✅ FIXED v2.54
 
 ---
 
@@ -349,12 +349,14 @@ The codebase demonstrates excellent Unity patterns in many areas:
 3. ✅ Fix SaveFileHandler path replacement (use Path.ChangeExtension) - DONE v2.53
 4. ✅ Add timeout to SaveManager mutex - DONE v2.53
 
-### Phase 2: High Priority Performance (This Week)
-1. Fix UIParticleController Random.Range allocations
-2. Standardize singleton pattern (use SingletonMonoBehaviour)
-3. Remove array allocation in BattleManager synergy calculation
-4. Fix lambda closures in CharacterSelectController
-5. Replace LINQ RemoveAll with manual loops in Combatant
+### Phase 2: High Priority Performance (This Week) - IN PROGRESS
+1. ✅ Fix UIParticleController Random.Range allocations - DONE v2.54
+2. ✅ Standardize singleton pattern (GameManager quit flag) - DONE v2.54
+3. ✅ Remove array allocation in BattleManager synergy calculation - DONE v2.54
+4. ✅ Add safety guard to EventBus.ClearAllListeners - DONE v2.54
+5. 📋 Fix lambda closures in CharacterSelectController
+6. 📋 Replace LINQ RemoveAll with manual loops in Combatant
+7. 📋 Replace LINQ ToList in MainMenuController
 
 ### Phase 3: Medium Priority Optimizations (This Sprint)
 1. Disable CaptureManager Update when inactive

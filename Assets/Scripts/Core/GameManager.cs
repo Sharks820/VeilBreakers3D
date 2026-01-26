@@ -16,15 +16,15 @@ namespace VeilBreakers.Core
         // =============================================================================
 
         private static GameManager _instance;
+        private static bool _isQuitting = false;
+        
         public static GameManager Instance
         {
             get
             {
-                if (_instance == null)
+                if (_instance == null && !_isQuitting)
                 {
-                    var go = new GameObject("GameManager");
-                    _instance = go.AddComponent<GameManager>();
-                    DontDestroyOnLoad(go);
+                    Debug.LogError("[GameManager] Instance accessed but not found! Ensure GameManager exists in scene.");
                 }
                 return _instance;
             }
@@ -125,6 +125,11 @@ namespace VeilBreakers.Core
             DontDestroyOnLoad(gameObject);
 
             Debug.Log("[GameManager] Initialized");
+        }
+
+        private void OnApplicationQuit()
+        {
+            _isQuitting = true;
         }
 
         // =============================================================================

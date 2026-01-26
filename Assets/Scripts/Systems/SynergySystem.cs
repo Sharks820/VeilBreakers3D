@@ -46,6 +46,48 @@ namespace VeilBreakers.Systems
         /// <summary>
         /// Calculate synergy tier for a party composition
         /// </summary>
+        /// <summary>
+        /// Get synergy tier with explicit count (avoids allocation)
+        /// </summary>
+        public static SynergyTier GetSynergyTier(Path championPath, Brand[] partyBrands, int count)
+        {
+            if (championPath == Path.NONE || partyBrands == null || count == 0)
+                return SynergyTier.NONE;
+
+            // UNCHAINED path is always neutral (flex path)
+            if (championPath == Path.UNCHAINED)
+                return SynergyTier.NEUTRAL;
+
+            // Check for weak brands (anti-synergy)
+            if (PathWeakBrands.TryGetValue(championPath, out var weakBrands))
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    if (weakBrands.Contains(partyBrands[i]))
+                        return SynergyTier.ANTI;
+                }
+            }
+
+            // Count strong synergy matches
+            int matchCount = 0;
+            if (PathSynergyBrands.TryGetValue(championPath, out var strongBrands))
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    if (strongBrands.Contains(partyBrands[i]))
+                        matchCount++;
+                }
+            }
+
+            // Determine tier based on match count
+            if (matchCount >= 3) return SynergyTier.FULL;
+            if (matchCount == 2) return SynergyTier.PARTIAL;
+            return SynergyTier.NEUTRAL;
+        }
+
+        /// <summary>
+        /// Get synergy tier (convenience method)
+        /// </summary>
         public static SynergyTier GetSynergyTier(Path championPath, Brand[] partyBrands)
         {
             if (championPath == Path.NONE || partyBrands == null || partyBrands.Length == 0)

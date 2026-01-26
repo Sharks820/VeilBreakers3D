@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.53** | Last updated: 2026-01-26
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.54** | Last updated: 2026-01-26
 
 ---
 
@@ -1011,17 +1011,22 @@ battle, ui, art, audio, vera, monsters, critical
   - UI theme colors (buttons, panels, tooltips) can change for visual redesign
   - Game system colors (brands, rarities) are GAMEPLAY MECHANICS - don't touch!
   - Example: VOID brand purple is a game system, menu button purple is UI theme
-- **Comprehensive Bug Analysis (v2.52-v2.53)** - Full codebase audit and critical fixes:
+- **Comprehensive Bug Analysis (v2.52-v2.54)** - Full codebase audit and performance optimization:
   - Analyzed 87+ C# files across all systems
   - Found 2 CRITICAL (SaveFileHandler path, SaveManager mutex) - ✅ FIXED v2.53
-  - Found 7 HIGH (GC allocations in combat, lambda closures, singleton patterns)
+  - Found 7 HIGH (GC allocations in combat, lambda closures, singleton patterns) - ✅ 4/7 FIXED v2.54
   - Found 19 MEDIUM/LOW optimization opportunities
   - Overall code quality: GOOD - solid architecture, proper event handling
   - Report saved to: `Docs/BUG_AND_OPTIMIZATION_REPORT.md`
   - Key strengths: pre-allocated buffers, cached objects, proper Unity lifecycle
-  - **Phase 1 Complete**: All critical data integrity issues resolved
-  - **Critical Fix 1**: Replaced `.Replace()` with `Path.ChangeExtension()` for safe file path handling
-  - **Critical Fix 2**: Added 5-second mutex timeout to prevent silent save/load failures
+  - **Phase 1 Complete (v2.53)**: All critical data integrity issues resolved
+    - Replaced `.Replace()` with `Path.ChangeExtension()` for safe file path handling
+    - Added 5-second mutex timeout to prevent silent save/load failures
+  - **Phase 2 In Progress (v2.54)**: High priority performance optimizations - 4/7 complete
+    - UIParticleController: Random.Range() → Perlin noise (eliminates GC in Update)
+    - GameManager: Lazy singleton → quit flag pattern (prevents phantom objects)
+    - BattleManager: Removed array allocation in combat (uses buffer directly)
+    - EventBus: ClearAllListeners → editor-only with [Conditional] attribute
 
 ### MCP LESSONS (Active)
 - **Greptile** uses Bearer token auth, NOT OAuth. Add with: `claude mcp add --transport http greptile https://api.greptile.com/mcp --header "Authorization: Bearer [key]"`

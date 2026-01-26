@@ -444,12 +444,9 @@ namespace VeilBreakers.Combat
                 }
             }
 
-            // Create array segment for synergy calculation
-            var partyBrands = new Brand[brandCount];
-            System.Array.Copy(_brandBuffer, partyBrands, brandCount);
-
+            // Use buffer directly (no allocation)
             var oldTier = _currentSynergyTier;
-            _currentSynergyTier = SynergySystem.GetSynergyTier(_championPath, partyBrands);
+            _currentSynergyTier = SynergySystem.GetSynergyTier(_championPath, _brandBuffer, brandCount);
 
             if (oldTier != _currentSynergyTier)
             {
