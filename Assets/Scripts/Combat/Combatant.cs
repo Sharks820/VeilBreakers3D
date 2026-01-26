@@ -392,7 +392,14 @@ namespace VeilBreakers.Combat
         /// </summary>
         public void RemoveStatus(StatusEffectType type)
         {
-            _statusEffects.RemoveAll(s => s.EffectType == type);
+            // Manual removal (reverse iteration) - avoids LINQ allocation
+            for (int i = _statusEffects.Count - 1; i >= 0; i--)
+            {
+                if (_statusEffects[i].EffectType == type)
+                {
+                    _statusEffects.RemoveAt(i);
+                }
+            }
         }
 
         /// <summary>

@@ -48,6 +48,7 @@ namespace VeilBreakers.UI.Menus
         private VisualElement _titleSection;
         private VisualElement _buttonContainer;
         private List<VisualElement> _veilPulses = new List<VisualElement>();
+        private List<Button> _cachedButtons; // Cache for entrance animation (avoid ToList allocation)
         private Coroutine _animationCoroutine;
         private UIParticleController _particleController;
 
@@ -113,6 +114,9 @@ namespace VeilBreakers.UI.Menus
                 if (pulse != null)
                     _veilPulses.Add(pulse);
             }
+
+            // Cache buttons for entrance animation (avoid ToList allocation)
+            _cachedButtons = _buttonContainer.Query<Button>().ToList();
 
             // Set version
             if (_versionLabel != null)
@@ -445,7 +449,7 @@ namespace VeilBreakers.UI.Menus
             // Individual button stagger with BOUNCE
             if (_buttonContainer != null)
             {
-                var buttons = _buttonContainer.Query<Button>().ToList();
+                var buttons = _cachedButtons; // Use cached list (no allocation)
                 for (int i = 0; i < buttons.Count; i++)
                 {
                     var button = buttons[i];

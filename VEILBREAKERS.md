@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.54** | Last updated: 2026-01-26
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.55** | Last updated: 2026-01-26
 
 ---
 
@@ -1058,6 +1058,7 @@ battle, ui, art, audio, vera, monsters, critical
 
 | Date | Summary |
 |------|---------|
+| 2026-01-26 | **v2.55: Phase 2 Complete (6/7 HIGH fixes)** - Fixed Combatant.cs LINQ RemoveAll (manual reverse iteration), MainMenuController.cs LINQ ToList (cached button list). All critical + 6 high priority performance issues resolved. Only CharacterSelectController lambda closures remain. |
 | 2026-01-25 | **v2.40: GODOT MIGRATION 100% COMPLETE** - Created VERASystem.cs (dual personality, veil integrity, glitch effects), SettingsManager.cs (full PlayerPrefs persistence), added AudioMixer support to AudioManager.cs, added ErrorLogger.Settings(). Created UNITY6_MIGRATION_PLAN.md (5-phase upgrade plan). Unity-specific features (Input System, Addressables, Cinemachine) deferred to Unity 6 for better implementation. **Ready for Unity 6 upgrade!** |
 | 2026-01-26 | v2.47: **USER PREF: Claude 4.1 Opus preferred over Opus 4.5** - Opus 4.5 too verbose/token-wasteful. Use claude-opus-4-20250514 instead. |
 | 2026-01-26 | v2.46: Dropdown popup now absolute with z-index 4000, 260px max-height + auto-scroll to keep in-view; scrollview remains relative; crimson theme intact. |
