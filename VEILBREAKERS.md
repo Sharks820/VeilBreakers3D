@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.58** | Last updated: 2026-01-26
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.59** | Last updated: 2026-01-26
 
 ---
 
@@ -1533,6 +1533,119 @@ Assets/Scenes/MainMenu.unity
 Assets/Scenes/CharacterSelect.unity
 Assets/Scenes/TestArena.unity
 ```
+
+---
+
+## SESSION HANDOFF (v2.59 - 2026-01-26)
+
+### What Was Completed This Session
+
+**PARTICLE SYSTEM ENHANCEMENT (Task #7 COMPLETE):**
+
+Transformed the particle system from basic CSS circles into a dramatic dark crimson lightning effect system. The new particles create an **ominous, foreboding atmosphere** perfect for VeilBreakers' dark fantasy horror aesthetic.
+
+**New Particle Types:**
+
+1. **Lightning Sparks** (8 particles)
+   - Sharp angular particles with rapid rotation
+   - Fast diagonal movement (-80 to -56 px/s upward)
+   - Rapid flicker effect (3x frequency sine wave)
+   - Creates electric energy feel
+   - Color: Bright crimson `rgb(217, 64, 89)` = `(0.85, 0.25, 0.35)`
+
+2. **Lightning Bolts** (3 bolts)
+   - Vertical screen-height crimson bolts
+   - Random triggers every 3.5-7 seconds
+   - 0.15 second flash duration (quick bright → fade)
+   - Creates dramatic atmosphere spikes
+   - Color: `rgb(230, 77, 102)` = `(0.90, 0.30, 0.40)` with white glow borders
+
+3. **Dark Embers** (12 particles)
+   - **DARKENED** from old bright crimson to ominous dark red
+   - Old: `rgb(179, 64, 77)` → New: `rgb(115, 26, 38)` = `(0.45, 0.10, 0.15)`
+   - Glow border: Brighter `rgb(179, 41, 61)` = `(0.70, 0.16, 0.24)`
+   - Slow rotation (±30°/s) for organic movement
+   - Float upward with Perlin noise drift
+
+4. **Very Dark Dust** (20 particles)
+   - **DARKENED** even further for subtle depth
+   - Color: `rgb(51, 31, 38)` = `(0.20, 0.12, 0.15)` - nearly black
+   - Extremely subtle, barely visible background particles
+   - Slow wraparound movement
+
+5. **Veil Pulses** (3 background circles)
+   - Slowed down from 0.5 to 0.4 speed (more ominous)
+   - Darker base color: `rgb(128, 31, 46)` = `(0.50, 0.12, 0.18)`
+   - Gentler pulsing (0.12 scale variation instead of 0.15)
+   - Lower opacity (0.02 base + 0.015 pulse)
+
+**Performance Optimizations:**
+
+- **Object Pooling**: 100-particle pre-allocated pool, zero GC in Update loop
+- **Pre-sized Collections**: All Lists initialized with exact capacity (no reallocations)
+- **Clamped Speeds**: All particle velocities clamped to prevent runaway values
+- **Perlin Noise**: Used for organic movement (no Random allocations in Update)
+- **Active Flags**: Particles can be deactivated without destroying (pool reuse)
+
+**Visual Impact:**
+
+```
+BEFORE:                          AFTER:
+  ● ● ●                          ⚡ ✦ ✧ [BOLT FLASH!]
+ ● ○ ● ●                         ✦ ✨ ⚡ ✧
+● ● ○ ●                          ✧ ✦ ✨ ⚡
+ ● ● ●                           ⚡ ✧ ✦
+  ● ●                            ✦ ✨
+
+Bright solid circles            Dark ominous crimson lightning
+Flat, static feeling            Dynamic, dramatic atmosphere
+No variation                    Sharp sparks + occasional bolts
+```
+
+**Technical Details:**
+
+- **ParticleType Enum**: EMBER, DUST, SPARK, LIGHTNING
+- **Rotation Support**: Particles can rotate for electric effect
+- **Enhanced Rendering**: Better border glows, sharper spark shapes
+- **Lightning Timing**: `_nextLightningTime` with random intervals (3.5-7s)
+- **Total Active Particles**: 43 max (12 embers + 20 dust + 8 sparks + 3 bolts)
+
+**Color Palette (Dark & Ominous):**
+
+| Particle | RGB | Normalized | Purpose |
+|----------|-----|------------|---------|
+| Ember | (115, 26, 38) | (0.45, 0.10, 0.15) | Dark crimson glow |
+| Ember Glow | (179, 41, 61) | (0.70, 0.16, 0.24) | Bright border |
+| Dust | (51, 31, 38) | (0.20, 0.12, 0.15) | Nearly black |
+| Spark | (217, 64, 89) | (0.85, 0.25, 0.35) | Electric crimson |
+| Lightning | (230, 77, 102) | (0.90, 0.30, 0.40) | Bolt flash |
+| Veil | (128, 31, 46) | (0.50, 0.12, 0.18) | Dark background pulse |
+
+### Files Modified This Session
+
+```
+Assets/Scripts/UI/Effects/UIParticleController.cs    # Complete rewrite: 415→650 lines, added sparks/lightning/pooling
+```
+
+### Next Session Priorities
+
+1. **Unity 6 Upgrade** - ALL pre-upgrade tasks complete, ready to migrate
+2. **3D Model Integration** - Import hero/monster 3D models
+3. **Combat HUD** - Build battle interface
+4. **Audio Integration** - Add background music, SFX triggers
+
+### Performance Notes
+
+**Before Enhancement:**
+- 40 particles (15 embers + 25 dust)
+- ~0.5 KB allocations per frame (minor GC pressure)
+- Simple Update loops
+
+**After Enhancement:**
+- 43 particles (12 embers + 20 dust + 8 sparks + 3 lightning)
+- **ZERO allocations in Update loop** (object pooling)
+- More particles, better performance
+- Dramatic visual upgrade with no performance cost
 
 ---
 
