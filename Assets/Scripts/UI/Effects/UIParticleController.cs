@@ -578,29 +578,29 @@ namespace VeilBreakers.UI.Effects
         }
 
         private VisualElement CreateLightningBolt()
-        {
-            // Container for multi-layer lightning bolt - NUCLEAR VISIBILITY MODE
-            var container = new VisualElement();
-            container.style.position = Position.Absolute;
-            container.style.width = 40; // EXTREMELY wide - impossible to miss
-            container.style.height = _screenHeight;
-            container.style.left = Random.Range(0f, _screenWidth);
-            container.style.top = 0;
-            
-            // SINGLE ULTRA-BRIGHT WHITE BOLT (no layers, just maximum visibility)
-            var bolt = new VisualElement();
-            bolt.style.position = Position.Absolute;
-            bolt.style.width = 40;
-            bolt.style.height = _screenHeight;
-            bolt.style.left = 0;
-            bolt.style.top = 0;
-            bolt.style.backgroundColor = new Color(1f, 1f, 1f, 1f); // PURE WHITE, FULL OPACITY
-            container.Add(bolt);
-            
-            Debug.Log($"[VB:Lightning] Created NUCLEAR VISIBILITY bolt - width: 40px, height: {_screenHeight}, color: WHITE (1,1,1,1)");
-            
-            return container;
-        }
+    {
+        // Container for multi-layer lightning bolt - TEST WITH BRIGHT CYAN FOR VISIBILITY
+        var container = new VisualElement();
+        container.style.position = Position.Absolute;
+        container.style.width = 40; // EXTREMELY wide - impossible to miss
+        container.style.height = _screenHeight;
+        container.style.left = Random.Range(0f, _screenWidth);
+        container.style.top = 0;
+        
+        // BRIGHT CYAN BOLT - will be visible against ANY background (dark OR light)
+        var bolt = new VisualElement();
+        bolt.style.position = Position.Absolute;
+        bolt.style.width = 40;
+        bolt.style.height = _screenHeight;
+        bolt.style.left = 0;
+        bolt.style.top = 0;
+        bolt.style.backgroundColor = new Color(0f, 1f, 1f, 1f); // BRIGHT CYAN, FULL OPACITY
+        container.Add(bolt);
+        
+        Debug.Log($"[VB:Lightning] Created BRIGHT CYAN VISIBILITY TEST bolt - width: 40px, height: {_screenHeight}, color: CYAN (0,1,1,1)");
+        
+        return container;
+    }
 
         // =============================================================================
         // PARTICLE UPDATES
@@ -855,8 +855,45 @@ namespace VeilBreakers.UI.Effects
         }
 
         public void TriggerManualLightning()
+    {
+        Debug.Log("[VB:Lightning] MANUAL TEST - Triggering 3 lightning bolts in sequence");
+        for (int i = 0; i < 3; i++)
         {
             TriggerLightningBolt();
         }
+        Debug.Log($"[VB:Lightning] MANUAL TEST - Root has {_root.childCount} children, screen size: {_screenWidth}x{_screenHeight}");
+    }
+
+    /// <summary>
+    /// Diagnostic method to inspect lightning bolt states and positions
+    /// </summary>
+    [ContextMenu("Diagnose Lightning")]
+    public void DiagnoseLightning()
+    {
+        Debug.Log("=== LIGHTNING DIAGNOSTIC START ===");
+        Debug.Log($"Screen size: {_screenWidth} x {_screenHeight}");
+        Debug.Log($"Root element: {(_root != null ? "EXISTS" : "NULL")}");
+        if (_root != null)
+        {
+            Debug.Log($"Root child count: {_root.childCount}");
+            Debug.Log($"Root position: {_root.style.position.value}");
+            Debug.Log($"Root size: {_root.style.width.value} x {_root.style.height.value}");
+        }
+        
+        Debug.Log($"Lightning bolts count: {_lightningBolts.Count}");
+        for (int i = 0; i < _lightningBolts.Count; i++)
+        {
+            var bolt = _lightningBolts[i];
+            Debug.Log($"  Bolt #{i}:");
+            Debug.Log($"    Active: {bolt.Active}");
+            Debug.Log($"    Display: {bolt.Element.style.display.value}");
+            Debug.Log($"    Position: ({bolt.Element.style.left.value}, {bolt.Element.style.top.value})");
+            Debug.Log($"    Size: {bolt.Element.style.width.value} x {bolt.Element.style.height.value}");
+            Debug.Log($"    Opacity: {bolt.Element.style.opacity.value}");
+            Debug.Log($"    Background Color: {bolt.Element.style.backgroundColor.value}");
+            Debug.Log($"    Parent: {(bolt.Element.parent != null ? bolt.Element.parent.name : "NULL")}");
+        }
+        Debug.Log("=== LIGHTNING DIAGNOSTIC END ===");
+    }
     }
 }
