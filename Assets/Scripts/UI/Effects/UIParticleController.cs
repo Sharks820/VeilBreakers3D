@@ -211,8 +211,9 @@ namespace VeilBreakers.UI.Effects
             _sparkContainer.style.top = 0;
             _sparkContainer.style.width = Length.Percent(100);
             _sparkContainer.style.height = Length.Percent(100);
-            _sparkContainer.style.overflow = Overflow.Visible;
-            _sparkContainer.pickingMode = PickingMode.Ignore;
+            _sparkContainer.style.overflow = Overflow.Visible; // CRITICAL - allow content to show
+            _sparkContainer.pickingMode = PickingMode.Ignore; // Don't block clicks
+            _sparkContainer.style.display = DisplayStyle.Flex; // Explicitly visible
             // Add AFTER all other UI initialization
             // We'll add it at the very end after creating particles
             Debug.Log("[VB:Lightning] Created new spark-container (will add last)");
@@ -429,30 +430,36 @@ namespace VeilBreakers.UI.Effects
         }
 
         private void CreateLightningBolts()
+    {
+        if (_sparkContainer == null)
         {
-            if (_root == null) return;
-
-            for (int i = 0; i < _lightningBoltCount; i++)
-            {
-                var bolt = CreateLightningBolt();
-                bolt.style.display = DisplayStyle.None; // Hidden until triggered
-                bolt.pickingMode = PickingMode.Ignore; // Don't block clicks (NOT .style)
-
-                var data = new LightningData
-                {
-                    Element = bolt,
-                    Lifetime = 0f,
-                    MaxLifetime = 0.6f, // Longer flash for visibility
-                    Active = false
-                };
-
-                // Add directly to ROOT instead of container
-                _root.Add(bolt);
-                _lightningBolts.Add(data);
-                
-                Debug.Log($"[VB:Lightning] Added bolt #{i} directly to root, parent count: {_root.childCount}");
-            }
+            Debug.LogError("[VB:Lightning] ERROR - _sparkContainer is NULL! Cannot create lightning.");
+            return;
         }
+
+        for (int i = 0; i < _lightningBoltCount; i++)
+        {
+            var bolt = CreateLightningBolt();
+            bolt.style.display = DisplayStyle.None; // Hidden until triggered
+            bolt.pickingMode = PickingMode.Ignore; // Don't block clicks (NOT .style)
+
+            var data = new LightningData
+            {
+                Element = bolt,
+                Lifetime = 0f,
+                MaxLifetime = 0.6f, // Longer flash for visibility
+                Active = false
+            };
+
+            // Add to SPARK CONTAINER like other particles use containers
+            _sparkContainer.Add(bolt);
+            _lightningBolts.Add(data);
+            
+            Debug.Log($"[VB:Lightning] Added bolt #{i} to _sparkContainer (like embers use _emberContainer)");
+        }
+        
+        Debug.Log($"[VB:Lightning] Created {_lightningBoltCount} bolts in _sparkContainer, container child count: {_sparkContainer.childCount}");
+    }
 
         // =============================================================================
         // ENHANCED PARTICLE RENDERING
@@ -867,7 +874,6 @@ namespace VeilBreakers.UI.Effects
     /// <summary>
     /// Diagnostic method to inspect lightning bolt states and positions
     /// </summary>
-    [ContextMenu("Diagnose Lightning")]
     public void DiagnoseLightning()
     {
         Debug.Log("=== LIGHTNING DIAGNOSTIC START ===");
@@ -877,7 +883,18 @@ namespace VeilBreakers.UI.Effects
         {
             Debug.Log($"Root child count: {_root.childCount}");
             Debug.Log($"Root position: {_root.style.position.value}");
-            Debug.Log($"Root size: {_root.style.width.value} x {_root.style.height.value}");
+            Debug.Log($"Root display: {_root.style.display.value}");
+        }
+        
+        Debug.Log($"Spark container: {(_sparkContainer != null ? "EXISTS" : "NULL")}");
+        if (_sparkContainer != null)
+        {
+            Debug.Log($"  Spark container child count: {_sparkContainer.childCount}");
+            Debug.Log($"  Spark container display: {_sparkContainer.style.display.value}");
+            Debug.Log($"  Spark container overflow: {_sparkContainer.style.overflow.value}");
+            Debug.Log($"  Spark container position: {_sparkContainer.style.position.value}");
+            Debug.Log($"  Spark container size: {_sparkContainer.style.width.value} x {_sparkContainer.style.height.value}");
+            Debug.Log($"  Spark container parent: {(_sparkContainer.parent != null ? _sparkContainer.parent.name : "NULL")}");
         }
         
         Debug.Log($"Lightning bolts count: {_lightningBolts.Count}");
