@@ -895,13 +895,16 @@ namespace VeilBreakers.UI.Effects
                 bolt.Lifetime = 0f;
                 bolt.MaxLifetime = Random.Range(0.45f, 0.75f);
                 
-                GenerateLightningPath(bolt);
+                // SPRITE-BASED: Position randomly across screen width
+                float randomX = Random.Range(0f, _screenWidth);
+                float randomY = Random.Range(-100f, 100f); // Slight vertical offset
+                
+                bolt.Root.style.left = randomX;
+                bolt.Root.style.top = randomY;
                 bolt.Root.style.display = DisplayStyle.Flex;
                 bolt.Root.style.opacity = 1f;
                 
-                // SIMPLE diagnostic - just check width once
-                var w = bolt.Root.resolvedStyle.width;
-                Debug.Log($"[VB:Lightning] Bolt #{i} triggered, width={w}");
+                Debug.Log($"[VB:Lightning] Sprite bolt #{i} triggered at ({randomX}, {randomY})");
                 
                 return;
             }

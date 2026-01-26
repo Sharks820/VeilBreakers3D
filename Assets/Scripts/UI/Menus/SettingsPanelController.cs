@@ -706,8 +706,8 @@ namespace VeilBreakers.UI.Menus
                 }
                 popup.userData = dropdown;
                 popup.style.position = Position.Absolute;
-                popup.style.right = StyleKeyword.Null;
-                popup.style.bottom = StyleKeyword.Null;
+                popup.style.right = new StyleLength(StyleKeyword.Null);
+                popup.style.bottom = new StyleLength(StyleKeyword.Null);
                 popup.style.translate = new Translate(0, 0);
                 popup.style.opacity = 0;
 
