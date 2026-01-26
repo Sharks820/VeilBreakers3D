@@ -357,7 +357,7 @@ MonoBehaviour:
   _settingsPanelTemplate: {fileID: 9197481963319205126, guid: 50da632812b00104b90a35c2c946b833, type: 3}
   _themeStylesheet: {fileID: 7433441132597879392, guid: 0c75776285827f74db8942ace412c502, type: 3}
   _componentStylesheet: {fileID: 7433441132597879392, guid: f14e48b4bc52a9f4586f9c621c434598, type: 3}
-  _titleAnimDelay: 0.3
+  _titleAnimDelay: 0.1
   _buttonStaggerDelay: 0.1
   _fadeInDuration: 0.5
   _menuMusic: {fileID: 0}
@@ -381,9 +381,9 @@ MonoBehaviour:
   _emberSpeed: 30
   _dustSpeed: 15
   _veilPulseSpeed: 0.5
-  _emberColor: {r: 1, g: 0.7, b: 0.3, a: 0.8}
-  _dustColor: {r: 0.8, g: 0.7, b: 0.6, a: 0.3}
-  _veilColor: {r: 0.5, g: 0.27, b: 0.7, a: 0.05}
+  _emberColor: {r: 1, g: 0.2980392, b: 0.2980392, a: 0.8}
+  _dustColor: {r: 0.754717, g: 0.08899963, b: 0.08899963, a: 0.3}
+  _veilColor: {r: 0.50980395, g: 0.010902463, b: 0.05810133, a: 0.06}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

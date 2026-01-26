@@ -17,17 +17,17 @@
 
 :root {
     /* Primary Colors - Dark Fantasy Palette */
-    --color-background-dark: rgb(15, 12, 20);
-    --color-background-medium: rgb(28, 20, 25);
-    --color-background-light: rgb(45, 30, 38);
+   --color-background-dark: rgb(15, 12, 20);
+   --color-background-medium: rgb(28, 20, 25);
+   --color-background-light: rgb(45, 30, 38);
 
-    /* Accent Colors - Corruption/Brand themed */
-    --color-accent-red: rgb(180, 40, 60);
-    --color-accent-red-glow: rgb(220, 60, 80);
-    --color-accent-crimson: rgb(180, 40, 60);
-    --color-accent-crimson-glow: rgb(220, 60, 80);
-    --color-accent-gold: rgb(200, 160, 80);
-    --color-accent-cyan: rgb(60, 180, 200);
+   /* Accent Colors - Corruption/Brand themed */
+   --color-accent-red: rgb(180, 40, 60);
+   --color-accent-red-glow: rgb(220, 60, 80);
+   --color-accent-crimson: rgb(180, 40, 60);
+   --color-accent-crimson-glow: rgb(220, 60, 80);
+   --color-accent-gold: rgb(200, 160, 80);
+   --color-accent-cyan: rgb(60, 180, 200);
 
     /* Text Colors */
     --color-text-primary: rgb(230, 220, 210);
@@ -355,6 +355,10 @@
     margin-top: 4px;
     overflow: visible;
     min-width: 180px;
+    z-index: 4000;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+    max-height: 260px;
+    overflow-y: auto;
 }
 
 .unity-base-dropdown__container-inner {
@@ -684,11 +688,11 @@
     min-height: 44px;
     font-size: 14px;
     letter-spacing: 1px;
-    background-color: rgba(40, 32, 50, 0.8);
+    background-color: rgba(26, 20, 28, 0.85);
     border-color: rgb(70, 45, 55);
     border-width: 1px;
     border-radius: 4px;
-    color: rgb(165, 155, 145);
+    color: rgb(185, 210, 200);
     -unity-font-style: normal;
     transition-duration: 0.15s;
     transition-property: background-color, border-color, color, translate;
@@ -702,7 +706,7 @@
 }
 
 .menu-button-secondary:active {
-    background-color: rgb(55, 35, 45);
+    background-color: rgb(22, 44, 36);
 }
 
 /* Exit button - special styling with hover animation */
@@ -777,6 +781,47 @@
 .hero-card.selected {
     background-color: rgb(50, 25, 35);
     border-color: rgb(180, 40, 60);
+}
+
+/* Hero-specific colors - Applied per character */
+.hero-card.hero-mirage {
+    border-color: var(--hero-mirage);
+}
+
+.hero-card.hero-mirage:hover,
+.hero-card.hero-mirage.selected {
+    border-color: var(--hero-mirage-glow);
+    box-shadow: 0 0 16px rgba(40, 200, 80, 0.4);
+}
+
+.hero-card.hero-bastion {
+    border-color: var(--hero-bastion);
+}
+
+.hero-card.hero-bastion:hover,
+.hero-card.hero-bastion.selected {
+    border-color: var(--hero-bastion-glow);
+    box-shadow: 0 0 16px rgba(60, 140, 220, 0.4);
+}
+
+.hero-card.hero-marrow {
+    border-color: var(--hero-marrow);
+}
+
+.hero-card.hero-marrow:hover,
+.hero-card.hero-marrow.selected {
+    border-color: var(--hero-marrow-glow);
+    box-shadow: 0 0 16px rgba(160, 80, 200, 0.4);
+}
+
+.hero-card.hero-rend {
+    border-color: var(--hero-rend);
+}
+
+.hero-card.hero-rend:hover,
+.hero-card.hero-rend.selected {
+    border-color: var(--hero-rend-glow);
+    box-shadow: 0 0 16px rgba(140, 30, 30, 0.4);
 }
 
 .hero-card-portrait {
@@ -1654,8 +1699,7 @@
     border-color: rgba(180, 40, 60, 0.4);
     border-radius: 16px;
     padding: 32px;
-    width: 700px;
-    max-height: 85%;
+    overflow: visible !important; /* CRITICAL: Allow dropdown popups to render outside panel */
 }
 
 .settings-header {
@@ -1728,6 +1772,11 @@
     background-color: rgb(160, 50, 80);
 }
 
+.settings-tab-inactive {
+    background-color: transparent;
+    color: rgb(120, 110, 100);
+}
+
 /* Settings Row */
 .settings-row {
     flex-direction: row;
@@ -1782,6 +1831,20 @@
     padding-top: 16px;
     border-top-width: 1px;
     border-top-color: rgba(180, 40, 60, 0.2);
+}
+
+.settings-scroll {
+    overflow: visible !important; /* Allow dropdowns to escape */
+    position: relative;
+    z-index: 1;
+}
+
+.settings-scroll .unity-scroll-view__content-container {
+    overflow: visible !important; /* Critical: Allow dropdown popups to render outside ScrollView */
+}
+
+.settings-scroll .unity-scroll-view__content-viewport {
+    overflow: visible !important; /* Allow dropdown popups to escape viewport */
 }
 
 /* AAA Slider Style */

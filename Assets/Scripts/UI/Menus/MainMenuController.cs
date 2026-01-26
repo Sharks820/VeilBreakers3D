@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
+using VeilBreakers.UI.Effects;
 
 namespace VeilBreakers.UI.Menus
 {
@@ -48,6 +49,7 @@ namespace VeilBreakers.UI.Menus
         private VisualElement _buttonContainer;
         private List<VisualElement> _veilPulses = new List<VisualElement>();
         private Coroutine _animationCoroutine;
+        private UIParticleController _particleController;
 
         // =============================================================================
         // EVENTS
@@ -121,6 +123,9 @@ namespace VeilBreakers.UI.Menus
             // Bind button events
             BindEvents();
 
+            // Initialize particle effects
+            InitializeParticleEffects();
+
             // Start animations
             PlayEntranceAnimation();
             StartVeilPulseAnimation();
@@ -148,6 +153,24 @@ namespace VeilBreakers.UI.Menus
             _btnCredits?.UnregisterCallback<ClickEvent>(OnCreditsButtonClicked);
             _btnExit?.UnregisterCallback<ClickEvent>(OnExitButtonClicked);
             _root?.UnregisterCallback<KeyDownEvent>(OnKeyDown);
+        }
+
+        private void InitializeParticleEffects()
+        {
+            // Create particle controller if it doesn't exist
+            if (_particleController == null)
+            {
+                _particleController = gameObject.GetComponent<UIParticleController>();
+                if (_particleController == null)
+                {
+                    _particleController = gameObject.AddComponent<UIParticleController>();
+                }
+            }
+
+            // Initialize with the root element
+            _particleController.Initialize(_root);
+
+            ErrorLogger.UI("Particle effects initialized");
         }
 
         // =============================================================================
@@ -510,6 +533,12 @@ namespace VeilBreakers.UI.Menus
             {
                 StopCoroutine(_animationCoroutine);
                 _animationCoroutine = null;
+            }
+
+            // Disable particle effects
+            if (_particleController != null)
+            {
+                _particleController.enabled = false;
             }
         }
     }

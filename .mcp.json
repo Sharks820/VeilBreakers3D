@@ -21,15 +21,6 @@
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
       },
       "description": "GitHub operations - PRs, issues, commits, CI status"
-    }
-  },
-  "_disabled": {
-    "_comment": "Re-enable these by moving them back to mcpServers",
-    "image-process": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "image-process-mcp-server"],
-      "description": "Crop, resize, rotate, convert image formats for game assets"
     },
     "blender": {
       "type": "stdio",
@@ -40,6 +31,12 @@
       },
       "description": "3D modeling - create/edit models, scenes, materials, render from Blender"
     },
+    "image-process": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "image-process-mcp-server"],
+      "description": "Crop, resize, rotate, convert image formats for game assets"
+    },
     "notion": {
       "type": "stdio",
       "command": "npx",
@@ -49,5 +46,8 @@
       },
       "description": "Project management - monster database, feature backlog, design docs, game bible"
     }
+  },
+  "_disabled": {
+    "_comment": "Placeholders only; all servers enabled above"
   }
 }

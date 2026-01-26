@@ -84,8 +84,8 @@
     --accent-secondary-glow: rgb(180, 50, 70);
     --accent-gold: rgb(220, 180, 80);
     --accent-gold-glow: rgb(255, 220, 120);
-    --accent-teal: rgb(60, 180, 160);
-    --accent-teal-glow: rgb(100, 220, 200);
+    --accent-teal: rgb(180, 40, 60);
+    --accent-teal-glow: rgb(220, 60, 80);
 
     /* =========================================================================
        STATUS COLORS
@@ -908,7 +908,7 @@
     flex-direction: row;
     align-items: center;
     padding: 8px 14px;
-    background-color: rgba(60, 180, 160, 0.15);
+    background-color: rgba(180, 40, 60, 0.15);
     border-width: 1px;
     border-color: var(--accent-teal);
     border-radius: 6px;

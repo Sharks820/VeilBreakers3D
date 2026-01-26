@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.40** | Last updated: 2026-01-25
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.48** | Last updated: 2026-01-26
 
 ---
 
@@ -978,6 +978,7 @@ battle, ui, art, audio, vera, monsters, critical
 - **Use csharp-lsp** for C# validation before committing
 - Add all new requirements/tools to memory files
 - **UI must be fresh** - Don't port old Godot UI patterns, build new in Unity UI Toolkit
+- **USE SONNET (claude-sonnet-4-5-20250929)** - Primary model. Opus 4.5 wastes tokens. Sonnet is the workhorse.
 
 ---
 
@@ -1033,6 +1034,8 @@ battle, ui, art, audio, vera, monsters, critical
 | Date | Summary |
 |------|---------|
 | 2026-01-25 | **v2.40: GODOT MIGRATION 100% COMPLETE** - Created VERASystem.cs (dual personality, veil integrity, glitch effects), SettingsManager.cs (full PlayerPrefs persistence), added AudioMixer support to AudioManager.cs, added ErrorLogger.Settings(). Created UNITY6_MIGRATION_PLAN.md (5-phase upgrade plan). Unity-specific features (Input System, Addressables, Cinemachine) deferred to Unity 6 for better implementation. **Ready for Unity 6 upgrade!** |
+| 2026-01-26 | v2.47: **USER PREF: Claude 4.1 Opus preferred over Opus 4.5** - Opus 4.5 too verbose/token-wasteful. Use claude-opus-4-20250514 instead. |
+| 2026-01-26 | v2.46: Dropdown popup now absolute with z-index 4000, 260px max-height + auto-scroll to keep in-view; scrollview remains relative; crimson theme intact. |
 | 2026-01-25 | v2.36: Fixed UI Toolkit text rendering - USS was using TMP font (LiberationSans SDF) instead of TTF. Changed to Arial.ttf with proper Unity GUID reference. Added UITextSettingsSetup editor script. Addressables package auto-initialized. |
 | 2026-01-24 | v2.35: Rider IDE setup (added com.unity.ide.rider package), UI text fix - replaced placeholder GUIDs in 6 UXML files, added global font definition to USS |
 | 2025-12-29 | Consolidated memory to single VEILBREAKERS.md file |

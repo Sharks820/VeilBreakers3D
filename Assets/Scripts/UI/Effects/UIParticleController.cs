@@ -24,10 +24,10 @@ namespace VeilBreakers.UI.Effects
         [SerializeField] private float _dustSpeed = 15f;
         [SerializeField] private float _veilPulseSpeed = 0.5f;
 
-        [Header("Colors - Crimson Veil Theme")]
-        [SerializeField] private Color _emberColor = new Color(1f, 0.4f, 0.3f, 0.8f);
-        [SerializeField] private Color _dustColor = new Color(0.8f, 0.5f, 0.5f, 0.3f);
-        [SerializeField] private Color _veilColor = new Color(0.7f, 0.16f, 0.24f, 0.06f);
+        [Header("Colors - Veilbreakers Crimson Theme")]
+        [SerializeField] private Color _emberColor = new Color(0.70f, 0.25f, 0.30f, 0.85f);   // Crimson ember
+        [SerializeField] private Color _dustColor = new Color(0.35f, 0.25f, 0.30f, 0.30f);   // Dark dust
+        [SerializeField] private Color _veilColor = new Color(0.70f, 0.16f, 0.24f, 0.06f);   // Veil wash
 
         // =============================================================================
         // PRIVATE STATE
@@ -112,6 +112,28 @@ namespace VeilBreakers.UI.Effects
 
             _particleContainer = _root.Q<VisualElement>("particle-container");
             _emberContainer = _root.Q<VisualElement>("ember-container");
+
+            // Fallback: create containers if missing in UXML
+            if (_particleContainer == null)
+            {
+                _particleContainer = new VisualElement { name = "particle-container" };
+                _particleContainer.style.position = Position.Absolute;
+                _particleContainer.style.left = 0;
+                _particleContainer.style.top = 0;
+                _particleContainer.style.right = 0;
+                _particleContainer.style.bottom = 0;
+                _root.Add(_particleContainer);
+            }
+            if (_emberContainer == null)
+            {
+                _emberContainer = new VisualElement { name = "ember-container" };
+                _emberContainer.style.position = Position.Absolute;
+                _emberContainer.style.left = 0;
+                _emberContainer.style.top = 0;
+                _emberContainer.style.right = 0;
+                _emberContainer.style.bottom = 0;
+                _root.Add(_emberContainer);
+            }
 
             // Get screen dimensions
             _screenWidth = Screen.width;

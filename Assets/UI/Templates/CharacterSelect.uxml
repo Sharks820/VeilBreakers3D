@@ -28,8 +28,8 @@
             <!-- Center - Hero Preview -->
             <ui:VisualElement name="center-panel" style="flex-grow: 1; align-items: center; justify-content: center;">
                 <ui:VisualElement name="model-viewport" style="width: 360px; height: 450px; background-color: rgba(12, 9, 18, 0.85); border-width: 2px; border-color: rgba(180, 40, 60, 0.4); border-radius: 12px; align-items: center; justify-content: center;">
-                    <ui:VisualElement style="width: 70px; height: 70px; border-radius: 35px; border-width: 2px; border-color: rgba(180, 40, 60, 0.3); align-items: center; justify-content: center; margin-bottom: 12px;">
-                        <ui:Label text="?" style="font-size: 32px; color: rgba(180, 40, 60, 0.5);" />
+                    <ui:VisualElement name="preview-ring" style="width: 70px; height: 70px; border-radius: 35px; border-width: 2px; border-color: rgba(180, 40, 60, 0.3); align-items: center; justify-content: center; margin-bottom: 12px;">
+                        <ui:Label text="?" name="preview-icon" style="font-size: 32px; color: rgba(180, 40, 60, 0.5);" />
                     </ui:VisualElement>
                     <ui:Label text="Select a Hero" style="font-size: 16px; color: rgb(90, 80, 75); letter-spacing: 2px;" />
                 </ui:VisualElement>
@@ -108,11 +108,11 @@
 
                     <!-- Signature Monster Section -->
                     <ui:VisualElement name="monster-section" style="flex-direction: row; align-items: center; margin-bottom: 12px;">
-                        <ui:VisualElement style="width: 4px; height: 14px; background-color: rgb(60, 180, 160); border-radius: 2px; margin-right: 8px;" />
-                        <ui:Label text="SIGNATURE MONSTER" style="font-size: 10px; letter-spacing: 2px; color: rgb(60, 180, 160); -unity-font-style: bold;" />
+                    <ui:VisualElement style="width: 4px; height: 14px; background-color: rgb(180, 40, 60); border-radius: 2px; margin-right: 8px;" />
+                    <ui:Label text="SIGNATURE MONSTER" style="font-size: 10px; letter-spacing: 2px; color: rgb(180, 40, 60); -unity-font-style: bold;" />
                     </ui:VisualElement>
 
-                    <ui:VisualElement name="signature-monster-card" style="flex-direction: row; padding: 12px; background-color: rgba(30, 20, 25, 0.8); border-width: 1px; border-color: rgba(60, 180, 160, 0.3); border-radius: 8px; margin-bottom: 12px; flex-shrink: 0;">
+                    <ui:VisualElement name="signature-monster-card" style="flex-direction: row; padding: 12px; background-color: rgba(30, 20, 25, 0.8); border-width: 1px; border-color: rgba(180, 40, 60, 0.3); border-radius: 8px; margin-bottom: 12px; flex-shrink: 0;">
                         <!-- Monster Portrait -->
                         <ui:VisualElement name="monster-icon-frame" style="width: 60px; height: 60px; background-color: rgba(40, 30, 38, 0.8); border-radius: 6px; border-width: 2px; border-color: rgba(180, 40, 60, 0.4); margin-right: 12px; align-items: center; justify-content: center; flex-shrink: 0;">
                             <ui:Label text="M" style="font-size: 24px; color: rgba(180, 40, 60, 0.5);" />
@@ -125,8 +125,8 @@
                                 <ui:VisualElement style="width: 10px; height: 10px; border-radius: 5px; background-color: rgb(180, 40, 60); margin-right: 4px;" />
                                 <ui:VisualElement style="width: 10px; height: 10px; border-radius: 5px; background-color: rgb(80, 30, 50);" />
                             </ui:VisualElement>
-                            <ui:VisualElement style="flex-direction: row; align-items: center; padding: 3px 8px; background-color: rgba(60, 180, 160, 0.15); border-radius: 3px; align-self: flex-start;">
-                                <ui:Label text="PATH SYNERGY" style="font-size: 9px; letter-spacing: 1px; color: rgb(80, 200, 180);" />
+                            <ui:VisualElement style="flex-direction: row; align-items: center; padding: 3px 8px; background-color: rgba(180, 40, 60, 0.12); border-radius: 3px; align-self: flex-start;">
+                                <ui:Label text="PATH SYNERGY" style="font-size: 9px; letter-spacing: 1px; color: rgb(200, 160, 160);" />
                             </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>

@@ -254,6 +254,14 @@ namespace VeilBreakers.UI.Menus
                 }
             }
 
+            // Fallback if no resolutions were added (unusual displays)
+            if (choices.Count == 0)
+            {
+                var fallback = new Resolution { width = 1920, height = 1080, refreshRate = 60 };
+                choices.Add("1920 x 1080");
+                _availableResolutions.Add(fallback);
+            }
+
             if (_dropdownResolution != null)
             {
                 _dropdownResolution.choices = choices;
@@ -368,16 +376,8 @@ namespace VeilBreakers.UI.Menus
         {
             if (tab == null) return;
 
-            if (active)
-            {
-                tab.style.backgroundColor = new Color(180f/255f, 40f/255f, 60f/255f, 1f);
-                tab.style.color = new Color(235f/255f, 225f/255f, 215f/255f, 1f);
-            }
-            else
-            {
-                tab.style.backgroundColor = Color.clear;
-                tab.style.color = new Color(120f/255f, 110f/255f, 100f/255f, 1f);
-            }
+            tab.EnableInClassList("settings-tab-active", active);
+            tab.EnableInClassList("settings-tab-inactive", !active);
         }
 
         // =============================================================================
@@ -453,12 +453,18 @@ namespace VeilBreakers.UI.Menus
             _toggleMute?.SetValueWithoutNotify(_currentSettings.muteAll);
 
             // Graphics
-            _dropdownResolution?.SetValueWithoutNotify(
-                _availableResolutions.Count > _currentSettings.resolutionIndex
-                    ? $"{_availableResolutions[_currentSettings.resolutionIndex].width} x {_availableResolutions[_currentSettings.resolutionIndex].height}"
-                    : "1920 x 1080");
+            if (_dropdownResolution != null && _availableResolutions.Count > 0)
+            {
+                _dropdownResolution.index = Mathf.Clamp(_currentSettings.resolutionIndex, 0, _availableResolutions.Count - 1);
+                _dropdownResolution.SetValueWithoutNotify($"{_availableResolutions[_dropdownResolution.index].width} x {_availableResolutions[_dropdownResolution.index].height}");
+            }
             _dropdownFullscreen?.SetValueWithoutNotify(GetFullscreenModeString(_currentSettings.fullscreenMode));
+            if (_dropdownFullscreen != null)
+                _dropdownFullscreen.index = Mathf.Clamp(_currentSettings.fullscreenMode, 0, Math.Max(0, _dropdownFullscreen.choices?.Count - 1 ?? 0));
+
             _dropdownQuality?.SetValueWithoutNotify(GetQualityString(_currentSettings.qualityLevel));
+            if (_dropdownQuality != null)
+                _dropdownQuality.index = Mathf.Clamp(_currentSettings.qualityLevel, 0, Math.Max(0, _dropdownQuality.choices?.Count - 1 ?? 0));
             _toggleVSync?.SetValueWithoutNotify(_currentSettings.vsync);
             _toggleFPS?.SetValueWithoutNotify(_currentSettings.showFPS);
 
@@ -530,6 +536,9 @@ namespace VeilBreakers.UI.Menus
 
         private void ApplyGraphicsSettings()
         {
+            if (_availableResolutions == null || _availableResolutions.Count == 0)
+                return;
+
             // Resolution
             if (_currentSettings.resolutionIndex < _availableResolutions.Count)
             {
@@ -553,8 +562,10 @@ namespace VeilBreakers.UI.Menus
 
         private void ResetToDefaults()
         {
-            _pendingSettings = new SettingsData();
+            _currentSettings = new SettingsData();
+            _pendingSettings = _currentSettings.Clone();
             UpdateUIFromSettings();
+            ApplySettings();
             ErrorLogger.UI("Settings reset to defaults");
         }
 

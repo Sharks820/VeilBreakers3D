@@ -54,6 +54,8 @@ namespace VeilBreakers.UI.Menus
         private VisualElement _modelViewport;
         private VisualElement _modelDisplay;
         private VisualElement _placeholder;
+        private VisualElement _previewRing;
+        private Label _previewIcon;
         private VisualElement _detailsPanel;
 
         // Header elements
@@ -162,6 +164,8 @@ namespace VeilBreakers.UI.Menus
             _modelViewport = _root.Q<VisualElement>("model-viewport");
             _modelDisplay = _root.Q<VisualElement>("model-display");
             _placeholder = _root.Q<VisualElement>("placeholder");
+            _previewRing = _root.Q<VisualElement>("preview-ring");
+            _previewIcon = _root.Q<Label>("preview-icon");
             _detailsPanel = _root.Q<VisualElement>("details-panel");
 
             // Query header
@@ -286,9 +290,15 @@ namespace VeilBreakers.UI.Menus
 
         private VisualElement CreateHeroCard(HeroData hero, int index)
         {
+            var heroColor = GetHeroColor(hero);
+            var heroColorDark = GetHeroColorDark(hero);
+            var heroColorGlow = GetHeroColorGlow(hero);
+
             var card = new VisualElement();
             card.name = $"hero-card-{index}";
             card.AddToClassList("hero-card");
+            // Apply hero-specific color class for CSS theming
+            card.AddToClassList($"hero-{hero.hero_id.ToLower()}");
             card.style.flexDirection = FlexDirection.Row;
             card.style.alignItems = Align.Center;
             card.style.paddingTop = 12;
@@ -301,10 +311,13 @@ namespace VeilBreakers.UI.Menus
             card.style.borderBottomWidth = 1;
             card.style.borderLeftWidth = 1;
             card.style.borderRightWidth = 1;
-            card.style.borderTopColor = new Color(60f/255f, 45f/255f, 55f/255f);
-            card.style.borderBottomColor = new Color(60f/255f, 45f/255f, 55f/255f);
-            card.style.borderLeftColor = new Color(60f/255f, 45f/255f, 55f/255f);
-            card.style.borderRightColor = new Color(60f/255f, 45f/255f, 55f/255f);
+            var baseBorder = new Color(heroColor.r * 0.35f + 0.15f, heroColor.g * 0.35f + 0.12f, heroColor.b * 0.35f + 0.15f, 1f);
+            card.style.borderTopColor = baseBorder;
+            card.style.borderBottomColor = baseBorder;
+            card.style.borderLeftColor = baseBorder;
+            card.style.borderRightColor = baseBorder;
+            // Persist color on the card for resets
+            card.userData = heroColor;
             card.style.borderTopLeftRadius = 6;
             card.style.borderTopRightRadius = 6;
             card.style.borderBottomLeftRadius = 6;
@@ -324,6 +337,14 @@ namespace VeilBreakers.UI.Menus
             portrait.style.borderBottomRightRadius = 6;
             portrait.style.borderBottomLeftRadius = 6;
             portrait.style.marginRight = 12;
+            portrait.style.borderTopColor = heroColor;
+            portrait.style.borderBottomColor = heroColor;
+            portrait.style.borderLeftColor = heroColor;
+            portrait.style.borderRightColor = heroColor;
+            portrait.style.borderTopWidth = 1;
+            portrait.style.borderBottomWidth = 1;
+            portrait.style.borderLeftWidth = 1;
+            portrait.style.borderRightWidth = 1;
 
             // Try to find portrait from mapping
             var mapping = GetHeroMapping(hero.hero_id);
@@ -369,7 +390,7 @@ namespace VeilBreakers.UI.Menus
             selectIndicator.style.left = 0;
             selectIndicator.style.top = 0;
             selectIndicator.style.bottom = 0;
-            selectIndicator.style.backgroundColor = new Color(180f/255f, 40f/255f, 60f/255f);
+            selectIndicator.style.backgroundColor = heroColor;
             selectIndicator.style.borderTopLeftRadius = 6;
             selectIndicator.style.borderBottomLeftRadius = 6;
             selectIndicator.style.opacity = 0;
@@ -379,16 +400,13 @@ namespace VeilBreakers.UI.Menus
             int capturedIndex = index;
             card.RegisterCallback<ClickEvent>(evt => OnHeroCardClicked(capturedIndex));
 
-            // Hover effects - use crimson-tinted colors
+            // Hover effects - per-hero accent color
             card.RegisterCallback<MouseEnterEvent>(evt =>
             {
                 if (_selectedHeroIndex != capturedIndex)
                 {
-                    card.style.backgroundColor = new Color(40f/255f, 30f/255f, 38f/255f);
-                    card.style.borderTopColor = new Color(100f/255f, 50f/255f, 65f/255f);
-                    card.style.borderBottomColor = new Color(100f/255f, 50f/255f, 65f/255f);
-                    card.style.borderLeftColor = new Color(100f/255f, 50f/255f, 65f/255f);
-                    card.style.borderRightColor = new Color(100f/255f, 50f/255f, 65f/255f);
+                    ApplyHeroHover(card, heroColor, heroColorGlow, 0.22f);
+                    UIAnimationController.Instance?.FadeSlideIn(card, UIAnimationController.SlideDirection.Right, 4f, 0.12f);
                 }
             });
 
@@ -396,15 +414,45 @@ namespace VeilBreakers.UI.Menus
             {
                 if (_selectedHeroIndex != capturedIndex)
                 {
-                    card.style.backgroundColor = new Color(25f/255f, 20f/255f, 28f/255f);
-                    card.style.borderTopColor = new Color(60f/255f, 45f/255f, 55f/255f);
-                    card.style.borderBottomColor = new Color(60f/255f, 45f/255f, 55f/255f);
-                    card.style.borderLeftColor = new Color(60f/255f, 45f/255f, 55f/255f);
-                    card.style.borderRightColor = new Color(60f/255f, 45f/255f, 55f/255f);
+                    ResetHeroCardVisual(card, heroColor);
                 }
             });
 
             return card;
+        }
+
+        private void ApplyHeroHover(VisualElement card, Color heroColor, Color heroGlow, float tintStrength)
+        {
+            card.style.backgroundColor = new Color(
+                Mathf.Clamp01(heroColor.r * tintStrength + 0.10f),
+                Mathf.Clamp01(heroColor.g * tintStrength + 0.08f),
+                Mathf.Clamp01(heroColor.b * tintStrength + 0.10f),
+                1f);
+            card.style.borderTopColor = heroGlow;
+            card.style.borderRightColor = heroGlow;
+            card.style.borderBottomColor = heroGlow;
+            card.style.borderLeftColor = heroGlow;
+
+            var indicator = card.Q("select-indicator");
+            if (indicator != null)
+            {
+                indicator.style.opacity = 0.4f;
+                indicator.style.backgroundColor = heroGlow;
+            }
+        }
+
+        private void ResetHeroCardVisual(VisualElement card, Color heroColor)
+        {
+            card.style.backgroundColor = new Color(25f/255f, 20f/255f, 28f/255f);
+            var borderColor = new Color(heroColor.r * 0.35f + 0.15f, heroColor.g * 0.35f + 0.12f, heroColor.b * 0.35f + 0.15f, 1f);
+            card.style.borderTopColor = borderColor;
+            card.style.borderRightColor = borderColor;
+            card.style.borderBottomColor = borderColor;
+            card.style.borderLeftColor = borderColor;
+
+            var indicator = card.Q("select-indicator");
+            if (indicator != null && (_selectedHeroIndex == -1 || card.name != $"hero-card-{_selectedHeroIndex}"))
+                indicator.style.opacity = 0;
         }
 
         private VisualElement CreateBrandIndicator(Brand brand)
@@ -494,16 +542,8 @@ namespace VeilBreakers.UI.Menus
             if (_selectedHeroIndex >= 0 && _selectedHeroIndex < _heroCards.Count)
             {
                 var prevCard = _heroCards[_selectedHeroIndex];
-                prevCard.style.backgroundColor = new Color(25f/255f, 20f/255f, 28f/255f);
-                var prevBorderColor = new Color(60f/255f, 45f/255f, 55f/255f);
-                prevCard.style.borderTopColor = prevBorderColor;
-                prevCard.style.borderRightColor = prevBorderColor;
-                prevCard.style.borderBottomColor = prevBorderColor;
-                prevCard.style.borderLeftColor = prevBorderColor;
-
-                var prevIndicator = prevCard.Q("select-indicator");
-                if (prevIndicator != null)
-                    prevIndicator.style.opacity = 0;
+                var prevHeroColor = GetHeroColor(_availableHeroes[_selectedHeroIndex]);
+                ResetHeroCardVisual(prevCard, prevHeroColor);
             }
 
             // Select new with hero-specific color
@@ -557,6 +597,20 @@ namespace VeilBreakers.UI.Menus
                 _modelViewport.style.borderRightColor = heroColor;
                 _modelViewport.style.borderBottomColor = heroColor;
                 _modelViewport.style.borderLeftColor = heroColor;
+                _modelViewport.style.backgroundColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.15f);
+            }
+
+            // Apply to center preview ring/icon
+            if (_previewRing != null)
+            {
+                _previewRing.style.borderTopColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.5f);
+                _previewRing.style.borderRightColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.5f);
+                _previewRing.style.borderBottomColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.5f);
+                _previewRing.style.borderLeftColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.5f);
+            }
+            if (_previewIcon != null)
+            {
+                _previewIcon.style.color = new Color(heroColor.r, heroColor.g, heroColor.b, 0.6f);
             }
 
             // Apply to hero name

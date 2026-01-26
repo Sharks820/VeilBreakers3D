@@ -9,9 +9,9 @@
 
         <!-- Veil pulse circles (animated via C#) -->
         <ui:VisualElement name="veil-pulse-layer" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden;">
-            <ui:VisualElement name="veil-pulse-1" style="position: absolute; left: 15%; top: 25%; width: 400px; height: 400px; border-radius: 200px; background-color: rgba(180, 40, 60, 0.06);" />
-            <ui:VisualElement name="veil-pulse-2" style="position: absolute; right: 10%; top: 15%; width: 300px; height: 300px; border-radius: 150px; background-color: rgba(140, 30, 50, 0.05);" />
-            <ui:VisualElement name="veil-pulse-3" style="position: absolute; left: 5%; bottom: 15%; width: 350px; height: 350px; border-radius: 175px; background-color: rgba(120, 30, 45, 0.04);" />
+            <ui:VisualElement name="veil-pulse-1" style="position: absolute; left: 15%; top: 25%; width: 400px; height: 400px; border-radius: 200px; background-color: rgba(180, 40, 60, 0.10);" />
+            <ui:VisualElement name="veil-pulse-2" style="position: absolute; right: 10%; top: 15%; width: 300px; height: 300px; border-radius: 150px; background-color: rgba(140, 30, 50, 0.08);" />
+            <ui:VisualElement name="veil-pulse-3" style="position: absolute; left: 5%; bottom: 15%; width: 350px; height: 350px; border-radius: 175px; background-color: rgba(120, 30, 45, 0.07);" />
         </ui:VisualElement>
 
         <!-- Particle containers (populated by C#) -->
@@ -32,7 +32,7 @@
                 </ui:VisualElement>
 
                 <!-- Main Title -->
-                <ui:Label text="VEILBREAKERS" name="game-title" style="font-size: 72px; letter-spacing: 12px; color: rgb(235, 225, 215); -unity-font-style: bold; -unity-text-align: middle-center; margin-bottom: 16px;" />
+            <ui:Label text="VEILBREAKERS" name="game-title" style="font-size: 72px; letter-spacing: 12px; color: rgb(235, 225, 215); -unity-font-style: bold; -unity-text-align: middle-center; margin-bottom: 16px;" />
 
                 <!-- Tagline -->
                 <ui:Label text="Break the Veil. Bind the Fallen." name="tagline" style="font-size: 16px; letter-spacing: 4px; color: rgb(130, 120, 110); -unity-text-align: middle-center; -unity-font-style: italic;" />
@@ -47,7 +47,7 @@
             </ui:VisualElement>
 
             <!-- Menu Buttons Container -->
-            <ui:VisualElement name="button-container" style="width: 320px; padding: 32px; background-color: rgba(12, 9, 18, 0.9); border-width: 1px; border-color: rgba(180, 40, 60, 0.3); border-radius: 12px;">
+            <ui:VisualElement name="button-container" style="width: 320px; padding: 32px; background-color: rgba(12, 9, 18, 0.9); border-width: 1px; border-color: rgba(180, 40, 60, 0.3); border-radius: 12px; box-shadow: 0 18px 42px rgba(0,0,0,0.55);">
 
                 <!-- NEW GAME Button -->
                 <ui:Button text="NEW GAME" name="btn-new-game" class="menu-button-main" style="width: 100%; margin-bottom: 12px; -unity-text-align: middle-center;" />

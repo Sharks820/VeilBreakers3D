@@ -11,27 +11,27 @@
         <ui:VisualElement style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.6);" />
 
         <!-- Settings Panel -->
-        <ui:VisualElement name="settings-panel" style="width: 650px; max-height: 85%; background-color: rgba(12, 9, 18, 0.95); border-width: 2px; border-color: rgba(180, 40, 60, 0.4); border-radius: 14px; padding: 28px;">
+        <ui:VisualElement name="settings-panel" class="settings-panel-container" style="width: 650px; max-height: 85%; padding: 28px;">
 
             <!-- Header -->
             <ui:VisualElement name="header" style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom-width: 1px; border-bottom-color: rgba(180, 40, 60, 0.3);">
                 <ui:VisualElement style="flex-direction: row; align-items: center;">
                     <ui:VisualElement style="width: 4px; height: 24px; background-color: rgb(180, 40, 60); border-radius: 2px; margin-right: 14px;" />
-                    <ui:Label text="SETTINGS" style="font-size: 26px; letter-spacing: 5px; color: rgb(235, 225, 215); -unity-font-style: bold;" />
+                    <ui:Label text="SETTINGS" style="font-size: 26px; letter-spacing: 5px; color: rgb(235, 245, 240); -unity-font-style: bold;" />
                 </ui:VisualElement>
                 <ui:Button text="X" name="btn-close" style="width: 40px; height: 40px; font-size: 18px; background-color: transparent; border-width: 1px; border-color: rgba(180, 50, 70, 0.4); border-radius: 20px; color: rgb(180, 80, 90); -unity-text-align: middle-center; padding: 0;" />
             </ui:VisualElement>
 
             <!-- Tab Bar -->
             <ui:VisualElement name="tab-container" style="flex-direction: row; margin-bottom: 20px; background-color: rgba(20, 16, 28, 0.6); border-radius: 6px; padding: 4px;">
-                <ui:Button text="AUDIO" name="tab-audio" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; background-color: rgb(180, 40, 60); border-width: 0; border-radius: 4px; color: rgb(235, 225, 215); margin-right: 4px;" />
-                <ui:Button text="GRAPHICS" name="tab-graphics" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; background-color: transparent; border-width: 0; border-radius: 4px; color: rgb(120, 110, 100); margin-right: 4px;" />
-                <ui:Button text="CONTROLS" name="tab-controls" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; background-color: transparent; border-width: 0; border-radius: 4px; color: rgb(120, 110, 100); margin-right: 4px;" />
-                <ui:Button text="GAMEPLAY" name="tab-gameplay" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; background-color: transparent; border-width: 0; border-radius: 4px; color: rgb(120, 110, 100);" />
+                <ui:Button text="AUDIO" name="tab-audio" class="settings-tab settings-tab-active" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; margin-right: 4px;" />
+                <ui:Button text="GRAPHICS" name="tab-graphics" class="settings-tab settings-tab-inactive" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; margin-right: 4px;" />
+                <ui:Button text="CONTROLS" name="tab-controls" class="settings-tab settings-tab-inactive" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; margin-right: 4px;" />
+                <ui:Button text="GAMEPLAY" name="tab-gameplay" class="settings-tab settings-tab-inactive" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center;" />
             </ui:VisualElement>
 
             <!-- Content ScrollView -->
-            <ui:ScrollView name="settings-content" style="flex-grow: 1; min-height: 320px; max-height: 420px;">
+            <ui:ScrollView name="settings-content" class="settings-scroll" style="flex-grow: 1; min-height: 320px; max-height: 420px;">
 
                 <!-- AUDIO TAB -->
                 <ui:VisualElement name="audio-settings" style="padding: 4px 0;">
@@ -84,14 +84,14 @@
                     <ui:Label text="DISPLAY" style="font-size: 11px; letter-spacing: 2px; color: rgb(180, 40, 60); margin-bottom: 12px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgba(180, 40, 60, 0.3);" />
 
                     <!-- Resolution -->
-                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(60, 50, 75, 0.2);">
-                        <ui:Label text="Resolution" style="width: 160px; font-size: 14px; color: rgb(165, 155, 145);" />
+                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(40, 70, 60, 0.25);">
+                        <ui:Label text="Resolution" style="width: 160px; font-size: 14px; color: rgb(185, 210, 200);" />
                         <ui:DropdownField name="dropdown-resolution" class="vb-dropdown" style="flex-grow: 1; margin-left: 16px; height: 36px;" />
                     </ui:VisualElement>
 
                     <!-- Display Mode -->
-                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(60, 50, 75, 0.2);">
-                        <ui:Label text="Display Mode" style="width: 160px; font-size: 14px; color: rgb(165, 155, 145);" />
+                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(40, 70, 60, 0.25);">
+                        <ui:Label text="Display Mode" style="width: 160px; font-size: 14px; color: rgb(185, 210, 200);" />
                         <ui:DropdownField name="dropdown-fullscreen" class="vb-dropdown" choices="Fullscreen,Windowed,Borderless" index="0" style="flex-grow: 1; margin-left: 16px; height: 36px;" />
                     </ui:VisualElement>
 
@@ -101,11 +101,11 @@
                         <ui:Toggle name="toggle-vsync" class="vb-toggle" value="true" />
                     </ui:VisualElement>
 
-                    <ui:Label text="QUALITY" style="font-size: 11px; letter-spacing: 2px; color: rgb(180, 40, 60); margin-top: 16px; margin-bottom: 12px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgba(180, 40, 60, 0.3);" />
+                    <ui:Label text="QUALITY" style="font-size: 11px; letter-spacing: 2px; color: rgb(180, 40, 60); margin-top: 16px; margin-bottom: 12px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgba(180, 40, 60, 0.35);" />
 
                     <!-- Quality -->
-                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(60, 50, 75, 0.2);">
-                        <ui:Label text="Quality Preset" style="width: 160px; font-size: 14px; color: rgb(165, 155, 145);" />
+                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(40, 70, 60, 0.25);">
+                        <ui:Label text="Quality Preset" style="width: 160px; font-size: 14px; color: rgb(185, 210, 200);" />
                         <ui:DropdownField name="dropdown-quality" class="vb-dropdown" choices="Low,Medium,High,Ultra" index="2" style="flex-grow: 1; margin-left: 16px; height: 36px;" />
                     </ui:VisualElement>
 
