@@ -60,6 +60,30 @@
     --brand-void-dark: rgb(15, 5, 25);
 
     /* =========================================================================
+       HERO COLORS - Character-specific theming
+       ========================================================================= */
+
+    /* MIRAGE - Stealth and illusions (GREEN) */
+    --hero-mirage: rgb(40, 200, 80);
+    --hero-mirage-glow: rgb(80, 240, 120);
+    --hero-mirage-dark: rgb(20, 120, 40);
+
+    /* BASTION - Defense and protection (BLUE) */
+    --hero-bastion: rgb(60, 140, 220);
+    --hero-bastion-glow: rgb(100, 180, 255);
+    --hero-bastion-dark: rgb(30, 80, 140);
+
+    /* MARROW - Death and necromancy (PURPLE) */
+    --hero-marrow: rgb(160, 80, 200);
+    --hero-marrow-glow: rgb(200, 120, 240);
+    --hero-marrow-dark: rgb(100, 40, 120);
+
+    /* REND - Berserker fury (DARK RED) */
+    --hero-rend: rgb(140, 30, 30);
+    --hero-rend-glow: rgb(200, 60, 60);
+    --hero-rend-dark: rgb(80, 15, 15);
+
+    /* =========================================================================
        CORRUPTION STATE COLORS
        ========================================================================= */
 

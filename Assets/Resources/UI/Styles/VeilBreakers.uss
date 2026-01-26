@@ -662,6 +662,63 @@
     border-color: rgb(180, 40, 60);
 }
 
+/* Hero-specific color theming */
+.hero-mirage {
+    border-color: var(--hero-mirage);
+}
+
+.hero-mirage:hover {
+    border-color: var(--hero-mirage-glow);
+    background-color: rgba(40, 200, 80, 0.1);
+}
+
+.hero-mirage.selected {
+    border-color: var(--hero-mirage-glow);
+    background-color: rgba(40, 200, 80, 0.15);
+}
+
+.hero-bastion {
+    border-color: var(--hero-bastion);
+}
+
+.hero-bastion:hover {
+    border-color: var(--hero-bastion-glow);
+    background-color: rgba(60, 140, 220, 0.1);
+}
+
+.hero-bastion.selected {
+    border-color: var(--hero-bastion-glow);
+    background-color: rgba(60, 140, 220, 0.15);
+}
+
+.hero-marrow {
+    border-color: var(--hero-marrow);
+}
+
+.hero-marrow:hover {
+    border-color: var(--hero-marrow-glow);
+    background-color: rgba(160, 80, 200, 0.1);
+}
+
+.hero-marrow.selected {
+    border-color: var(--hero-marrow-glow);
+    background-color: rgba(160, 80, 200, 0.15);
+}
+
+.hero-rend {
+    border-color: var(--hero-rend);
+}
+
+.hero-rend:hover {
+    border-color: var(--hero-rend-glow);
+    background-color: rgba(140, 30, 30, 0.1);
+}
+
+.hero-rend.selected {
+    border-color: var(--hero-rend-glow);
+    background-color: rgba(140, 30, 30, 0.15);
+}
+
 .hero-card-portrait {
     width: 50px;
     height: 50px;
@@ -1310,4 +1367,66 @@
 
 .integrity-bar-fill-corrupted {
     background-color: rgb(180, 40, 60);
+}
+
+/* =============================================================================
+   SETTINGS PANEL - Dropdown Visibility Fix
+   ============================================================================= */
+
+/* CRITICAL: Force all parent containers to allow overflow for dropdown menus */
+.settings-panel-container {
+    overflow: visible !important;
+    background-color: rgba(18, 12, 22, 0.95);
+    border-radius: 12px;
+    border-width: 2px;
+    border-color: rgba(180, 40, 60, 0.4);
+}
+
+.settings-scroll {
+    overflow: visible !important;
+}
+
+.settings-scroll > .unity-scroll-view__content-viewport {
+    overflow: visible !important;
+}
+
+.settings-scroll > .unity-scroll-view__content-viewport > .unity-scroll-view__content-container {
+    overflow: visible !important;
+}
+
+/* Ensure dropdown popup is not clipped */
+.unity-base-popup-field__input {
+    overflow: visible !important;
+}
+
+.unity-base-dropdown {
+    overflow: visible !important;
+}
+
+.unity-base-dropdown__container-outer {
+    overflow: visible !important;
+}
+
+.unity-base-dropdown__container-inner {
+    overflow: visible !important;
+}
+
+/* Settings tabs */
+.settings-tab {
+    background-color: transparent;
+    border-width: 0;
+    color: rgb(165, 155, 145);
+    transition-duration: 0.2s;
+    transition-property: background-color, color;
+}
+
+.settings-tab-active {
+    background-color: rgba(180, 40, 60, 0.2);
+    color: rgb(235, 225, 215);
+    border-radius: 4px;
+}
+
+.settings-tab-inactive:hover {
+    background-color: rgba(180, 40, 60, 0.1);
+    color: rgb(200, 190, 180);
 }
