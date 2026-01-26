@@ -521,16 +521,24 @@ namespace VeilBreakers.UI.Effects
             for (int i = 0; i < _lightningBoltCount; i++)
             {
                 var bolt = CreateLightningBolt();
+                
+                // CRITICAL: Check for null in case sprite loading fails
+                if (bolt == null)
+                {
+                    Debug.LogError($"[VB:Lightning] Failed to create bolt #{i} - sprite loading failed");
+                    continue;
+                }
+                
                 bolt.Root.style.display = DisplayStyle.None; // Hidden until triggered
                 bolt.Root.pickingMode = PickingMode.Ignore; // Don't block clicks
 
                 _sparkContainer.Add(bolt.Root);
                 _lightningBolts.Add(bolt);
                 
-                Debug.Log($"[VB:Lightning] Added bolt #{i} to _sparkContainer (jagged segments)");
+                Debug.Log($"[VB:Lightning] Added bolt #{i} to _sparkContainer (sprite-based)");
             }
             
-            Debug.Log($"[VB:Lightning] Created {_lightningBoltCount} bolts in _sparkContainer, container child count: {_sparkContainer.childCount}");
+            Debug.Log($"[VB:Lightning] Created {_lightningBoltCount} sprite-based bolts in _sparkContainer, container child count: {_sparkContainer.childCount}");
         }
 
         // =============================================================================
