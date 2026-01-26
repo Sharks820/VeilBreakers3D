@@ -172,20 +172,6 @@ namespace VeilBreakers.UI.Effects
             _particleContainer = _root.Q<VisualElement>("particle-container");
             _emberContainer = _root.Q<VisualElement>("ember-container");
 
-            // Create spark container if missing
-            _sparkContainer = _root.Q<VisualElement>("spark-container");
-            if (_sparkContainer == null)
-            {
-                _sparkContainer = new VisualElement { name = "spark-container" };
-                _sparkContainer.style.position = Position.Absolute;
-                _sparkContainer.style.left = 0;
-                _sparkContainer.style.top = 0;
-                _sparkContainer.style.right = 0;
-                _sparkContainer.style.bottom = 0;
-                _sparkContainer.style.overflow = Overflow.Hidden;
-                _root.Add(_sparkContainer);
-            }
-
             // Fallback: create containers if missing in UXML
             if (_particleContainer == null)
             {
@@ -209,6 +195,27 @@ namespace VeilBreakers.UI.Effects
                 _emberContainer.style.overflow = Overflow.Hidden;
                 _root.Add(_emberContainer);
             }
+
+            // CRITICAL: Remove old spark-container if it exists
+            _sparkContainer = _root.Q<VisualElement>("spark-container");
+            if (_sparkContainer != null)
+            {
+                _sparkContainer.RemoveFromHierarchy();
+                Debug.Log("[VB:Lightning] Removed existing spark-container");
+            }
+            
+            // Create NEW spark container - add it LAST so it renders on top
+            _sparkContainer = new VisualElement { name = "spark-container" };
+            _sparkContainer.style.position = Position.Absolute;
+            _sparkContainer.style.left = 0;
+            _sparkContainer.style.top = 0;
+            _sparkContainer.style.width = Length.Percent(100);
+            _sparkContainer.style.height = Length.Percent(100);
+            _sparkContainer.style.overflow = Overflow.Visible;
+            _sparkContainer.pickingMode = PickingMode.Ignore;
+            // Add AFTER all other UI initialization
+            // We'll add it at the very end after creating particles
+            Debug.Log("[VB:Lightning] Created new spark-container (will add last)");
 
             // Get screen dimensions
             _screenWidth = Screen.width;
@@ -234,6 +241,12 @@ namespace VeilBreakers.UI.Effects
             CreateDustParticles();
             CreateSparks();
             CreateLightningBolts();
+            
+            // NOW add spark container as THE LAST CHILD so it renders ON TOP
+            _root.Add(_sparkContainer);
+            _sparkContainer.BringToFront();
+            
+            Debug.Log($"[VB:Lightning] Initialization complete. Added spark-container as LAST child. Screen: {_screenWidth}x{_screenHeight}, Bolts: {_lightningBolts.Count}, Container child count: {_root.childCount}");
 
             _isInitialized = true;
         }
@@ -417,12 +430,13 @@ namespace VeilBreakers.UI.Effects
 
         private void CreateLightningBolts()
         {
-            if (_sparkContainer == null) return;
+            if (_root == null) return;
 
             for (int i = 0; i < _lightningBoltCount; i++)
             {
                 var bolt = CreateLightningBolt();
                 bolt.style.display = DisplayStyle.None; // Hidden until triggered
+                bolt.pickingMode = PickingMode.Ignore; // Don't block clicks (NOT .style)
 
                 var data = new LightningData
                 {
@@ -432,8 +446,11 @@ namespace VeilBreakers.UI.Effects
                     Active = false
                 };
 
-                _sparkContainer.Add(bolt);
+                // Add directly to ROOT instead of container
+                _root.Add(bolt);
                 _lightningBolts.Add(data);
+                
+                Debug.Log($"[VB:Lightning] Added bolt #{i} directly to root, parent count: {_root.childCount}");
             }
         }
 
@@ -562,43 +579,25 @@ namespace VeilBreakers.UI.Effects
 
         private VisualElement CreateLightningBolt()
         {
-            // Container for multi-layer lightning bolt
+            // Container for multi-layer lightning bolt - NUCLEAR VISIBILITY MODE
             var container = new VisualElement();
             container.style.position = Position.Absolute;
-            container.style.width = 12; // Wider to accommodate glow
+            container.style.width = 40; // EXTREMELY wide - impossible to miss
             container.style.height = _screenHeight;
             container.style.left = Random.Range(0f, _screenWidth);
             container.style.top = 0;
             
-            // OUTER GLOW (widest, crimson) - INCREASED VISIBILITY
-            var outerGlow = new VisualElement();
-            outerGlow.style.position = Position.Absolute;
-            outerGlow.style.width = 12;
-            outerGlow.style.height = _screenHeight;
-            outerGlow.style.left = 0;
-            outerGlow.style.top = 0;
-            outerGlow.style.backgroundColor = new Color(_lightningColor.r, _lightningColor.g, _lightningColor.b, _lightningColor.a * 0.5f);
-            container.Add(outerGlow);
+            // SINGLE ULTRA-BRIGHT WHITE BOLT (no layers, just maximum visibility)
+            var bolt = new VisualElement();
+            bolt.style.position = Position.Absolute;
+            bolt.style.width = 40;
+            bolt.style.height = _screenHeight;
+            bolt.style.left = 0;
+            bolt.style.top = 0;
+            bolt.style.backgroundColor = new Color(1f, 1f, 1f, 1f); // PURE WHITE, FULL OPACITY
+            container.Add(bolt);
             
-            // MIDDLE GLOW (medium, brighter crimson) - INCREASED VISIBILITY
-            var middleGlow = new VisualElement();
-            middleGlow.style.position = Position.Absolute;
-            middleGlow.style.width = 6;
-            middleGlow.style.height = _screenHeight;
-            middleGlow.style.left = 3;
-            middleGlow.style.top = 0;
-            middleGlow.style.backgroundColor = new Color(_lightningColor.r, _lightningColor.g, _lightningColor.b, _lightningColor.a * 0.8f);
-            container.Add(middleGlow);
-            
-            // BRIGHT CORE (thin, almost white)
-            var core = new VisualElement();
-            core.style.position = Position.Absolute;
-            core.style.width = 2;
-            core.style.height = _screenHeight;
-            core.style.left = 5;
-            core.style.top = 0;
-            core.style.backgroundColor = new Color(1f, 0.9f, 0.9f, 1f); // Almost white with slight crimson tint
-            container.Add(core);
+            Debug.Log($"[VB:Lightning] Created NUCLEAR VISIBILITY bolt - width: 40px, height: {_screenHeight}, color: WHITE (1,1,1,1)");
             
             return container;
         }
@@ -728,9 +727,19 @@ namespace VeilBreakers.UI.Effects
 
                 bolt.Lifetime += deltaTime;
 
-                // Flash effect - brighten then fade quickly
+                // FULL BRIGHTNESS for most of duration, only fade at very end
                 float t = bolt.Lifetime / bolt.MaxLifetime;
-                float alpha = t < 0.2f ? t / 0.2f : (1f - t) / 0.8f;
+                float alpha;
+                if (t < 0.8f)
+                {
+                    // Stay at FULL brightness for 80% of duration
+                    alpha = 1.0f;
+                }
+                else
+                {
+                    // Quick fade only in last 20%
+                    alpha = (1.0f - t) / 0.2f;
+                }
                 alpha = Mathf.Clamp01(alpha);
 
                 bolt.Element.style.opacity = alpha;
@@ -775,13 +784,18 @@ namespace VeilBreakers.UI.Effects
                 var bolt = _lightningBolts[i];
                 if (!bolt.Active)
                 {
+                    float xPos = Random.Range(0f, _screenWidth);
                     bolt.Active = true;
                     bolt.Lifetime = 0f;
                     bolt.Element.style.display = DisplayStyle.Flex;
-                    bolt.Element.style.left = Random.Range(0f, _screenWidth);
+                    bolt.Element.style.left = xPos;
+                    bolt.Element.style.opacity = 1f; // Force full opacity initially
+                    
+                    Debug.Log($"[VB:Lightning] Triggered bolt #{i} at X={xPos}, screenWidth={_screenWidth}, screenHeight={_screenHeight}");
                     return;
                 }
             }
+            Debug.LogWarning("[VB:Lightning] All lightning bolts active, cannot trigger new one");
         }
 
         // =============================================================================
