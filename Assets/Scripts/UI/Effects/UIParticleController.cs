@@ -253,36 +253,61 @@ namespace VeilBreakers.UI.Effects
         }
 
         public void Initialize(VisualElement root)
+    {
+        _root = root;
+        if (_root == null) return;
+
+        _particleContainer = _root.Q<VisualElement>("particle-container");
+        _emberContainer = _root.Q<VisualElement>("ember-container");
+        
+        // CRITICAL: Remove old spark-container if it exists
+        _sparkContainer = _root.Q<VisualElement>("spark-container");
+        if (_sparkContainer != null)
         {
-            _root = root;
-            if (_root == null) return;
-
-            _particleContainer = _root.Q<VisualElement>("particle-container");
-            _emberContainer = _root.Q<VisualElement>("ember-container");
-            _sparkContainer = _root.Q<VisualElement>("spark-container");
-
-            _screenWidth = Screen.width;
-            _screenHeight = Screen.height;
-
-            var veilPulseLayer = _root.Q<VisualElement>("veil-pulse-layer");
-            if (veilPulseLayer != null)
-            {
-                var p1 = _root.Q<VisualElement>("veil-pulse-1");
-                var p2 = _root.Q<VisualElement>("veil-pulse-2");
-                var p3 = _root.Q<VisualElement>("veil-pulse-3");
-                if (p1 != null) _veilPulses.Add(p1);
-                if (p2 != null) _veilPulses.Add(p2);
-                if (p3 != null) _veilPulses.Add(p3);
-            }
-
-            InitializeObjectPool();
-            CreateEmbers();
-            CreateDustParticles();
-            CreateSparks();
-            CreateLightningBolts();
-
-            _isInitialized = true;
+            _sparkContainer.RemoveFromHierarchy();
+            Debug.Log("[VB:Lightning] Removed existing spark-container");
         }
+        
+        // Create NEW spark container - same as parameterless Initialize()
+        _sparkContainer = new VisualElement { name = "spark-container" };
+        _sparkContainer.style.position = Position.Absolute;
+        _sparkContainer.style.left = 0;
+        _sparkContainer.style.top = 0;
+        _sparkContainer.style.width = Length.Percent(100);
+        _sparkContainer.style.height = Length.Percent(100);
+        _sparkContainer.style.overflow = Overflow.Visible;
+        _sparkContainer.pickingMode = PickingMode.Ignore;
+        _sparkContainer.style.display = DisplayStyle.Flex;
+        Debug.Log("[VB:Lightning] Created new spark-container in Initialize(root)");
+
+        _screenWidth = Screen.width;
+        _screenHeight = Screen.height;
+
+        var veilPulseLayer = _root.Q<VisualElement>("veil-pulse-layer");
+        if (veilPulseLayer != null)
+        {
+            var p1 = _root.Q<VisualElement>("veil-pulse-1");
+            var p2 = _root.Q<VisualElement>("veil-pulse-2");
+            var p3 = _root.Q<VisualElement>("veil-pulse-3");
+            if (p1 != null) _veilPulses.Add(p1);
+            if (p2 != null) _veilPulses.Add(p2);
+            if (p3 != null) _veilPulses.Add(p3);
+        }
+
+        InitializeObjectPool();
+        CreateEmbers();
+        CreateDustParticles();
+        CreateSparks();
+        CreateLightningBolts();
+        
+        // Add spark container LAST so it renders on top
+        _root.Add(_sparkContainer);
+        _sparkContainer.BringToFront();
+        
+        Debug.Log($"[VB:Lightning] Initialize(root) complete. Added spark-container as LAST child.");
+
+        _isInitialized = true;
+    }
 
         // =============================================================================
         // OBJECT POOLING (OPTIMIZATION)
