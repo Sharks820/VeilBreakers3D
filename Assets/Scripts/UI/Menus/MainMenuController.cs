@@ -424,26 +424,43 @@ namespace VeilBreakers.UI.Menus
 
         private void PlayEntranceAnimation()
         {
-            // Fade in title
+            // DRAMATIC title entrance with scale + fade
             if (_gameTitle != null)
             {
                 _gameTitle.style.opacity = 0;
+                _gameTitle.style.scale = new Scale(Vector2.one * 0.5f);
                 StartCoroutine(FadeInElement(_gameTitle, _titleFadeInDuration, 0f));
+                StartCoroutine(ScaleInElement(_gameTitle, 0.5f, 1f, _titleFadeInDuration, 0f, EaseType.ElasticOut));
             }
 
-            // Fade in tagline with delay
+            // Tagline with bounce
             if (_tagline != null)
             {
                 _tagline.style.opacity = 0;
-                StartCoroutine(FadeInElement(_tagline, 1f, 0.5f));
+                _tagline.style.translate = new Translate(0, -30);
+                StartCoroutine(FadeInElement(_tagline, 0.8f, 0.6f));
+                StartCoroutine(SlideInElement(_tagline, 0, -30, 0.8f, 0.6f, EaseType.BounceOut));
             }
 
-            // Stagger button animations
+            // Individual button stagger with BOUNCE
             if (_buttonContainer != null)
             {
-                _buttonContainer.style.opacity = 0;
-                StartCoroutine(FadeInElement(_buttonContainer, 0.8f, 1f));
-                StartCoroutine(SlideInElement(_buttonContainer, 30, 0.8f, 1f));
+                var buttons = _buttonContainer.Query<Button>().ToList();
+                for (int i = 0; i < buttons.Count; i++)
+                {
+                    var button = buttons[i];
+                    button.style.opacity = 0;
+                    button.style.translate = new Translate(-50, 0);
+                    button.style.scale = new Scale(Vector2.one * 0.8f);
+
+                    float delay = 1.2f + (i * 0.15f); // Stagger each button
+                    StartCoroutine(FadeInElement(button, 0.5f, delay));
+                    StartCoroutine(SlideInElement(button, -50, 0, 0.6f, delay, EaseType.BackOut));
+                    StartCoroutine(ScaleInElement(button, 0.8f, 1f, 0.6f, delay, EaseType.BackOut));
+
+                    // Add hover glow effect
+                    AddButtonHoverEffects(button);
+                }
             }
         }
 
@@ -464,7 +481,7 @@ namespace VeilBreakers.UI.Menus
             element.style.opacity = 1;
         }
 
-        private IEnumerator SlideInElement(VisualElement element, float fromY, float duration, float delay)
+        private IEnumerator SlideInElement(VisualElement element, float fromX, float fromY, float duration, float delay, EaseType easeType = EaseType.EaseOut)
         {
             if (delay > 0)
                 yield return new WaitForSeconds(delay);
@@ -474,12 +491,31 @@ namespace VeilBreakers.UI.Menus
             {
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / duration);
-                t = EaseOutCubic(t);
+                t = ApplyEasing(t, easeType);
+                float x = Mathf.Lerp(fromX, 0, t);
                 float y = Mathf.Lerp(fromY, 0, t);
-                element.style.translate = new Translate(0, y);
+                element.style.translate = new Translate(x, y);
                 yield return null;
             }
             element.style.translate = new Translate(0, 0);
+        }
+
+        private IEnumerator ScaleInElement(VisualElement element, float fromScale, float toScale, float duration, float delay, EaseType easeType = EaseType.EaseOut)
+        {
+            if (delay > 0)
+                yield return new WaitForSeconds(delay);
+
+            float elapsed = 0;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = ApplyEasing(t, easeType);
+                float scale = Mathf.Lerp(fromScale, toScale, t);
+                element.style.scale = new Scale(new Vector2(scale, scale));
+                yield return null;
+            }
+            element.style.scale = new Scale(new Vector2(toScale, toScale));
         }
 
         private void StartVeilPulseAnimation()
@@ -521,9 +557,88 @@ namespace VeilBreakers.UI.Menus
             }
         }
 
+        // =============================================================================
+        // EASING FUNCTIONS
+        // =============================================================================
+
+        private enum EaseType
+        {
+            EaseOut,
+            ElasticOut,
+            BounceOut,
+            BackOut
+        }
+
+        private float ApplyEasing(float t, EaseType easeType)
+        {
+            switch (easeType)
+            {
+                case EaseType.ElasticOut:
+                    return EaseElasticOut(t);
+                case EaseType.BounceOut:
+                    return EaseBounceOut(t);
+                case EaseType.BackOut:
+                    return EaseBackOut(t);
+                case EaseType.EaseOut:
+                default:
+                    return EaseOutCubic(t);
+            }
+        }
+
         private float EaseOutCubic(float t)
         {
             return 1 - Mathf.Pow(1 - t, 3);
+        }
+
+        private float EaseElasticOut(float t)
+        {
+            if (t == 0 || t == 1) return t;
+            float p = 0.3f;
+            return Mathf.Pow(2, -10 * t) * Mathf.Sin((t - p / 4) * (2 * Mathf.PI) / p) + 1;
+        }
+
+        private float EaseBounceOut(float t)
+        {
+            if (t < (1 / 2.75f))
+            {
+                return 7.5625f * t * t;
+            }
+            else if (t < (2 / 2.75f))
+            {
+                t -= (1.5f / 2.75f);
+                return 7.5625f * t * t + 0.75f;
+            }
+            else if (t < (2.5f / 2.75f))
+            {
+                t -= (2.25f / 2.75f);
+                return 7.5625f * t * t + 0.9375f;
+            }
+            else
+            {
+                t -= (2.625f / 2.75f);
+                return 7.5625f * t * t + 0.984375f;
+            }
+        }
+
+        private float EaseBackOut(float t)
+        {
+            float c1 = 1.70158f;
+            float c3 = c1 + 1;
+            return 1 + c3 * Mathf.Pow(t - 1, 3) + c1 * Mathf.Pow(t - 1, 2);
+        }
+
+        private void AddButtonHoverEffects(Button button)
+        {
+            // Subtle glow pulse on hover - lightweight and performant
+            button.RegisterCallback<MouseEnterEvent>(evt =>
+            {
+                button.AddToClassList("vb-button-hover-glow");
+            });
+
+            button.RegisterCallback<MouseLeaveEvent>(evt =>
+            {
+                button.RemoveFromClassList("vb-button-hover-glow");
+            });
         }
 
         private void OnDisable()

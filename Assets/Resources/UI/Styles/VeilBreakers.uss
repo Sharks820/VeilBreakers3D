@@ -216,6 +216,14 @@
     min-height: 50px;
 }
 
+/* Button hover glow effect - applied dynamically on mouse enter */
+.vb-button-hover-glow {
+    border-color: var(--color-accent-crimson-glow);
+    transition-duration: 0.2s;
+    transition-property: border-color, scale;
+    scale: 1.05 1.05;
+}
+
 /* =============================================================================
    INPUT FIELDS
    ============================================================================= */
