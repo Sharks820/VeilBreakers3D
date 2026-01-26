@@ -296,15 +296,15 @@ namespace VeilBreakers.UI.Menus
             card.style.paddingLeft = 12;
             card.style.paddingRight = 12;
             card.style.marginBottom = 8;
-            card.style.backgroundColor = new Color(25f/255f, 20f/255f, 35f/255f);
+            card.style.backgroundColor = new Color(25f/255f, 20f/255f, 28f/255f);
             card.style.borderTopWidth = 1;
             card.style.borderBottomWidth = 1;
             card.style.borderLeftWidth = 1;
             card.style.borderRightWidth = 1;
-            card.style.borderTopColor = new Color(60f/255f, 50f/255f, 70f/255f);
-            card.style.borderBottomColor = new Color(60f/255f, 50f/255f, 70f/255f);
-            card.style.borderLeftColor = new Color(60f/255f, 50f/255f, 70f/255f);
-            card.style.borderRightColor = new Color(60f/255f, 50f/255f, 70f/255f);
+            card.style.borderTopColor = new Color(60f/255f, 45f/255f, 55f/255f);
+            card.style.borderBottomColor = new Color(60f/255f, 45f/255f, 55f/255f);
+            card.style.borderLeftColor = new Color(60f/255f, 45f/255f, 55f/255f);
+            card.style.borderRightColor = new Color(60f/255f, 45f/255f, 55f/255f);
             card.style.borderTopLeftRadius = 6;
             card.style.borderTopRightRadius = 6;
             card.style.borderBottomLeftRadius = 6;
@@ -318,7 +318,7 @@ namespace VeilBreakers.UI.Menus
             portrait.style.height = 48;
             portrait.style.minHeight = 48;
             portrait.style.flexShrink = 0;
-            portrait.style.backgroundColor = new Color(35f/255f, 28f/255f, 45f/255f);
+            portrait.style.backgroundColor = new Color(35f/255f, 28f/255f, 35f/255f);
             portrait.style.borderTopLeftRadius = 6;
             portrait.style.borderTopRightRadius = 6;
             portrait.style.borderBottomRightRadius = 6;
@@ -379,16 +379,16 @@ namespace VeilBreakers.UI.Menus
             int capturedIndex = index;
             card.RegisterCallback<ClickEvent>(evt => OnHeroCardClicked(capturedIndex));
 
-            // Hover effects
+            // Hover effects - use crimson-tinted colors
             card.RegisterCallback<MouseEnterEvent>(evt =>
             {
                 if (_selectedHeroIndex != capturedIndex)
                 {
-                    card.style.backgroundColor = new Color(40f/255f, 32f/255f, 50f/255f);
-                    card.style.borderTopColor = new Color(80f/255f, 60f/255f, 100f/255f);
-                    card.style.borderBottomColor = new Color(80f/255f, 60f/255f, 100f/255f);
-                    card.style.borderLeftColor = new Color(80f/255f, 60f/255f, 100f/255f);
-                    card.style.borderRightColor = new Color(80f/255f, 60f/255f, 100f/255f);
+                    card.style.backgroundColor = new Color(40f/255f, 30f/255f, 38f/255f);
+                    card.style.borderTopColor = new Color(100f/255f, 50f/255f, 65f/255f);
+                    card.style.borderBottomColor = new Color(100f/255f, 50f/255f, 65f/255f);
+                    card.style.borderLeftColor = new Color(100f/255f, 50f/255f, 65f/255f);
+                    card.style.borderRightColor = new Color(100f/255f, 50f/255f, 65f/255f);
                 }
             });
 
@@ -396,11 +396,11 @@ namespace VeilBreakers.UI.Menus
             {
                 if (_selectedHeroIndex != capturedIndex)
                 {
-                    card.style.backgroundColor = new Color(25f/255f, 20f/255f, 35f/255f);
-                    card.style.borderTopColor = new Color(60f/255f, 50f/255f, 70f/255f);
-                    card.style.borderBottomColor = new Color(60f/255f, 50f/255f, 70f/255f);
-                    card.style.borderLeftColor = new Color(60f/255f, 50f/255f, 70f/255f);
-                    card.style.borderRightColor = new Color(60f/255f, 50f/255f, 70f/255f);
+                    card.style.backgroundColor = new Color(25f/255f, 20f/255f, 28f/255f);
+                    card.style.borderTopColor = new Color(60f/255f, 45f/255f, 55f/255f);
+                    card.style.borderBottomColor = new Color(60f/255f, 45f/255f, 55f/255f);
+                    card.style.borderLeftColor = new Color(60f/255f, 45f/255f, 55f/255f);
+                    card.style.borderRightColor = new Color(60f/255f, 45f/255f, 55f/255f);
                 }
             });
 
@@ -434,15 +434,21 @@ namespace VeilBreakers.UI.Menus
         {
             if (index < 0 || index >= _availableHeroes.Count) return;
 
-            // Update selection visuals
-            UpdateSelectionVisuals(index);
+            // Get the hero for color theming
+            var hero = _availableHeroes[index];
+
+            // Update selection visuals with hero-specific colors
+            UpdateSelectionVisuals(index, GetHeroColor(hero));
 
             // Update selected hero
             _selectedHeroIndex = index;
-            _selectedHero = _availableHeroes[index];
+            _selectedHero = hero;
 
             // Update details panel
             UpdateDetailsPanel(_selectedHero);
+
+            // Apply hero theme colors to the entire UI
+            ApplyHeroThemeColors(_selectedHero);
 
             // Update preview
             UpdatePreviewModel(_selectedHero);
@@ -454,14 +460,42 @@ namespace VeilBreakers.UI.Menus
             // AudioManager.Instance?.PlaySFX("UI_Select");
         }
 
-        private void UpdateSelectionVisuals(int newIndex)
+        private Color GetHeroColor(HeroData hero)
+        {
+            // Use the hero's color palette from JSON
+            return new Color(
+                hero.color_palette.r,
+                hero.color_palette.g,
+                hero.color_palette.b,
+                hero.color_palette.a
+            );
+        }
+
+        private Color GetHeroColorDark(HeroData hero)
+        {
+            var c = GetHeroColor(hero);
+            return new Color(c.r * 0.5f, c.g * 0.5f, c.b * 0.5f, 1f);
+        }
+
+        private Color GetHeroColorGlow(HeroData hero)
+        {
+            var c = GetHeroColor(hero);
+            return new Color(
+                Mathf.Min(1f, c.r * 1.3f),
+                Mathf.Min(1f, c.g * 1.3f),
+                Mathf.Min(1f, c.b * 1.3f),
+                1f
+            );
+        }
+
+        private void UpdateSelectionVisuals(int newIndex, Color heroColor)
         {
             // Deselect previous
             if (_selectedHeroIndex >= 0 && _selectedHeroIndex < _heroCards.Count)
             {
                 var prevCard = _heroCards[_selectedHeroIndex];
-                prevCard.style.backgroundColor = new Color(25f/255f, 20f/255f, 35f/255f);
-                var prevBorderColor = new Color(60f/255f, 50f/255f, 70f/255f);
+                prevCard.style.backgroundColor = new Color(25f/255f, 20f/255f, 28f/255f);
+                var prevBorderColor = new Color(60f/255f, 45f/255f, 55f/255f);
                 prevCard.style.borderTopColor = prevBorderColor;
                 prevCard.style.borderRightColor = prevBorderColor;
                 prevCard.style.borderBottomColor = prevBorderColor;
@@ -472,24 +506,118 @@ namespace VeilBreakers.UI.Menus
                     prevIndicator.style.opacity = 0;
             }
 
-            // Select new
+            // Select new with hero-specific color
             if (newIndex >= 0 && newIndex < _heroCards.Count)
             {
                 var newCard = _heroCards[newIndex];
-                newCard.style.backgroundColor = new Color(40f/255f, 32f/255f, 55f/255f);
-                var newBorderColor = new Color(180f/255f, 40f/255f, 60f/255f);
-                newCard.style.borderTopColor = newBorderColor;
-                newCard.style.borderRightColor = newBorderColor;
-                newCard.style.borderBottomColor = newBorderColor;
-                newCard.style.borderLeftColor = newBorderColor;
+                // Background tinted with hero color
+                newCard.style.backgroundColor = new Color(
+                    heroColor.r * 0.2f + 0.08f,
+                    heroColor.g * 0.2f + 0.06f,
+                    heroColor.b * 0.2f + 0.08f
+                );
+                // Border in hero color
+                newCard.style.borderTopColor = heroColor;
+                newCard.style.borderRightColor = heroColor;
+                newCard.style.borderBottomColor = heroColor;
+                newCard.style.borderLeftColor = heroColor;
 
+                // Selection indicator in hero color
                 var newIndicator = newCard.Q("select-indicator");
                 if (newIndicator != null)
+                {
                     newIndicator.style.opacity = 1;
+                    newIndicator.style.backgroundColor = heroColor;
+                }
 
                 // Animate selection
                 UIAnimationController.Instance?.PunchScale(newCard, 1.02f, 0.15f);
             }
+        }
+
+        private void ApplyHeroThemeColors(HeroData hero)
+        {
+            var heroColor = GetHeroColor(hero);
+            var heroColorDark = GetHeroColorDark(hero);
+            var heroColorGlow = GetHeroColorGlow(hero);
+
+            // Apply to details panel border
+            if (_detailsPanel != null)
+            {
+                _detailsPanel.style.borderTopColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.5f);
+                _detailsPanel.style.borderRightColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.5f);
+                _detailsPanel.style.borderBottomColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.5f);
+                _detailsPanel.style.borderLeftColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.5f);
+            }
+
+            // Apply to model viewport border
+            if (_modelViewport != null)
+            {
+                _modelViewport.style.borderTopColor = heroColor;
+                _modelViewport.style.borderRightColor = heroColor;
+                _modelViewport.style.borderBottomColor = heroColor;
+                _modelViewport.style.borderLeftColor = heroColor;
+            }
+
+            // Apply to hero name
+            if (_heroName != null)
+            {
+                _heroName.style.color = heroColorGlow;
+            }
+
+            // Apply to select button
+            if (_btnSelect != null)
+            {
+                _btnSelect.style.backgroundColor = heroColorDark;
+                _btnSelect.style.borderTopColor = heroColor;
+                _btnSelect.style.borderRightColor = heroColor;
+                _btnSelect.style.borderBottomColor = heroColor;
+                _btnSelect.style.borderLeftColor = heroColor;
+            }
+
+            // Apply to signature monster section
+            var monsterSection = _root?.Q<VisualElement>("monster-section");
+            if (monsterSection != null)
+            {
+                monsterSection.style.borderTopColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.4f);
+                monsterSection.style.borderRightColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.4f);
+                monsterSection.style.borderBottomColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.4f);
+                monsterSection.style.borderLeftColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.4f);
+            }
+
+            // Apply to monster icon frame
+            var monsterIconFrame = _root?.Q<VisualElement>("monster-icon-frame");
+            if (monsterIconFrame != null)
+            {
+                monsterIconFrame.style.borderTopColor = heroColor;
+                monsterIconFrame.style.borderRightColor = heroColor;
+                monsterIconFrame.style.borderBottomColor = heroColor;
+                monsterIconFrame.style.borderLeftColor = heroColor;
+            }
+
+            // Apply to path badge
+            if (_pathBadge != null)
+            {
+                _pathBadge.style.borderTopColor = heroColor;
+                _pathBadge.style.borderRightColor = heroColor;
+                _pathBadge.style.borderBottomColor = heroColor;
+                _pathBadge.style.borderLeftColor = heroColor;
+            }
+
+            // Apply to stat bar fills
+            ApplyHeroColorToStatBars(heroColor);
+        }
+
+        private void ApplyHeroColorToStatBars(Color heroColor)
+        {
+            if (_statHealthFill != null)
+                _statHealthFill.style.backgroundColor = heroColor;
+            if (_statAttackFill != null)
+                _statAttackFill.style.backgroundColor = heroColor;
+            if (_statDefenseFill != null)
+                _statDefenseFill.style.backgroundColor = heroColor;
+            if (_statSpeedFill != null)
+                _statSpeedFill.style.backgroundColor = heroColor;
         }
 
         // =============================================================================

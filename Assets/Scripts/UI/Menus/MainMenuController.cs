@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
@@ -8,6 +10,7 @@ namespace VeilBreakers.UI.Menus
     /// <summary>
     /// Controller for the main menu UI.
     /// Handles New Game, Continue, Settings, and Exit functionality.
+    /// Features animated title screen with pulsing veil effects.
     /// </summary>
     public class MainMenuController : MonoBehaviour
     {
@@ -22,6 +25,12 @@ namespace VeilBreakers.UI.Menus
         [SerializeField] private string _characterSelectScene = "CharacterSelect";
         [SerializeField] private string _gameScene = "Overworld";
 
+        [Header("Animation Settings")]
+        [SerializeField] private float _titleFadeInDuration = 1.5f;
+        [SerializeField] private float _buttonStaggerDelay = 0.1f;
+        [SerializeField] private float _veilPulseSpeed = 2f;
+        [SerializeField] private float _veilPulseScale = 1.15f;
+
         // =============================================================================
         // UI ELEMENTS
         // =============================================================================
@@ -33,6 +42,12 @@ namespace VeilBreakers.UI.Menus
         private Button _btnCredits;
         private Button _btnExit;
         private Label _versionLabel;
+        private Label _gameTitle;
+        private Label _tagline;
+        private VisualElement _titleSection;
+        private VisualElement _buttonContainer;
+        private List<VisualElement> _veilPulses = new List<VisualElement>();
+        private Coroutine _animationCoroutine;
 
         // =============================================================================
         // EVENTS
@@ -62,11 +77,6 @@ namespace VeilBreakers.UI.Menus
             CheckForSaveFile();
         }
 
-        private void OnDisable()
-        {
-            UnbindEvents();
-        }
-
         // =============================================================================
         // INITIALIZATION
         // =============================================================================
@@ -88,6 +98,19 @@ namespace VeilBreakers.UI.Menus
             _btnCredits = _root.Q<Button>("btn-credits");
             _btnExit = _root.Q<Button>("btn-exit");
             _versionLabel = _root.Q<Label>("version-label");
+            _gameTitle = _root.Q<Label>("game-title");
+            _tagline = _root.Q<Label>("tagline");
+            _titleSection = _root.Q<VisualElement>("title-section");
+            _buttonContainer = _root.Q<VisualElement>("button-container");
+
+            // Query veil pulse elements
+            _veilPulses.Clear();
+            for (int i = 1; i <= 3; i++)
+            {
+                var pulse = _root.Q<VisualElement>($"veil-pulse-{i}");
+                if (pulse != null)
+                    _veilPulses.Add(pulse);
+            }
 
             // Set version
             if (_versionLabel != null)
@@ -97,6 +120,10 @@ namespace VeilBreakers.UI.Menus
 
             // Bind button events
             BindEvents();
+
+            // Start animations
+            PlayEntranceAnimation();
+            StartVeilPulseAnimation();
 
             ErrorLogger.UI("MainMenu initialized");
         }
@@ -366,6 +393,124 @@ namespace VeilBreakers.UI.Menus
         public Label GetTitleElement()
         {
             return _root?.Q<Label>("game-title");
+        }
+
+        // =============================================================================
+        // ANIMATIONS
+        // =============================================================================
+
+        private void PlayEntranceAnimation()
+        {
+            // Fade in title
+            if (_gameTitle != null)
+            {
+                _gameTitle.style.opacity = 0;
+                StartCoroutine(FadeInElement(_gameTitle, _titleFadeInDuration, 0f));
+            }
+
+            // Fade in tagline with delay
+            if (_tagline != null)
+            {
+                _tagline.style.opacity = 0;
+                StartCoroutine(FadeInElement(_tagline, 1f, 0.5f));
+            }
+
+            // Stagger button animations
+            if (_buttonContainer != null)
+            {
+                _buttonContainer.style.opacity = 0;
+                StartCoroutine(FadeInElement(_buttonContainer, 0.8f, 1f));
+                StartCoroutine(SlideInElement(_buttonContainer, 30, 0.8f, 1f));
+            }
+        }
+
+        private IEnumerator FadeInElement(VisualElement element, float duration, float delay)
+        {
+            if (delay > 0)
+                yield return new WaitForSeconds(delay);
+
+            float elapsed = 0;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = EaseOutCubic(t);
+                element.style.opacity = t;
+                yield return null;
+            }
+            element.style.opacity = 1;
+        }
+
+        private IEnumerator SlideInElement(VisualElement element, float fromY, float duration, float delay)
+        {
+            if (delay > 0)
+                yield return new WaitForSeconds(delay);
+
+            float elapsed = 0;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = EaseOutCubic(t);
+                float y = Mathf.Lerp(fromY, 0, t);
+                element.style.translate = new Translate(0, y);
+                yield return null;
+            }
+            element.style.translate = new Translate(0, 0);
+        }
+
+        private void StartVeilPulseAnimation()
+        {
+            if (_animationCoroutine != null)
+                StopCoroutine(_animationCoroutine);
+            _animationCoroutine = StartCoroutine(VeilPulseLoop());
+        }
+
+        private IEnumerator VeilPulseLoop()
+        {
+            float[] phases = { 0f, 0.33f, 0.66f };
+            float[] baseOpacities = { 0.06f, 0.05f, 0.04f };
+
+            while (true)
+            {
+                for (int i = 0; i < _veilPulses.Count; i++)
+                {
+                    if (_veilPulses[i] == null) continue;
+
+                    float phase = phases[i];
+                    float t = (Time.time * _veilPulseSpeed + phase * Mathf.PI * 2) % (Mathf.PI * 2);
+
+                    // Pulse scale
+                    float scale = 1f + (Mathf.Sin(t) * 0.5f + 0.5f) * (_veilPulseScale - 1f);
+                    _veilPulses[i].style.scale = new Scale(new Vector2(scale, scale));
+
+                    // Pulse opacity
+                    float opacity = baseOpacities[i] * (0.5f + Mathf.Sin(t) * 0.5f + 0.5f);
+                    _veilPulses[i].style.opacity = opacity;
+
+                    // Subtle position drift
+                    float driftX = Mathf.Sin(t * 0.5f) * 20f;
+                    float driftY = Mathf.Cos(t * 0.3f) * 15f;
+                    _veilPulses[i].style.translate = new Translate(driftX, driftY);
+                }
+
+                yield return null;
+            }
+        }
+
+        private float EaseOutCubic(float t)
+        {
+            return 1 - Mathf.Pow(1 - t, 3);
+        }
+
+        private void OnDisable()
+        {
+            UnbindEvents();
+            if (_animationCoroutine != null)
+            {
+                StopCoroutine(_animationCoroutine);
+                _animationCoroutine = null;
+            }
         }
     }
 }

@@ -18,7 +18,7 @@
 :root {
     /* Primary Colors - Dark Fantasy Palette */
     --color-background-dark: rgb(15, 12, 20);
-    --color-background-medium: rgb(25, 20, 35);
+    --color-background-medium: rgb(28, 20, 25);
     --color-background-light: rgb(45, 30, 38);
 
     /* Accent Colors - Corruption/Brand themed */
@@ -309,8 +309,8 @@
    ============================================================================= */
 
 .vb-dropdown {
-    background-color: rgb(25, 20, 35);
-    border-color: rgb(60, 50, 75);
+    background-color: rgb(28, 20, 25);
+    border-color: rgb(70, 45, 55);
     border-width: 2px;
     border-radius: 4px;
     padding: 8px 12px;
@@ -319,7 +319,7 @@
 
 .vb-dropdown:hover {
     border-color: rgb(180, 40, 60);
-    background-color: rgb(35, 28, 45);
+    background-color: rgb(40, 30, 38);
 }
 
 .vb-dropdown:focus {
@@ -347,7 +347,7 @@
 /* Dropdown popup menu styling - CRITICAL: position absolute fixes positioning bug */
 .unity-base-dropdown__container-outer {
     position: absolute;
-    background-color: rgb(18, 14, 26);
+    background-color: rgb(18, 14, 18);
     border-color: rgb(180, 40, 60);
     border-width: 2px;
     border-radius: 8px;
@@ -358,7 +358,7 @@
 }
 
 .unity-base-dropdown__container-inner {
-    background-color: rgb(18, 14, 26);
+    background-color: rgb(18, 14, 18);
     padding: 4px;
 }
 
@@ -685,7 +685,7 @@
     font-size: 14px;
     letter-spacing: 1px;
     background-color: rgba(40, 32, 50, 0.8);
-    border-color: rgb(60, 50, 70);
+    border-color: rgb(70, 45, 55);
     border-width: 1px;
     border-radius: 4px;
     color: rgb(165, 155, 145);
@@ -760,8 +760,8 @@
     align-items: center;
     padding: 12px;
     margin-bottom: 8px;
-    background-color: rgb(25, 20, 35);
-    border-color: rgb(60, 50, 70);
+    background-color: rgb(28, 20, 25);
+    border-color: rgb(70, 45, 55);
     border-width: 1px;
     border-radius: 4px;
     transition-duration: 0.15s;
@@ -782,7 +782,7 @@
 .hero-card-portrait {
     width: 50px;
     height: 50px;
-    background-color: rgb(25, 20, 35);
+    background-color: rgb(28, 20, 25);
     border-radius: 4px;
     margin-right: 12px;
     -unity-background-scale-mode: scale-to-fit;
@@ -825,7 +825,7 @@
 .stat-bar-bg {
     flex-grow: 1;
     height: 8px;
-    background-color: rgb(25, 20, 35);
+    background-color: rgb(28, 20, 25);
     border-radius: 4px;
     overflow: hidden;
 }
@@ -842,15 +842,15 @@
     flex-direction: row;
     align-items: center;
     padding: 10px;
-    background-color: rgb(25, 20, 35);
+    background-color: rgb(28, 20, 25);
     border-color: rgb(50, 35, 42);
     border-width: 1px;
     border-radius: 4px;
 }
 
 .ability-card:hover {
-    background-color: rgb(35, 28, 45);
-    border-color: rgb(60, 50, 75);
+    background-color: rgb(40, 30, 38);
+    border-color: rgb(70, 45, 55);
 }
 
 .ability-icon {
@@ -911,7 +911,7 @@
     width: 72px;
     height: 72px;
     margin: 4px;
-    background-color: rgb(25, 20, 35);
+    background-color: rgb(28, 20, 25);
     border-width: 2px;
     border-color: rgb(50, 35, 42);
     border-radius: 6px;
@@ -922,7 +922,7 @@
 
 .item-slot:hover {
     border-color: rgb(180, 40, 60);
-    background-color: rgb(35, 28, 45);
+    background-color: rgb(40, 30, 38);
 }
 
 .item-slot-selected {
@@ -987,7 +987,7 @@
 
 /* Item icon frame (for detail panel) */
 .item-icon-frame {
-    background-color: rgb(25, 20, 35);
+    background-color: rgb(28, 20, 25);
     border-width: 3px;
     border-radius: 8px;
     padding: 8px;
@@ -1061,7 +1061,7 @@
     width: 100px;
     height: 120px;
     margin: 6px;
-    background-color: rgb(25, 20, 35);
+    background-color: rgb(28, 20, 25);
     border-width: 2px;
     border-color: rgb(50, 35, 42);
     border-radius: 8px;
@@ -1073,7 +1073,7 @@
 
 .monster-card:hover {
     border-color: rgb(180, 40, 60);
-    background-color: rgb(35, 28, 45);
+    background-color: rgb(40, 30, 38);
     scale: 1.02;
 }
 
@@ -1086,7 +1086,7 @@
 .monster-card-portrait {
     width: 64px;
     height: 64px;
-    background-color: rgb(35, 28, 45);
+    background-color: rgb(40, 30, 38);
     border-radius: 4px;
     margin-bottom: 6px;
     -unity-background-scale-mode: scale-to-fit;
@@ -1128,7 +1128,7 @@
 /* Corruption bar */
 .corruption-bar-bg {
     height: 12px;
-    background-color: rgb(25, 20, 35);
+    background-color: rgb(28, 20, 25);
     border-radius: 6px;
     overflow: hidden;
 }
@@ -1178,8 +1178,8 @@
 
 /* Text field styling */
 .vb-text-field {
-    background-color: rgb(25, 20, 35);
-    border-color: rgb(60, 50, 75);
+    background-color: rgb(28, 20, 25);
+    border-color: rgb(70, 45, 55);
     border-width: 1px;
     border-radius: 4px;
     padding: 6px 12px;
@@ -1209,7 +1209,7 @@
 .dialogue-box {
     background-color: rgba(12, 10, 18, 0.95);
     border-width: 2px;
-    border-color: rgb(60, 50, 75);
+    border-color: rgb(70, 45, 55);
     border-radius: 12px;
     overflow: hidden;
 }
@@ -1265,7 +1265,7 @@
     width: 80px;
     height: 80px;
     border-radius: 40px;
-    background-color: rgb(60, 50, 75);
+    background-color: rgb(70, 45, 55);
     -unity-background-scale-mode: scale-to-fit;
 }
 
@@ -1350,9 +1350,9 @@
 .dialogue-choice {
     padding: 12px 20px;
     margin-bottom: 8px;
-    background-color: rgb(25, 20, 35);
+    background-color: rgb(28, 20, 25);
     border-width: 1px;
-    border-color: rgb(60, 50, 75);
+    border-color: rgb(70, 45, 55);
     border-radius: 6px;
     transition-duration: 0.15s;
 }
@@ -1387,7 +1387,7 @@
 
 /* Veil Integrity bar */
 .integrity-bar-bg {
-    background-color: rgb(25, 20, 35);
+    background-color: rgb(28, 20, 25);
     border-radius: 4px;
     overflow: hidden;
 }

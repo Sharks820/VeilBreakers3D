@@ -78,12 +78,14 @@
         <!-- Footer - positioned below the centered content, not overlapping -->
         <ui:VisualElement name="footer" style="position: absolute; left: 0; right: 0; bottom: 0; height: 40px; flex-direction: row; justify-content: space-between; align-items: center; padding: 0 40px; background-color: transparent;">
             <ui:Label text="© 2026 VeilBreakers" style="font-size: 11px; color: rgb(80, 70, 65); letter-spacing: 1px;" />
-            <ui:VisualElement style="flex-direction: row; align-items: center;">
-                <ui:VisualElement style="width: 20px; height: 1px; background-color: rgba(180, 40, 60, 0.3);" />
-                <ui:VisualElement style="width: 4px; height: 4px; border-radius: 2px; background-color: rgba(180, 40, 60, 0.5); margin: 0 8px;" />
-                <ui:VisualElement style="width: 20px; height: 1px; background-color: rgba(180, 40, 60, 0.3);" />
-            </ui:VisualElement>
             <ui:Label text="v0.1.0 Alpha" name="version-label" style="font-size: 11px; color: rgb(80, 70, 65); letter-spacing: 1px;" />
+        </ui:VisualElement>
+
+        <!-- Centered decorative element - positioned absolutely to be perfectly centered -->
+        <ui:VisualElement name="footer-decoration" style="position: absolute; left: 50%; bottom: 16px; translate: -50% 0; flex-direction: row; align-items: center;">
+            <ui:VisualElement style="width: 20px; height: 1px; background-color: rgba(180, 40, 60, 0.3);" />
+            <ui:VisualElement style="width: 4px; height: 4px; border-radius: 2px; background-color: rgba(180, 40, 60, 0.5); margin: 0 8px;" />
+            <ui:VisualElement style="width: 20px; height: 1px; background-color: rgba(180, 40, 60, 0.3);" />
         </ui:VisualElement>
 
         <!-- Loading Overlay -->
