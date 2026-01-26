@@ -428,7 +428,7 @@ namespace VeilBreakers.UI.Effects
                 {
                     Element = bolt,
                     Lifetime = 0f,
-                    MaxLifetime = 0.15f, // Very brief flash
+                    MaxLifetime = 0.6f, // Longer flash for visibility
                     Active = false
                 };
 
@@ -570,24 +570,24 @@ namespace VeilBreakers.UI.Effects
             container.style.left = Random.Range(0f, _screenWidth);
             container.style.top = 0;
             
-            // OUTER GLOW (widest, crimson)
+            // OUTER GLOW (widest, crimson) - INCREASED VISIBILITY
             var outerGlow = new VisualElement();
             outerGlow.style.position = Position.Absolute;
             outerGlow.style.width = 12;
             outerGlow.style.height = _screenHeight;
             outerGlow.style.left = 0;
             outerGlow.style.top = 0;
-            outerGlow.style.backgroundColor = new Color(_lightningColor.r, _lightningColor.g, _lightningColor.b, _lightningColor.a * 0.15f);
+            outerGlow.style.backgroundColor = new Color(_lightningColor.r, _lightningColor.g, _lightningColor.b, _lightningColor.a * 0.5f);
             container.Add(outerGlow);
             
-            // MIDDLE GLOW (medium, brighter crimson)
+            // MIDDLE GLOW (medium, brighter crimson) - INCREASED VISIBILITY
             var middleGlow = new VisualElement();
             middleGlow.style.position = Position.Absolute;
             middleGlow.style.width = 6;
             middleGlow.style.height = _screenHeight;
             middleGlow.style.left = 3;
             middleGlow.style.top = 0;
-            middleGlow.style.backgroundColor = new Color(_lightningColor.r, _lightningColor.g, _lightningColor.b, _lightningColor.a * 0.4f);
+            middleGlow.style.backgroundColor = new Color(_lightningColor.r, _lightningColor.g, _lightningColor.b, _lightningColor.a * 0.8f);
             container.Add(middleGlow);
             
             // BRIGHT CORE (thin, almost white)
