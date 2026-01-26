@@ -120,6 +120,14 @@ namespace VeilBreakers.UI.Menus
         private Label _monsterAbilityName;
         private Label _monsterAbilityDesc;
         private VisualElement _monsterBrandIcons;
+        private VisualElement _monsterSectionBar;
+        private Label _monsterSectionLabel;
+        
+        // Orb elements
+        private VisualElement _heroBrandOrb;
+        private VisualElement _heroPathOrb;
+        private VisualElement _monsterBrandOrb1;
+        private VisualElement _monsterBrandOrb2;
 
         // Innate ability elements
         private Label _innateAbilityName;
@@ -127,10 +135,12 @@ namespace VeilBreakers.UI.Menus
 
         // Stat elements
         private VisualElement _statHealthFill;
+        private VisualElement _statMpFill;
         private VisualElement _statAttackFill;
         private VisualElement _statDefenseFill;
         private VisualElement _statSpeedFill;
         private Label _statHealthValue;
+        private Label _statMpValue;
         private Label _statAttackValue;
         private Label _statDefenseValue;
         private Label _statSpeedValue;
@@ -230,6 +240,14 @@ namespace VeilBreakers.UI.Menus
             _monsterType = _root.Q<Label>("monster-type");
             _monsterAbilityName = _root.Q<Label>("monster-ability-name");
             _monsterAbilityDesc = _root.Q<Label>("monster-ability-desc");
+            _monsterSectionBar = _root.Q<VisualElement>("monster-section-bar");
+            _monsterSectionLabel = _root.Q<Label>("monster-section-label");
+            
+            // Query orb elements
+            _heroBrandOrb = _root.Q<VisualElement>("hero-brand-orb");
+            _heroPathOrb = _root.Q<VisualElement>("hero-path-orb");
+            _monsterBrandOrb1 = _root.Q<VisualElement>("monster-brand-orb-1");
+            _monsterBrandOrb2 = _root.Q<VisualElement>("monster-brand-orb-2");
 
             // Query innate ability elements
             _innateAbilityName = _root.Q<Label>("innate-ability-name");
@@ -237,10 +255,12 @@ namespace VeilBreakers.UI.Menus
 
             // Query stats
             _statHealthFill = _root.Q<VisualElement>("stat-health-fill");
+            _statMpFill = _root.Q<VisualElement>("stat-mp-fill");
             _statAttackFill = _root.Q<VisualElement>("stat-attack-fill");
             _statDefenseFill = _root.Q<VisualElement>("stat-defense-fill");
             _statSpeedFill = _root.Q<VisualElement>("stat-speed-fill");
             _statHealthValue = _root.Q<Label>("stat-health-value");
+            _statMpValue = _root.Q<Label>("stat-mp-value");
             _statAttackValue = _root.Q<Label>("stat-attack-value");
             _statDefenseValue = _root.Q<Label>("stat-defense-value");
             _statSpeedValue = _root.Q<Label>("stat-speed-value");
@@ -449,7 +469,7 @@ namespace VeilBreakers.UI.Menus
             brandsRow.style.flexDirection = FlexDirection.Row;
             brandsRow.style.alignItems = Align.Center;
 
-            var primaryIndicator = CreateBrandIndicator(primaryBrand);
+            var primaryIndicator = CreateBrandIndicator(primaryBrand, heroColor);
             brandsRow.Add(primaryIndicator);
 
             info.Add(brandsRow);
@@ -515,7 +535,7 @@ namespace VeilBreakers.UI.Menus
                 indicator.style.opacity = 0;
         }
 
-        private VisualElement CreateBrandIndicator(Brand brand)
+        private VisualElement CreateBrandIndicator(Brand brand, Color? heroColor = null)
         {
             var indicator = new VisualElement();
             indicator.style.width = 12;
@@ -524,7 +544,9 @@ namespace VeilBreakers.UI.Menus
             indicator.style.borderTopRightRadius = new StyleLength(6);
             indicator.style.borderBottomRightRadius = new StyleLength(6);
             indicator.style.borderBottomLeftRadius = new StyleLength(6);
-            indicator.style.backgroundColor = ThemeManager.Instance.GetBrandColor(brand);
+            
+            // Use hero color if provided, otherwise use brand color
+            indicator.style.backgroundColor = heroColor ?? ThemeManager.Instance.GetBrandColor(brand);
             return indicator;
         }
 
@@ -804,6 +826,9 @@ namespace VeilBreakers.UI.Menus
 
             // Update stats
             UpdateStatBars(hero);
+            
+            // Update orb colors
+            UpdateOrbColors(hero);
 
             // Update signature monster
             UpdateMonsterDisplay(hero);
@@ -850,11 +875,15 @@ namespace VeilBreakers.UI.Menus
             if (_brandName1 != null)
                 _brandName1.text = primaryBrand.ToString();
 
-            // For now, hide secondary brand (or show a related brand)
+            // Show path in second badge for clarity
+            var primaryPath = hero.GetPrimaryPath();
             if (_brandIcon2 != null)
-                _brandIcon2.style.display = DisplayStyle.None;
+                _brandIcon2.style.display = DisplayStyle.Flex;
             if (_brandName2 != null)
-                _brandName2.style.display = DisplayStyle.None;
+            {
+                _brandName2.style.display = DisplayStyle.Flex;
+                _brandName2.text = primaryPath.ToString();
+            }
 
             // Also update the old primary brand element if it exists
             if (_primaryBrand != null)
@@ -877,6 +906,22 @@ namespace VeilBreakers.UI.Menus
 
         private void UpdateMonsterDisplay(HeroData hero)
         {
+            // Update monster section colors to match hero theme
+            if (hero != null)
+            {
+                Color heroColor = new Color(
+                    hero.color_palette.r,
+                    hero.color_palette.g,
+                    hero.color_palette.b,
+                    1f
+                );
+                
+                if (_monsterSectionBar != null)
+                    _monsterSectionBar.style.backgroundColor = heroColor;
+                if (_monsterSectionLabel != null)
+                    _monsterSectionLabel.style.color = heroColor;
+            }
+            
             // Get signature monster from recommended_monsters
             if (hero.recommended_monsters != null && hero.recommended_monsters.Length > 0)
             {
@@ -969,6 +1014,14 @@ namespace VeilBreakers.UI.Menus
                 _statHealthValue.text = hero.base_hp.ToString();
             }
 
+            // MP (NEW)
+            if (_statMpFill != null && _statMpValue != null)
+            {
+                float mpPercent = Mathf.Clamp01(hero.base_mp / maxStat);
+                _statMpFill.style.width = Length.Percent(mpPercent * 100);
+                _statMpValue.text = hero.base_mp.ToString();
+            }
+
             // Attack
             if (_statAttackFill != null && _statAttackValue != null)
             {
@@ -991,6 +1044,67 @@ namespace VeilBreakers.UI.Menus
                 float speedPercent = Mathf.Clamp01(hero.base_speed / maxStat);
                 _statSpeedFill.style.width = Length.Percent(speedPercent * 100);
                 _statSpeedValue.text = hero.base_speed.ToString();
+            }
+        }
+
+        private void UpdateOrbColors(HeroData hero)
+        {
+            if (hero == null) return;
+
+            // Get hero color from palette
+            Color heroColor = new Color(
+                hero.color_palette.r,
+                hero.color_palette.g,
+                hero.color_palette.b,
+                1f
+            );
+
+            // Set hero brand orb to hero's color
+            if (_heroBrandOrb != null)
+            {
+                _heroBrandOrb.style.backgroundColor = heroColor;
+            }
+
+            // Set hero path orb to a darker shade of hero color
+            if (_heroPathOrb != null)
+            {
+                Color pathColor = new Color(
+                    heroColor.r * 0.6f,
+                    heroColor.g * 0.6f,
+                    heroColor.b * 0.6f,
+                    1f
+                );
+                _heroPathOrb.style.backgroundColor = pathColor;
+            }
+
+            // Set monster brand orbs based on recommended monster's brands
+            if (hero.recommended_monsters != null && hero.recommended_monsters.Length > 0)
+            {
+                string monsterId = hero.recommended_monsters[0];
+                MonsterData monsterData = GameDatabase.Instance?.GetMonster(monsterId);
+
+                if (monsterData != null)
+                {
+                    // Monster brand orb 1 - primary brand color
+                    if (_monsterBrandOrb1 != null)
+                    {
+                        Color brandColor1 = ThemeManager.Instance.GetBrandColor(monsterData.GetPrimaryBrand());
+                        _monsterBrandOrb1.style.backgroundColor = brandColor1;
+                    }
+
+                    // Monster brand orb 2 - secondary brand color (darker)
+                    if (_monsterBrandOrb2 != null)
+                    {
+                        Color brandColor2 = ThemeManager.Instance.GetBrandColor(monsterData.GetPrimaryBrand());
+                        Color darkerBrand = new Color(
+                            brandColor2.r * 0.5f,
+                            brandColor2.g * 0.5f,
+                            brandColor2.b * 0.5f,
+                            1f
+                        );
+                        _monsterBrandOrb2.style.backgroundColor = darkerBrand;
+                    }
+                }
             }
         }
 

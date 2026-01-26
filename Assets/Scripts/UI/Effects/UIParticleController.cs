@@ -23,10 +23,10 @@ namespace VeilBreakers.UI.Effects
         [SerializeField] private UIDocument _uiDocument;
 
         [Header("Particle Counts")]
-        [SerializeField] private int _emberCount = 12;
-        [SerializeField] private int _dustCount = 20;
-        [SerializeField] private int _sparkCount = 8;
-        [SerializeField] private int _lightningBoltCount = 3;
+        [SerializeField] private int _emberCount = 18;
+        [SerializeField] private int _dustCount = 30;
+        [SerializeField] private int _sparkCount = 12;
+        [SerializeField] private int _lightningBoltCount = 5;
 
         [Header("Particle Speeds")]
         [SerializeField] private float _emberSpeed = 25f;
@@ -35,11 +35,11 @@ namespace VeilBreakers.UI.Effects
         [SerializeField] private float _veilPulseSpeed = 0.4f;
 
         [Header("Dark Crimson Theme - Ominous")]
-        [SerializeField] private Color _emberColor = new Color(0.45f, 0.10f, 0.15f, 0.75f);      // Dark crimson ember
-        [SerializeField] private Color _emberGlowColor = new Color(0.70f, 0.16f, 0.24f, 0.60f); // Brighter glow
+        [SerializeField] private Color _emberColor = new Color(0.50f, 0.12f, 0.18f, 0.80f);      // Dark crimson ember (slightly brighter)
+        [SerializeField] private Color _emberGlowColor = new Color(0.85f, 0.25f, 0.35f, 0.75f); // Vivid crimson glow
         [SerializeField] private Color _dustColor = new Color(0.20f, 0.12f, 0.15f, 0.25f);      // Very dark dust
-        [SerializeField] private Color _sparkColor = new Color(0.85f, 0.25f, 0.35f, 0.90f);     // Bright crimson spark
-        [SerializeField] private Color _lightningColor = new Color(0.90f, 0.30f, 0.40f, 0.95f); // Lightning bolt
+        [SerializeField] private Color _sparkColor = new Color(0.95f, 0.35f, 0.45f, 0.95f);     // Brighter crimson spark
+        [SerializeField] private Color _lightningColor = new Color(0.98f, 0.40f, 0.50f, 1.0f);  // Vivid lightning bolt
         [SerializeField] private Color _veilColor = new Color(0.50f, 0.12f, 0.18f, 0.05f);      // Veil wash (darker)
 
         // =============================================================================
@@ -61,11 +61,11 @@ namespace VeilBreakers.UI.Effects
         
         // Object pooling for optimization
         private Queue<VisualElement> _particlePool;
-        private const int kPoolSize = 100;
-        
+        private const int kPoolSize = 150; // Increased for more particles
+
         // Lightning timing
         private float _nextLightningTime;
-        private const float kLightningInterval = 3.5f; // Seconds between lightning
+        private const float kLightningInterval = 2.5f; // More frequent lightning flashes
 
         // =============================================================================
         // DATA STRUCTURES
@@ -443,78 +443,164 @@ namespace VeilBreakers.UI.Effects
 
         private VisualElement CreateEnhancedParticle(float size, Color color, Color glowColor, ParticleType type)
         {
-            var particle = new VisualElement();
-            particle.style.position = Position.Absolute;
-            particle.style.width = size;
-            particle.style.height = size;
-
+            // Container for layered particle
+            var container = new VisualElement();
+            container.style.position = Position.Absolute;
+            container.style.width = size * 3; // Make room for glow layers
+            container.style.height = size * 3;
+            
             if (type == ParticleType.Ember)
             {
-                // Ember: circular with radial gradient effect and outer glow
-                particle.style.borderTopLeftRadius = size / 2;
-                particle.style.borderTopRightRadius = size / 2;
-                particle.style.borderBottomLeftRadius = size / 2;
-                particle.style.borderBottomRightRadius = size / 2;
-                particle.style.backgroundColor = color;
+                // OUTER GLOW LAYER (largest, darkest)
+                var outerGlow = new VisualElement();
+                outerGlow.style.position = Position.Absolute;
+                outerGlow.style.width = size * 3;
+                outerGlow.style.height = size * 3;
+                outerGlow.style.left = 0;
+                outerGlow.style.top = 0;
+                outerGlow.style.borderTopLeftRadius = size * 1.5f;
+                outerGlow.style.borderTopRightRadius = size * 1.5f;
+                outerGlow.style.borderBottomLeftRadius = size * 1.5f;
+                outerGlow.style.borderBottomRightRadius = size * 1.5f;
+                outerGlow.style.backgroundColor = new Color(color.r, color.g, color.b, color.a * 0.2f);
+                container.Add(outerGlow);
                 
-                // Inner bright core
-                particle.style.borderTopWidth = 1;
-                particle.style.borderBottomWidth = 1;
-                particle.style.borderLeftWidth = 1;
-                particle.style.borderRightWidth = 1;
-                particle.style.borderTopColor = glowColor;
-                particle.style.borderBottomColor = glowColor;
-                particle.style.borderLeftColor = glowColor;
-                particle.style.borderRightColor = glowColor;
+                // MIDDLE GLOW LAYER
+                var middleGlow = new VisualElement();
+                middleGlow.style.position = Position.Absolute;
+                middleGlow.style.width = size * 2;
+                middleGlow.style.height = size * 2;
+                middleGlow.style.left = size * 0.5f;
+                middleGlow.style.top = size * 0.5f;
+                middleGlow.style.borderTopLeftRadius = size;
+                middleGlow.style.borderTopRightRadius = size;
+                middleGlow.style.borderBottomLeftRadius = size;
+                middleGlow.style.borderBottomRightRadius = size;
+                middleGlow.style.backgroundColor = new Color(glowColor.r, glowColor.g, glowColor.b, glowColor.a * 0.5f);
+                container.Add(middleGlow);
+                
+                // BRIGHT CORE (smallest, brightest)
+                var core = new VisualElement();
+                core.style.position = Position.Absolute;
+                core.style.width = size;
+                core.style.height = size;
+                core.style.left = size;
+                core.style.top = size;
+                core.style.borderTopLeftRadius = size / 2;
+                core.style.borderTopRightRadius = size / 2;
+                core.style.borderBottomLeftRadius = size / 2;
+                core.style.borderBottomRightRadius = size / 2;
+                core.style.backgroundColor = new Color(1f, 0.9f, 0.85f, 1f); // Bright white-orange core
+                container.Add(core);
             }
             else // Dust
             {
-                // Dust: soft circular, very subtle
-                particle.style.borderTopLeftRadius = size / 2;
-                particle.style.borderTopRightRadius = size / 2;
-                particle.style.borderBottomLeftRadius = size / 2;
-                particle.style.borderBottomRightRadius = size / 2;
-                particle.style.backgroundColor = color;
+                // Dust: single soft layer, very subtle
+                var dustParticle = new VisualElement();
+                dustParticle.style.position = Position.Absolute;
+                dustParticle.style.width = size;
+                dustParticle.style.height = size;
+                dustParticle.style.left = size;
+                dustParticle.style.top = size;
+                dustParticle.style.borderTopLeftRadius = size / 2;
+                dustParticle.style.borderTopRightRadius = size / 2;
+                dustParticle.style.borderBottomLeftRadius = size / 2;
+                dustParticle.style.borderBottomRightRadius = size / 2;
+                dustParticle.style.backgroundColor = color;
+                container.Add(dustParticle);
             }
 
-            return particle;
+            return container;
         }
 
         private VisualElement CreateLightningSpark(float size, Color color)
         {
-            var spark = new VisualElement();
-            spark.style.position = Position.Absolute;
-            spark.style.width = size * 1.5f;
-            spark.style.height = size * 0.6f;
-            spark.style.backgroundColor = color;
+            // Container for layered spark with trailing glow
+            var container = new VisualElement();
+            container.style.position = Position.Absolute;
+            container.style.width = size * 2.5f;
+            container.style.height = size;
             
-            // Diamond/angular shape using clip-path effect via rotation
-            spark.style.rotate = new Rotate(Random.Range(0f, 360f));
+            // OUTER GLOW (stretched, faint)
+            var outerGlow = new VisualElement();
+            outerGlow.style.position = Position.Absolute;
+            outerGlow.style.width = size * 2.5f;
+            outerGlow.style.height = size;
+            outerGlow.style.left = 0;
+            outerGlow.style.top = 0;
+            outerGlow.style.backgroundColor = new Color(color.r, color.g, color.b, color.a * 0.15f);
+            outerGlow.style.borderTopLeftRadius = size * 0.3f;
+            outerGlow.style.borderBottomLeftRadius = size * 0.3f;
+            outerGlow.style.rotate = new Rotate(Random.Range(-15f, 15f));
+            container.Add(outerGlow);
             
-            // Sharp borders for electric look
-            spark.style.borderTopWidth = 1;
-            spark.style.borderTopColor = new Color(1f, 1f, 1f, color.a * 0.8f);
+            // MIDDLE TRAIL (angular, medium glow)
+            var middleTrail = new VisualElement();
+            middleTrail.style.position = Position.Absolute;
+            middleTrail.style.width = size * 1.8f;
+            middleTrail.style.height = size * 0.7f;
+            middleTrail.style.left = size * 0.35f;
+            middleTrail.style.top = size * 0.15f;
+            middleTrail.style.backgroundColor = new Color(color.r, color.g, color.b, color.a * 0.4f);
+            container.Add(middleTrail);
             
-            return spark;
+            // BRIGHT CORE (diamond-shaped, very bright)
+            var core = new VisualElement();
+            core.style.position = Position.Absolute;
+            core.style.width = size;
+            core.style.height = size * 0.4f;
+            core.style.left = size * 0.75f;
+            core.style.top = size * 0.3f;
+            core.style.backgroundColor = new Color(1f, 0.95f, 0.9f, 1f); // Almost white
+            container.Add(core);
+            
+            // Rotate entire container for random angle
+            container.style.rotate = new Rotate(Random.Range(0f, 360f));
+            
+            return container;
         }
 
         private VisualElement CreateLightningBolt()
         {
-            var bolt = new VisualElement();
-            bolt.style.position = Position.Absolute;
-            bolt.style.width = Random.Range(2f, 4f);
-            bolt.style.height = _screenHeight;
-            bolt.style.left = Random.Range(0f, _screenWidth);
-            bolt.style.top = 0;
-            bolt.style.backgroundColor = _lightningColor;
+            // Container for multi-layer lightning bolt
+            var container = new VisualElement();
+            container.style.position = Position.Absolute;
+            container.style.width = 12; // Wider to accommodate glow
+            container.style.height = _screenHeight;
+            container.style.left = Random.Range(0f, _screenWidth);
+            container.style.top = 0;
             
-            // Add glow
-            bolt.style.borderLeftWidth = 2;
-            bolt.style.borderRightWidth = 2;
-            bolt.style.borderLeftColor = new Color(_lightningColor.r, _lightningColor.g, _lightningColor.b, _lightningColor.a * 0.6f);
-            bolt.style.borderRightColor = new Color(_lightningColor.r, _lightningColor.g, _lightningColor.b, _lightningColor.a * 0.6f);
+            // OUTER GLOW (widest, crimson)
+            var outerGlow = new VisualElement();
+            outerGlow.style.position = Position.Absolute;
+            outerGlow.style.width = 12;
+            outerGlow.style.height = _screenHeight;
+            outerGlow.style.left = 0;
+            outerGlow.style.top = 0;
+            outerGlow.style.backgroundColor = new Color(_lightningColor.r, _lightningColor.g, _lightningColor.b, _lightningColor.a * 0.15f);
+            container.Add(outerGlow);
             
-            return bolt;
+            // MIDDLE GLOW (medium, brighter crimson)
+            var middleGlow = new VisualElement();
+            middleGlow.style.position = Position.Absolute;
+            middleGlow.style.width = 6;
+            middleGlow.style.height = _screenHeight;
+            middleGlow.style.left = 3;
+            middleGlow.style.top = 0;
+            middleGlow.style.backgroundColor = new Color(_lightningColor.r, _lightningColor.g, _lightningColor.b, _lightningColor.a * 0.4f);
+            container.Add(middleGlow);
+            
+            // BRIGHT CORE (thin, almost white)
+            var core = new VisualElement();
+            core.style.position = Position.Absolute;
+            core.style.width = 2;
+            core.style.height = _screenHeight;
+            core.style.left = 5;
+            core.style.top = 0;
+            core.style.backgroundColor = new Color(1f, 0.9f, 0.9f, 1f); // Almost white with slight crimson tint
+            container.Add(core);
+            
+            return container;
         }
 
         // =============================================================================
