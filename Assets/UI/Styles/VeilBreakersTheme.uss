@@ -172,10 +172,10 @@
     --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
     --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.6);
 
-    --glow-subtle: 0 0 8px rgba(120, 60, 160, 0.3);
-    --glow-medium: 0 0 16px rgba(120, 60, 160, 0.5);
-    --glow-strong: 0 0 24px rgba(120, 60, 160, 0.7);
-    --glow-intense: 0 0 32px rgba(160, 100, 200, 0.8);
+    --glow-subtle: 0 0 8px rgba(180, 40, 60, 0.3);
+    --glow-medium: 0 0 16px rgba(180, 40, 60, 0.5);
+    --glow-strong: 0 0 24px rgba(180, 40, 60, 0.7);
+    --glow-intense: 0 0 32px rgba(220, 60, 80, 0.8);
 
     /* =========================================================================
        SPACING SCALE (8px base)

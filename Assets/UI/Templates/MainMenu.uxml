@@ -9,9 +9,9 @@
 
         <!-- Veil pulse circles (animated via C#) -->
         <ui:VisualElement name="veil-pulse-layer" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden;">
-            <ui:VisualElement name="veil-pulse-1" style="position: absolute; left: 15%; top: 25%; width: 400px; height: 400px; border-radius: 200px; background-color: rgba(130, 70, 180, 0.06);" />
-            <ui:VisualElement name="veil-pulse-2" style="position: absolute; right: 10%; top: 15%; width: 300px; height: 300px; border-radius: 150px; background-color: rgba(100, 50, 150, 0.05);" />
-            <ui:VisualElement name="veil-pulse-3" style="position: absolute; left: 5%; bottom: 15%; width: 350px; height: 350px; border-radius: 175px; background-color: rgba(80, 40, 140, 0.04);" />
+            <ui:VisualElement name="veil-pulse-1" style="position: absolute; left: 15%; top: 25%; width: 400px; height: 400px; border-radius: 200px; background-color: rgba(180, 40, 60, 0.06);" />
+            <ui:VisualElement name="veil-pulse-2" style="position: absolute; right: 10%; top: 15%; width: 300px; height: 300px; border-radius: 150px; background-color: rgba(140, 30, 50, 0.05);" />
+            <ui:VisualElement name="veil-pulse-3" style="position: absolute; left: 5%; bottom: 15%; width: 350px; height: 350px; border-radius: 175px; background-color: rgba(120, 30, 45, 0.04);" />
         </ui:VisualElement>
 
         <!-- Particle containers (populated by C#) -->
@@ -26,9 +26,9 @@
 
                 <!-- Decorative line above -->
                 <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 24px;">
-                    <ui:VisualElement style="width: 60px; height: 1px; background-color: rgba(130, 70, 180, 0.4);" />
-                    <ui:VisualElement style="width: 8px; height: 8px; border-radius: 4px; background-color: rgb(130, 70, 180); margin: 0 16px;" />
-                    <ui:VisualElement style="width: 60px; height: 1px; background-color: rgba(130, 70, 180, 0.4);" />
+                    <ui:VisualElement style="width: 60px; height: 1px; background-color: rgba(180, 40, 60, 0.4);" />
+                    <ui:VisualElement style="width: 8px; height: 8px; border-radius: 4px; background-color: rgb(180, 40, 60); margin: 0 16px;" />
+                    <ui:VisualElement style="width: 60px; height: 1px; background-color: rgba(180, 40, 60, 0.4);" />
                 </ui:VisualElement>
 
                 <!-- Main Title -->
@@ -39,15 +39,15 @@
 
                 <!-- Decorative dots below -->
                 <ui:VisualElement style="flex-direction: row; margin-top: 24px;">
-                    <ui:VisualElement style="width: 4px; height: 4px; border-radius: 2px; background-color: rgba(130, 70, 180, 0.6); margin: 0 6px;" />
-                    <ui:VisualElement style="width: 4px; height: 4px; border-radius: 2px; background-color: rgba(130, 70, 180, 0.6); margin: 0 6px;" />
-                    <ui:VisualElement style="width: 4px; height: 4px; border-radius: 2px; background-color: rgba(130, 70, 180, 0.6); margin: 0 6px;" />
+                    <ui:VisualElement style="width: 4px; height: 4px; border-radius: 2px; background-color: rgba(180, 40, 60, 0.6); margin: 0 6px;" />
+                    <ui:VisualElement style="width: 4px; height: 4px; border-radius: 2px; background-color: rgba(180, 40, 60, 0.6); margin: 0 6px;" />
+                    <ui:VisualElement style="width: 4px; height: 4px; border-radius: 2px; background-color: rgba(180, 40, 60, 0.6); margin: 0 6px;" />
                 </ui:VisualElement>
 
             </ui:VisualElement>
 
             <!-- Menu Buttons Container -->
-            <ui:VisualElement name="button-container" style="width: 320px; padding: 32px; background-color: rgba(12, 9, 18, 0.9); border-width: 1px; border-color: rgba(130, 70, 180, 0.3); border-radius: 12px;">
+            <ui:VisualElement name="button-container" style="width: 320px; padding: 32px; background-color: rgba(12, 9, 18, 0.9); border-width: 1px; border-color: rgba(180, 40, 60, 0.3); border-radius: 12px;">
 
                 <!-- NEW GAME Button -->
                 <ui:Button text="NEW GAME" name="btn-new-game" class="menu-button-main" style="width: 100%; margin-bottom: 12px; -unity-text-align: middle-center;" />
@@ -57,9 +57,9 @@
 
                 <!-- Divider -->
                 <ui:VisualElement style="flex-direction: row; align-items: center; margin: 16px 0;">
-                    <ui:VisualElement style="flex-grow: 1; height: 1px; background-color: rgba(130, 70, 180, 0.3);" />
-                    <ui:VisualElement style="width: 6px; height: 6px; border-radius: 3px; background-color: rgba(130, 70, 180, 0.5); margin: 0 12px;" />
-                    <ui:VisualElement style="flex-grow: 1; height: 1px; background-color: rgba(130, 70, 180, 0.3);" />
+                    <ui:VisualElement style="flex-grow: 1; height: 1px; background-color: rgba(180, 40, 60, 0.3);" />
+                    <ui:VisualElement style="width: 6px; height: 6px; border-radius: 3px; background-color: rgba(180, 40, 60, 0.5); margin: 0 12px;" />
+                    <ui:VisualElement style="flex-grow: 1; height: 1px; background-color: rgba(180, 40, 60, 0.3);" />
                 </ui:VisualElement>
 
                 <!-- SETTINGS Button -->
@@ -69,27 +69,27 @@
                 <ui:Button text="CREDITS" name="btn-credits" class="menu-button-secondary" style="width: 100%; margin-bottom: 8px; -unity-text-align: middle-center;" />
 
                 <!-- EXIT Button -->
-                <ui:Button text="EXIT" name="btn-exit" class="menu-button-secondary" style="width: 100%; -unity-text-align: middle-center; background-color: transparent; border-color: rgba(180, 50, 70, 0.3); color: rgb(120, 100, 95);" />
+                <ui:Button text="EXIT" name="btn-exit" class="menu-button-secondary menu-button-exit" style="width: 100%; -unity-text-align: middle-center;" />
 
             </ui:VisualElement>
 
         </ui:VisualElement>
 
-        <!-- Footer -->
-        <ui:VisualElement name="footer" style="position: absolute; left: 0; right: 0; bottom: 0; height: 50px; flex-direction: row; justify-content: space-between; align-items: center; padding: 0 40px; background-color: rgba(0, 0, 0, 0.4);">
+        <!-- Footer - positioned below the centered content, not overlapping -->
+        <ui:VisualElement name="footer" style="position: absolute; left: 0; right: 0; bottom: 0; height: 40px; flex-direction: row; justify-content: space-between; align-items: center; padding: 0 40px; background-color: transparent;">
             <ui:Label text="© 2026 VeilBreakers" style="font-size: 11px; color: rgb(80, 70, 65); letter-spacing: 1px;" />
             <ui:VisualElement style="flex-direction: row; align-items: center;">
-                <ui:VisualElement style="width: 20px; height: 1px; background-color: rgba(130, 70, 180, 0.3);" />
-                <ui:VisualElement style="width: 4px; height: 4px; border-radius: 2px; background-color: rgba(130, 70, 180, 0.5); margin: 0 8px;" />
-                <ui:VisualElement style="width: 20px; height: 1px; background-color: rgba(130, 70, 180, 0.3);" />
+                <ui:VisualElement style="width: 20px; height: 1px; background-color: rgba(180, 40, 60, 0.3);" />
+                <ui:VisualElement style="width: 4px; height: 4px; border-radius: 2px; background-color: rgba(180, 40, 60, 0.5); margin: 0 8px;" />
+                <ui:VisualElement style="width: 20px; height: 1px; background-color: rgba(180, 40, 60, 0.3);" />
             </ui:VisualElement>
             <ui:Label text="v0.1.0 Alpha" name="version-label" style="font-size: 11px; color: rgb(80, 70, 65); letter-spacing: 1px;" />
         </ui:VisualElement>
 
         <!-- Loading Overlay -->
         <ui:VisualElement name="loading-overlay" style="display: none; position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(8, 6, 12, 0.95); justify-content: center; align-items: center;">
-            <ui:VisualElement style="width: 48px; height: 48px; border-width: 3px; border-color: rgba(130, 70, 180, 0.3); border-top-color: rgb(130, 70, 180); border-radius: 24px; margin-bottom: 20px;" />
-            <ui:Label text="ENTERING THE VEIL..." style="font-size: 14px; letter-spacing: 4px; color: rgb(130, 70, 180);" />
+            <ui:VisualElement style="width: 48px; height: 48px; border-width: 3px; border-color: rgba(180, 40, 60, 0.3); border-top-color: rgb(180, 40, 60); border-radius: 24px; margin-bottom: 20px;" />
+            <ui:Label text="ENTERING THE VEIL..." style="font-size: 14px; letter-spacing: 4px; color: rgb(180, 40, 60);" />
         </ui:VisualElement>
 
     </ui:VisualElement>

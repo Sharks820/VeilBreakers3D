@@ -118,7 +118,7 @@
 
                 <!-- Stats Section (for equipment) -->
                 <ui:VisualElement name="stats-section" style="margin-bottom: 16px; display: none;">
-                    <ui:Label text="STATS" style="color: rgb(120, 60, 160); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
+                    <ui:Label text="STATS" style="color: rgb(180, 40, 60); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
 
                     <ui:VisualElement name="stats-list" class="vb-column">
                         <!-- Stats populated dynamically -->
@@ -127,7 +127,7 @@
 
                 <!-- Effects Section (for consumables) -->
                 <ui:VisualElement name="effects-section" style="margin-bottom: 16px; display: none;">
-                    <ui:Label text="EFFECTS" style="color: rgb(120, 60, 160); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
+                    <ui:Label text="EFFECTS" style="color: rgb(180, 40, 60); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
 
                     <ui:VisualElement name="effects-list" class="vb-column">
                         <!-- Effects populated dynamically -->
@@ -136,7 +136,7 @@
 
                 <!-- Brand Affinity -->
                 <ui:VisualElement name="brand-section" style="margin-bottom: 16px; display: none;">
-                    <ui:Label text="BRAND AFFINITY" style="color: rgb(120, 60, 160); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
+                    <ui:Label text="BRAND AFFINITY" style="color: rgb(180, 40, 60); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
 
                     <ui:VisualElement name="brand-display" class="brand-badge">
                         <ui:VisualElement class="brand-icon" style="width: 20px; height: 20px; border-radius: 4px; margin-right: 8px;" />

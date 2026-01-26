@@ -11,12 +11,12 @@
         <ui:VisualElement style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.6);" />
 
         <!-- Settings Panel -->
-        <ui:VisualElement name="settings-panel" style="width: 650px; max-height: 85%; background-color: rgba(12, 9, 18, 0.95); border-width: 2px; border-color: rgba(130, 70, 180, 0.4); border-radius: 14px; padding: 28px;">
+        <ui:VisualElement name="settings-panel" style="width: 650px; max-height: 85%; background-color: rgba(12, 9, 18, 0.95); border-width: 2px; border-color: rgba(180, 40, 60, 0.4); border-radius: 14px; padding: 28px;">
 
             <!-- Header -->
-            <ui:VisualElement name="header" style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom-width: 1px; border-bottom-color: rgba(130, 70, 180, 0.3);">
+            <ui:VisualElement name="header" style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom-width: 1px; border-bottom-color: rgba(180, 40, 60, 0.3);">
                 <ui:VisualElement style="flex-direction: row; align-items: center;">
-                    <ui:VisualElement style="width: 4px; height: 24px; background-color: rgb(130, 70, 180); border-radius: 2px; margin-right: 14px;" />
+                    <ui:VisualElement style="width: 4px; height: 24px; background-color: rgb(180, 40, 60); border-radius: 2px; margin-right: 14px;" />
                     <ui:Label text="SETTINGS" style="font-size: 26px; letter-spacing: 5px; color: rgb(235, 225, 215); -unity-font-style: bold;" />
                 </ui:VisualElement>
                 <ui:Button text="X" name="btn-close" style="width: 40px; height: 40px; font-size: 18px; background-color: transparent; border-width: 1px; border-color: rgba(180, 50, 70, 0.4); border-radius: 20px; color: rgb(180, 80, 90); -unity-text-align: middle-center; padding: 0;" />
@@ -24,7 +24,7 @@
 
             <!-- Tab Bar -->
             <ui:VisualElement name="tab-container" style="flex-direction: row; margin-bottom: 20px; background-color: rgba(20, 16, 28, 0.6); border-radius: 6px; padding: 4px;">
-                <ui:Button text="AUDIO" name="tab-audio" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; background-color: rgb(120, 60, 160); border-width: 0; border-radius: 4px; color: rgb(235, 225, 215); margin-right: 4px;" />
+                <ui:Button text="AUDIO" name="tab-audio" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; background-color: rgb(180, 40, 60); border-width: 0; border-radius: 4px; color: rgb(235, 225, 215); margin-right: 4px;" />
                 <ui:Button text="GRAPHICS" name="tab-graphics" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; background-color: transparent; border-width: 0; border-radius: 4px; color: rgb(120, 110, 100); margin-right: 4px;" />
                 <ui:Button text="CONTROLS" name="tab-controls" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; background-color: transparent; border-width: 0; border-radius: 4px; color: rgb(120, 110, 100); margin-right: 4px;" />
                 <ui:Button text="GAMEPLAY" name="tab-gameplay" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; background-color: transparent; border-width: 0; border-radius: 4px; color: rgb(120, 110, 100);" />
@@ -40,28 +40,28 @@
                     <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(60, 50, 75, 0.2);">
                         <ui:Label text="Master Volume" style="width: 160px; font-size: 14px; color: rgb(165, 155, 145);" />
                         <ui:Slider name="slider-master" class="vb-slider" low-value="0" high-value="100" value="80" style="flex-grow: 1; margin: 0 16px;" />
-                        <ui:Label name="label-master-value" text="80%" style="width: 50px; font-size: 14px; color: rgb(130, 70, 180); -unity-text-align: middle-right; -unity-font-style: bold;" />
+                        <ui:Label name="label-master-value" text="80%" style="width: 50px; font-size: 14px; color: rgb(180, 40, 60); -unity-text-align: middle-right; -unity-font-style: bold;" />
                     </ui:VisualElement>
 
                     <!-- Music -->
                     <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(60, 50, 75, 0.2);">
                         <ui:Label text="Music" style="width: 160px; font-size: 14px; color: rgb(165, 155, 145);" />
                         <ui:Slider name="slider-music" class="vb-slider" low-value="0" high-value="100" value="70" style="flex-grow: 1; margin: 0 16px;" />
-                        <ui:Label name="label-music-value" text="70%" style="width: 50px; font-size: 14px; color: rgb(130, 70, 180); -unity-text-align: middle-right; -unity-font-style: bold;" />
+                        <ui:Label name="label-music-value" text="70%" style="width: 50px; font-size: 14px; color: rgb(180, 40, 60); -unity-text-align: middle-right; -unity-font-style: bold;" />
                     </ui:VisualElement>
 
                     <!-- Sound Effects -->
                     <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(60, 50, 75, 0.2);">
                         <ui:Label text="Sound Effects" style="width: 160px; font-size: 14px; color: rgb(165, 155, 145);" />
                         <ui:Slider name="slider-sfx" class="vb-slider" low-value="0" high-value="100" value="80" style="flex-grow: 1; margin: 0 16px;" />
-                        <ui:Label name="label-sfx-value" text="80%" style="width: 50px; font-size: 14px; color: rgb(130, 70, 180); -unity-text-align: middle-right; -unity-font-style: bold;" />
+                        <ui:Label name="label-sfx-value" text="80%" style="width: 50px; font-size: 14px; color: rgb(180, 40, 60); -unity-text-align: middle-right; -unity-font-style: bold;" />
                     </ui:VisualElement>
 
                     <!-- Voice -->
                     <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(60, 50, 75, 0.2);">
                         <ui:Label text="Voice / Dialogue" style="width: 160px; font-size: 14px; color: rgb(165, 155, 145);" />
                         <ui:Slider name="slider-voice" class="vb-slider" low-value="0" high-value="100" value="100" style="flex-grow: 1; margin: 0 16px;" />
-                        <ui:Label name="label-voice-value" text="100%" style="width: 50px; font-size: 14px; color: rgb(130, 70, 180); -unity-text-align: middle-right; -unity-font-style: bold;" />
+                        <ui:Label name="label-voice-value" text="100%" style="width: 50px; font-size: 14px; color: rgb(180, 40, 60); -unity-text-align: middle-right; -unity-font-style: bold;" />
                     </ui:VisualElement>
 
                     <!-- Mute Toggle -->
@@ -81,7 +81,7 @@
                 <!-- GRAPHICS TAB (hidden) -->
                 <ui:VisualElement name="graphics-settings" style="padding: 4px 0; display: none;">
 
-                    <ui:Label text="DISPLAY" style="font-size: 11px; letter-spacing: 2px; color: rgb(130, 70, 180); margin-bottom: 12px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgba(130, 70, 180, 0.3);" />
+                    <ui:Label text="DISPLAY" style="font-size: 11px; letter-spacing: 2px; color: rgb(180, 40, 60); margin-bottom: 12px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgba(180, 40, 60, 0.3);" />
 
                     <!-- Resolution -->
                     <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(60, 50, 75, 0.2);">
@@ -101,7 +101,7 @@
                         <ui:Toggle name="toggle-vsync" class="vb-toggle" value="true" />
                     </ui:VisualElement>
 
-                    <ui:Label text="QUALITY" style="font-size: 11px; letter-spacing: 2px; color: rgb(130, 70, 180); margin-top: 16px; margin-bottom: 12px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgba(130, 70, 180, 0.3);" />
+                    <ui:Label text="QUALITY" style="font-size: 11px; letter-spacing: 2px; color: rgb(180, 40, 60); margin-top: 16px; margin-bottom: 12px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgba(180, 40, 60, 0.3);" />
 
                     <!-- Quality -->
                     <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(60, 50, 75, 0.2);">
@@ -120,13 +120,13 @@
                 <!-- CONTROLS TAB (hidden) -->
                 <ui:VisualElement name="controls-settings" style="padding: 4px 0; display: none;">
 
-                    <ui:Label text="MOUSE" style="font-size: 11px; letter-spacing: 2px; color: rgb(130, 70, 180); margin-bottom: 12px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgba(130, 70, 180, 0.3);" />
+                    <ui:Label text="MOUSE" style="font-size: 11px; letter-spacing: 2px; color: rgb(180, 40, 60); margin-bottom: 12px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgba(180, 40, 60, 0.3);" />
 
                     <!-- Mouse Sensitivity -->
                     <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(60, 50, 75, 0.2);">
                         <ui:Label text="Mouse Sensitivity" style="width: 160px; font-size: 14px; color: rgb(165, 155, 145);" />
                         <ui:Slider name="slider-sensitivity" class="vb-slider" low-value="1" high-value="100" value="50" style="flex-grow: 1; margin: 0 16px;" />
-                        <ui:Label name="label-sensitivity-value" text="50" style="width: 50px; font-size: 14px; color: rgb(130, 70, 180); -unity-text-align: middle-right; -unity-font-style: bold;" />
+                        <ui:Label name="label-sensitivity-value" text="50" style="width: 50px; font-size: 14px; color: rgb(180, 40, 60); -unity-text-align: middle-right; -unity-font-style: bold;" />
                     </ui:VisualElement>
 
                     <!-- Invert Y -->
@@ -135,30 +135,30 @@
                         <ui:Toggle name="toggle-invert-y" class="vb-toggle" />
                     </ui:VisualElement>
 
-                    <ui:Label text="KEYBINDINGS" style="font-size: 11px; letter-spacing: 2px; color: rgb(130, 70, 180); margin-top: 16px; margin-bottom: 12px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgba(130, 70, 180, 0.3);" />
+                    <ui:Label text="KEYBINDINGS" style="font-size: 11px; letter-spacing: 2px; color: rgb(180, 40, 60); margin-top: 16px; margin-bottom: 12px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgba(180, 40, 60, 0.3);" />
 
                     <ui:Label text="Click a key to rebind (coming soon)" style="font-size: 12px; color: rgb(100, 90, 85); margin-bottom: 12px; -unity-font-style: italic;" />
 
                     <!-- Key bindings -->
                     <ui:VisualElement style="flex-direction: row; justify-content: space-between; padding: 8px 12px; background-color: rgba(25, 20, 35, 0.6); border-radius: 4px; margin-bottom: 4px;">
                         <ui:Label text="Move Forward" style="font-size: 13px; color: rgb(165, 155, 145);" />
-                        <ui:Label text="W" style="font-size: 13px; color: rgb(130, 70, 180); -unity-font-style: bold; padding: 2px 10px; background-color: rgba(130, 70, 180, 0.2); border-radius: 3px;" />
+                        <ui:Label text="W" style="font-size: 13px; color: rgb(180, 40, 60); -unity-font-style: bold; padding: 2px 10px; background-color: rgba(180, 40, 60, 0.2); border-radius: 3px;" />
                     </ui:VisualElement>
                     <ui:VisualElement style="flex-direction: row; justify-content: space-between; padding: 8px 12px; background-color: rgba(25, 20, 35, 0.6); border-radius: 4px; margin-bottom: 4px;">
                         <ui:Label text="Move Back" style="font-size: 13px; color: rgb(165, 155, 145);" />
-                        <ui:Label text="S" style="font-size: 13px; color: rgb(130, 70, 180); -unity-font-style: bold; padding: 2px 10px; background-color: rgba(130, 70, 180, 0.2); border-radius: 3px;" />
+                        <ui:Label text="S" style="font-size: 13px; color: rgb(180, 40, 60); -unity-font-style: bold; padding: 2px 10px; background-color: rgba(180, 40, 60, 0.2); border-radius: 3px;" />
                     </ui:VisualElement>
                     <ui:VisualElement style="flex-direction: row; justify-content: space-between; padding: 8px 12px; background-color: rgba(25, 20, 35, 0.6); border-radius: 4px; margin-bottom: 4px;">
                         <ui:Label text="Move Left" style="font-size: 13px; color: rgb(165, 155, 145);" />
-                        <ui:Label text="A" style="font-size: 13px; color: rgb(130, 70, 180); -unity-font-style: bold; padding: 2px 10px; background-color: rgba(130, 70, 180, 0.2); border-radius: 3px;" />
+                        <ui:Label text="A" style="font-size: 13px; color: rgb(180, 40, 60); -unity-font-style: bold; padding: 2px 10px; background-color: rgba(180, 40, 60, 0.2); border-radius: 3px;" />
                     </ui:VisualElement>
                     <ui:VisualElement style="flex-direction: row; justify-content: space-between; padding: 8px 12px; background-color: rgba(25, 20, 35, 0.6); border-radius: 4px; margin-bottom: 4px;">
                         <ui:Label text="Move Right" style="font-size: 13px; color: rgb(165, 155, 145);" />
-                        <ui:Label text="D" style="font-size: 13px; color: rgb(130, 70, 180); -unity-font-style: bold; padding: 2px 10px; background-color: rgba(130, 70, 180, 0.2); border-radius: 3px;" />
+                        <ui:Label text="D" style="font-size: 13px; color: rgb(180, 40, 60); -unity-font-style: bold; padding: 2px 10px; background-color: rgba(180, 40, 60, 0.2); border-radius: 3px;" />
                     </ui:VisualElement>
                     <ui:VisualElement style="flex-direction: row; justify-content: space-between; padding: 8px 12px; background-color: rgba(25, 20, 35, 0.6); border-radius: 4px; margin-bottom: 4px;">
                         <ui:Label text="Interact" style="font-size: 13px; color: rgb(165, 155, 145);" />
-                        <ui:Label text="E" style="font-size: 13px; color: rgb(130, 70, 180); -unity-font-style: bold; padding: 2px 10px; background-color: rgba(130, 70, 180, 0.2); border-radius: 3px;" />
+                        <ui:Label text="E" style="font-size: 13px; color: rgb(180, 40, 60); -unity-font-style: bold; padding: 2px 10px; background-color: rgba(180, 40, 60, 0.2); border-radius: 3px;" />
                     </ui:VisualElement>
 
                 </ui:VisualElement>
@@ -166,7 +166,7 @@
                 <!-- GAMEPLAY TAB (hidden) -->
                 <ui:VisualElement name="gameplay-settings" style="padding: 4px 0; display: none;">
 
-                    <ui:Label text="DIFFICULTY" style="font-size: 11px; letter-spacing: 2px; color: rgb(130, 70, 180); margin-bottom: 12px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgba(130, 70, 180, 0.3);" />
+                    <ui:Label text="DIFFICULTY" style="font-size: 11px; letter-spacing: 2px; color: rgb(180, 40, 60); margin-bottom: 12px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgba(180, 40, 60, 0.3);" />
 
                     <!-- Difficulty -->
                     <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(60, 50, 75, 0.2);">
@@ -174,7 +174,7 @@
                         <ui:DropdownField name="dropdown-difficulty" class="vb-dropdown" choices="Story,Normal,Hard,Nightmare" index="1" style="flex-grow: 1; margin-left: 16px; height: 36px;" />
                     </ui:VisualElement>
 
-                    <ui:Label text="INTERFACE" style="font-size: 11px; letter-spacing: 2px; color: rgb(130, 70, 180); margin-top: 16px; margin-bottom: 12px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgba(130, 70, 180, 0.3);" />
+                    <ui:Label text="INTERFACE" style="font-size: 11px; letter-spacing: 2px; color: rgb(180, 40, 60); margin-top: 16px; margin-bottom: 12px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgba(180, 40, 60, 0.3);" />
 
                     <!-- Damage Numbers -->
                     <ui:VisualElement style="flex-direction: row; align-items: center; padding: 14px 0;">
@@ -199,9 +199,9 @@
             </ui:ScrollView>
 
             <!-- Bottom Buttons -->
-            <ui:VisualElement style="flex-direction: row; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top-width: 1px; border-top-color: rgba(130, 70, 180, 0.2);">
-                <ui:Button text="RESET DEFAULTS" name="btn-reset" style="height: 40px; padding: 0 20px; font-size: 12px; letter-spacing: 1px; -unity-text-align: middle-center; background-color: transparent; border-width: 1px; border-color: rgba(130, 70, 180, 0.3); border-radius: 4px; color: rgb(120, 110, 100); margin-right: 12px;" />
-                <ui:Button text="APPLY" name="btn-apply" style="height: 40px; padding: 0 32px; font-size: 14px; letter-spacing: 2px; -unity-font-style: bold; -unity-text-align: middle-center; background-color: rgb(120, 60, 160); border-color: rgb(160, 100, 200); border-width: 2px; border-radius: 6px; color: rgb(235, 225, 215);" />
+            <ui:VisualElement style="flex-direction: row; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top-width: 1px; border-top-color: rgba(180, 40, 60, 0.2);">
+                <ui:Button text="RESET DEFAULTS" name="btn-reset" style="height: 40px; padding: 0 20px; font-size: 12px; letter-spacing: 1px; -unity-text-align: middle-center; background-color: transparent; border-width: 1px; border-color: rgba(180, 40, 60, 0.3); border-radius: 4px; color: rgb(120, 110, 100); margin-right: 12px;" />
+                <ui:Button text="APPLY" name="btn-apply" style="height: 40px; padding: 0 32px; font-size: 14px; letter-spacing: 2px; -unity-font-style: bold; -unity-text-align: middle-center; background-color: rgb(180, 40, 60); border-color: rgb(220, 60, 80); border-width: 2px; border-radius: 6px; color: rgb(235, 225, 215);" />
             </ui:VisualElement>
 
         </ui:VisualElement>

@@ -24,8 +24,8 @@
     /* Accent Colors - Corruption/Brand themed */
     --color-accent-red: rgb(180, 40, 60);
     --color-accent-red-glow: rgb(220, 60, 80);
-    --color-accent-purple: rgb(120, 60, 160);
-    --color-accent-purple-glow: rgb(160, 80, 200);
+    --color-accent-crimson: rgb(180, 40, 60);
+    --color-accent-crimson-glow: rgb(220, 60, 80);
     --color-accent-gold: rgb(200, 160, 80);
     --color-accent-cyan: rgb(60, 180, 200);
 
@@ -144,7 +144,7 @@
 
 .vb-panel-glow {
     background-color: var(--color-panel);
-    border-color: var(--color-accent-purple);
+    border-color: var(--color-accent-crimson);
     border-width: 2px;
     border-radius: var(--radius-md);
     padding: var(--spacing-md);
@@ -183,13 +183,13 @@
 
 .vb-button:hover {
     background-color: var(--color-background-medium);
-    border-color: var(--color-accent-purple);
+    border-color: var(--color-accent-crimson);
     color: var(--color-text-highlight);
     scale: 1.02;
 }
 
 .vb-button:active {
-    background-color: var(--color-accent-purple);
+    background-color: var(--color-accent-crimson);
     scale: 0.98;
 }
 
@@ -212,8 +212,8 @@
 }
 
 .vb-button-secondary {
-    background-color: var(--color-accent-purple);
-    border-color: var(--color-accent-purple-glow);
+    background-color: var(--color-accent-crimson);
+    border-color: var(--color-accent-crimson-glow);
     color: white;
 }
 
@@ -239,7 +239,7 @@
 }
 
 .vb-textfield:focus {
-    border-color: var(--color-accent-purple);
+    border-color: var(--color-accent-crimson);
 }
 
 .vb-textfield > .unity-text-field__input {
@@ -257,7 +257,7 @@
 }
 
 .vb-slider .unity-base-slider__dragger {
-    background-color: var(--color-accent-purple);
+    background-color: var(--color-accent-crimson);
     border-radius: 50%;
     width: 20px;
     height: 20px;
@@ -271,7 +271,7 @@
 }
 
 .vb-slider .unity-base-slider__drag-container {
-    background-color: var(--color-accent-purple-glow);
+    background-color: var(--color-accent-crimson-glow);
     border-radius: var(--radius-sm);
 }
 
@@ -294,8 +294,8 @@
 }
 
 .vb-toggle:checked .unity-toggle__checkmark {
-    background-color: var(--color-accent-purple);
-    border-color: var(--color-accent-purple-glow);
+    background-color: var(--color-accent-crimson);
+    border-color: var(--color-accent-crimson-glow);
 }
 
 .vb-toggle .unity-toggle__text {
@@ -318,12 +318,12 @@
 }
 
 .vb-dropdown:hover {
-    border-color: rgb(120, 60, 160);
+    border-color: rgb(180, 40, 60);
     background-color: rgb(35, 28, 45);
 }
 
 .vb-dropdown:focus {
-    border-color: rgb(160, 100, 200);
+    border-color: rgb(220, 60, 80);
 }
 
 .vb-dropdown .unity-base-popup-field__text {
@@ -348,7 +348,7 @@
 .unity-base-dropdown__container-outer {
     position: absolute;
     background-color: rgb(18, 14, 26);
-    border-color: rgb(120, 60, 160);
+    border-color: rgb(180, 40, 60);
     border-width: 2px;
     border-radius: 8px;
     padding: 4px;
@@ -371,11 +371,11 @@
 }
 
 .unity-base-dropdown__item:hover {
-    background-color: rgba(120, 60, 160, 0.3);
+    background-color: rgba(180, 40, 60, 0.3);
 }
 
 .unity-base-dropdown__item:checked {
-    background-color: rgb(120, 60, 160);
+    background-color: rgb(180, 40, 60);
 }
 
 /* Dropdown scroll view fix */
@@ -388,7 +388,7 @@
 }
 
 .unity-base-dropdown .unity-scroller--vertical .unity-base-slider__dragger {
-    background-color: rgb(120, 60, 160);
+    background-color: rgb(180, 40, 60);
     border-radius: 4px;
 }
 
@@ -418,19 +418,32 @@
 }
 
 .vb-scrollview .unity-scroller--vertical {
-    width: 12px;
+    width: 14px;
+    margin-left: 6px;
 }
 
 .vb-scrollview .unity-scroller--vertical .unity-base-slider__dragger {
-    background-color: var(--color-accent-purple);
-    border-radius: var(--radius-sm);
-    width: 8px;
+    background-color: var(--color-accent-crimson);
+    border-radius: 6px;
+    width: 10px;
     margin-left: 2px;
+    min-height: 40px;
+    transition-duration: 0.15s;
+    cursor: link;
+}
+
+.vb-scrollview .unity-scroller--vertical .unity-base-slider__dragger:hover {
+    background-color: var(--color-accent-crimson-glow);
+    width: 12px;
+    margin-left: 1px;
 }
 
 .vb-scrollview .unity-scroller--vertical .unity-base-slider__tracker {
-    background-color: var(--color-background-dark);
-    border-radius: var(--radius-sm);
+    background-color: rgba(40, 32, 50, 0.8);
+    border-radius: 7px;
+    border-width: 1px;
+    border-color: rgba(80, 60, 100, 0.3);
+    cursor: link;
 }
 
 /* =============================================================================
@@ -447,7 +460,7 @@
 }
 
 .vb-progressbar-fill {
-    background-color: var(--color-accent-purple);
+    background-color: var(--color-accent-crimson);
     height: 100%;
     transition-duration: 0.3s;
 }
@@ -483,8 +496,8 @@
 }
 
 .vb-list-item:selected {
-    background-color: var(--color-accent-purple);
-    border-color: var(--color-accent-purple-glow);
+    background-color: var(--color-accent-crimson);
+    border-color: var(--color-accent-crimson-glow);
 }
 
 .vb-grid {
@@ -510,7 +523,7 @@
 
 .vb-tooltip {
     background-color: rgba(10, 8, 15, 0.98);
-    border-color: var(--color-accent-purple);
+    border-color: var(--color-accent-crimson);
     border-width: 1px;
     border-radius: var(--radius-sm);
     padding: var(--spacing-sm) var(--spacing-md);
@@ -637,14 +650,14 @@
    MAIN MENU SPECIFIC STYLES
    ============================================================================= */
 
-/* Main menu buttons - larger, more prominent */
+/* Main menu buttons - larger, more prominent - CRIMSON THEME */
 .menu-button-main {
     min-width: 100%;
     min-height: 54px;
     font-size: 18px;
     letter-spacing: 2px;
-    background-color: rgb(120, 60, 160);
-    border-color: rgb(160, 100, 200);
+    background-color: rgb(180, 40, 60);
+    border-color: rgb(220, 60, 80);
     border-width: 2px;
     border-radius: 4px;
     color: rgb(235, 225, 215);
@@ -654,14 +667,14 @@
 }
 
 .menu-button-main:hover {
-    background-color: rgb(140, 80, 180);
-    border-color: rgb(180, 120, 220);
+    background-color: rgb(200, 60, 80);
+    border-color: rgb(255, 100, 120);
     scale: 1.02;
     translate: -2px 0;
 }
 
 .menu-button-main:active {
-    background-color: rgb(100, 50, 140);
+    background-color: rgb(140, 30, 50);
     scale: 0.98;
 }
 
@@ -682,14 +695,34 @@
 }
 
 .menu-button-secondary:hover {
-    background-color: rgba(60, 50, 75, 0.9);
-    border-color: rgb(100, 80, 120);
+    background-color: rgba(80, 40, 50, 0.9);
+    border-color: rgb(180, 50, 70);
     color: rgb(235, 225, 215);
     translate: -2px 0;
 }
 
 .menu-button-secondary:active {
     background-color: rgb(50, 40, 65);
+}
+
+/* Exit button - special styling with hover animation */
+.menu-button-exit {
+    background-color: rgba(30, 25, 40, 0.6);
+    border-color: rgba(180, 50, 70, 0.3);
+    color: rgb(120, 100, 95);
+}
+
+.menu-button-exit:hover {
+    background-color: rgba(100, 30, 40, 0.9);
+    border-color: rgb(200, 60, 80);
+    color: rgb(255, 200, 200);
+    translate: -3px 0;
+    scale: 1.02;
+}
+
+.menu-button-exit:active {
+    background-color: rgb(120, 40, 50);
+    scale: 0.98;
 }
 
 /* Button glow effect element (inner child for animation) */
@@ -743,7 +776,7 @@
 
 .hero-card.selected {
     background-color: rgb(40, 32, 55);
-    border-color: rgb(120, 60, 160);
+    border-color: rgb(180, 40, 60);
 }
 
 .hero-card-portrait {
@@ -860,12 +893,12 @@
 }
 
 .inventory-tab:hover {
-    background-color: rgba(120, 60, 160, 0.2);
+    background-color: rgba(180, 40, 60, 0.2);
     color: rgb(200, 190, 180);
 }
 
 .inventory-tab-active {
-    background-color: rgb(120, 60, 160);
+    background-color: rgb(180, 40, 60);
     color: rgb(235, 225, 215);
 }
 
@@ -888,12 +921,12 @@
 }
 
 .item-slot:hover {
-    border-color: rgb(120, 60, 160);
+    border-color: rgb(180, 40, 60);
     background-color: rgb(35, 28, 45);
 }
 
 .item-slot-selected {
-    border-color: rgb(160, 100, 200);
+    border-color: rgb(220, 60, 80);
     background-color: rgb(45, 35, 60);
 }
 
@@ -991,10 +1024,10 @@
 .item-effect {
     padding: 8px;
     margin-bottom: 6px;
-    background-color: rgba(120, 60, 160, 0.1);
+    background-color: rgba(180, 40, 60, 0.1);
     border-radius: 4px;
     border-left-width: 3px;
-    border-left-color: rgb(120, 60, 160);
+    border-left-color: rgb(180, 40, 60);
 }
 
 .item-effect-text {
@@ -1039,13 +1072,13 @@
 }
 
 .monster-card:hover {
-    border-color: rgb(120, 60, 160);
+    border-color: rgb(180, 40, 60);
     background-color: rgb(35, 28, 45);
     scale: 1.02;
 }
 
 .monster-card-selected {
-    border-color: rgb(160, 100, 200);
+    border-color: rgb(220, 60, 80);
     background-color: rgb(45, 35, 60);
 }
 
@@ -1116,7 +1149,7 @@
     background-color: rgb(30, 24, 40);
     border-radius: 4px;
     border-left-width: 3px;
-    border-left-color: rgb(120, 60, 160);
+    border-left-color: rgb(180, 40, 60);
 }
 
 .monster-skill:hover {
@@ -1159,7 +1192,7 @@
 }
 
 .vb-text-field:focus {
-    border-color: rgb(120, 60, 160);
+    border-color: rgb(180, 40, 60);
 }
 
 .vb-text-field > .unity-text-field__input {
@@ -1203,7 +1236,7 @@
     background-color: rgb(20, 16, 28);
     border-radius: 50px;
     border-width: 3px;
-    border-color: rgb(120, 60, 160);
+    border-color: rgb(180, 40, 60);
     justify-content: center;
     align-items: center;
     overflow: hidden;
@@ -1326,7 +1359,7 @@
 
 .dialogue-choice:hover {
     background-color: rgb(40, 32, 50);
-    border-color: rgb(120, 60, 160);
+    border-color: rgb(180, 40, 60);
 }
 
 .dialogue-choice:active {
@@ -1389,9 +1422,9 @@
     font-size: 16px;
     letter-spacing: 3px;
     -unity-font-style: bold;
-    background-color: rgba(120, 60, 160, 0.9);
+    background-color: rgba(180, 40, 60, 0.9);
     border-width: 2px;
-    border-color: rgb(160, 100, 200);
+    border-color: rgb(220, 60, 80);
     border-radius: 8px;
     color: rgb(235, 225, 215);
     padding: 14px 24px;
@@ -1427,7 +1460,7 @@
 
 .btn-secondary:hover {
     background-color: rgba(60, 50, 80, 0.9);
-    border-color: rgba(130, 70, 180, 0.8);
+    border-color: rgba(180, 40, 60, 0.8);
     color: rgb(200, 190, 180);
     translate: -2px 0;
 }
@@ -1465,7 +1498,7 @@
     -unity-font-style: bold;
     color: rgb(235, 225, 215);
     -unity-text-outline-width: 2px;
-    -unity-text-outline-color: rgba(130, 70, 180, 0.5);
+    -unity-text-outline-color: rgba(180, 40, 60, 0.5);
 }
 
 .title-tagline {
@@ -1537,14 +1570,14 @@
 .divider-line {
     flex-grow: 1;
     height: 1px;
-    background-color: rgba(130, 70, 180, 0.3);
+    background-color: rgba(180, 40, 60, 0.3);
 }
 
 .divider-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: rgba(130, 70, 180, 0.5);
+    background-color: rgba(180, 40, 60, 0.5);
 }
 
 /* =============================================================================
@@ -1558,7 +1591,7 @@
     padding: 16px 40px;
     background-color: rgba(8, 6, 12, 0.8);
     border-top-width: 1px;
-    border-top-color: rgba(130, 70, 180, 0.2);
+    border-top-color: rgba(180, 40, 60, 0.2);
 }
 
 .footer-text {
@@ -1586,8 +1619,8 @@
     width: 48px;
     height: 48px;
     border-width: 3px;
-    border-color: rgba(130, 70, 180, 0.3);
-    border-top-color: rgb(130, 70, 180);
+    border-color: rgba(180, 40, 60, 0.3);
+    border-top-color: rgb(180, 40, 60);
     border-radius: 50%;
     margin-bottom: 20px;
 }
@@ -1595,7 +1628,7 @@
 .loading-text {
     font-size: 14px;
     letter-spacing: 4px;
-    color: rgb(130, 70, 180);
+    color: rgb(180, 40, 60);
 }
 
 /* =============================================================================
@@ -1618,7 +1651,7 @@
 .settings-panel-container {
     background-color: rgba(12, 9, 18, 0.95);
     border-width: 2px;
-    border-color: rgba(130, 70, 180, 0.4);
+    border-color: rgba(180, 40, 60, 0.4);
     border-radius: 16px;
     padding: 32px;
     width: 700px;
@@ -1632,7 +1665,7 @@
     margin-bottom: 24px;
     padding-bottom: 16px;
     border-bottom-width: 1px;
-    border-bottom-color: rgba(130, 70, 180, 0.3);
+    border-bottom-color: rgba(180, 40, 60, 0.3);
 }
 
 .settings-title {
@@ -1682,12 +1715,12 @@
 }
 
 .settings-tab:hover {
-    background-color: rgba(130, 70, 180, 0.15);
+    background-color: rgba(180, 40, 60, 0.15);
     color: rgb(165, 155, 145);
 }
 
 .settings-tab-active {
-    background-color: rgb(120, 60, 160);
+    background-color: rgb(180, 40, 60);
     color: rgb(235, 225, 215);
 }
 
@@ -1724,7 +1757,7 @@
     min-width: 60px;
     flex-shrink: 0;
     font-size: 14px;
-    color: rgb(130, 70, 180);
+    color: rgb(180, 40, 60);
     -unity-text-align: middle-right;
     -unity-font-style: bold;
 }
@@ -1733,12 +1766,12 @@
 .settings-section-header {
     font-size: 12px;
     letter-spacing: 3px;
-    color: rgb(130, 70, 180);
+    color: rgb(180, 40, 60);
     margin-top: 24px;
     margin-bottom: 16px;
     padding-bottom: 8px;
     border-bottom-width: 1px;
-    border-bottom-color: rgba(130, 70, 180, 0.3);
+    border-bottom-color: rgba(180, 40, 60, 0.3);
 }
 
 /* Settings Button Row */
@@ -1748,7 +1781,7 @@
     margin-top: 24px;
     padding-top: 16px;
     border-top-width: 1px;
-    border-top-color: rgba(130, 70, 180, 0.2);
+    border-top-color: rgba(180, 40, 60, 0.2);
 }
 
 /* AAA Slider Style */
@@ -1763,9 +1796,9 @@
 }
 
 .aaa-slider .unity-base-slider__dragger {
-    background-color: rgb(130, 70, 180);
+    background-color: rgb(180, 40, 60);
     border-width: 2px;
-    border-color: rgb(160, 100, 200);
+    border-color: rgb(220, 60, 80);
     border-radius: 50%;
     width: 22px;
     height: 22px;
@@ -1779,7 +1812,7 @@
 }
 
 .aaa-slider .unity-base-slider__drag-container {
-    background-color: rgb(130, 70, 180);
+    background-color: rgb(180, 40, 60);
     border-radius: 6px;
 }
 
@@ -1801,8 +1834,8 @@
 }
 
 .aaa-toggle:checked .unity-toggle__input {
-    background-color: rgba(120, 60, 160, 0.5);
-    border-color: rgb(130, 70, 180);
+    background-color: rgba(180, 40, 60, 0.5);
+    border-color: rgb(180, 40, 60);
 }
 
 .aaa-toggle .unity-toggle__checkmark {
@@ -1815,7 +1848,7 @@
 }
 
 .aaa-toggle:checked .unity-toggle__checkmark {
-    background-color: rgb(130, 70, 180);
+    background-color: rgb(180, 40, 60);
     translate: 24px 0;
 }
 
@@ -1926,7 +1959,7 @@
 
 .monster-card-aaa:hover {
     background-color: rgba(35, 28, 50, 0.95);
-    border-color: rgba(130, 70, 180, 0.7);
+    border-color: rgba(180, 40, 60, 0.7);
     translate: 0 -2px;
 }
 
@@ -1935,7 +1968,7 @@
     height: 120px;
     background-color: rgba(20, 16, 28, 0.8);
     border-width: 3px;
-    border-color: rgba(130, 70, 180, 0.4);
+    border-color: rgba(180, 40, 60, 0.4);
     border-radius: 8px;
     justify-content: center;
     align-items: center;
@@ -1952,7 +1985,7 @@
 
 .monster-portrait-placeholder-text {
     font-size: 48px;
-    color: rgba(130, 70, 180, 0.5);
+    color: rgba(180, 40, 60, 0.5);
 }
 
 /* =============================================================================
@@ -1964,7 +1997,7 @@
     align-items: center;
     background-color: rgba(18, 14, 26, 0.9);
     border-width: 1px;
-    border-color: rgba(130, 70, 180, 0.3);
+    border-color: rgba(180, 40, 60, 0.3);
     border-radius: 8px;
     padding: 16px 24px;
 }
@@ -1991,5 +2024,5 @@
 .hero-summary-path {
     font-size: 12px;
     letter-spacing: 2px;
-    color: rgb(130, 70, 180);
+    color: rgb(180, 40, 60);
 }

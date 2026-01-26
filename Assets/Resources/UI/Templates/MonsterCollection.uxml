@@ -120,7 +120,7 @@
 
                 <!-- Brand Section -->
                 <ui:VisualElement name="brand-section" style="margin-bottom: 16px;">
-                    <ui:Label text="BRAND" style="color: rgb(120, 60, 160); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
+                    <ui:Label text="BRAND" style="color: rgb(180, 40, 60); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
 
                     <ui:VisualElement class="vb-row" style="flex-wrap: wrap;">
                         <ui:VisualElement name="primary-brand-badge" class="brand-badge" style="margin-right: 8px; margin-bottom: 4px;">
@@ -137,7 +137,7 @@
                 <!-- Corruption Bar -->
                 <ui:VisualElement name="corruption-section" style="margin-bottom: 16px;">
                     <ui:VisualElement class="vb-row" style="justify-content: space-between; margin-bottom: 6px;">
-                        <ui:Label text="CORRUPTION" style="color: rgb(120, 60, 160); font-size: 12px; letter-spacing: 2px;" />
+                        <ui:Label text="CORRUPTION" style="color: rgb(180, 40, 60); font-size: 12px; letter-spacing: 2px;" />
                         <ui:Label name="corruption-percent" text="0%" style="color: rgb(160, 80, 120); font-size: 12px; -unity-font-style: bold;" />
                     </ui:VisualElement>
 
@@ -150,7 +150,7 @@
 
                 <!-- Stats Section -->
                 <ui:VisualElement name="stats-section" style="margin-bottom: 16px;">
-                    <ui:Label text="STATS" style="color: rgb(120, 60, 160); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
+                    <ui:Label text="STATS" style="color: rgb(180, 40, 60); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
 
                     <ui:VisualElement name="stats-grid" style="flex-direction: row; flex-wrap: wrap;">
                         <!-- HP -->
@@ -188,7 +188,7 @@
 
                 <!-- Skills Section -->
                 <ui:VisualElement name="skills-section" style="flex-grow: 1; margin-bottom: 16px;">
-                    <ui:Label text="SKILLS" style="color: rgb(120, 60, 160); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
+                    <ui:Label text="SKILLS" style="color: rgb(180, 40, 60); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
 
                     <ui:ScrollView name="skills-scroll" style="max-height: 120px;">
                         <ui:VisualElement name="skills-list" class="vb-column">

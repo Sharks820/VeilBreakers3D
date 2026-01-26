@@ -13,8 +13,8 @@
 
         <!-- Veil effect layer - subtle purple gradient -->
         <ui:VisualElement name="bg-veil-layer" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0;">
-            <ui:VisualElement style="position: absolute; left: 0; top: 0; right: 0; bottom: 50%; background-image: none; background-color: rgba(120, 60, 160, 0.05);" />
-            <ui:VisualElement style="position: absolute; left: 0; top: 50%; right: 0; bottom: 0; background-color: rgba(60, 0, 100, 0.1);" />
+            <ui:VisualElement style="position: absolute; left: 0; top: 0; right: 0; bottom: 50%; background-image: none; background-color: rgba(180, 40, 60, 0.05);" />
+            <ui:VisualElement style="position: absolute; left: 0; top: 50%; right: 0; bottom: 0; background-color: rgba(100, 20, 30, 0.1);" />
         </ui:VisualElement>
 
         <!-- Ambient particles placeholder (controlled by script) -->
@@ -46,12 +46,12 @@
 
                     <!-- Logo placeholder (can be replaced with image) -->
                     <ui:VisualElement name="logo-container" style="height: 120px; margin-bottom: 16px;">
-                        <ui:Label text="VEILBREAKERS" name="game-title" class="vb-header" style="font-size: 72px; color: rgb(235, 225, 215); letter-spacing: 6px; -unity-text-align: middle-left; text-shadow: 0 0 20px rgba(120, 60, 160, 0.5);" />
+                        <ui:Label text="VEILBREAKERS" name="game-title" class="vb-header" style="font-size: 72px; color: rgb(235, 225, 215); letter-spacing: 6px; -unity-text-align: middle-left; text-shadow: 0 0 20px rgba(180, 40, 60, 0.5);" />
                     </ui:VisualElement>
 
                     <!-- Tagline with corruption glow -->
                     <ui:VisualElement name="tagline-container" style="flex-direction: row; align-items: center;">
-                        <ui:VisualElement style="width: 60px; height: 2px; background-color: rgb(120, 60, 160); margin-right: 16px;" />
+                        <ui:VisualElement style="width: 60px; height: 2px; background-color: rgb(180, 40, 60); margin-right: 16px;" />
                         <ui:Label text="Break the Veil. Bind the Fallen." name="tagline" style="color: rgb(165, 155, 145); font-size: 18px; letter-spacing: 3px; -unity-font-style: italic;" />
                     </ui:VisualElement>
 
@@ -59,7 +59,7 @@
 
                 <!-- News/Updates ticker (optional) -->
                 <ui:VisualElement name="news-section" style="margin-top: 40px; max-width: 500px; display: none;">
-                    <ui:Label text="LATEST UPDATE" style="color: rgb(120, 60, 160); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
+                    <ui:Label text="LATEST UPDATE" style="color: rgb(180, 40, 60); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
                     <ui:Label text="Version 1.0 - The Veil Awakens" style="color: rgb(165, 155, 145); font-size: 14px;" />
                 </ui:VisualElement>
 
@@ -123,7 +123,7 @@
              ==================================================================== -->
 
         <ui:VisualElement name="loading-overlay" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgb(8, 6, 12); display: none; justify-content: center; align-items: center;">
-            <ui:VisualElement name="loading-spinner" style="width: 60px; height: 60px; border-width: 3px; border-color: rgb(120, 60, 160); border-radius: 50%;" />
+            <ui:VisualElement name="loading-spinner" style="width: 60px; height: 60px; border-width: 3px; border-color: rgb(180, 40, 60); border-radius: 50%;" />
             <ui:Label text="Loading..." style="color: rgb(165, 155, 145); font-size: 16px; margin-top: 20px;" />
         </ui:VisualElement>
 

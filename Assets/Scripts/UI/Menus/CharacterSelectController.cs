@@ -64,6 +64,27 @@ namespace VeilBreakers.UI.Menus
         private VisualElement _primaryBrand;
         private VisualElement _secondaryBrand;
 
+        // Path elements
+        private Label _pathName;
+        private VisualElement _pathBadge;
+
+        // Brand affinity elements
+        private VisualElement _brandIcon1;
+        private Label _brandName1;
+        private VisualElement _brandIcon2;
+        private Label _brandName2;
+
+        // Monster elements
+        private Label _monsterName;
+        private Label _monsterType;
+        private Label _monsterAbilityName;
+        private Label _monsterAbilityDesc;
+        private VisualElement _monsterBrandIcons;
+
+        // Innate ability elements
+        private Label _innateAbilityName;
+        private Label _innateAbilityDesc;
+
         // Stat elements
         private VisualElement _statHealthFill;
         private VisualElement _statAttackFill;
@@ -150,6 +171,26 @@ namespace VeilBreakers.UI.Menus
             // Query brands
             _primaryBrand = _root.Q<VisualElement>("primary-brand");
             _secondaryBrand = _root.Q<VisualElement>("secondary-brand");
+
+            // Query path elements
+            _pathName = _root.Q<Label>("path-name");
+            _pathBadge = _root.Q<VisualElement>("path-badge");
+
+            // Query brand affinity elements
+            _brandIcon1 = _root.Q<VisualElement>("brand-icon-1");
+            _brandName1 = _root.Q<Label>("brand-name-1");
+            _brandIcon2 = _root.Q<VisualElement>("brand-icon-2");
+            _brandName2 = _root.Q<Label>("brand-name-2");
+
+            // Query monster elements
+            _monsterName = _root.Q<Label>("monster-name");
+            _monsterType = _root.Q<Label>("monster-type");
+            _monsterAbilityName = _root.Q<Label>("monster-ability-name");
+            _monsterAbilityDesc = _root.Q<Label>("monster-ability-desc");
+
+            // Query innate ability elements
+            _innateAbilityName = _root.Q<Label>("innate-ability-name");
+            _innateAbilityDesc = _root.Q<Label>("innate-ability-desc");
 
             // Query stats
             _statHealthFill = _root.Q<VisualElement>("stat-health-fill");
@@ -328,7 +369,7 @@ namespace VeilBreakers.UI.Menus
             selectIndicator.style.left = 0;
             selectIndicator.style.top = 0;
             selectIndicator.style.bottom = 0;
-            selectIndicator.style.backgroundColor = new Color(130f/255f, 70f/255f, 180f/255f);
+            selectIndicator.style.backgroundColor = new Color(180f/255f, 40f/255f, 60f/255f);
             selectIndicator.style.borderTopLeftRadius = 6;
             selectIndicator.style.borderBottomLeftRadius = 6;
             selectIndicator.style.opacity = 0;
@@ -436,7 +477,7 @@ namespace VeilBreakers.UI.Menus
             {
                 var newCard = _heroCards[newIndex];
                 newCard.style.backgroundColor = new Color(40f/255f, 32f/255f, 55f/255f);
-                var newBorderColor = new Color(120f/255f, 60f/255f, 160f/255f);
+                var newBorderColor = new Color(180f/255f, 40f/255f, 60f/255f);
                 newCard.style.borderTopColor = newBorderColor;
                 newCard.style.borderRightColor = newBorderColor;
                 newCard.style.borderBottomColor = newBorderColor;
@@ -463,14 +504,20 @@ namespace VeilBreakers.UI.Menus
             if (_heroName != null) _heroName.text = hero.display_name;
             if (_heroTitle != null) _heroTitle.text = hero.title ?? "";
 
+            // Update path display
+            UpdatePathDisplay(hero);
+
             // Update brands
             UpdateBrandDisplay(hero);
 
             // Update stats
             UpdateStatBars(hero);
 
-            // Update abilities
-            UpdateAbilityDisplay(hero);
+            // Update signature monster
+            UpdateMonsterDisplay(hero);
+
+            // Update innate abilities
+            UpdateInateAbilityDisplay(hero);
 
             // Hide placeholder, show model
             if (_placeholder != null) _placeholder.style.display = DisplayStyle.None;
@@ -480,17 +527,62 @@ namespace VeilBreakers.UI.Menus
             UIAnimationController.Instance?.FadeIn(_detailsPanel, 0.3f);
         }
 
+        private void UpdatePathDisplay(HeroData hero)
+        {
+            var path = hero.GetPrimaryPath();
+
+            if (_pathName != null)
+            {
+                _pathName.text = path.ToString();
+            }
+
+            // Update path badge color based on path
+            if (_pathBadge != null)
+            {
+                var pathColor = GetPathColor(path);
+                var indicator = _pathBadge.Q<VisualElement>();
+                if (indicator != null)
+                    indicator.style.backgroundColor = pathColor;
+            }
+        }
+
+        private Color GetPathColor(Path path)
+        {
+            return path switch
+            {
+                Path.IRONBOUND => new Color(140f/255f, 150f/255f, 165f/255f),    // Steel gray
+                Path.FANGBORN => new Color(180f/255f, 45f/255f, 45f/255f),       // Blood red
+                Path.VOIDTOUCHED => new Color(100f/255f, 60f/255f, 140f/255f),   // Dark purple
+                Path.UNCHAINED => new Color(200f/255f, 170f/255f, 80f/255f),     // Gold
+                _ => new Color(165f/255f, 155f/255f, 145f/255f)
+            };
+        }
+
         private void UpdateBrandDisplay(HeroData hero)
         {
             var primaryBrand = hero.GetPrimaryBrand();
+            var brandColor = ThemeManager.Instance.GetBrandColor(primaryBrand);
 
+            // Update the new brand affinity display
+            if (_brandIcon1 != null)
+                _brandIcon1.style.backgroundColor = brandColor;
+            if (_brandName1 != null)
+                _brandName1.text = primaryBrand.ToString();
+
+            // For now, hide secondary brand (or show a related brand)
+            if (_brandIcon2 != null)
+                _brandIcon2.style.display = DisplayStyle.None;
+            if (_brandName2 != null)
+                _brandName2.style.display = DisplayStyle.None;
+
+            // Also update the old primary brand element if it exists
             if (_primaryBrand != null)
             {
                 var icon = _primaryBrand.Q(className: "brand-icon");
                 var name = _primaryBrand.Q<Label>(className: "brand-name");
 
                 if (icon != null)
-                    icon.style.backgroundColor = ThemeManager.Instance.GetBrandColor(primaryBrand);
+                    icon.style.backgroundColor = brandColor;
                 if (name != null)
                     name.text = primaryBrand.ToString();
             }
@@ -499,6 +591,88 @@ namespace VeilBreakers.UI.Menus
             if (_secondaryBrand != null)
             {
                 _secondaryBrand.style.display = DisplayStyle.None;
+            }
+        }
+
+        private void UpdateMonsterDisplay(HeroData hero)
+        {
+            // Get signature monster from recommended_monsters
+            if (hero.recommended_monsters != null && hero.recommended_monsters.Length > 0)
+            {
+                string signatureMonsterId = hero.recommended_monsters[0];
+
+                // Try to get monster data from GameDatabase
+                MonsterData monsterData = null;
+                if (GameDatabase.Instance != null)
+                {
+                    monsterData = GameDatabase.Instance.GetMonster(signatureMonsterId);
+                }
+
+                if (monsterData != null)
+                {
+                    if (_monsterName != null)
+                        _monsterName.text = monsterData.display_name;
+                    if (_monsterType != null)
+                    {
+                        var brand = (Brand)monsterData.brand;
+                        _monsterType.text = $"{brand} - Tier {monsterData.tier}";
+                    }
+
+                    // Update monster skills if available
+                    if (monsterData.innate_skills != null && monsterData.innate_skills.Length > 0)
+                    {
+                        if (_monsterAbilityName != null)
+                            _monsterAbilityName.text = FormatMonsterId(monsterData.innate_skills[0]);
+                        if (_monsterAbilityDesc != null)
+                            _monsterAbilityDesc.text = monsterData.description ?? "Signature monster ability";
+                    }
+                }
+                else
+                {
+                    // Fallback - just display the ID cleaned up
+                    if (_monsterName != null)
+                        _monsterName.text = FormatMonsterId(signatureMonsterId);
+                    if (_monsterType != null)
+                        _monsterType.text = "Signature Monster";
+                }
+            }
+            else
+            {
+                if (_monsterName != null)
+                    _monsterName.text = "No Monster";
+                if (_monsterType != null)
+                    _monsterType.text = "---";
+            }
+        }
+
+        private string FormatMonsterId(string id)
+        {
+            // Convert "shadow_hound" to "Shadow Hound"
+            if (string.IsNullOrEmpty(id)) return "Unknown";
+            var words = id.Split('_');
+            for (int i = 0; i < words.Length; i++)
+            {
+                if (words[i].Length > 0)
+                    words[i] = char.ToUpper(words[i][0]) + words[i].Substring(1);
+            }
+            return string.Join(" ", words);
+        }
+
+        private void UpdateInateAbilityDisplay(HeroData hero)
+        {
+            if (hero.innate_skills != null && hero.innate_skills.Length > 0)
+            {
+                if (_innateAbilityName != null)
+                    _innateAbilityName.text = hero.innate_skills[0];
+                if (_innateAbilityDesc != null)
+                    _innateAbilityDesc.text = hero.combat_description ?? "Hero innate ability";
+            }
+            else
+            {
+                if (_innateAbilityName != null)
+                    _innateAbilityName.text = "None";
+                if (_innateAbilityDesc != null)
+                    _innateAbilityDesc.text = "";
             }
         }
 

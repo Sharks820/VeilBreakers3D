@@ -24,10 +24,10 @@ namespace VeilBreakers.UI.Effects
         [SerializeField] private float _dustSpeed = 15f;
         [SerializeField] private float _veilPulseSpeed = 0.5f;
 
-        [Header("Colors")]
-        [SerializeField] private Color _emberColor = new Color(1f, 0.7f, 0.3f, 0.8f);
-        [SerializeField] private Color _dustColor = new Color(0.8f, 0.7f, 0.6f, 0.3f);
-        [SerializeField] private Color _veilColor = new Color(0.5f, 0.27f, 0.7f, 0.05f);
+        [Header("Colors - Crimson Veil Theme")]
+        [SerializeField] private Color _emberColor = new Color(1f, 0.4f, 0.3f, 0.8f);
+        [SerializeField] private Color _dustColor = new Color(0.8f, 0.5f, 0.5f, 0.3f);
+        [SerializeField] private Color _veilColor = new Color(0.7f, 0.16f, 0.24f, 0.06f);
 
         // =============================================================================
         // PRIVATE STATE

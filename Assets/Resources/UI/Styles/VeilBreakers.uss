@@ -16,7 +16,7 @@
     /* Accent Colors - Corruption/Brand themed */
     --color-accent-red: rgb(180, 40, 60);
     --color-accent-red-glow: rgb(220, 60, 80);
-    --color-accent-purple: rgb(120, 60, 160);
+    --color-accent-purple: rgb(180, 40, 60);
     --color-accent-purple-glow: rgb(160, 80, 200);
     --color-accent-gold: rgb(200, 160, 80);
     --color-accent-cyan: rgb(60, 180, 200);
@@ -29,7 +29,7 @@
 
     /* UI Element Colors */
     --color-border: rgb(60, 50, 70);
-    --color-border-highlight: rgb(100, 80, 120);
+    --color-border-highlight: rgb(140, 60, 80);
     --color-panel: rgba(20, 15, 30, 0.9);
     --color-panel-hover: rgba(35, 28, 45, 0.95);
 
@@ -551,8 +551,8 @@
     min-height: 54px;
     font-size: 18px;
     letter-spacing: 2px;
-    background-color: rgb(120, 60, 160);
-    border-color: rgb(160, 100, 200);
+    background-color: rgb(180, 40, 60);
+    border-color: rgb(220, 60, 80);
     border-width: 2px;
     border-radius: 4px;
     color: rgb(235, 225, 215);
@@ -562,7 +562,7 @@
 }
 
 .menu-button-main:hover {
-    background-color: rgb(140, 80, 180);
+    background-color: rgb(200, 60, 80);
     border-color: rgb(180, 120, 220);
     scale: 1.02;
     translate: -2px 0;
@@ -590,8 +590,8 @@
 }
 
 .menu-button-secondary:hover {
-    background-color: rgba(60, 50, 75, 0.9);
-    border-color: rgb(100, 80, 120);
+    background-color: rgba(80, 40, 50, 0.9);
+    border-color: rgb(180, 50, 70);
     color: rgb(235, 225, 215);
     translate: -2px 0;
 }
@@ -651,7 +651,7 @@
 
 .hero-card.selected {
     background-color: rgb(40, 32, 55);
-    border-color: rgb(120, 60, 160);
+    border-color: rgb(180, 40, 60);
 }
 
 .hero-card-portrait {
@@ -768,17 +768,17 @@
 }
 
 .inventory-tab:hover {
-    background-color: rgba(120, 60, 160, 0.2);
+    background-color: rgba(180, 40, 60, 0.2);
     color: rgb(200, 190, 180);
 }
 
 .inventory-tab-active {
-    background-color: rgb(120, 60, 160);
+    background-color: rgb(180, 40, 60);
     color: rgb(235, 225, 215);
 }
 
 .inventory-tab-active:hover {
-    background-color: rgb(140, 80, 180);
+    background-color: rgb(200, 60, 80);
 }
 
 /* Item Grid Slots */
@@ -796,12 +796,12 @@
 }
 
 .item-slot:hover {
-    border-color: rgb(120, 60, 160);
+    border-color: rgb(180, 40, 60);
     background-color: rgb(35, 28, 45);
 }
 
 .item-slot-selected {
-    border-color: rgb(160, 100, 200);
+    border-color: rgb(220, 60, 80);
     background-color: rgb(45, 35, 60);
 }
 
@@ -899,10 +899,10 @@
 .item-effect {
     padding: 8px;
     margin-bottom: 6px;
-    background-color: rgba(120, 60, 160, 0.1);
+    background-color: rgba(180, 40, 60, 0.1);
     border-radius: 4px;
     border-left-width: 3px;
-    border-left-color: rgb(120, 60, 160);
+    border-left-color: rgb(180, 40, 60);
 }
 
 .item-effect-text {
@@ -922,11 +922,11 @@
 }
 
 .vb-dropdown:hover {
-    border-color: rgb(120, 60, 160);
+    border-color: rgb(180, 40, 60);
 }
 
 .vb-dropdown:focus {
-    border-color: rgb(160, 100, 200);
+    border-color: rgb(220, 60, 80);
 }
 
 /* Danger button for drop/discard */
@@ -964,13 +964,13 @@
 }
 
 .monster-card:hover {
-    border-color: rgb(120, 60, 160);
+    border-color: rgb(180, 40, 60);
     background-color: rgb(35, 28, 45);
     scale: 1.02;
 }
 
 .monster-card-selected {
-    border-color: rgb(160, 100, 200);
+    border-color: rgb(220, 60, 80);
     background-color: rgb(45, 35, 60);
 }
 
@@ -1041,7 +1041,7 @@
     background-color: rgb(30, 24, 40);
     border-radius: 4px;
     border-left-width: 3px;
-    border-left-color: rgb(120, 60, 160);
+    border-left-color: rgb(180, 40, 60);
 }
 
 .monster-skill:hover {
@@ -1084,7 +1084,7 @@
 }
 
 .vb-text-field:focus {
-    border-color: rgb(120, 60, 160);
+    border-color: rgb(180, 40, 60);
 }
 
 .vb-text-field > .unity-text-field__input {
@@ -1128,7 +1128,7 @@
     background-color: rgb(20, 16, 28);
     border-radius: 50px;
     border-width: 3px;
-    border-color: rgb(120, 60, 160);
+    border-color: rgb(180, 40, 60);
     justify-content: center;
     align-items: center;
     overflow: hidden;
@@ -1251,7 +1251,7 @@
 
 .dialogue-choice:hover {
     background-color: rgb(40, 32, 50);
-    border-color: rgb(120, 60, 160);
+    border-color: rgb(180, 40, 60);
 }
 
 .dialogue-choice:active {

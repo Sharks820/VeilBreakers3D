@@ -370,11 +370,13 @@ namespace VeilBreakers.UI.Menus
 
             if (active)
             {
-                tab.AddToClassList("vb-button-primary");
+                tab.style.backgroundColor = new Color(180f/255f, 40f/255f, 60f/255f, 1f);
+                tab.style.color = new Color(235f/255f, 225f/255f, 215f/255f, 1f);
             }
             else
             {
-                tab.RemoveFromClassList("vb-button-primary");
+                tab.style.backgroundColor = Color.clear;
+                tab.style.color = new Color(120f/255f, 110f/255f, 100f/255f, 1f);
             }
         }
 

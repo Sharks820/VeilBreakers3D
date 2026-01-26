@@ -72,16 +72,16 @@
     --text-muted: rgb(95, 85, 80);
     --text-disabled: rgb(60, 55, 50);
     --text-glow: rgb(255, 245, 220);
-    --text-accent: rgb(180, 140, 255);
+    --text-accent: rgb(220, 100, 120);
 
     /* =========================================================================
-       ACCENT & GLOW COLORS
+       ACCENT & GLOW COLORS - CRIMSON VEIL THEME
        ========================================================================= */
-    --accent-primary: rgb(130, 70, 180);
-    --accent-primary-glow: rgb(170, 110, 220);
-    --accent-primary-bright: rgb(200, 150, 255);
-    --accent-secondary: rgb(180, 50, 70);
-    --accent-secondary-glow: rgb(220, 80, 100);
+    --accent-primary: rgb(180, 40, 60);
+    --accent-primary-glow: rgb(220, 60, 80);
+    --accent-primary-bright: rgb(255, 100, 120);
+    --accent-secondary: rgb(140, 30, 50);
+    --accent-secondary-glow: rgb(180, 50, 70);
     --accent-gold: rgb(220, 180, 80);
     --accent-gold-glow: rgb(255, 220, 120);
     --accent-teal: rgb(60, 180, 160);
@@ -111,11 +111,11 @@
     /* =========================================================================
        BORDER COLORS
        ========================================================================= */
-    --border-subtle: rgb(40, 32, 55);
-    --border-default: rgb(55, 45, 75);
-    --border-strong: rgb(75, 60, 100);
-    --border-accent: rgb(130, 70, 180);
-    --border-glow: rgb(170, 110, 220);
+    --border-subtle: rgb(40, 28, 32);
+    --border-default: rgb(60, 40, 45);
+    --border-strong: rgb(90, 50, 60);
+    --border-accent: rgb(180, 40, 60);
+    --border-glow: rgb(220, 60, 80);
 
     /* =========================================================================
        ANIMATION TIMING
@@ -156,12 +156,12 @@
     top: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(120, 60, 160, 0.08);
+    background-color: rgba(180, 40, 60, 0.08);
     transition-duration: 2s;
 }
 
 .bg-gradient-veil:hover {
-    background-color: rgba(120, 60, 160, 0.12);
+    background-color: rgba(180, 40, 60, 0.12);
 }
 
 /* Animated vignette */
@@ -243,7 +243,7 @@
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    background-color: rgba(120, 60, 160, 0.1);
+    background-color: rgba(180, 40, 60, 0.1);
 }
 
 /* =============================================================================
@@ -257,13 +257,13 @@
     -unity-font-style: bold;
     letter-spacing: 8px;
     -unity-text-align: middle-center;
-    text-shadow: 0 0 30px rgba(130, 70, 180, 0.8), 0 0 60px rgba(130, 70, 180, 0.4), 0 4px 8px rgba(0, 0, 0, 0.9);
+    text-shadow: 0 0 30px rgba(180, 40, 60, 0.8), 0 0 60px rgba(180, 40, 60, 0.4), 0 4px 8px rgba(0, 0, 0, 0.9);
     transition-duration: 0.5s;
 }
 
 .title-hero:hover {
     color: var(--text-white);
-    text-shadow: 0 0 40px rgba(170, 110, 220, 1), 0 0 80px rgba(130, 70, 180, 0.6), 0 4px 8px rgba(0, 0, 0, 0.9);
+    text-shadow: 0 0 40px rgba(220, 60, 80, 1), 0 0 80px rgba(180, 40, 60, 0.6), 0 4px 8px rgba(0, 0, 0, 0.9);
     scale: 1.02;
 }
 
@@ -273,7 +273,7 @@
     color: var(--text-bright);
     -unity-font-style: bold;
     letter-spacing: 4px;
-    text-shadow: 0 0 15px rgba(130, 70, 180, 0.5), 0 2px 4px rgba(0, 0, 0, 0.8);
+    text-shadow: 0 0 15px rgba(180, 40, 60, 0.5), 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 /* Subtitle / Tagline */
@@ -305,7 +305,7 @@
 }
 
 .text-glow {
-    text-shadow: 0 0 10px rgba(130, 70, 180, 0.6);
+    text-shadow: 0 0 10px rgba(180, 40, 60, 0.6);
 }
 
 /* =============================================================================
@@ -345,7 +345,7 @@
 .btn-secondary {
     min-height: 54px;
     padding: 14px 32px;
-    background-color: rgba(130, 70, 180, 0.3);
+    background-color: rgba(180, 40, 60, 0.3);
     border-width: 2px;
     border-color: var(--border-accent);
     border-radius: 6px;
@@ -357,14 +357,14 @@
 }
 
 .btn-secondary:hover {
-    background-color: rgba(130, 70, 180, 0.5);
+    background-color: rgba(180, 40, 60, 0.5);
     border-color: var(--accent-primary-glow);
     color: var(--text-white);
     translate: -4px 0;
 }
 
 .btn-secondary:active {
-    background-color: rgba(130, 70, 180, 0.7);
+    background-color: rgba(180, 40, 60, 0.7);
     scale: 0.98;
 }
 
@@ -418,7 +418,7 @@
 .panel-glass {
     background-color: rgba(12, 9, 18, 0.92);
     border-width: 1px;
-    border-color: rgba(130, 70, 180, 0.3);
+    border-color: rgba(180, 40, 60, 0.3);
     border-radius: 12px;
     padding: 24px;
 }
@@ -534,7 +534,7 @@
 }
 
 .unity-base-dropdown__item:hover {
-    background-color: rgba(130, 70, 180, 0.4);
+    background-color: rgba(180, 40, 60, 0.4);
 }
 
 .unity-base-dropdown__item:checked {
@@ -655,13 +655,13 @@
 }
 
 .tab-button:hover {
-    background-color: rgba(130, 70, 180, 0.1);
+    background-color: rgba(180, 40, 60, 0.1);
     color: var(--text-primary);
     border-color: var(--border-strong);
 }
 
 .tab-button-active {
-    background-color: rgba(130, 70, 180, 0.2);
+    background-color: rgba(180, 40, 60, 0.2);
     color: var(--text-white);
     border-color: var(--accent-primary-glow);
 }
@@ -675,27 +675,32 @@
 }
 
 .scrollview .unity-scroller--vertical {
-    width: 10px;
-    margin-left: 4px;
+    width: 14px;
+    margin-left: 6px;
 }
 
 .scrollview .unity-scroller--vertical .unity-base-slider__tracker {
-    background-color: var(--surface-dark);
-    border-radius: 5px;
+    background-color: rgba(40, 32, 50, 0.8);
+    border-radius: 7px;
+    border-width: 1px;
+    border-color: rgba(80, 60, 100, 0.3);
+    cursor: link;
 }
 
 .scrollview .unity-scroller--vertical .unity-base-slider__dragger {
     background-color: var(--accent-primary);
-    border-radius: 5px;
-    width: 8px;
-    margin-left: 1px;
+    border-radius: 6px;
+    width: 10px;
+    margin-left: 2px;
+    min-height: 40px;
     transition-duration: 0.15s;
+    cursor: link;
 }
 
 .scrollview .unity-scroller--vertical .unity-base-slider__dragger:hover {
     background-color: var(--accent-primary-glow);
-    width: 10px;
-    margin-left: 0;
+    width: 12px;
+    margin-left: 1px;
 }
 
 /* Hide scroll buttons */
@@ -846,7 +851,7 @@
 }
 
 .path-badge-voidtouched {
-    background-color: rgba(120, 60, 160, 0.2);
+    background-color: rgba(180, 40, 60, 0.2);
     border-color: var(--path-voidtouched);
 }
 
@@ -1144,7 +1149,7 @@
 .glow-element {
     position: absolute;
     border-radius: 50%;
-    background-color: rgba(130, 70, 180, 0.3);
+    background-color: rgba(180, 40, 60, 0.3);
 }
 
 /* =============================================================================
