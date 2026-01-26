@@ -78,7 +78,7 @@
         <!-- Footer - positioned below the centered content, not overlapping -->
         <ui:VisualElement name="footer" style="position: absolute; left: 0; right: 0; bottom: 0; height: 40px; flex-direction: row; justify-content: space-between; align-items: center; padding: 0 40px; background-color: transparent;">
             <ui:Label text="© 2026 VeilBreakers" style="font-size: 11px; color: rgb(80, 70, 65); letter-spacing: 1px;" />
-            <ui:Label text="v0.1.0 Alpha" name="version-label" style="font-size: 11px; color: rgb(80, 70, 65); letter-spacing: 1px;" />
+            <ui:Label text="v2.57 Alpha" name="version-label" style="font-size: 11px; color: rgb(80, 70, 65); letter-spacing: 1px;" />
         </ui:VisualElement>
 
         <!-- Centered decorative element - positioned absolutely to be perfectly centered -->
