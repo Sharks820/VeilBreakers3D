@@ -700,14 +700,7 @@ namespace VeilBreakers.UI.Menus
                 if (popups.Count == 0) return;
 
                 var popup = popups[popups.Count - 1];
-                if (popup.userData == dropdown && popup.resolvedStyle.display != DisplayStyle.None)
-                {
-                    return;
-                }
-                popup.userData = dropdown;
                 popup.style.position = Position.Absolute;
-                popup.style.right = new StyleLength(StyleKeyword.Null);
-                popup.style.bottom = new StyleLength(StyleKeyword.Null);
                 popup.style.translate = new Translate(0, 0);
                 popup.style.opacity = 0;
 
