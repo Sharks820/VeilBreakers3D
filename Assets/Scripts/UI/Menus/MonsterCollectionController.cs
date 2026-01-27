@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
+using VeilBreakers.UI.Controls;
 using VeilBreakers.Data;
 using VeilBreakers.UI.Core;
 
@@ -66,9 +67,9 @@ namespace VeilBreakers.UI.Menus
         private Label _collectionCount;
 
         // Filters
-        private DropdownField _filterBrandDropdown;
-        private DropdownField _filterRarityDropdown;
-        private DropdownField _sortDropdown;
+        private VBDropdownField _filterBrandDropdown;
+        private VBDropdownField _filterRarityDropdown;
+        private VBDropdownField _sortDropdown;
         private TextField _searchField;
 
         // Grid
@@ -152,9 +153,9 @@ namespace VeilBreakers.UI.Menus
             _collectionCount = _root.Q<Label>("collection-count");
 
             // Query filters
-            _filterBrandDropdown = _root.Q<DropdownField>("filter-brand");
-            _filterRarityDropdown = _root.Q<DropdownField>("filter-rarity");
-            _sortDropdown = _root.Q<DropdownField>("sort-dropdown");
+            _filterBrandDropdown = _root.Q<VBDropdownField>("filter-brand");
+            _filterRarityDropdown = _root.Q<VBDropdownField>("filter-rarity");
+            _sortDropdown = _root.Q<VBDropdownField>("sort-dropdown");
             _searchField = _root.Q<TextField>("search-field");
 
             // Query grid
@@ -808,9 +809,9 @@ namespace VeilBreakers.UI.Menus
             // Re-query all elements
             _btnBack = _root.Q<Button>("btn-back");
             _collectionCount = _root.Q<Label>("collection-count");
-            _filterBrandDropdown = _root.Q<DropdownField>("filter-brand");
-            _filterRarityDropdown = _root.Q<DropdownField>("filter-rarity");
-            _sortDropdown = _root.Q<DropdownField>("sort-dropdown");
+            _filterBrandDropdown = _root.Q<VBDropdownField>("filter-brand");
+            _filterRarityDropdown = _root.Q<VBDropdownField>("filter-rarity");
+            _sortDropdown = _root.Q<VBDropdownField>("sort-dropdown");
             _searchField = _root.Q<TextField>("search-field");
             _monsterGrid = _root.Q<VisualElement>("monster-grid");
             _emptyState = _root.Q<VisualElement>("empty-state");

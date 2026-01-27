@@ -315,6 +315,8 @@
     border-radius: 4px;
     padding: 8px 12px;
     min-height: 36px;
+    flex-direction: row;
+    align-items: center;
 }
 
 .vb-dropdown:hover {
@@ -326,22 +328,64 @@
     border-color: rgb(220, 60, 80);
 }
 
-.vb-dropdown .unity-base-popup-field__text {
+.vb-dropdown__display {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.vb-dropdown__text {
     color: rgb(200, 190, 180);
     font-size: 14px;
     -unity-text-align: middle-left;
+    flex-grow: 1;
 }
 
-.vb-dropdown .unity-base-popup-field__arrow {
-    -unity-background-image-tint-color: rgb(165, 155, 145);
-    width: 12px;
-    height: 12px;
+.vb-dropdown__arrow {
+    color: rgb(165, 155, 145);
+    font-size: 12px;
+    margin-left: 8px;
 }
 
-.vb-dropdown .unity-base-popup-field__input {
+.vb-dropdown--open {
+    border-color: rgb(220, 60, 80);
+}
+
+.vb-dropdown-popup {
+    background-color: rgb(18, 14, 18);
+    border-color: rgb(180, 40, 60);
+    border-width: 2px;
+    border-radius: 8px;
+    padding: 6px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.55);
+}
+
+.vb-dropdown-popup__scroll {
+    max-height: 280px;
+}
+
+.vb-dropdown-item {
     background-color: transparent;
     border-width: 0;
-    padding: 0;
+    padding: 10px 14px;
+    margin: 2px 0;
+    border-radius: 6px;
+    color: rgb(200, 190, 180);
+    font-size: 14px;
+    -unity-text-align: middle-left;
+    transition-duration: 0.15s;
+    cursor: link;
+}
+
+.vb-dropdown-item:hover {
+    background-color: rgba(180, 40, 60, 0.3);
+    color: rgb(235, 225, 215);
+}
+
+.vb-dropdown-item--selected {
+    background-color: rgb(180, 40, 60);
+    color: rgb(255, 255, 255);
 }
 
 /* Dropdown container styling - DO NOT override position/z-index (breaks Unity's placement) */

@@ -58,7 +58,11 @@ namespace VeilBreakers.UI.Controls
         private List<string> _choices = new List<string>();
         private int _index = -1;
 
-        public IReadOnlyList<string> choices => _choices;
+        public List<string> choices
+        {
+            get => _choices;
+            set => SetChoices(value);
+        }
 
         public int index
         {

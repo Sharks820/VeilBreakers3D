@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
+using VeilBreakers.UI.Controls;
 using VeilBreakers.Data;
 using VeilBreakers.UI.Core;
 
@@ -74,7 +75,7 @@ namespace VeilBreakers.UI.Menus
         private VisualElement _itemGrid;
         private VisualElement _emptyState;
         private Label _itemCount;
-        private DropdownField _sortDropdown;
+        private VBDropdownField _sortDropdown;
 
         // Details Panel
         private VisualElement _itemIconFrame;
@@ -155,7 +156,7 @@ namespace VeilBreakers.UI.Menus
             _itemGrid = _root.Q<VisualElement>("item-grid");
             _emptyState = _root.Q<VisualElement>("empty-state");
             _itemCount = _root.Q<Label>("item-count");
-            _sortDropdown = _root.Q<DropdownField>("sort-dropdown");
+            _sortDropdown = _root.Q<VBDropdownField>("sort-dropdown");
 
             // Query details panel
             _itemIconFrame = _root.Q<VisualElement>("item-icon-frame");
@@ -934,7 +935,7 @@ namespace VeilBreakers.UI.Menus
             _itemGrid = _root.Q<VisualElement>("item-grid");
             _emptyState = _root.Q<VisualElement>("empty-state");
             _itemCount = _root.Q<Label>("item-count");
-            _sortDropdown = _root.Q<DropdownField>("sort-dropdown");
+            _sortDropdown = _root.Q<VBDropdownField>("sort-dropdown");
 
             // Query details panel
             _itemIconFrame = _root.Q<VisualElement>("item-icon-frame");

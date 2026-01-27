@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
+using VeilBreakers.UI.Controls;
 
 namespace VeilBreakers.UI.Menus
 {
@@ -67,9 +68,9 @@ namespace VeilBreakers.UI.Menus
         private Toggle _toggleMute;
 
         // Graphics
-        private DropdownField _dropdownResolution;
-        private DropdownField _dropdownFullscreen;
-        private DropdownField _dropdownQuality;
+        private VBDropdownField _dropdownResolution;
+        private VBDropdownField _dropdownFullscreen;
+        private VBDropdownField _dropdownQuality;
         private Toggle _toggleVSync;
         private Toggle _toggleFPS;
 
@@ -216,9 +217,9 @@ namespace VeilBreakers.UI.Menus
             _toggleMute = _root.Q<Toggle>("toggle-mute");
 
             // Graphics controls
-            _dropdownResolution = _root.Q<DropdownField>("dropdown-resolution");
-            _dropdownFullscreen = _root.Q<DropdownField>("dropdown-fullscreen");
-            _dropdownQuality = _root.Q<DropdownField>("dropdown-quality");
+            _dropdownResolution = _root.Q<VBDropdownField>("dropdown-resolution");
+            _dropdownFullscreen = _root.Q<VBDropdownField>("dropdown-fullscreen");
+            _dropdownQuality = _root.Q<VBDropdownField>("dropdown-quality");
             _toggleVSync = _root.Q<Toggle>("toggle-vsync");
             _toggleFPS = _root.Q<Toggle>("toggle-fps");
 
@@ -232,7 +233,6 @@ namespace VeilBreakers.UI.Menus
 
             // Bind events
             BindEvents();
-            ConfigureDropdownPopupFixes();
 
             ErrorLogger.UI("SettingsPanel initialized");
         }
@@ -632,9 +632,9 @@ namespace VeilBreakers.UI.Menus
             _labelVoiceValue = _root.Q<Label>("label-voice-value");
 
             // Query graphics controls
-            _dropdownResolution = _root.Q<DropdownField>("dropdown-resolution");
-            _dropdownFullscreen = _root.Q<DropdownField>("dropdown-fullscreen");
-            _dropdownQuality = _root.Q<DropdownField>("dropdown-quality");
+            _dropdownResolution = _root.Q<VBDropdownField>("dropdown-resolution");
+            _dropdownFullscreen = _root.Q<VBDropdownField>("dropdown-fullscreen");
+            _dropdownQuality = _root.Q<VBDropdownField>("dropdown-quality");
             _toggleVSync = _root.Q<Toggle>("toggle-vsync");
             _toggleFPS = _root.Q<Toggle>("toggle-fps");
 
@@ -656,7 +656,6 @@ namespace VeilBreakers.UI.Menus
             // Setup
             PopulateResolutions();
             BindEvents();
-            ConfigureDropdownPopupFixes();
             LoadSettings();
             UpdateUIFromSettings();
             ShowTab(0);
@@ -666,97 +665,7 @@ namespace VeilBreakers.UI.Menus
 
         public SettingsData GetCurrentSettings() => _currentSettings.Clone();
 
-        private void ConfigureDropdownPopupFixes()
-        {
-            ConfigureDropdownPopupFix(_dropdownResolution);
-            ConfigureDropdownPopupFix(_dropdownFullscreen);
-            ConfigureDropdownPopupFix(_dropdownQuality);
-        }
-
-        private void ConfigureDropdownPopupFix(DropdownField dropdown)
-        {
-            if (dropdown == null) return;
-
-            dropdown.RegisterCallback<PointerDownEvent>(_ => SchedulePopupPosition(dropdown));
-            dropdown.RegisterCallback<KeyDownEvent>(evt =>
-            {
-                if (evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.Space)
-                {
-                    SchedulePopupPosition(dropdown);
-                }
-            });
-        }
-
-        private void SchedulePopupPosition(DropdownField dropdown)
-        {
-            SchedulePopupPosition(dropdown, 0);
-        }
-
-        private void SchedulePopupPosition(DropdownField dropdown, int attempt)
-        {
-            dropdown.schedule.Execute(() =>
-            {
-                var panel = dropdown.panel;
-                if (panel == null) return;
-                var panelRoot = panel.visualTree;
-                if (panelRoot == null) return;
-
-                var popups = panelRoot.Query<VisualElement>(className: "unity-base-dropdown__container-outer").ToList();
-                if (popups.Count == 0)
-                {
-                    if (attempt < 2)
-                    {
-                        SchedulePopupPosition(dropdown, attempt + 1);
-                    }
-                    return;
-                }
-
-                var popup = popups[popups.Count - 1];
-                popup.style.position = Position.Absolute;
-                popup.style.translate = new Translate(0, 0);
-                popup.schedule.Execute(() => PositionPopup(dropdown, popup)).ExecuteLater(0);
-                popup.RegisterCallback<GeometryChangedEvent>(OnPopupGeometryChanged);
-                void OnPopupGeometryChanged(GeometryChangedEvent evt)
-                {
-                    PositionPopup(dropdown, popup);
-                    popup.UnregisterCallback<GeometryChangedEvent>(OnPopupGeometryChanged);
-                }
-            }).ExecuteLater(0);
-        }
-
-        private void PositionPopup(DropdownField dropdown, VisualElement popup)
-        {
-            var panel = dropdown.panel;
-            if (panel == null) return;
-            var panelRoot = panel.visualTree;
-            if (panelRoot == null) return;
-
-            var fieldBounds = dropdown.worldBound;
-            if (fieldBounds.height <= 0 || fieldBounds.width <= 0)
-            {
-                return;
-            }
-
-            float panelHeight = panelRoot.resolvedStyle.height;
-            if (panelHeight <= 0)
-            {
-                panelHeight = Screen.height;
-            }
-
-            float popupHeight = popup.resolvedStyle.height;
-            float below = fieldBounds.y + fieldBounds.height;
-            float above = fieldBounds.y - popupHeight;
-            float targetY = below;
-
-            if (popupHeight > 0 && panelHeight > 0 && (below + popupHeight) > panelHeight && above >= 0)
-            {
-                targetY = above;
-            }
-
-            popup.style.left = fieldBounds.x;
-            popup.style.top = targetY;
-            popup.style.width = fieldBounds.width;
-        }
+        // Custom dropdowns handle their own popup behavior.
 
     }
 
