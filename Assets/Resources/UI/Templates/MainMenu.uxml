@@ -114,7 +114,7 @@
             </ui:VisualElement>
 
             <!-- Version -->
-            <ui:Label text="v2.79 Alpha" name="version-label" style="color: rgb(75, 68, 65); font-size: 12px;" />
+            <ui:Label text="v2.80 Alpha" name="version-label" style="color: rgb(75, 68, 65); font-size: 12px;" />
 
         </ui:VisualElement>
 

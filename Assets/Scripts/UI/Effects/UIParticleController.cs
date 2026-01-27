@@ -179,15 +179,16 @@ namespace VeilBreakers.UI.Effects
             UpdateEmbers(deltaTime);
             UpdateDustParticles(deltaTime);
             UpdateSparks(deltaTime);
-            UpdateLightningBolts(deltaTime);
+            // DISABLED: Lightning system removed (v2.80)
+            // UpdateLightningBolts(deltaTime);
             UpdateVeilPulses(deltaTime);
             
-            // Trigger random lightning
-            if (timeNow >= _nextLightningTime)
-            {
-                TriggerLightningBolt();
-                _nextLightningTime = timeNow + Random.Range(kLightningInterval, kLightningInterval * 2f);
-            }
+            // DISABLED: Trigger random lightning (v2.80)
+            // if (timeNow >= _nextLightningTime)
+            // {
+            //     TriggerLightningBolt();
+            //     _nextLightningTime = timeNow + Random.Range(kLightningInterval, kLightningInterval * 2f);
+            // }
         }
 
         private void OnDisable()
@@ -235,28 +236,13 @@ namespace VeilBreakers.UI.Effects
                 _root.Add(_emberContainer);
             }
 
-            // CRITICAL: Remove old spark-container if it exists
+            // DISABLED: spark-container creation removed (v2.80)
             _sparkContainer = _root.Q<VisualElement>("spark-container");
             if (_sparkContainer != null)
             {
                 _sparkContainer.RemoveFromHierarchy();
                 Debug.Log("[VB:Lightning] Removed existing spark-container");
             }
-            
-            // Create NEW spark container - add it LAST so it renders on top
-            _sparkContainer = new VisualElement { name = "spark-container" };
-            _sparkContainer.style.position = Position.Absolute;
-            _sparkContainer.style.left = 0;
-            _sparkContainer.style.top = 0;
-            _sparkContainer.style.width = Length.Percent(100);
-            _sparkContainer.style.height = Length.Percent(100);
-            _sparkContainer.style.overflow = Overflow.Visible; // CRITICAL - allow content to show
-            _sparkContainer.pickingMode = PickingMode.Ignore; // Don't block clicks
-            _sparkContainer.style.display = DisplayStyle.Flex; // Explicitly visible
-            _sparkContainer.style.backgroundColor = new StyleColor(StyleKeyword.Null); // Truly unset, not just transparent
-            // Add AFTER all other UI initialization
-            // We'll add it at the very end after creating particles
-            Debug.Log("[VB:Lightning] Created new spark-container (will add last)");
 
             // Get screen dimensions
             _screenWidth = Screen.width;
@@ -288,18 +274,10 @@ namespace VeilBreakers.UI.Effects
             CreateEmbers();
             CreateDustParticles();
             CreateSparks();
-            CreateLightningBolts();
+            // DISABLED: Lightning system removed (v2.80)
+            // CreateLightningBolts();
             
-            if (_particleContainer != null)
-            {
-                _particleContainer.Add(_sparkContainer);
-            }
-            else
-            {
-                _root.Add(_sparkContainer);
-            }
-            
-            Debug.Log($"[VB:Lightning] Initialization complete. Added spark-container as LAST child. Screen: {_screenWidth}x{_screenHeight}, Bolts: {_lightningBolts.Count}, Container child count: {_root.childCount}");
+            Debug.Log($"[VB:Particles] Initialization complete (Lightning DISABLED). Screen: {_screenWidth}x{_screenHeight}");
 
             _isInitialized = true;
         }
@@ -314,26 +292,13 @@ namespace VeilBreakers.UI.Effects
         _particleContainer = _root.Q<VisualElement>("particle-container");
         _emberContainer = _root.Q<VisualElement>("ember-container");
         
-        // CRITICAL: Remove old spark-container if it exists
+        // DISABLED: spark-container removed (v2.80)
         _sparkContainer = _root.Q<VisualElement>("spark-container");
         if (_sparkContainer != null)
         {
             _sparkContainer.RemoveFromHierarchy();
             Debug.Log("[VB:Lightning] Removed existing spark-container");
         }
-        
-        // Create NEW spark container - same as parameterless Initialize()
-        _sparkContainer = new VisualElement { name = "spark-container" };
-        _sparkContainer.style.position = Position.Absolute;
-        _sparkContainer.style.left = 0;
-        _sparkContainer.style.top = 0;
-        _sparkContainer.style.width = Length.Percent(100);
-        _sparkContainer.style.height = Length.Percent(100);
-        _sparkContainer.style.overflow = Overflow.Visible;
-        _sparkContainer.pickingMode = PickingMode.Ignore;
-        _sparkContainer.style.display = DisplayStyle.Flex;
-        _sparkContainer.style.backgroundColor = new StyleColor(StyleKeyword.Null); // Truly unset!
-        Debug.Log("[VB:Lightning] Created new spark-container in Initialize(root)");
 
         _screenWidth = Screen.width;
         _screenHeight = Screen.height;
@@ -360,18 +325,10 @@ namespace VeilBreakers.UI.Effects
         CreateEmbers();
         CreateDustParticles();
         CreateSparks();
-        CreateLightningBolts();
+        // DISABLED: Lightning system removed (v2.80)
+        // CreateLightningBolts();
         
-        if (_particleContainer != null)
-        {
-            _particleContainer.Add(_sparkContainer);
-        }
-        else
-        {
-            _root.Add(_sparkContainer);
-        }
-        
-        Debug.Log($"[VB:Lightning] Initialize(root) complete. Added spark-container as LAST child.");
+        Debug.Log($"[VB:Particles] Initialize(root) complete (Lightning DISABLED)");
 
         _isInitialized = true;
     }
