@@ -719,18 +719,20 @@ namespace VeilBreakers.UI.Effects
                 return CreateProceduralLightningBolt();
             }
             
-            // Single image element for the lightning bolt
+            // Single image element for the lightning bolt - MUCH WIDER (v2.79)
             var boltElement = new VisualElement();
             boltElement.style.position = Position.Absolute;
             float screenW = _screenWidth > 0 ? _screenWidth : Screen.width;
             float screenH = _screenHeight > 0 ? _screenHeight : Screen.height;
-            float baseWidth = Mathf.Clamp(screenW * 0.045f, 60f, 160f);
+            
+            // WIDER: 3x the original size range
+            float baseWidth = Mathf.Clamp(screenW * 0.15f, 180f, 480f);
             float boltWidth = baseWidth * _lightningScale;
             float boltHeight = (screenH * 1.1f) * _lightningScale;
             boltElement.style.width = boltWidth;
             boltElement.style.height = boltHeight;
             
-            // ENSURE TRANSPARENT BACKGROUND (v2.76.3)
+            // ENSURE TRANSPARENT BACKGROUND
             boltElement.style.backgroundColor = Color.clear;
             
             // Apply art as background
@@ -740,12 +742,13 @@ namespace VeilBreakers.UI.Effects
             // Tint to CRIMSON (our brand color)
             boltElement.style.unityBackgroundImageTintColor = _lightningColor;
             
-            Debug.Log("[VB:Lightning] Created sprite-based bolt");
+            // NO TEXT - remove any debug rendering
+            boltElement.pickingMode = PickingMode.Ignore;
             
             return new LightningData
             {
                 Root = boltElement,
-                Segments = new List<LightningSegment>(), // Empty - not used for sprites
+                Segments = new List<LightningSegment>(),
                 Lifetime = 0f,
                 MaxLifetime = 0.6f,
                 Active = false
@@ -1060,9 +1063,21 @@ namespace VeilBreakers.UI.Effects
                             bolt.Root.style.backgroundImage = art;
                         }
 
-                        // SPRITE-BASED: Position randomly across screen width
-                        float randomX = Random.Range(0f, _screenWidth);
-                        float randomY = Random.Range(-100f, 100f); // Slight vertical offset
+                        // MORE RANDOM DEPLOYMENT (v2.79)
+                        // Random across full screen width
+                        float randomX = Random.Range(-100f, _screenWidth + 100f);
+                        
+                        // Random across full screen height (not just top)
+                        float randomY = Random.Range(-200f, _screenHeight * 0.3f);
+                        
+                        // Random scale variation (80% to 120%)
+                        float scaleVariation = Random.Range(0.8f, 1.2f);
+                        bolt.Root.style.scale = new Scale(new Vector3(scaleVariation, scaleVariation, 1f));
+                        
+                        // Random rotation (-15 to +15 degrees)
+                        float rotation = Random.Range(-15f, 15f);
+                        bolt.Root.style.rotate = new Rotate(rotation);
+                        
                         bolt.Root.style.left = randomX;
                         bolt.Root.style.top = randomY;
                     }
