@@ -222,7 +222,7 @@ namespace VeilBreakers.UI.Effects
                 _particleContainer.style.right = 0;
                 _particleContainer.style.bottom = 0;
                 _particleContainer.style.overflow = Overflow.Hidden;
-                _root.Add(_particleContainer);
+                _root.Insert(0, _particleContainer); // Insert at index 0 (behind content)
             }
             if (_emberContainer == null)
             {
@@ -233,7 +233,7 @@ namespace VeilBreakers.UI.Effects
                 _emberContainer.style.right = 0;
                 _emberContainer.style.bottom = 0;
                 _emberContainer.style.overflow = Overflow.Hidden;
-                _root.Add(_emberContainer);
+                _root.Insert(0, _emberContainer); // Insert at index 0 (behind content)
             }
 
             // v2.81: Re-enable spark-container for lightning
@@ -248,7 +248,7 @@ namespace VeilBreakers.UI.Effects
                 _sparkContainer.style.bottom = 0;
                 _sparkContainer.style.overflow = Overflow.Hidden;
                 _sparkContainer.pickingMode = PickingMode.Ignore;
-                _root.Add(_sparkContainer);
+                _root.Insert(0, _sparkContainer); // Insert at index 0 (behind content)
                 Debug.Log("[VB:Lightning] Created spark-container for lightning bolts");
             }
 
@@ -310,7 +310,7 @@ namespace VeilBreakers.UI.Effects
                 _emberContainer.style.right = 0;
                 _emberContainer.style.bottom = 0;
                 _emberContainer.style.overflow = Overflow.Hidden;
-                _root.Add(_emberContainer);
+                _root.Insert(0, _emberContainer); // Insert at index 0 (behind content)
                 Debug.Log("[VB:Embers] Created ember-container fallback");
             }
 
@@ -326,7 +326,7 @@ namespace VeilBreakers.UI.Effects
                 _sparkContainer.style.bottom = 0;
                 _sparkContainer.style.overflow = Overflow.Hidden;
                 _sparkContainer.pickingMode = PickingMode.Ignore;
-                _root.Add(_sparkContainer);
+                _root.Insert(0, _sparkContainer); // Insert at index 0 (behind content)
                 Debug.Log("[VB:Lightning] Created spark-container for lightning bolts");
             }
 
@@ -712,10 +712,10 @@ namespace VeilBreakers.UI.Effects
             float screenW = _screenWidth > 0 ? _screenWidth : Screen.width;
             float screenH = _screenHeight > 0 ? _screenHeight : Screen.height;
 
-            // v2.81: Width range 100-250px as specified
-            float boltWidth = Random.Range(100f, 250f) * _lightningScale;
-            // v2.81: Height = screen height * 1.2 (extends beyond screen)
-            float boltHeight = (screenH * 1.2f) * _lightningScale;
+            // v2.83: WIDER bolts for full lightning section (200-350px)
+            float boltWidth = Random.Range(200f, 350f) * _lightningScale;
+            // v2.83: Height = 70-80% of screen (more controlled, visible top)
+            float boltHeight = screenH * Random.Range(0.7f, 0.8f) * _lightningScale;
             boltElement.style.width = boltWidth;
             boltElement.style.height = boltHeight;
 
@@ -1077,10 +1077,9 @@ namespace VeilBreakers.UI.Effects
                         // CRITICAL: X position = random across full screen width
                         float randomX = Random.Range(0f, _screenWidth);
 
-                        // CRITICAL: Y position = TOP of screen ONLY (-200 to 0)
-                        // Negative Y means the bolt starts ABOVE the visible area
-                        // The bolt extends DOWNWARD into the screen
-                        float randomY = Random.Range(-200f, 0f);
+                        // v2.83: Y position = slightly negative to clearly visible top (-100 to 50)
+                        // Bolts now sized to fit screen better, so top is always visible
+                        float randomY = Random.Range(-100f, 50f);
 
                         // Random scale variation (80% to 120%)
                         float scaleVariation = Random.Range(0.8f, 1.2f);
