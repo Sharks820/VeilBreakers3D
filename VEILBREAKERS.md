@@ -1,6 +1,42 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.84** | Last updated: 2026-01-26
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.91** | Last updated: 2026-01-26
+
+---
+
+## v2.91 - FONT OPTIMIZATION LESSON (FAILED)
+
+**CRITICAL LESSON: NEVER reference fonts that don't exist in Unity project.**
+
+### What Happened:
+1. Attempted to update USS stylesheets to reference Google Fonts (Cinzel, Barlow Condensed)
+2. Updated `-unity-font-definition` URLs to point to font files that hadn't been imported yet
+3. **RESULT: Entire menu disappeared** - Unity couldn't load fonts, failed to render all text
+
+### The CORRECT Workflow:
+1. **FIRST**: Download .ttf files from Google Fonts to local machine
+2. **SECOND**: Import .ttf files into Unity project (`Assets/UI/Fonts/`)
+3. **THIRD**: Update USS stylesheets to reference imported fonts
+4. **FOURTH**: Test in Play Mode to verify fonts load correctly
+
+### What We Did Wrong:
+- Skipped steps 1-2 entirely
+- Went straight to step 3 (updating USS)
+- Assumed fonts would "just work" without importing them first
+
+### Files Reverted:
+- `Assets/UI/Styles/VeilBreakers.uss` - reverted to Arial
+- `Assets/Resources/UI/Templates/MainMenu.uxml` - removed font-title class
+
+### Documentation Created:
+- `Docs/FONT_OPTIMIZATION_AAA.md` - Research complete, 3 font packages ready
+- **Package 1 (Recommended)**: Cinzel Bold + Cinzel Italic + Barlow Condensed
+- **Status**: Research done, implementation BLOCKED until fonts imported
+
+### Next Steps (When Ready):
+1. Download font files from Google Fonts
+2. Import to `Assets/UI/Fonts/`
+3. Re-apply stylesheet changes (already tested, just need fonts present)
 
 ---
 
@@ -1086,6 +1122,12 @@ battle, ui, art, audio, vera, monsters, critical
     - GameManager: Lazy singleton → quit flag pattern (prevents phantom objects)
     - BattleManager: Removed array allocation in combat (uses buffer directly)
     - EventBus: ClearAllListeners → editor-only with [Conditional] attribute
+- **Font Import Workflow (v2.91)** - CRITICAL: Assets must exist in Unity BEFORE referencing them:
+  - ❌ WRONG: Update USS to reference font files → Import fonts later
+  - ✅ CORRECT: Import font .ttf files to Unity → Update USS to reference them
+  - Referencing non-existent fonts causes entire UI to disappear (no fallback)
+  - Always test font changes in Play Mode immediately after import
+  - Document created: `Docs/FONT_OPTIMIZATION_AAA.md` (3 complete font packages ready)
 
 ### MCP LESSONS (Active)
 - **Greptile** uses Bearer token auth, NOT OAuth. Add with: `claude mcp add --transport http greptile https://api.greptile.com/mcp --header "Authorization: Bearer [key]"`
