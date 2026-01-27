@@ -300,6 +300,20 @@ namespace VeilBreakers.UI.Effects
             _particleContainer = _root.Q<VisualElement>("particle-container");
             _emberContainer = _root.Q<VisualElement>("ember-container");
 
+            // Fallback: create ember-container if missing (v2.82)
+            if (_emberContainer == null)
+            {
+                _emberContainer = new VisualElement { name = "ember-container" };
+                _emberContainer.style.position = Position.Absolute;
+                _emberContainer.style.left = 0;
+                _emberContainer.style.top = 0;
+                _emberContainer.style.right = 0;
+                _emberContainer.style.bottom = 0;
+                _emberContainer.style.overflow = Overflow.Hidden;
+                _root.Add(_emberContainer);
+                Debug.Log("[VB:Embers] Created ember-container fallback");
+            }
+
             // v2.81: Re-enable spark-container for lightning
             _sparkContainer = _root.Q<VisualElement>("spark-container");
             if (_sparkContainer == null)

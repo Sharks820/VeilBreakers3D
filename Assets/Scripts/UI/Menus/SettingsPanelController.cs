@@ -73,6 +73,8 @@ namespace VeilBreakers.UI.Menus
         private Toggle _toggleVSync;
         private Toggle _toggleFPS;
 
+        private VisualElement _dropdownPopupLayer;
+
         // Controls
         private Slider _sliderSensitivity;
         private Label _labelSensitivityValue;
@@ -689,6 +691,11 @@ namespace VeilBreakers.UI.Menus
 
         private void SchedulePopupPosition(DropdownField dropdown)
         {
+            SchedulePopupPosition(dropdown, 0);
+        }
+
+        private void SchedulePopupPosition(DropdownField dropdown, int attempt)
+        {
             dropdown.schedule.Execute(() =>
             {
                 var panel = dropdown.panel;
@@ -696,24 +703,67 @@ namespace VeilBreakers.UI.Menus
                 var panelRoot = panel.visualTree;
                 if (panelRoot == null) return;
 
+                EnsureDropdownPopupLayer(panelRoot);
+
                 var popups = panelRoot.Query<VisualElement>(className: "unity-base-dropdown__container-outer").ToList();
-                if (popups.Count == 0) return;
+                if (popups.Count == 0)
+                {
+                    if (attempt < 2)
+                    {
+                        SchedulePopupPosition(dropdown, attempt + 1);
+                    }
+                    return;
+                }
 
                 var popup = popups[popups.Count - 1];
-                popup.style.position = Position.Absolute;
-                popup.style.translate = new Translate(0, 0);
-                popup.style.opacity = 0;
+                if (_dropdownPopupLayer != null && popup.parent != _dropdownPopupLayer)
+                {
+                    _dropdownPopupLayer.Add(popup);
+                }
+
+                PreparePopup(popup);
 
                 popup.schedule.Execute(() => PositionPopup(dropdown, popup)).ExecuteLater(0);
-                popup.schedule.Execute(() => RevealPopup(dropdown, popup)).ExecuteLater(0);
+                popup.schedule.Execute(() => FinalizePopup(popup)).ExecuteLater(0);
                 popup.RegisterCallback<GeometryChangedEvent>(OnPopupGeometryChanged);
                 void OnPopupGeometryChanged(GeometryChangedEvent evt)
                 {
                     PositionPopup(dropdown, popup);
-                    RevealPopup(dropdown, popup);
+                    FinalizePopup(popup);
                     popup.UnregisterCallback<GeometryChangedEvent>(OnPopupGeometryChanged);
                 }
             }).ExecuteLater(0);
+        }
+
+        private void EnsureDropdownPopupLayer(VisualElement panelRoot)
+        {
+            if (_dropdownPopupLayer != null && _dropdownPopupLayer.panel == panelRoot.panel)
+            {
+                return;
+            }
+
+            _dropdownPopupLayer = panelRoot.Q<VisualElement>("dropdown-popup-layer");
+            if (_dropdownPopupLayer != null) return;
+
+            _dropdownPopupLayer = new VisualElement();
+            _dropdownPopupLayer.name = "dropdown-popup-layer";
+            _dropdownPopupLayer.style.position = Position.Absolute;
+            _dropdownPopupLayer.style.left = 0;
+            _dropdownPopupLayer.style.top = 0;
+            _dropdownPopupLayer.style.right = 0;
+            _dropdownPopupLayer.style.bottom = 0;
+            _dropdownPopupLayer.style.overflow = Overflow.Visible;
+            _dropdownPopupLayer.style.zIndex = 1000;
+            panelRoot.Add(_dropdownPopupLayer);
+        }
+
+        private void PreparePopup(VisualElement popup)
+        {
+            popup.style.position = Position.Absolute;
+            popup.style.translate = new Translate(0, 0);
+            popup.style.opacity = 1f;
+            popup.style.visibility = Visibility.Hidden;
+            popup.BringToFront();
         }
 
         private void PositionPopup(DropdownField dropdown, VisualElement popup)
@@ -750,10 +800,10 @@ namespace VeilBreakers.UI.Menus
             popup.style.width = fieldBounds.width;
         }
 
-        private void RevealPopup(DropdownField dropdown, VisualElement popup)
+        private void FinalizePopup(VisualElement popup)
         {
-            if (popup.resolvedStyle.opacity >= 1f) return;
-            popup.style.opacity = 1f;
+            if (popup.panel == null) return;
+            popup.style.visibility = Visibility.Visible;
         }
     }
 
