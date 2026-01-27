@@ -1346,31 +1346,47 @@ namespace VeilBreakers.UI.Effects
 
         private void ClearParticles()
         {
-            foreach (var ember in _embers)
+            if (_embers != null)
             {
-                ReturnToPool(ember.Element);
+                foreach (var ember in _embers)
+                {
+                    ReturnToPool(ember.Element);
+                }
+                _embers.Clear();
             }
-            _embers.Clear();
 
-            foreach (var dust in _dustParticles)
+            if (_dustParticles != null)
             {
-                ReturnToPool(dust.Element);
+                foreach (var dust in _dustParticles)
+                {
+                    ReturnToPool(dust.Element);
+                }
+                _dustParticles.Clear();
             }
-            _dustParticles.Clear();
 
-            foreach (var spark in _sparks)
+            if (_sparks != null)
             {
-                ReturnToPool(spark.Element);
+                foreach (var spark in _sparks)
+                {
+                    ReturnToPool(spark.Element);
+                }
+                _sparks.Clear();
             }
-            _sparks.Clear();
 
-            foreach (var bolt in _lightningBolts)
+            if (_lightningBolts != null)
             {
-                bolt.Root?.RemoveFromHierarchy();
+                foreach (var bolt in _lightningBolts)
+                {
+                    bolt.Root?.RemoveFromHierarchy();
+                }
+                _lightningBolts.Clear();
             }
-            _lightningBolts.Clear();
 
-            _veilPulses.Clear();
+            if (_veilPulses != null)
+            {
+                _veilPulses.Clear();
+            }
+            
             _isInitialized = false;
         }
 
