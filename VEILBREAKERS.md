@@ -1,12 +1,31 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.74** | Last updated: 2026-01-26
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.81** | Last updated: 2026-01-26
 
 ---
 
-## 🚨 CRITICAL ISSUE - HANDOFF TO CODEX
+## v2.81 - LIGHTNING SYSTEM REIMPLEMENTED
 
-**Lightning system broken after 12+ fix attempts. Game freezing as of v2.73.**
+**AAA-quality sprite-based lightning system now working.**
+
+### What Was Fixed:
+1. Extracted 4 lightning bolt sprites from source art to `Resources/UI/Lightning/`
+2. Re-enabled lightning in UIParticleController.cs (Initialize + Update)
+3. Fixed TriggerLightningBolt() positioning:
+   - X: Random across full screen width (0 to screenWidth)
+   - Y: TOP of screen ONLY (-200 to 0) - lightning comes DOWN
+   - Rotation: 0 to 30 degrees ONLY (downward angle, randomly left or right)
+4. Lightning sprites load from `lightning_bolt_01.png` through `lightning_bolt_04.png`
+5. Width: 100-250px, Height: screenHeight * 1.2
+
+### Lightning Physics (CRITICAL):
+- Lightning ALWAYS comes DOWN from TOP
+- Y position: -200 to 0 (above visible area)
+- Rotation: 0-30 degrees (slight diagonal allowed, NEVER upward)
+
+---
+
+## Previous Issue (RESOLVED)
 
 **Handoff document:** `Docs/LIGHTNING_HANDOFF_TO_CODEX.md`
 

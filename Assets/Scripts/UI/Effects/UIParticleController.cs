@@ -179,16 +179,16 @@ namespace VeilBreakers.UI.Effects
             UpdateEmbers(deltaTime);
             UpdateDustParticles(deltaTime);
             UpdateSparks(deltaTime);
-            // DISABLED: Lightning system removed (v2.80)
-            // UpdateLightningBolts(deltaTime);
+            // v2.81: Re-enabled sprite-based lightning system
+            UpdateLightningBolts(deltaTime);
             UpdateVeilPulses(deltaTime);
-            
-            // DISABLED: Trigger random lightning (v2.80)
-            // if (timeNow >= _nextLightningTime)
-            // {
-            //     TriggerLightningBolt();
-            //     _nextLightningTime = timeNow + Random.Range(kLightningInterval, kLightningInterval * 2f);
-            // }
+
+            // v2.81: Trigger random lightning from TOP of screen
+            if (timeNow >= _nextLightningTime)
+            {
+                TriggerLightningBolt();
+                _nextLightningTime = timeNow + Random.Range(kLightningInterval, kLightningInterval * 2f);
+            }
         }
 
         private void OnDisable()
@@ -236,12 +236,20 @@ namespace VeilBreakers.UI.Effects
                 _root.Add(_emberContainer);
             }
 
-            // DISABLED: spark-container creation removed (v2.80)
+            // v2.81: Re-enable spark-container for lightning
             _sparkContainer = _root.Q<VisualElement>("spark-container");
-            if (_sparkContainer != null)
+            if (_sparkContainer == null)
             {
-                _sparkContainer.RemoveFromHierarchy();
-                Debug.Log("[VB:Lightning] Removed existing spark-container");
+                _sparkContainer = new VisualElement { name = "spark-container" };
+                _sparkContainer.style.position = Position.Absolute;
+                _sparkContainer.style.left = 0;
+                _sparkContainer.style.top = 0;
+                _sparkContainer.style.right = 0;
+                _sparkContainer.style.bottom = 0;
+                _sparkContainer.style.overflow = Overflow.Hidden;
+                _sparkContainer.pickingMode = PickingMode.Ignore;
+                _root.Add(_sparkContainer);
+                Debug.Log("[VB:Lightning] Created spark-container for lightning bolts");
             }
 
             // Get screen dimensions
@@ -274,64 +282,72 @@ namespace VeilBreakers.UI.Effects
             CreateEmbers();
             CreateDustParticles();
             CreateSparks();
-            // DISABLED: Lightning system removed (v2.80)
-            // CreateLightningBolts();
-            
-            Debug.Log($"[VB:Particles] Initialization complete (Lightning DISABLED). Screen: {_screenWidth}x{_screenHeight}");
+            // v2.81: Re-enabled sprite-based lightning system
+            CreateLightningBolts();
+
+            Debug.Log($"[VB:Particles] Initialization complete with LIGHTNING ENABLED. Screen: {_screenWidth}x{_screenHeight}");
 
             _isInitialized = true;
         }
 
         public void Initialize(VisualElement root)
-    {
-        _root = root;
-        if (_root == null) return;
-
-        PrepareForInitialize();
-
-        _particleContainer = _root.Q<VisualElement>("particle-container");
-        _emberContainer = _root.Q<VisualElement>("ember-container");
-        
-        // DISABLED: spark-container removed (v2.80)
-        _sparkContainer = _root.Q<VisualElement>("spark-container");
-        if (_sparkContainer != null)
         {
-            _sparkContainer.RemoveFromHierarchy();
-            Debug.Log("[VB:Lightning] Removed existing spark-container");
-        }
+            _root = root;
+            if (_root == null) return;
 
-        _screenWidth = Screen.width;
-        _screenHeight = Screen.height;
-        _nextLightningTime = Time.unscaledTime + Random.Range(2f, 4f);
+            PrepareForInitialize();
 
-        var veilPulseLayer = _root.Q<VisualElement>("veil-pulse-layer");
-        if (veilPulseLayer != null)
-        {
-            var p1 = _root.Q<VisualElement>("veil-pulse-1");
-            var p2 = _root.Q<VisualElement>("veil-pulse-2");
-            var p3 = _root.Q<VisualElement>("veil-pulse-3");
-            if (p1 != null) _veilPulses.Add(p1);
-            if (p2 != null) _veilPulses.Add(p2);
-            if (p3 != null) _veilPulses.Add(p3);
+            _particleContainer = _root.Q<VisualElement>("particle-container");
+            _emberContainer = _root.Q<VisualElement>("ember-container");
 
-            if (!_enableVeilPulses)
+            // v2.81: Re-enable spark-container for lightning
+            _sparkContainer = _root.Q<VisualElement>("spark-container");
+            if (_sparkContainer == null)
             {
-                veilPulseLayer.style.display = DisplayStyle.None;
-                _veilPulses.Clear();
+                _sparkContainer = new VisualElement { name = "spark-container" };
+                _sparkContainer.style.position = Position.Absolute;
+                _sparkContainer.style.left = 0;
+                _sparkContainer.style.top = 0;
+                _sparkContainer.style.right = 0;
+                _sparkContainer.style.bottom = 0;
+                _sparkContainer.style.overflow = Overflow.Hidden;
+                _sparkContainer.pickingMode = PickingMode.Ignore;
+                _root.Add(_sparkContainer);
+                Debug.Log("[VB:Lightning] Created spark-container for lightning bolts");
             }
+
+            _screenWidth = Screen.width;
+            _screenHeight = Screen.height;
+            _nextLightningTime = Time.unscaledTime + Random.Range(2f, 4f);
+
+            var veilPulseLayer = _root.Q<VisualElement>("veil-pulse-layer");
+            if (veilPulseLayer != null)
+            {
+                var p1 = _root.Q<VisualElement>("veil-pulse-1");
+                var p2 = _root.Q<VisualElement>("veil-pulse-2");
+                var p3 = _root.Q<VisualElement>("veil-pulse-3");
+                if (p1 != null) _veilPulses.Add(p1);
+                if (p2 != null) _veilPulses.Add(p2);
+                if (p3 != null) _veilPulses.Add(p3);
+
+                if (!_enableVeilPulses)
+                {
+                    veilPulseLayer.style.display = DisplayStyle.None;
+                    _veilPulses.Clear();
+                }
+            }
+
+            InitializeObjectPool();
+            CreateEmbers();
+            CreateDustParticles();
+            CreateSparks();
+            // v2.81: Re-enabled sprite-based lightning system
+            CreateLightningBolts();
+
+            Debug.Log($"[VB:Particles] Initialize(root) complete with LIGHTNING ENABLED");
+
+            _isInitialized = true;
         }
-
-        InitializeObjectPool();
-        CreateEmbers();
-        CreateDustParticles();
-        CreateSparks();
-        // DISABLED: Lightning system removed (v2.80)
-        // CreateLightningBolts();
-        
-        Debug.Log($"[VB:Particles] Initialize(root) complete (Lightning DISABLED)");
-
-        _isInitialized = true;
-    }
 
         private void PrepareForInitialize()
         {
@@ -669,59 +685,87 @@ namespace VeilBreakers.UI.Effects
 
         private LightningData CreateLightningBolt()
         {
-            // IMAGE-BASED LIGHTNING (v2.75+)
+            // v2.81: SPRITE-BASED LIGHTNING - Load from Resources/UI/Lightning/
             if (!TryGetRandomLightningArt(out var art))
             {
                 Debug.LogWarning("[VB:Lightning] Missing lightning art. Falling back to procedural bolt.");
                 return CreateProceduralLightningBolt();
             }
-            
-            // Single image element for the lightning bolt - MUCH WIDER (v2.79)
+
+            // Single image element for the lightning bolt
             var boltElement = new VisualElement();
             boltElement.style.position = Position.Absolute;
             float screenW = _screenWidth > 0 ? _screenWidth : Screen.width;
             float screenH = _screenHeight > 0 ? _screenHeight : Screen.height;
-            
-            // WIDER: 3x the original size range
-            float baseWidth = Mathf.Clamp(screenW * 0.15f, 180f, 480f);
-            float boltWidth = baseWidth * _lightningScale;
-            float boltHeight = (screenH * 1.1f) * _lightningScale;
+
+            // v2.81: Width range 100-250px as specified
+            float boltWidth = Random.Range(100f, 250f) * _lightningScale;
+            // v2.81: Height = screen height * 1.2 (extends beyond screen)
+            float boltHeight = (screenH * 1.2f) * _lightningScale;
             boltElement.style.width = boltWidth;
             boltElement.style.height = boltHeight;
-            
+
             // ENSURE TRANSPARENT BACKGROUND
             boltElement.style.backgroundColor = Color.clear;
-            
+
             // Apply art as background
             boltElement.style.backgroundImage = art;
             boltElement.style.unityBackgroundScaleMode = ScaleMode.StretchToFill;
-            
+
             // Tint to CRIMSON (our brand color)
             boltElement.style.unityBackgroundImageTintColor = _lightningColor;
-            
+
             // NO TEXT - remove any debug rendering
             boltElement.pickingMode = PickingMode.Ignore;
-            
+
             return new LightningData
             {
                 Root = boltElement,
                 Segments = new List<LightningSegment>(),
                 Lifetime = 0f,
-                MaxLifetime = 0.6f,
+                MaxLifetime = 0.7f, // Longer lifetime for better visibility
                 Active = false
             };
         }
 
         private bool TryGetRandomLightningArt(out StyleBackground art)
         {
+            // v2.81: Load lightning sprites from Resources/UI/Lightning/
+            // Expects: lightning_bolt_01.png through lightning_bolt_04.png
             if (_lightningSpritePool == null)
             {
                 _lightningSpritePool = Resources.LoadAll<Sprite>("UI/Lightning");
+                Debug.Log($"[VB:Lightning] Loaded {_lightningSpritePool?.Length ?? 0} sprites from Resources/UI/Lightning");
             }
 
             if (_lightningTexturePool == null)
             {
                 _lightningTexturePool = Resources.LoadAll<Texture2D>("UI/Lightning");
+                Debug.Log($"[VB:Lightning] Loaded {_lightningTexturePool?.Length ?? 0} textures from Resources/UI/Lightning");
+            }
+
+            // Prefer Texture2D for better quality with transparent PNGs
+            if (_lightningTexturePool != null && _lightningTexturePool.Length > 0)
+            {
+                // Filter to only use bolt sprites (not the source image)
+                var bolts = new List<Texture2D>();
+                foreach (var tex in _lightningTexturePool)
+                {
+                    if (tex.name.StartsWith("lightning_bolt_"))
+                    {
+                        bolts.Add(tex);
+                    }
+                }
+
+                if (bolts.Count > 0)
+                {
+                    art = new StyleBackground(bolts[Random.Range(0, bolts.Count)]);
+                    return true;
+                }
+
+                // Fallback to any texture
+                art = new StyleBackground(_lightningTexturePool[Random.Range(0, _lightningTexturePool.Length)]);
+                return true;
             }
 
             if (_lightningSpritePool != null && _lightningSpritePool.Length > 0)
@@ -730,13 +774,8 @@ namespace VeilBreakers.UI.Effects
                 return true;
             }
 
-            if (_lightningTexturePool != null && _lightningTexturePool.Length > 0)
-            {
-                art = new StyleBackground(_lightningTexturePool[Random.Range(0, _lightningTexturePool.Length)]);
-                return true;
-            }
-
             art = default;
+            Debug.LogWarning("[VB:Lightning] No lightning art found in Resources/UI/Lightning/");
             return false;
         }
 
@@ -1004,7 +1043,7 @@ namespace VeilBreakers.UI.Effects
                 {
                     bolt.Active = true;
                     bolt.Lifetime = 0f;
-                    bolt.MaxLifetime = Random.Range(0.45f, 0.75f);
+                    bolt.MaxLifetime = Random.Range(0.5f, 0.9f); // Longer lifetime for visibility
 
                     bool hasSegments = bolt.Segments != null && bolt.Segments.Count > 0;
                     if (hasSegments)
@@ -1015,28 +1054,35 @@ namespace VeilBreakers.UI.Effects
                     }
                     else
                     {
+                        // v2.81: SPRITE-BASED LIGHTNING - ALWAYS FROM TOP, ALWAYS DOWNWARD
                         if (TryGetRandomLightningArt(out var art))
                         {
                             bolt.Root.style.backgroundImage = art;
                         }
 
-                        // MORE RANDOM DEPLOYMENT (v2.79)
-                        // Random across full screen width
-                        float randomX = Random.Range(-100f, _screenWidth + 100f);
-                        
-                        // Random across full screen height (not just top)
-                        float randomY = Random.Range(-200f, _screenHeight * 0.3f);
-                        
+                        // CRITICAL: X position = random across full screen width
+                        float randomX = Random.Range(0f, _screenWidth);
+
+                        // CRITICAL: Y position = TOP of screen ONLY (-200 to 0)
+                        // Negative Y means the bolt starts ABOVE the visible area
+                        // The bolt extends DOWNWARD into the screen
+                        float randomY = Random.Range(-200f, 0f);
+
                         // Random scale variation (80% to 120%)
                         float scaleVariation = Random.Range(0.8f, 1.2f);
                         bolt.Root.style.scale = new Scale(new Vector3(scaleVariation, scaleVariation, 1f));
-                        
-                        // Random rotation (-15 to +15 degrees)
-                        float rotation = Random.Range(-15f, 15f);
+
+                        // CRITICAL: Rotation = 0 to 30 degrees ONLY (downward angle)
+                        // 0 = straight down, positive = slight diagonal
+                        // Randomly choose left or right diagonal
+                        float rotation = Random.Range(0f, 30f);
+                        if (Random.value > 0.5f) rotation = -rotation; // 50% chance to angle left vs right
                         bolt.Root.style.rotate = new Rotate(rotation);
-                        
+
                         bolt.Root.style.left = randomX;
                         bolt.Root.style.top = randomY;
+
+                        Debug.Log($"[VB:Lightning] Triggered bolt at X={randomX:F0}, Y={randomY:F0}, rotation={rotation:F1}deg");
                     }
 
                     bolt.Root.style.display = DisplayStyle.Flex;
