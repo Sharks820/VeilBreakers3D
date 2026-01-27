@@ -95,6 +95,47 @@ namespace VeilBreakers.UI.Controls
 
             _display.RegisterCallback<PointerDownEvent>(OnDisplayPointerDown);
             RegisterCallback<GeometryChangedEvent>(_ => PositionPopupIfOpen());
+
+            // Clean up popup when this element is detached from panel
+            RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
+        }
+
+        private void OnDetachFromPanel(DetachFromPanelEvent evt)
+        {
+            // Force close and clean up popup resources
+            ForceCloseAndCleanup();
+        }
+
+        /// <summary>
+        /// Force close the popup and clean up all resources.
+        /// Call this when the parent panel is hidden or the dropdown needs to be reset.
+        /// </summary>
+        public void ForceCloseAndCleanup()
+        {
+            _isOpen = false;
+            RemoveFromClassList("vb-dropdown--open");
+
+            if (_popup != null)
+            {
+                _popup.RemoveFromHierarchy();
+                _popup = null;
+                _popupScroll = null;
+            }
+
+            if (_panelRoot != null)
+            {
+                _panelRoot.UnregisterCallback<PointerDownEvent>(OnRootPointerDown, TrickleDown.TrickleDown);
+            }
+
+            // Don't remove the shared popup layer, other dropdowns may use it
+            // Just hide it if no popups are open
+            if (_popupLayer != null && _popupLayer.childCount == 0)
+            {
+                _popupLayer.style.display = DisplayStyle.None;
+            }
+
+            _popupLayer = null;
+            _panelRoot = null;
         }
 
         public void SetChoices(List<string> newChoices)
@@ -186,14 +227,32 @@ namespace VeilBreakers.UI.Controls
 
         private void OpenPopup()
         {
+            // If already open, just return
+            if (_isOpen) return;
+
             EnsurePopupLayer();
+            if (_popupLayer == null)
+            {
+                return;
+            }
             EnsurePopup();
             _isOpen = true;
             _positionAttempts = 0;
 
+            // Ensure popup layer is at the front and visible
+            _popupLayer.BringToFront();
+            _popupLayer.style.display = DisplayStyle.Flex;
+
+            // Show and position this dropdown's popup
             _popup.style.display = DisplayStyle.Flex;
-            AddToClassList("vb-dropdown--open");
             _popup.BringToFront();
+            AddToClassList("vb-dropdown--open");
+
+            // Rebuild popup items to ensure fresh state
+            RebuildPopupItems();
+
+            // Position popup next frame to ensure layout is calculated
+            _positionAttempts = 0;
             PositionPopupIfOpen();
 
             _panelRoot?.RegisterCallback<PointerDownEvent>(OnRootPointerDown, TrickleDown.TrickleDown);
@@ -201,12 +260,34 @@ namespace VeilBreakers.UI.Controls
 
         private void ClosePopup()
         {
+            if (!_isOpen) return;
+
             _isOpen = false;
             RemoveFromClassList("vb-dropdown--open");
+
             if (_popup != null)
             {
                 _popup.style.display = DisplayStyle.None;
             }
+
+            // Only hide popup layer if no other popups are visible
+            if (_popupLayer != null)
+            {
+                bool anyPopupVisible = false;
+                foreach (var child in _popupLayer.Children())
+                {
+                    if (child.resolvedStyle.display == DisplayStyle.Flex)
+                    {
+                        anyPopupVisible = true;
+                        break;
+                    }
+                }
+                if (!anyPopupVisible)
+                {
+                    _popupLayer.style.display = DisplayStyle.None;
+                }
+            }
+
             if (_panelRoot != null)
             {
                 _panelRoot.UnregisterCallback<PointerDownEvent>(OnRootPointerDown, TrickleDown.TrickleDown);
@@ -231,7 +312,12 @@ namespace VeilBreakers.UI.Controls
             if (_panelRoot == null) return;
 
             _popupLayer = _panelRoot.Q<VisualElement>("vb-dropdown-popup-layer");
-            if (_popupLayer != null) return;
+            if (_popupLayer != null)
+            {
+                // Always ensure layer is at front when accessed
+                _popupLayer.BringToFront();
+                return;
+            }
 
             _popupLayer = new VisualElement();
             _popupLayer.name = "vb-dropdown-popup-layer";
@@ -241,20 +327,35 @@ namespace VeilBreakers.UI.Controls
             _popupLayer.style.right = 0;
             _popupLayer.style.bottom = 0;
             _popupLayer.style.overflow = Overflow.Visible;
+            _popupLayer.style.display = DisplayStyle.None;
+            // Layer ignores pointer events - only the popup inside will catch them
+            _popupLayer.pickingMode = PickingMode.Ignore;
+            // Bring to front of visual tree
             _panelRoot.Add(_popupLayer);
+            _popupLayer.BringToFront();
         }
 
         private void EnsurePopup()
         {
-            if (_popup != null) return;
+            if (_popup != null)
+            {
+                // Ensure popup is still attached to layer
+                if (_popup.parent != _popupLayer && _popupLayer != null)
+                {
+                    _popupLayer.Add(_popup);
+                }
+                return;
+            }
 
             _popup = new VisualElement();
             _popup.AddToClassList("vb-dropdown-popup");
             _popup.style.position = Position.Absolute;
             _popup.style.display = DisplayStyle.None;
+            _popup.pickingMode = PickingMode.Position;
 
             _popupScroll = new ScrollView(ScrollViewMode.Vertical);
             _popupScroll.AddToClassList("vb-dropdown-popup__scroll");
+            _popupScroll.pickingMode = PickingMode.Position;
             _popup.Add(_popupScroll);
 
             _popupLayer?.Add(_popup);
@@ -310,7 +411,7 @@ namespace VeilBreakers.UI.Controls
 
         private void PositionPopupIfOpen()
         {
-            if (!_isOpen || _popup == null || _panelRoot == null) return;
+            if (!_isOpen || _popup == null || _panelRoot == null || _popupLayer == null) return;
 
             if (_popup.resolvedStyle.height <= 0 && _positionAttempts < 3)
             {
@@ -322,6 +423,9 @@ namespace VeilBreakers.UI.Controls
             var fieldBounds = _display.worldBound;
             if (fieldBounds.height <= 0 || fieldBounds.width <= 0) return;
 
+            // Get the popup layer's world position to calculate relative coordinates
+            var layerBounds = _popupLayer.worldBound;
+
             float panelHeight = _panelRoot.resolvedStyle.height;
             if (panelHeight <= 0)
             {
@@ -329,17 +433,24 @@ namespace VeilBreakers.UI.Controls
             }
 
             float popupHeight = _popup.resolvedStyle.height;
+            if (popupHeight <= 0) popupHeight = 200; // Estimate if not yet laid out
+
             float below = fieldBounds.y + fieldBounds.height;
             float above = fieldBounds.y - popupHeight;
             float targetY = below;
 
+            // Check if popup would overflow bottom of panel, prefer showing above if there's room
             if (popupHeight > 0 && panelHeight > 0 && (below + popupHeight) > panelHeight && above >= 0)
             {
                 targetY = above;
             }
 
-            _popup.style.left = fieldBounds.x;
-            _popup.style.top = targetY;
+            // Calculate position relative to the popup layer (not absolute screen coords)
+            float relativeX = fieldBounds.x - layerBounds.x;
+            float relativeY = targetY - layerBounds.y;
+
+            _popup.style.left = relativeX;
+            _popup.style.top = relativeY;
             _popup.style.width = fieldBounds.width;
         }
 

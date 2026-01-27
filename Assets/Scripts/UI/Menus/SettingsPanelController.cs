@@ -52,9 +52,11 @@ namespace VeilBreakers.UI.Menus
         private Button _tabAudio;
         private Button _tabGraphics;
         private Button _tabControls;
+        private Button _tabGameplay;
         private VisualElement _audioSettings;
         private VisualElement _graphicsSettings;
         private VisualElement _controlsSettings;
+        private VisualElement _gameplaySettings;
 
         // Audio
         private Slider _sliderMaster;
@@ -74,6 +76,12 @@ namespace VeilBreakers.UI.Menus
         private Toggle _toggleVSync;
         private Toggle _toggleFPS;
 
+        // Gameplay
+        private VBDropdownField _dropdownDifficulty;
+        private Toggle _toggleDamageNumbers;
+        private Toggle _toggleHealthBars;
+        private Toggle _toggleTutorials;
+
         // Controls
         private Slider _sliderSensitivity;
         private Label _labelSensitivityValue;
@@ -87,6 +95,8 @@ namespace VeilBreakers.UI.Menus
         private SettingsData _pendingSettings;
         private List<Resolution> _availableResolutions;
         private int _currentTab = 0;
+        private bool _initialized = false;
+        private VisualElement _confirmationDialog;
 
         // =============================================================================
         // EVENTS
@@ -166,15 +176,29 @@ namespace VeilBreakers.UI.Menus
 
         private void OnEnable()
         {
-            InitializeUI();
-            LoadSettings();
-            UpdateUIFromSettings();
-            ShowTab(0);
+            // Skip auto-initialization if we're being initialized externally via Initialize()
+            // MainMenuBootstrap calls Initialize() right after AddComponent, which would cause double-init
+            if (_initialized) return;
+
+            // Only auto-initialize if we have our own UIDocument assigned
+            if (_uiDocument != null || GetComponent<UIDocument>() != null)
+            {
+                InitializeUI();
+                LoadSettings();
+                UpdateUIFromSettings();
+                ShowTab(0);
+            }
         }
 
         private void OnDisable()
         {
             UnbindEvents();
+            // Clean up confirmation dialog if it exists
+            if (_confirmationDialog != null)
+            {
+                _confirmationDialog.RemoveFromHierarchy();
+                _confirmationDialog = null;
+            }
         }
 
         // =============================================================================
@@ -201,9 +225,11 @@ namespace VeilBreakers.UI.Menus
             _tabAudio = _root.Q<Button>("tab-audio");
             _tabGraphics = _root.Q<Button>("tab-graphics");
             _tabControls = _root.Q<Button>("tab-controls");
+            _tabGameplay = _root.Q<Button>("tab-gameplay");
             _audioSettings = _root.Q<VisualElement>("audio-settings");
             _graphicsSettings = _root.Q<VisualElement>("graphics-settings");
             _controlsSettings = _root.Q<VisualElement>("controls-settings");
+            _gameplaySettings = _root.Q<VisualElement>("gameplay-settings");
 
             // Audio controls
             _sliderMaster = _root.Q<Slider>("slider-master");
@@ -227,6 +253,12 @@ namespace VeilBreakers.UI.Menus
             _sliderSensitivity = _root.Q<Slider>("slider-sensitivity");
             _labelSensitivityValue = _root.Q<Label>("label-sensitivity-value");
             _toggleInvertY = _root.Q<Toggle>("toggle-invert-y");
+
+            // Gameplay
+            _dropdownDifficulty = _root.Q<VBDropdownField>("dropdown-difficulty");
+            _toggleDamageNumbers = _root.Q<Toggle>("toggle-damage-numbers");
+            _toggleHealthBars = _root.Q<Toggle>("toggle-health-bars");
+            _toggleTutorials = _root.Q<Toggle>("toggle-tutorials");
 
             // Populate resolution dropdown
             PopulateResolutions();
@@ -281,6 +313,7 @@ namespace VeilBreakers.UI.Menus
             _tabAudio?.RegisterCallback<ClickEvent>(evt => ShowTab(0));
             _tabGraphics?.RegisterCallback<ClickEvent>(evt => ShowTab(1));
             _tabControls?.RegisterCallback<ClickEvent>(evt => ShowTab(2));
+            _tabGameplay?.RegisterCallback<ClickEvent>(evt => ShowTab(3));
 
             // Audio sliders
             _sliderMaster?.RegisterValueChangedCallback(evt =>
@@ -363,15 +396,31 @@ namespace VeilBreakers.UI.Menus
         {
             _currentTab = tabIndex;
 
+            // Close any open dropdowns before switching tabs to prevent glitches
+            CloseAllDropdowns();
+
             // Update tab button styles
             SetTabActive(_tabAudio, tabIndex == 0);
             SetTabActive(_tabGraphics, tabIndex == 1);
             SetTabActive(_tabControls, tabIndex == 2);
+            SetTabActive(_tabGameplay, tabIndex == 3);
 
             // Show/hide content
             _audioSettings?.style.SetDisplay(tabIndex == 0);
             _graphicsSettings?.style.SetDisplay(tabIndex == 1);
             _controlsSettings?.style.SetDisplay(tabIndex == 2);
+            _gameplaySettings?.style.SetDisplay(tabIndex == 3);
+        }
+
+        /// <summary>
+        /// Close all VBDropdownField popups in the settings panel.
+        /// </summary>
+        private void CloseAllDropdowns()
+        {
+            _dropdownResolution?.ForceCloseAndCleanup();
+            _dropdownFullscreen?.ForceCloseAndCleanup();
+            _dropdownQuality?.ForceCloseAndCleanup();
+            _dropdownDifficulty?.ForceCloseAndCleanup();
         }
 
         private void SetTabActive(Button tab, bool active)
@@ -584,14 +633,237 @@ namespace VeilBreakers.UI.Menus
 
         public void Close()
         {
-            // Revert pending changes
+            // Close any open dropdowns first
+            CloseAllDropdowns();
+
+            // Check for unsaved changes
+            if (HasUnsavedChanges())
+            {
+                ShowConfirmationDialog();
+                return;
+            }
+
+            // No changes, just close
+            ForceClose();
+        }
+
+        /// <summary>
+        /// Force close without checking for unsaved changes.
+        /// </summary>
+        private void ForceClose()
+        {
+            CloseAllDropdowns();
+            HideConfirmationDialog();
             _pendingSettings = _currentSettings.Clone();
             gameObject.SetActive(false);
             OnSettingsClosed?.Invoke();
         }
 
+        /// <summary>
+        /// Check if there are any unsaved changes between pending and current settings.
+        /// </summary>
+        private bool HasUnsavedChanges()
+        {
+            if (_pendingSettings == null || _currentSettings == null) return false;
+
+            // Audio
+            if (!Mathf.Approximately(_pendingSettings.masterVolume, _currentSettings.masterVolume)) return true;
+            if (!Mathf.Approximately(_pendingSettings.musicVolume, _currentSettings.musicVolume)) return true;
+            if (!Mathf.Approximately(_pendingSettings.sfxVolume, _currentSettings.sfxVolume)) return true;
+            if (!Mathf.Approximately(_pendingSettings.voiceVolume, _currentSettings.voiceVolume)) return true;
+            if (_pendingSettings.muteAll != _currentSettings.muteAll) return true;
+
+            // Graphics
+            if (_pendingSettings.resolutionIndex != _currentSettings.resolutionIndex) return true;
+            if (_pendingSettings.fullscreenMode != _currentSettings.fullscreenMode) return true;
+            if (_pendingSettings.qualityLevel != _currentSettings.qualityLevel) return true;
+            if (_pendingSettings.vsync != _currentSettings.vsync) return true;
+            if (_pendingSettings.showFPS != _currentSettings.showFPS) return true;
+
+            // Controls
+            if (!Mathf.Approximately(_pendingSettings.mouseSensitivity, _currentSettings.mouseSensitivity)) return true;
+            if (_pendingSettings.invertY != _currentSettings.invertY) return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// Show a confirmation dialog for unsaved changes.
+        /// </summary>
+        private void ShowConfirmationDialog()
+        {
+            if (_confirmationDialog != null)
+            {
+                _confirmationDialog.style.display = DisplayStyle.Flex;
+                return;
+            }
+
+            // Create the confirmation dialog
+            _confirmationDialog = new VisualElement();
+            _confirmationDialog.name = "confirmation-dialog-overlay";
+            _confirmationDialog.style.position = Position.Absolute;
+            _confirmationDialog.style.left = 0;
+            _confirmationDialog.style.top = 0;
+            _confirmationDialog.style.right = 0;
+            _confirmationDialog.style.bottom = 0;
+            _confirmationDialog.style.backgroundColor = new Color(0, 0, 0, 0.7f);
+            _confirmationDialog.style.justifyContent = Justify.Center;
+            _confirmationDialog.style.alignItems = Align.Center;
+
+            // Dialog box
+            var dialogBox = new VisualElement();
+            dialogBox.style.backgroundColor = new Color(0.08f, 0.06f, 0.1f, 1f);
+            dialogBox.style.borderTopWidth = 2;
+            dialogBox.style.borderBottomWidth = 2;
+            dialogBox.style.borderLeftWidth = 2;
+            dialogBox.style.borderRightWidth = 2;
+            dialogBox.style.borderTopColor = new Color(0.7f, 0.16f, 0.24f, 1f);
+            dialogBox.style.borderBottomColor = new Color(0.7f, 0.16f, 0.24f, 1f);
+            dialogBox.style.borderLeftColor = new Color(0.7f, 0.16f, 0.24f, 1f);
+            dialogBox.style.borderRightColor = new Color(0.7f, 0.16f, 0.24f, 1f);
+            dialogBox.style.borderTopLeftRadius = 8;
+            dialogBox.style.borderTopRightRadius = 8;
+            dialogBox.style.borderBottomLeftRadius = 8;
+            dialogBox.style.borderBottomRightRadius = 8;
+            dialogBox.style.paddingTop = 24;
+            dialogBox.style.paddingBottom = 24;
+            dialogBox.style.paddingLeft = 32;
+            dialogBox.style.paddingRight = 32;
+            dialogBox.style.minWidth = 350;
+
+            // Title
+            var title = new Label("UNSAVED CHANGES");
+            title.style.fontSize = 18;
+            title.style.color = new Color(0.92f, 0.88f, 0.84f, 1f);
+            title.style.unityFontStyleAndWeight = FontStyle.Bold;
+            title.style.letterSpacing = 3;
+            title.style.marginBottom = 16;
+            title.style.unityTextAlign = TextAnchor.MiddleCenter;
+            dialogBox.Add(title);
+
+            // Message
+            var message = new Label("You have unsaved changes.\nWould you like to apply them before closing?");
+            message.style.fontSize = 14;
+            message.style.color = new Color(0.65f, 0.6f, 0.56f, 1f);
+            message.style.marginBottom = 24;
+            message.style.unityTextAlign = TextAnchor.MiddleCenter;
+            message.style.whiteSpace = WhiteSpace.Normal;
+            dialogBox.Add(message);
+
+            // Button container
+            var buttonContainer = new VisualElement();
+            buttonContainer.style.flexDirection = FlexDirection.Row;
+            buttonContainer.style.justifyContent = Justify.Center;
+
+            // Save button
+            var btnSave = new Button(() => {
+                ApplySettings();
+                ForceClose();
+            });
+            btnSave.text = "SAVE";
+            btnSave.style.backgroundColor = new Color(0.7f, 0.16f, 0.24f, 1f);
+            btnSave.style.color = new Color(0.92f, 0.88f, 0.84f, 1f);
+            btnSave.style.borderTopWidth = 2;
+            btnSave.style.borderBottomWidth = 2;
+            btnSave.style.borderLeftWidth = 2;
+            btnSave.style.borderRightWidth = 2;
+            btnSave.style.borderTopColor = new Color(0.86f, 0.24f, 0.31f, 1f);
+            btnSave.style.borderBottomColor = new Color(0.86f, 0.24f, 0.31f, 1f);
+            btnSave.style.borderLeftColor = new Color(0.86f, 0.24f, 0.31f, 1f);
+            btnSave.style.borderRightColor = new Color(0.86f, 0.24f, 0.31f, 1f);
+            btnSave.style.borderTopLeftRadius = 4;
+            btnSave.style.borderTopRightRadius = 4;
+            btnSave.style.borderBottomLeftRadius = 4;
+            btnSave.style.borderBottomRightRadius = 4;
+            btnSave.style.paddingTop = 10;
+            btnSave.style.paddingBottom = 10;
+            btnSave.style.paddingLeft = 24;
+            btnSave.style.paddingRight = 24;
+            btnSave.style.marginRight = 12;
+            btnSave.style.fontSize = 13;
+            btnSave.style.letterSpacing = 1;
+            btnSave.style.unityFontStyleAndWeight = FontStyle.Bold;
+            buttonContainer.Add(btnSave);
+
+            // Discard button
+            var btnDiscard = new Button(() => {
+                _pendingSettings = _currentSettings.Clone();
+                ForceClose();
+            });
+            btnDiscard.text = "DISCARD";
+            btnDiscard.style.backgroundColor = Color.clear;
+            btnDiscard.style.color = new Color(0.47f, 0.43f, 0.39f, 1f);
+            btnDiscard.style.borderTopWidth = 1;
+            btnDiscard.style.borderBottomWidth = 1;
+            btnDiscard.style.borderLeftWidth = 1;
+            btnDiscard.style.borderRightWidth = 1;
+            btnDiscard.style.borderTopColor = new Color(0.7f, 0.16f, 0.24f, 0.3f);
+            btnDiscard.style.borderBottomColor = new Color(0.7f, 0.16f, 0.24f, 0.3f);
+            btnDiscard.style.borderLeftColor = new Color(0.7f, 0.16f, 0.24f, 0.3f);
+            btnDiscard.style.borderRightColor = new Color(0.7f, 0.16f, 0.24f, 0.3f);
+            btnDiscard.style.borderTopLeftRadius = 4;
+            btnDiscard.style.borderTopRightRadius = 4;
+            btnDiscard.style.borderBottomLeftRadius = 4;
+            btnDiscard.style.borderBottomRightRadius = 4;
+            btnDiscard.style.paddingTop = 10;
+            btnDiscard.style.paddingBottom = 10;
+            btnDiscard.style.paddingLeft = 24;
+            btnDiscard.style.paddingRight = 24;
+            btnDiscard.style.marginRight = 12;
+            btnDiscard.style.fontSize = 13;
+            btnDiscard.style.letterSpacing = 1;
+            buttonContainer.Add(btnDiscard);
+
+            // Cancel button
+            var btnCancel = new Button(() => {
+                HideConfirmationDialog();
+            });
+            btnCancel.text = "CANCEL";
+            btnCancel.style.backgroundColor = Color.clear;
+            btnCancel.style.color = new Color(0.47f, 0.43f, 0.39f, 1f);
+            btnCancel.style.borderTopWidth = 1;
+            btnCancel.style.borderBottomWidth = 1;
+            btnCancel.style.borderLeftWidth = 1;
+            btnCancel.style.borderRightWidth = 1;
+            btnCancel.style.borderTopColor = new Color(0.24f, 0.2f, 0.29f, 0.3f);
+            btnCancel.style.borderBottomColor = new Color(0.24f, 0.2f, 0.29f, 0.3f);
+            btnCancel.style.borderLeftColor = new Color(0.24f, 0.2f, 0.29f, 0.3f);
+            btnCancel.style.borderRightColor = new Color(0.24f, 0.2f, 0.29f, 0.3f);
+            btnCancel.style.borderTopLeftRadius = 4;
+            btnCancel.style.borderTopRightRadius = 4;
+            btnCancel.style.borderBottomLeftRadius = 4;
+            btnCancel.style.borderBottomRightRadius = 4;
+            btnCancel.style.paddingTop = 10;
+            btnCancel.style.paddingBottom = 10;
+            btnCancel.style.paddingLeft = 24;
+            btnCancel.style.paddingRight = 24;
+            btnCancel.style.fontSize = 13;
+            btnCancel.style.letterSpacing = 1;
+            buttonContainer.Add(btnCancel);
+
+            dialogBox.Add(buttonContainer);
+            _confirmationDialog.Add(dialogBox);
+
+            // Add to root
+            _root.Add(_confirmationDialog);
+            _confirmationDialog.BringToFront();
+        }
+
+        /// <summary>
+        /// Hide the confirmation dialog.
+        /// </summary>
+        private void HideConfirmationDialog()
+        {
+            if (_confirmationDialog != null)
+            {
+                _confirmationDialog.style.display = DisplayStyle.None;
+            }
+        }
+
         public void Hide()
         {
+            // Close any open dropdowns first
+            CloseAllDropdowns();
             gameObject.SetActive(false);
         }
 
@@ -600,7 +872,15 @@ namespace VeilBreakers.UI.Menus
         /// </summary>
         public void Initialize(VisualElement root)
         {
+            // Prevent double initialization
+            if (_initialized)
+            {
+                ErrorLogger.Warn("SettingsPanel already initialized, skipping");
+                return;
+            }
+
             _root = root;
+            _initialized = true;
 
             // Query settings panel
             _settingsPanel = _root.Q<VisualElement>("settings-panel");
@@ -613,11 +893,13 @@ namespace VeilBreakers.UI.Menus
             _tabAudio = _root.Q<Button>("tab-audio");
             _tabGraphics = _root.Q<Button>("tab-graphics");
             _tabControls = _root.Q<Button>("tab-controls");
+            _tabGameplay = _root.Q<Button>("tab-gameplay");
 
             // Query tab content panels
             _audioSettings = _root.Q<VisualElement>("audio-settings");
             _graphicsSettings = _root.Q<VisualElement>("graphics-settings");
             _controlsSettings = _root.Q<VisualElement>("controls-settings");
+            _gameplaySettings = _root.Q<VisualElement>("gameplay-settings");
 
             // Query audio controls
             _sliderMaster = _root.Q<Slider>("slider-master");
@@ -642,6 +924,12 @@ namespace VeilBreakers.UI.Menus
             _sliderSensitivity = _root.Q<Slider>("slider-sensitivity");
             _toggleInvertY = _root.Q<Toggle>("toggle-invert-y");
             _labelSensitivityValue = _root.Q<Label>("label-sensitivity-value");
+
+            // Query gameplay controls
+            _dropdownDifficulty = _root.Q<VBDropdownField>("dropdown-difficulty");
+            _toggleDamageNumbers = _root.Q<Toggle>("toggle-damage-numbers");
+            _toggleHealthBars = _root.Q<Toggle>("toggle-health-bars");
+            _toggleTutorials = _root.Q<Toggle>("toggle-tutorials");
 
             // Query buttons
             _btnClose = _root.Q<Button>("btn-close");

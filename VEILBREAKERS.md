@@ -1,6 +1,27 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.91** | Last updated: 2026-01-26
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.92** | Last updated: 2026-01-26
+
+---
+
+## v2.92 - SETTINGS PANEL COMPREHENSIVE FIX
+
+### Issues Fixed:
+1. **Dropdown glitches on reopen** - Added `ForceCloseAndCleanup()` method to VBDropdownField that properly removes popup from hierarchy and resets state
+2. **Button overlap on tab switch** - `CloseAllDropdowns()` called before any tab switch to prevent z-order issues
+3. **GAMEPLAY tab not working** - Added 4th tab handler (was missing from controller)
+4. **Unsaved changes lost** - Added confirmation dialog (SAVE/DISCARD/CANCEL) when closing with pending changes
+5. **Popup layer persistence** - Popup layer now only hides when no popups are visible
+
+### Files Modified:
+- `VBDropdownField.cs` - Added cleanup methods, z-order management
+- `SettingsPanelController.cs` - Added all 4 tabs, confirmation dialog, dropdown cleanup
+
+### Key Methods Added:
+- `VBDropdownField.ForceCloseAndCleanup()` - Public cleanup method
+- `SettingsPanelController.CloseAllDropdowns()` - Closes all dropdown popups
+- `SettingsPanelController.HasUnsavedChanges()` - Compares pending vs current settings
+- `SettingsPanelController.ShowConfirmationDialog()` - SAVE/DISCARD/CANCEL dialog
 
 ---
 
