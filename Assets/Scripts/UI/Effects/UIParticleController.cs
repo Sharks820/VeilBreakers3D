@@ -1141,18 +1141,24 @@ namespace VeilBreakers.UI.Effects
                             bolt.Root.style.backgroundImage = art;
                         }
 
-                        // v2.88: X position = avoid center (where title/menu buttons are)
-                        // Split into left edge (0-35%) and right edge (65-100%)
+                        // v2.89: X position = FAVOR edges, but center is allowed (25% chance)
+                        // 75% chance on edges (left/right), 25% chance in center
                         float randomX;
-                        if (Random.value > 0.5f)
+                        float roll = Random.value;
+                        if (roll < 0.375f)
                         {
-                            // Left edge - clear space for lightning
+                            // Left edge (37.5% chance) - clear space for lightning
                             randomX = Random.Range(0f, _screenWidth * 0.35f);
+                        }
+                        else if (roll < 0.75f)
+                        {
+                            // Right edge (37.5% chance) - clear space for lightning
+                            randomX = Random.Range(_screenWidth * 0.65f, _screenWidth);
                         }
                         else
                         {
-                            // Right edge - clear space for lightning
-                            randomX = Random.Range(_screenWidth * 0.65f, _screenWidth);
+                            // Center area (25% chance) - can appear but less often
+                            randomX = Random.Range(_screenWidth * 0.35f, _screenWidth * 0.65f);
                         }
 
                         // v2.83: Y position = slightly negative to clearly visible top (-100 to 50)

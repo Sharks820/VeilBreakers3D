@@ -1,4 +1,4 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:vb="VeilBreakers.UI.Controls" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/UI/Styles/VeilBreakers.uss?fileID=7433441132597879392&amp;guid=f14e48b4bc52a9f4586f9c621c434598&amp;type=3" />
     <Style src="project://database/Assets/UI/Styles/VeilBreakersTheme.uss?fileID=7433441132597879392&amp;guid=0c75776285827f74db8942ace412c502&amp;type=3" />
 
@@ -48,19 +48,19 @@
                     <!-- Brand Filter -->
                     <ui:VisualElement class="vb-column" style="margin-right: 20px;">
                         <ui:Label text="BRAND" style="color: rgb(165, 155, 145); font-size: 10px; letter-spacing: 1px; margin-bottom: 4px;" />
-                        <ui:DropdownField name="filter-brand" class="vb-dropdown" style="min-width: 120px;" />
+                        <vb:VBDropdownField name="filter-brand" class="vb-dropdown" style="min-width: 120px;" />
                     </ui:VisualElement>
 
                     <!-- Rarity Filter -->
                     <ui:VisualElement class="vb-column" style="margin-right: 20px;">
                         <ui:Label text="RARITY" style="color: rgb(165, 155, 145); font-size: 10px; letter-spacing: 1px; margin-bottom: 4px;" />
-                        <ui:DropdownField name="filter-rarity" class="vb-dropdown" style="min-width: 120px;" />
+                        <vb:VBDropdownField name="filter-rarity" class="vb-dropdown" style="min-width: 120px;" />
                     </ui:VisualElement>
 
                     <!-- Sort -->
                     <ui:VisualElement class="vb-column" style="margin-right: 20px;">
                         <ui:Label text="SORT BY" style="color: rgb(165, 155, 145); font-size: 10px; letter-spacing: 1px; margin-bottom: 4px;" />
-                        <ui:DropdownField name="sort-dropdown" class="vb-dropdown" style="min-width: 120px;" />
+                        <vb:VBDropdownField name="sort-dropdown" class="vb-dropdown" style="min-width: 120px;" />
                     </ui:VisualElement>
 
                     <!-- Search -->

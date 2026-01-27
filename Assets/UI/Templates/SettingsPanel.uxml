@@ -1,4 +1,4 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:vb="VeilBreakers.UI.Controls" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/UI/Styles/VeilBreakers.uss?fileID=7433441132597879392&amp;guid=f14e48b4bc52a9f4586f9c621c434598&amp;type=3" />
     <Style src="project://database/Assets/UI/Styles/VeilBreakersTheme.uss?fileID=7433441132597879392&amp;guid=0c75776285827f74db8942ace412c502&amp;type=3" />
 
@@ -86,13 +86,13 @@
                     <!-- Resolution -->
                     <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(40, 70, 60, 0.25);">
                         <ui:Label text="Resolution" style="width: 160px; font-size: 14px; color: rgb(185, 210, 200);" />
-                        <ui:DropdownField name="dropdown-resolution" class="vb-dropdown" style="flex-grow: 1; margin-left: 16px; height: 36px;" />
+                        <vb:VBDropdownField name="dropdown-resolution" class="vb-dropdown" style="flex-grow: 1; margin-left: 16px; height: 36px;" />
                     </ui:VisualElement>
 
                     <!-- Display Mode -->
                     <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(40, 70, 60, 0.25);">
                         <ui:Label text="Display Mode" style="width: 160px; font-size: 14px; color: rgb(185, 210, 200);" />
-                        <ui:DropdownField name="dropdown-fullscreen" class="vb-dropdown" choices="Fullscreen,Windowed,Borderless" index="0" style="flex-grow: 1; margin-left: 16px; height: 36px;" />
+                        <vb:VBDropdownField name="dropdown-fullscreen" class="vb-dropdown" choices="Fullscreen,Windowed,Borderless" index="0" style="flex-grow: 1; margin-left: 16px; height: 36px;" />
                     </ui:VisualElement>
 
                     <!-- VSync -->
@@ -106,7 +106,7 @@
                     <!-- Quality -->
                     <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(40, 70, 60, 0.25);">
                         <ui:Label text="Quality Preset" style="width: 160px; font-size: 14px; color: rgb(185, 210, 200);" />
-                        <ui:DropdownField name="dropdown-quality" class="vb-dropdown" choices="Low,Medium,High,Ultra" index="2" style="flex-grow: 1; margin-left: 16px; height: 36px;" />
+                        <vb:VBDropdownField name="dropdown-quality" class="vb-dropdown" choices="Low,Medium,High,Ultra" index="2" style="flex-grow: 1; margin-left: 16px; height: 36px;" />
                     </ui:VisualElement>
 
                     <!-- Show FPS -->
@@ -171,7 +171,7 @@
                     <!-- Difficulty -->
                     <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(60, 50, 75, 0.2);">
                         <ui:Label text="Difficulty" style="width: 160px; font-size: 14px; color: rgb(165, 155, 145);" />
-                        <ui:DropdownField name="dropdown-difficulty" class="vb-dropdown" choices="Story,Normal,Hard,Nightmare" index="1" style="flex-grow: 1; margin-left: 16px; height: 36px;" />
+                        <vb:VBDropdownField name="dropdown-difficulty" class="vb-dropdown" choices="Story,Normal,Hard,Nightmare" index="1" style="flex-grow: 1; margin-left: 16px; height: 36px;" />
                     </ui:VisualElement>
 
                     <ui:Label text="INTERFACE" style="font-size: 11px; letter-spacing: 2px; color: rgb(180, 40, 60); margin-top: 16px; margin-bottom: 12px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgba(180, 40, 60, 0.3);" />
