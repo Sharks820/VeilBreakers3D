@@ -753,8 +753,8 @@ namespace VeilBreakers.UI.Menus
             _dropdownPopupLayer.style.right = 0;
             _dropdownPopupLayer.style.bottom = 0;
             _dropdownPopupLayer.style.overflow = Overflow.Visible;
-            _dropdownPopupLayer.style.zIndex = 1000;
             panelRoot.Add(_dropdownPopupLayer);
+            _dropdownPopupLayer.BringToFront();
         }
 
         private void PreparePopup(VisualElement popup)
