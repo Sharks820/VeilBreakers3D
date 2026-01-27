@@ -1141,8 +1141,19 @@ namespace VeilBreakers.UI.Effects
                             bolt.Root.style.backgroundImage = art;
                         }
 
-                        // CRITICAL: X position = random across full screen width
-                        float randomX = Random.Range(0f, _screenWidth);
+                        // v2.88: X position = avoid center (where title/menu buttons are)
+                        // Split into left edge (0-35%) and right edge (65-100%)
+                        float randomX;
+                        if (Random.value > 0.5f)
+                        {
+                            // Left edge - clear space for lightning
+                            randomX = Random.Range(0f, _screenWidth * 0.35f);
+                        }
+                        else
+                        {
+                            // Right edge - clear space for lightning
+                            randomX = Random.Range(_screenWidth * 0.65f, _screenWidth);
+                        }
 
                         // v2.83: Y position = slightly negative to clearly visible top (-100 to 50)
                         // Bolts now sized to fit screen better, so top is always visible
