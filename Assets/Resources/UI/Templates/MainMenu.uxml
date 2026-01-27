@@ -17,8 +17,10 @@
             <ui:VisualElement style="position: absolute; left: 0; top: 50%; right: 0; bottom: 0; background-color: rgba(100, 20, 30, 0.1);" />
         </ui:VisualElement>
 
-        <!-- Ambient particles placeholder (controlled by script) -->
-        <ui:VisualElement name="particle-container" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: hidden;" />
+        <!-- Ambient particles placeholder (controlled by script) - v2.63: overflow VISIBLE to prevent clipping -->
+        <ui:VisualElement name="particle-container" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: visible;" />
+        <ui:VisualElement name="ember-container" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: visible;" />
+        <ui:VisualElement name="spark-container" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: visible;" />
 
         <!-- Vignette overlay -->
         <ui:VisualElement name="vignette" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; border-width: 0; background-color: transparent;">
@@ -114,7 +116,7 @@
             </ui:VisualElement>
 
             <!-- Version -->
-            <ui:Label text="v2.83 Alpha" name="version-label" style="color: rgb(75, 68, 65); font-size: 12px;" />
+            <ui:Label text="v2.84 Alpha" name="version-label" style="color: rgb(75, 68, 65); font-size: 12px;" />
 
         </ui:VisualElement>
 

@@ -1,6 +1,26 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.81** | Last updated: 2026-01-26
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.84** | Last updated: 2026-01-26
+
+---
+
+## v2.84 - PARTICLE VISIBILITY FIXES
+
+**Fixed critical particle visibility issues - particles were invisible due to multiple factors:**
+
+### Root Causes Fixed:
+1. **Texture Alpha** - Lightning bolt textures had `alphaIsTransparency: 0` - changed to `1` in all .meta files
+2. **Container Overflow** - Containers had `overflow: hidden` clipping particles outside bounds - changed to `overflow: visible`
+3. **Container Z-Order** - Containers were being inserted at index 0 (behind background) - changed to index 2, 3, 4
+4. **Missing spark-container** - UXML templates were missing spark-container for lightning bolts - added to both UXML files
+
+### Files Changed:
+- `Assets/Resources/UI/Lightning/lightning_bolt_01-04.png.meta` - enabled alphaIsTransparency
+- `Assets/UI/Templates/MainMenu.uxml` - added spark-container, fixed overflow
+- `Assets/Resources/UI/Templates/MainMenu.uxml` - added all particle containers, fixed overflow
+- `Assets/UI/Styles/VeilBreakers.uss` - .particle-layer overflow: visible
+- `Assets/UI/Styles/VeilBreakersUI.uss` - .particle-layer overflow: visible
+- `Assets/Scripts/UI/Effects/UIParticleController.cs` - fixed container creation with correct overflow and z-order
 
 ---
 

@@ -213,6 +213,8 @@ namespace VeilBreakers.UI.Effects
             _emberContainer = _root.Q<VisualElement>("ember-container");
 
             // Fallback: create containers if missing in UXML
+            // v2.63 FIX: Use Overflow.Visible to prevent clipping particles
+            // v2.63 FIX: Insert AFTER background (index 1+) not at 0, so particles are VISIBLE
             if (_particleContainer == null)
             {
                 _particleContainer = new VisualElement { name = "particle-container" };
@@ -221,9 +223,20 @@ namespace VeilBreakers.UI.Effects
                 _particleContainer.style.top = 0;
                 _particleContainer.style.right = 0;
                 _particleContainer.style.bottom = 0;
-                _particleContainer.style.overflow = Overflow.Hidden;
-                _root.Insert(0, _particleContainer); // Insert at index 0 (behind content)
+                _particleContainer.style.overflow = Overflow.Visible; // v2.63: VISIBLE not Hidden!
+                _particleContainer.pickingMode = PickingMode.Ignore;
+                // Insert after background but before content
+                int insertIndex = Mathf.Min(2, _root.childCount);
+                _root.Insert(insertIndex, _particleContainer);
+                Debug.Log($"[VB:Particles] Created particle-container at index {insertIndex}");
             }
+            else
+            {
+                // v2.63 FIX: Ensure existing container has correct overflow
+                _particleContainer.style.overflow = Overflow.Visible;
+                _particleContainer.pickingMode = PickingMode.Ignore;
+            }
+
             if (_emberContainer == null)
             {
                 _emberContainer = new VisualElement { name = "ember-container" };
@@ -232,11 +245,21 @@ namespace VeilBreakers.UI.Effects
                 _emberContainer.style.top = 0;
                 _emberContainer.style.right = 0;
                 _emberContainer.style.bottom = 0;
-                _emberContainer.style.overflow = Overflow.Hidden;
-                _root.Insert(0, _emberContainer); // Insert at index 0 (behind content)
+                _emberContainer.style.overflow = Overflow.Visible; // v2.63: VISIBLE not Hidden!
+                _emberContainer.pickingMode = PickingMode.Ignore;
+                int insertIndex = Mathf.Min(3, _root.childCount);
+                _root.Insert(insertIndex, _emberContainer);
+                Debug.Log($"[VB:Embers] Created ember-container at index {insertIndex}");
+            }
+            else
+            {
+                // v2.63 FIX: Ensure existing container has correct overflow
+                _emberContainer.style.overflow = Overflow.Visible;
+                _emberContainer.pickingMode = PickingMode.Ignore;
             }
 
             // v2.81: Re-enable spark-container for lightning
+            // v2.63: CRITICAL FIX - spark container must be ABOVE other containers for visibility
             _sparkContainer = _root.Q<VisualElement>("spark-container");
             if (_sparkContainer == null)
             {
@@ -246,10 +269,18 @@ namespace VeilBreakers.UI.Effects
                 _sparkContainer.style.top = 0;
                 _sparkContainer.style.right = 0;
                 _sparkContainer.style.bottom = 0;
-                _sparkContainer.style.overflow = Overflow.Hidden;
+                _sparkContainer.style.overflow = Overflow.Visible; // v2.63: VISIBLE not Hidden!
                 _sparkContainer.pickingMode = PickingMode.Ignore;
-                _root.Insert(0, _sparkContainer); // Insert at index 0 (behind content)
-                Debug.Log("[VB:Lightning] Created spark-container for lightning bolts");
+                // v2.63: Insert at higher index so lightning renders ON TOP
+                int insertIndex = Mathf.Min(4, _root.childCount);
+                _root.Insert(insertIndex, _sparkContainer);
+                Debug.Log($"[VB:Lightning] Created spark-container at index {insertIndex}");
+            }
+            else
+            {
+                // v2.63 FIX: Ensure existing container has correct overflow
+                _sparkContainer.style.overflow = Overflow.Visible;
+                _sparkContainer.pickingMode = PickingMode.Ignore;
             }
 
             // Get screen dimensions
@@ -300,7 +331,29 @@ namespace VeilBreakers.UI.Effects
             _particleContainer = _root.Q<VisualElement>("particle-container");
             _emberContainer = _root.Q<VisualElement>("ember-container");
 
+            // v2.63 FIX: Ensure particle-container has correct settings
+            if (_particleContainer == null)
+            {
+                _particleContainer = new VisualElement { name = "particle-container" };
+                _particleContainer.style.position = Position.Absolute;
+                _particleContainer.style.left = 0;
+                _particleContainer.style.top = 0;
+                _particleContainer.style.right = 0;
+                _particleContainer.style.bottom = 0;
+                _particleContainer.style.overflow = Overflow.Visible; // v2.63: VISIBLE!
+                _particleContainer.pickingMode = PickingMode.Ignore;
+                int insertIndex = Mathf.Min(2, _root.childCount);
+                _root.Insert(insertIndex, _particleContainer);
+                Debug.Log($"[VB:Particles] Created particle-container at index {insertIndex}");
+            }
+            else
+            {
+                _particleContainer.style.overflow = Overflow.Visible;
+                _particleContainer.pickingMode = PickingMode.Ignore;
+            }
+
             // Fallback: create ember-container if missing (v2.82)
+            // v2.63 FIX: Use Overflow.Visible
             if (_emberContainer == null)
             {
                 _emberContainer = new VisualElement { name = "ember-container" };
@@ -309,12 +362,20 @@ namespace VeilBreakers.UI.Effects
                 _emberContainer.style.top = 0;
                 _emberContainer.style.right = 0;
                 _emberContainer.style.bottom = 0;
-                _emberContainer.style.overflow = Overflow.Hidden;
-                _root.Insert(0, _emberContainer); // Insert at index 0 (behind content)
-                Debug.Log("[VB:Embers] Created ember-container fallback");
+                _emberContainer.style.overflow = Overflow.Visible; // v2.63: VISIBLE!
+                _emberContainer.pickingMode = PickingMode.Ignore;
+                int insertIndex = Mathf.Min(3, _root.childCount);
+                _root.Insert(insertIndex, _emberContainer);
+                Debug.Log($"[VB:Embers] Created ember-container at index {insertIndex}");
+            }
+            else
+            {
+                _emberContainer.style.overflow = Overflow.Visible;
+                _emberContainer.pickingMode = PickingMode.Ignore;
             }
 
             // v2.81: Re-enable spark-container for lightning
+            // v2.63 FIX: Must be ABOVE other containers
             _sparkContainer = _root.Q<VisualElement>("spark-container");
             if (_sparkContainer == null)
             {
@@ -324,10 +385,16 @@ namespace VeilBreakers.UI.Effects
                 _sparkContainer.style.top = 0;
                 _sparkContainer.style.right = 0;
                 _sparkContainer.style.bottom = 0;
-                _sparkContainer.style.overflow = Overflow.Hidden;
+                _sparkContainer.style.overflow = Overflow.Visible; // v2.63: VISIBLE!
                 _sparkContainer.pickingMode = PickingMode.Ignore;
-                _root.Insert(0, _sparkContainer); // Insert at index 0 (behind content)
-                Debug.Log("[VB:Lightning] Created spark-container for lightning bolts");
+                int insertIndex = Mathf.Min(4, _root.childCount);
+                _root.Insert(insertIndex, _sparkContainer);
+                Debug.Log($"[VB:Lightning] Created spark-container at index {insertIndex}");
+            }
+            else
+            {
+                _sparkContainer.style.overflow = Overflow.Visible;
+                _sparkContainer.pickingMode = PickingMode.Ignore;
             }
 
             _screenWidth = Screen.width;
