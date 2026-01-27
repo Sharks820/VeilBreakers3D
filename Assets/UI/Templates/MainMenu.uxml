@@ -26,60 +26,23 @@
         <ui:VisualElement name="particle-container" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: visible;" />
         <ui:VisualElement name="ember-container" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: visible;" />
 
-        <!-- Main Content - Centered Layout -->
-        <ui:VisualElement name="content" style="flex-grow: 1; justify-content: center; align-items: center;">
+        <!-- Menu Buttons - Horizontal row at bottom -->
+        <ui:VisualElement name="button-container" style="position: absolute; left: 0; right: 0; bottom: 80px; flex-direction: row; justify-content: center; align-items: center;">
 
-            <!-- Title Section -->
-            <ui:VisualElement name="title-section" style="align-items: center; margin-bottom: 60px;">
+            <!-- NEW GAME Button - Primary (Red) -->
+            <ui:Button text="NEW GAME" name="btn-new-game" style="width: 140px; height: 48px; margin: 0 6px; background-color: rgb(140, 35, 50); border-width: 1px; border-color: rgb(180, 50, 70); border-radius: 4px; color: rgb(255, 255, 255); font-size: 14px; letter-spacing: 1px; -unity-font-style: bold;" />
 
-                <!-- Decorative line above -->
-                <ui:VisualElement style="flex-direction: row; align-items: center; margin-bottom: 24px;">
-                    <ui:VisualElement style="width: 60px; height: 1px; background-color: rgba(180, 40, 60, 0.4);" />
-                    <ui:VisualElement style="width: 8px; height: 8px; border-radius: 4px; background-color: rgb(180, 40, 60); margin: 0 16px;" />
-                    <ui:VisualElement style="width: 60px; height: 1px; background-color: rgba(180, 40, 60, 0.4);" />
-                </ui:VisualElement>
+            <!-- CONTINUE Button (hidden by default) -->
+            <ui:Button text="CONTINUE" name="btn-continue" style="display: none; width: 140px; height: 48px; margin: 0 6px; background-color: rgb(140, 35, 50); border-width: 1px; border-color: rgb(180, 50, 70); border-radius: 4px; color: rgb(255, 255, 255); font-size: 14px; letter-spacing: 1px; -unity-font-style: bold;" />
 
-                <!-- Main Title -->
-            <ui:Label text="VEILBREAKERS" name="game-title" style="font-size: 72px; letter-spacing: 12px; color: rgb(235, 225, 215); -unity-font-style: bold; -unity-text-align: middle-center; margin-bottom: 16px;" />
+            <!-- SETTINGS Button - Secondary (Dark) -->
+            <ui:Button text="SETTINGS" name="btn-settings" style="width: 140px; height: 48px; margin: 0 6px; background-color: rgb(35, 30, 40); border-width: 1px; border-color: rgb(60, 55, 70); border-radius: 4px; color: rgb(180, 175, 170); font-size: 14px; letter-spacing: 1px;" />
 
-                <!-- Tagline -->
-                <ui:Label text="Break the Veil. Bind the Fallen." name="tagline" style="font-size: 16px; letter-spacing: 4px; color: rgb(130, 120, 110); -unity-text-align: middle-center; -unity-font-style: italic;" />
+            <!-- CREDITS Button - Secondary (Dark) -->
+            <ui:Button text="CREDITS" name="btn-credits" style="width: 140px; height: 48px; margin: 0 6px; background-color: rgb(35, 30, 40); border-width: 1px; border-color: rgb(60, 55, 70); border-radius: 4px; color: rgb(180, 175, 170); font-size: 14px; letter-spacing: 1px;" />
 
-                <!-- Decorative dots below -->
-                <ui:VisualElement style="flex-direction: row; margin-top: 24px;">
-                    <ui:VisualElement style="width: 4px; height: 4px; border-radius: 2px; background-color: rgba(180, 40, 60, 0.6); margin: 0 6px;" />
-                    <ui:VisualElement style="width: 4px; height: 4px; border-radius: 2px; background-color: rgba(180, 40, 60, 0.6); margin: 0 6px;" />
-                    <ui:VisualElement style="width: 4px; height: 4px; border-radius: 2px; background-color: rgba(180, 40, 60, 0.6); margin: 0 6px;" />
-                </ui:VisualElement>
-
-            </ui:VisualElement>
-
-            <!-- Menu Buttons Container -->
-            <ui:VisualElement name="button-container" style="width: 320px; padding: 32px; background-color: rgba(12, 9, 18, 0.9); border-width: 1px; border-color: rgba(180, 40, 60, 0.3); border-radius: 12px; box-shadow: 0 18px 42px rgba(0,0,0,0.55);">
-
-                <!-- NEW GAME Button -->
-                <ui:Button text="NEW GAME" name="btn-new-game" class="menu-button-main" style="width: 100%; margin-bottom: 12px; -unity-text-align: middle-center;" />
-
-                <!-- CONTINUE Button -->
-                <ui:Button text="CONTINUE" name="btn-continue" class="menu-button-main" style="display: none; width: 100%; margin-bottom: 12px; -unity-text-align: middle-center;" />
-
-                <!-- Divider -->
-                <ui:VisualElement style="flex-direction: row; align-items: center; margin: 16px 0;">
-                    <ui:VisualElement style="flex-grow: 1; height: 1px; background-color: rgba(180, 40, 60, 0.3);" />
-                    <ui:VisualElement style="width: 6px; height: 6px; border-radius: 3px; background-color: rgba(180, 40, 60, 0.5); margin: 0 12px;" />
-                    <ui:VisualElement style="flex-grow: 1; height: 1px; background-color: rgba(180, 40, 60, 0.3);" />
-                </ui:VisualElement>
-
-                <!-- SETTINGS Button -->
-                <ui:Button text="SETTINGS" name="btn-settings" class="menu-button-secondary" style="width: 100%; margin-bottom: 8px; -unity-text-align: middle-center;" />
-
-                <!-- CREDITS Button -->
-                <ui:Button text="CREDITS" name="btn-credits" class="menu-button-secondary" style="width: 100%; margin-bottom: 8px; -unity-text-align: middle-center;" />
-
-                <!-- EXIT Button -->
-                <ui:Button text="EXIT" name="btn-exit" class="menu-button-secondary menu-button-exit" style="width: 100%; -unity-text-align: middle-center;" />
-
-            </ui:VisualElement>
+            <!-- EXIT Button - Secondary (Dark) -->
+            <ui:Button text="EXIT" name="btn-exit" style="width: 140px; height: 48px; margin: 0 6px; background-color: rgb(35, 30, 40); border-width: 1px; border-color: rgb(60, 55, 70); border-radius: 4px; color: rgb(180, 175, 170); font-size: 14px; letter-spacing: 1px;" />
 
         </ui:VisualElement>
 

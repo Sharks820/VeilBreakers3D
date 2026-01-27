@@ -1,23 +1,34 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.94** | Last updated: 2026-01-27
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.95** | Last updated: 2026-01-27
 
 ---
 
-## v2.94 - DROPDOWN SCROLLBAR REMOVED + TITLE MONSTER ART
+## v2.95 - TITLE SCREEN COMPLETE WITH MONSTER ART
 
 ### Changes Made:
-1. **Removed dropdown scrollbar entirely** - Scrollbar positioning was broken (showing on left, starting at bottom). Removed visible scrollbar, kept mouse wheel scrolling functionality.
-2. **Added title monster art layer** - Added monster artwork slot in MainMenu.uxml (positioned behind particles, in front of background)
-3. **Cleaned up VBDropdownField.cs** - Removed 40+ lines of scrollbar styling code that wasn't working
+1. **Added title monster art** - Crimson demon with built-in "VEILBREAKERS" title and tagline
+2. **Removed old title text** - Title-section removed since text is baked into monster image
+3. **Horizontal button row** - Buttons repositioned to bottom center in horizontal layout
+4. **Cleaned scrollbar code** - Removed broken scrollbar, kept mouse wheel scrolling
 
 ### Files Modified:
-- `Assets/Scripts/UI/Controls/VBDropdownField.cs` - Removed scrollbar styling, kept scroll functionality
-- `Assets/UI/Templates/MainMenu.uxml` - Added title-monster layer
+- `Assets/Art/UI/MainMenu/title_monster.png` - NEW: Monster title art with transparent background
+- `Assets/UI/Templates/MainMenu.uxml` - Complete title screen layout overhaul
+- `Assets/Scripts/UI/Controls/VBDropdownField.cs` - Removed scrollbar styling
 
-### User Action Required:
-- Save the crimson demon monster PNG to: `Assets/Art/UI/MainMenu/title_monster.png`
-- The image should have transparent background (alpha channel)
+### Layering Order (back to front):
+1. Background (dark rgb(8,6,12))
+2. Veil pulse layer (ambient glow)
+3. **Spark-container** - Lightning effects BEHIND monster
+4. **Title monster** - Monster art with title text (90% size, 0.85 opacity)
+5. **Particle/ember containers** - Effects IN FRONT of monster
+6. **Button container** - Horizontal row at bottom (above effects)
+7. Footer - Copyright and version
+
+### Button Layout:
+- NEW GAME (red/crimson) | CONTINUE (hidden by default) | SETTINGS | CREDITS | EXIT
+- All 140x48px with 6px margin between
 
 ### Scrollbar Lesson Learned:
 **Unity UI Toolkit ScrollView scrollbar positioning is buggy when:**
