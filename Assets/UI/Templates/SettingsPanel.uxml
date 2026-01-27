@@ -10,31 +10,31 @@
         <!-- Darkened overlay -->
         <ui:VisualElement style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.6);" />
 
-        <!-- Settings Panel -->
-        <ui:VisualElement name="settings-panel" class="settings-panel-container" style="width: 650px; max-height: 80%; padding: 28px; flex-shrink: 0;">
+        <!-- Settings Panel - Fixed height to contain all content -->
+        <ui:VisualElement name="settings-panel" class="settings-panel-container" style="width: 650px; height: auto; max-height: 85%; padding: 24px 28px; flex-direction: column;">
 
-            <!-- Header -->
-            <ui:VisualElement name="header" style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 20px; border-bottom-width: 1px; border-bottom-color: rgba(180, 40, 60, 0.3); flex-shrink: 0;">
-                <ui:VisualElement style="flex-direction: row; align-items: center; height: 40px;">
+            <!-- Header - Fixed height -->
+            <ui:VisualElement name="header" style="flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom-width: 1px; border-bottom-color: rgba(180, 40, 60, 0.3); height: 48px; flex-shrink: 0;">
+                <ui:VisualElement style="flex-direction: row; align-items: center;">
                     <ui:VisualElement style="width: 4px; height: 24px; background-color: rgb(180, 40, 60); border-radius: 2px; margin-right: 14px;" />
                     <ui:Label text="SETTINGS" style="font-size: 26px; letter-spacing: 5px; color: rgb(235, 245, 240); -unity-font-style: bold;" />
                 </ui:VisualElement>
-                <ui:Button text="✕" name="btn-close" style="width: 36px; height: 36px; font-size: 16px; background-color: transparent; border-width: 1px; border-color: rgba(180, 50, 70, 0.4); border-radius: 18px; color: rgb(180, 80, 90); -unity-text-align: middle-center; padding: 0; margin: 0;" />
+                <ui:Button text="✕" name="btn-close" style="width: 32px; height: 32px; font-size: 14px; background-color: transparent; border-width: 1px; border-color: rgba(180, 50, 70, 0.4); border-radius: 16px; color: rgb(180, 80, 90); -unity-text-align: middle-center; padding: 0; margin: 0;" />
             </ui:VisualElement>
 
-            <!-- Tab Bar -->
-            <ui:VisualElement name="tab-container" style="flex-direction: row; margin-bottom: 16px; background-color: rgba(20, 16, 28, 0.6); border-radius: 6px; padding: 4px; flex-shrink: 0;">
+            <!-- Tab Bar - Fixed height -->
+            <ui:VisualElement name="tab-container" style="flex-direction: row; margin-bottom: 12px; background-color: rgba(20, 16, 28, 0.6); border-radius: 6px; padding: 4px; height: 48px; flex-shrink: 0;">
                 <ui:Button text="AUDIO" name="tab-audio" class="settings-tab settings-tab-active" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; margin-right: 4px;" />
                 <ui:Button text="GRAPHICS" name="tab-graphics" class="settings-tab settings-tab-inactive" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; margin-right: 4px;" />
                 <ui:Button text="CONTROLS" name="tab-controls" class="settings-tab settings-tab-inactive" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center; margin-right: 4px;" />
                 <ui:Button text="GAMEPLAY" name="tab-gameplay" class="settings-tab settings-tab-inactive" style="flex-grow: 1; height: 40px; font-size: 12px; letter-spacing: 2px; -unity-text-align: middle-center;" />
             </ui:VisualElement>
 
-            <!-- Content ScrollView -->
-            <ui:ScrollView name="settings-content" class="settings-scroll" style="flex-grow: 1; min-height: 280px; max-height: 380px; margin-top: 8px;">
+            <!-- Content ScrollView - Takes remaining space -->
+            <ui:ScrollView name="settings-content" class="settings-scroll" style="flex-grow: 1; flex-shrink: 1; min-height: 200px; max-height: 400px;">
 
                 <!-- AUDIO TAB -->
-                <ui:VisualElement name="audio-settings" style="padding: 8px 0 4px 0;">
+                <ui:VisualElement name="audio-settings" style="padding: 8px 0;">
 
                     <!-- Master Volume -->
                     <ui:VisualElement style="flex-direction: row; align-items: center; padding: 10px 0; border-bottom-width: 1px; border-bottom-color: rgba(60, 50, 75, 0.2);">
@@ -65,13 +65,13 @@
                     </ui:VisualElement>
 
                     <!-- Mute Toggle -->
-                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 14px 0; margin-top: 8px;">
+                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 12px 0; margin-top: 4px;">
                         <ui:Label text="Mute All Audio" style="width: 160px; font-size: 14px; color: rgb(165, 155, 145);" />
                         <ui:Toggle name="toggle-mute" class="vb-toggle" />
                     </ui:VisualElement>
 
                     <!-- Subtitles Toggle -->
-                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 14px 0;">
+                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 12px 0;">
                         <ui:Label text="Subtitles" style="width: 160px; font-size: 14px; color: rgb(165, 155, 145);" />
                         <ui:Toggle name="toggle-subtitles" class="vb-toggle" value="true" />
                     </ui:VisualElement>
@@ -96,7 +96,7 @@
                     </ui:VisualElement>
 
                     <!-- VSync -->
-                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 14px 0;">
+                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 12px 0;">
                         <ui:Label text="VSync" style="width: 160px; font-size: 14px; color: rgb(165, 155, 145);" />
                         <ui:Toggle name="toggle-vsync" class="vb-toggle" value="true" />
                     </ui:VisualElement>
@@ -110,7 +110,7 @@
                     </ui:VisualElement>
 
                     <!-- Show FPS -->
-                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 14px 0;">
+                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 12px 0;">
                         <ui:Label text="Show FPS Counter" style="width: 160px; font-size: 14px; color: rgb(165, 155, 145);" />
                         <ui:Toggle name="toggle-fps" class="vb-toggle" />
                     </ui:VisualElement>
@@ -130,7 +130,7 @@
                     </ui:VisualElement>
 
                     <!-- Invert Y -->
-                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 14px 0;">
+                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 12px 0;">
                         <ui:Label text="Invert Y-Axis" style="width: 160px; font-size: 14px; color: rgb(165, 155, 145);" />
                         <ui:Toggle name="toggle-invert-y" class="vb-toggle" />
                     </ui:VisualElement>
@@ -177,19 +177,19 @@
                     <ui:Label text="INTERFACE" style="font-size: 11px; letter-spacing: 2px; color: rgb(180, 40, 60); margin-top: 16px; margin-bottom: 12px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgba(180, 40, 60, 0.3);" />
 
                     <!-- Damage Numbers -->
-                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 14px 0;">
+                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 12px 0;">
                         <ui:Label text="Damage Numbers" style="width: 160px; font-size: 14px; color: rgb(165, 155, 145);" />
                         <ui:Toggle name="toggle-damage-numbers" class="vb-toggle" value="true" />
                     </ui:VisualElement>
 
                     <!-- Health Bars -->
-                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 14px 0;">
+                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 12px 0;">
                         <ui:Label text="Health Bars" style="width: 160px; font-size: 14px; color: rgb(165, 155, 145);" />
                         <ui:Toggle name="toggle-health-bars" class="vb-toggle" value="true" />
                     </ui:VisualElement>
 
                     <!-- Tutorial Tips -->
-                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 14px 0;">
+                    <ui:VisualElement style="flex-direction: row; align-items: center; padding: 12px 0;">
                         <ui:Label text="Tutorial Tips" style="width: 160px; font-size: 14px; color: rgb(165, 155, 145);" />
                         <ui:Toggle name="toggle-tutorials" class="vb-toggle" value="true" />
                     </ui:VisualElement>
@@ -198,8 +198,8 @@
 
             </ui:ScrollView>
 
-            <!-- Bottom Buttons -->
-            <ui:VisualElement style="flex-direction: row; justify-content: flex-end; margin-top: 16px; padding-top: 16px; border-top-width: 1px; border-top-color: rgba(180, 40, 60, 0.2); flex-shrink: 0;">
+            <!-- Bottom Buttons - Always at bottom of panel -->
+            <ui:VisualElement name="button-container" style="flex-direction: row; justify-content: flex-end; margin-top: 16px; padding-top: 16px; border-top-width: 1px; border-top-color: rgba(180, 40, 60, 0.2); height: 54px; flex-shrink: 0;">
                 <ui:Button text="RESET DEFAULTS" name="btn-reset" style="height: 38px; padding: 0 20px; font-size: 12px; letter-spacing: 1px; -unity-text-align: middle-center; background-color: transparent; border-width: 1px; border-color: rgba(180, 40, 60, 0.3); border-radius: 4px; color: rgb(120, 110, 100); margin-right: 12px;" />
                 <ui:Button text="APPLY" name="btn-apply" style="height: 38px; padding: 0 32px; font-size: 14px; letter-spacing: 2px; -unity-font-style: bold; -unity-text-align: middle-center; background-color: rgb(180, 40, 60); border-color: rgb(220, 60, 80); border-width: 2px; border-radius: 6px; color: rgb(235, 225, 215);" />
             </ui:VisualElement>

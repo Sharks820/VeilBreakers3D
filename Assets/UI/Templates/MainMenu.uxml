@@ -14,10 +14,17 @@
             <ui:VisualElement name="veil-pulse-3" style="position: absolute; left: 5%; bottom: 15%; width: 350px; height: 350px; border-radius: 175px; background-color: rgba(120, 30, 45, 0.07);" />
         </ui:VisualElement>
 
-        <!-- Particle containers (populated by C#) - v2.63: overflow VISIBLE to prevent clipping -->
+        <!-- Spark/Lightning container - BEHIND monster -->
+        <ui:VisualElement name="spark-container" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: visible;" />
+
+        <!-- Title Monster Art - Above lightning, below embers/particles -->
+        <ui:VisualElement name="title-monster" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; justify-content: center; align-items: center; overflow: hidden;">
+            <ui:VisualElement name="monster-image" style="width: 90%; height: 90%; background-image: url('project://database/Assets/Art/UI/MainMenu/title_monster.png'); -unity-background-scale-mode: scale-to-fit; opacity: 0.85;" />
+        </ui:VisualElement>
+
+        <!-- Particle/Ember containers - ON TOP of monster, underneath buttons -->
         <ui:VisualElement name="particle-container" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: visible;" />
         <ui:VisualElement name="ember-container" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: visible;" />
-        <ui:VisualElement name="spark-container" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: visible;" />
 
         <!-- Main Content - Centered Layout -->
         <ui:VisualElement name="content" style="flex-grow: 1; justify-content: center; align-items: center;">

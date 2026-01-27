@@ -207,6 +207,9 @@ namespace VeilBreakers.UI.Effects
             _root = _uiDocument.rootVisualElement;
             if (_root == null) return;
 
+            // Ensure collections are initialized (in case Awake hasn't run yet)
+            EnsureCollectionsInitialized();
+
             PrepareForInitialize();
 
             _particleContainer = _root.Q<VisualElement>("particle-container");
@@ -326,6 +329,9 @@ namespace VeilBreakers.UI.Effects
             _root = root;
             if (_root == null) return;
 
+            // Ensure collections are initialized (in case Awake hasn't run yet)
+            EnsureCollectionsInitialized();
+
             PrepareForInitialize();
 
             _particleContainer = _root.Q<VisualElement>("particle-container");
@@ -428,6 +434,17 @@ namespace VeilBreakers.UI.Effects
             Debug.Log($"[VB:Particles] Initialize(root) complete with LIGHTNING ENABLED");
 
             _isInitialized = true;
+        }
+
+        private void EnsureCollectionsInitialized()
+        {
+            // Initialize collections if they haven't been (e.g., if Awake hasn't run yet)
+            if (_embers == null) _embers = new List<ParticleData>(_emberCount);
+            if (_dustParticles == null) _dustParticles = new List<ParticleData>(_dustCount);
+            if (_sparks == null) _sparks = new List<ParticleData>(_sparkCount);
+            if (_lightningBolts == null) _lightningBolts = new List<LightningData>(_lightningBoltCount);
+            if (_veilPulses == null) _veilPulses = new List<VisualElement>(3);
+            if (_particlePool == null) _particlePool = new Queue<VisualElement>(kPoolSize);
         }
 
         private void PrepareForInitialize()

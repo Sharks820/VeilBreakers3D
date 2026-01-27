@@ -91,6 +91,11 @@ namespace VeilBreakers.UI.Menus
         {
             _root = _uiDocument.rootVisualElement;
 
+            // CRITICAL: Ensure root fills the entire viewport
+            _root.style.flexGrow = 1;
+            _root.style.width = Length.Percent(100);
+            _root.style.height = Length.Percent(100);
+
             // Apply stylesheets
             if (_themeStylesheet != null)
                 _root.styleSheets.Add(_themeStylesheet);
@@ -99,6 +104,18 @@ namespace VeilBreakers.UI.Menus
 
             // Clear and setup main menu
             _root.Clear();
+
+            // DEFENSIVE: Add full-screen black background at root level to prevent any color bleed
+            var rootBackground = new VisualElement();
+            rootBackground.name = "root-background";
+            rootBackground.style.position = Position.Absolute;
+            rootBackground.style.left = 0;
+            rootBackground.style.top = 0;
+            rootBackground.style.right = 0;
+            rootBackground.style.bottom = 0;
+            rootBackground.style.backgroundColor = new StyleColor(new Color(0.03f, 0.02f, 0.05f, 1f)); // Near-black
+            rootBackground.pickingMode = PickingMode.Ignore;
+            _root.Add(rootBackground);
 
             // Create main container
             var mainContainer = new VisualElement();

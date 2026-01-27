@@ -1,6 +1,39 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.92** | Last updated: 2026-01-26
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.94** | Last updated: 2026-01-27
+
+---
+
+## v2.94 - DROPDOWN SCROLLBAR REMOVED + TITLE MONSTER ART
+
+### Changes Made:
+1. **Removed dropdown scrollbar entirely** - Scrollbar positioning was broken (showing on left, starting at bottom). Removed visible scrollbar, kept mouse wheel scrolling functionality.
+2. **Added title monster art layer** - Added monster artwork slot in MainMenu.uxml (positioned behind particles, in front of background)
+3. **Cleaned up VBDropdownField.cs** - Removed 40+ lines of scrollbar styling code that wasn't working
+
+### Files Modified:
+- `Assets/Scripts/UI/Controls/VBDropdownField.cs` - Removed scrollbar styling, kept scroll functionality
+- `Assets/UI/Templates/MainMenu.uxml` - Added title-monster layer
+
+### User Action Required:
+- Save the crimson demon monster PNG to: `Assets/Art/UI/MainMenu/title_monster.png`
+- The image should have transparent background (alpha channel)
+
+### Scrollbar Lesson Learned:
+**Unity UI Toolkit ScrollView scrollbar positioning is buggy when:**
+- ScrollView is created programmatically
+- Added to popup layer (outside normal visual tree)
+- No USS styles inherited
+
+**Solution:** Hide scrollbar, rely on mouse wheel scrolling for dropdowns. Works better for UX anyway.
+
+---
+
+## v2.93 - SETTINGS PANEL LAYOUT FIXES + DROPDOWN DEBUG
+
+### Changes:
+- Added debug logging to dropdown open/close
+- Fixed settings panel layout issues
 
 ---
 

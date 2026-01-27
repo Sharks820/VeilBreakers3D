@@ -44,6 +44,7 @@ namespace VeilBreakers.UI.Menus
 
         private VisualElement _root;
         private VisualElement _settingsPanel;
+        private ScrollView _settingsScrollView;
         private Button _btnClose;
         private Button _btnReset;
         private Button _btnApply;
@@ -215,6 +216,7 @@ namespace VeilBreakers.UI.Menus
 
             _root = _uiDocument.rootVisualElement;
             _settingsPanel = _root.Q<VisualElement>("settings-panel");
+            _settingsScrollView = _root.Q<ScrollView>("settings-content");
 
             // Buttons
             _btnClose = _root.Q<Button>("btn-close");
@@ -410,6 +412,9 @@ namespace VeilBreakers.UI.Menus
             _graphicsSettings?.style.SetDisplay(tabIndex == 1);
             _controlsSettings?.style.SetDisplay(tabIndex == 2);
             _gameplaySettings?.style.SetDisplay(tabIndex == 3);
+
+            // Reset scroll position to top when switching tabs
+            ResetScrollToTop();
         }
 
         /// <summary>
@@ -429,6 +434,31 @@ namespace VeilBreakers.UI.Menus
 
             tab.EnableInClassList("settings-tab-active", active);
             tab.EnableInClassList("settings-tab-inactive", !active);
+        }
+
+        /// <summary>
+        /// Resets the settings content scroll view to the top position.
+        /// </summary>
+        private void ResetScrollToTop()
+        {
+            if (_settingsScrollView == null) return;
+
+            // Immediate reset
+            _settingsScrollView.scrollOffset = Vector2.zero;
+            if (_settingsScrollView.verticalScroller != null)
+            {
+                _settingsScrollView.verticalScroller.value = _settingsScrollView.verticalScroller.lowValue;
+            }
+
+            // Also schedule a reset for next frame to handle layout timing issues
+            _settingsScrollView.schedule.Execute(() =>
+            {
+                _settingsScrollView.scrollOffset = Vector2.zero;
+                if (_settingsScrollView.verticalScroller != null)
+                {
+                    _settingsScrollView.verticalScroller.value = _settingsScrollView.verticalScroller.lowValue;
+                }
+            }).ExecuteLater(1);
         }
 
         // =============================================================================
@@ -629,6 +659,9 @@ namespace VeilBreakers.UI.Menus
             gameObject.SetActive(true);
             LoadSettings();
             UpdateUIFromSettings();
+
+            // Reset scroll to top when showing panel
+            ResetScrollToTop();
         }
 
         public void Close()

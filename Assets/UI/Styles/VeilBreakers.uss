@@ -390,6 +390,11 @@
     color: rgb(255, 255, 255);
 }
 
+/* CRITICAL: Force popup layer to be transparent - prevents purple overlay bug */
+#vb-dropdown-popup-layer {
+    background-color: rgba(0, 0, 0, 0) !important;
+}
+
 /* Dropdown container styling - DO NOT override position/z-index (breaks Unity's placement) */
 .unity-base-dropdown__container-outer {
     background-color: rgb(18, 14, 18);
