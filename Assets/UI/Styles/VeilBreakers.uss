@@ -2172,3 +2172,40 @@
     letter-spacing: 2px;
     color: rgb(180, 40, 60);
 }
+
+/* =============================================================================
+   MAIN MENU BUTTONS
+   ============================================================================= */
+
+.vb-menu-btn-primary {
+    transition-duration: 0.15s;
+    transition-property: background-color, border-color, scale;
+}
+
+.vb-menu-btn-primary:hover {
+    background-color: rgb(160, 40, 55);
+    border-color: rgb(220, 70, 90);
+    scale: 1.02;
+}
+
+.vb-menu-btn-primary:active {
+    background-color: rgb(100, 25, 35);
+    scale: 0.98;
+}
+
+.vb-menu-btn-secondary {
+    transition-duration: 0.15s;
+    transition-property: background-color, border-color, color, scale;
+}
+
+.vb-menu-btn-secondary:hover {
+    background-color: rgba(40, 35, 50, 0.95);
+    border-color: rgb(120, 100, 130);
+    color: rgb(220, 215, 210);
+    scale: 1.02;
+}
+
+.vb-menu-btn-secondary:active {
+    background-color: rgba(20, 18, 25, 0.95);
+    scale: 0.98;
+}

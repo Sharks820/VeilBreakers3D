@@ -18,8 +18,8 @@
         <ui:VisualElement name="spark-container" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: visible;" />
 
         <!-- Title Monster Art - Above lightning, below embers/particles -->
-        <ui:VisualElement name="title-monster" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; justify-content: center; align-items: center; overflow: hidden;">
-            <ui:VisualElement name="monster-image" style="width: 90%; height: 90%; background-image: url('project://database/Assets/Art/UI/MainMenu/title_monster.png'); -unity-background-scale-mode: scale-to-fit; opacity: 0.85;" />
+        <ui:VisualElement name="title-monster" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; justify-content: flex-end; align-items: center; overflow: hidden;">
+            <ui:VisualElement name="monster-image" style="width: 100%; height: 95%; background-image: url('project://database/Assets/Art/UI/MainMenu/title_monster.png'); -unity-background-scale-mode: scale-to-fit; translate: 0 12%;" />
         </ui:VisualElement>
 
         <!-- Particle/Ember containers - ON TOP of monster, underneath buttons -->
@@ -27,22 +27,22 @@
         <ui:VisualElement name="ember-container" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: visible;" />
 
         <!-- Menu Buttons - Horizontal row at bottom -->
-        <ui:VisualElement name="button-container" style="position: absolute; left: 0; right: 0; bottom: 80px; flex-direction: row; justify-content: center; align-items: center;">
+        <ui:VisualElement name="button-container" style="position: absolute; left: 0; right: 0; bottom: 60px; flex-direction: row; justify-content: center; align-items: center; padding: 12px 20px; background-color: rgba(8, 6, 12, 0.7);">
 
-            <!-- NEW GAME Button - Primary (Red) -->
-            <ui:Button text="NEW GAME" name="btn-new-game" style="width: 140px; height: 48px; margin: 0 6px; background-color: rgb(140, 35, 50); border-width: 1px; border-color: rgb(180, 50, 70); border-radius: 4px; color: rgb(255, 255, 255); font-size: 14px; letter-spacing: 1px; -unity-font-style: bold;" />
+            <!-- NEW GAME Button - Primary (Crimson) -->
+            <ui:Button text="NEW GAME" name="btn-new-game" class="vb-menu-btn-primary" style="width: 160px; height: 44px; margin: 0 8px; background-color: rgb(130, 30, 45); border-width: 2px; border-color: rgb(180, 50, 70); border-radius: 3px; color: rgb(255, 240, 230); font-size: 15px; letter-spacing: 2px; -unity-font-style: bold;" />
 
             <!-- CONTINUE Button (hidden by default) -->
-            <ui:Button text="CONTINUE" name="btn-continue" style="display: none; width: 140px; height: 48px; margin: 0 6px; background-color: rgb(140, 35, 50); border-width: 1px; border-color: rgb(180, 50, 70); border-radius: 4px; color: rgb(255, 255, 255); font-size: 14px; letter-spacing: 1px; -unity-font-style: bold;" />
+            <ui:Button text="CONTINUE" name="btn-continue" class="vb-menu-btn-primary" style="display: none; width: 160px; height: 44px; margin: 0 8px; background-color: rgb(130, 30, 45); border-width: 2px; border-color: rgb(180, 50, 70); border-radius: 3px; color: rgb(255, 240, 230); font-size: 15px; letter-spacing: 2px; -unity-font-style: bold;" />
 
-            <!-- SETTINGS Button - Secondary (Dark) -->
-            <ui:Button text="SETTINGS" name="btn-settings" style="width: 140px; height: 48px; margin: 0 6px; background-color: rgb(35, 30, 40); border-width: 1px; border-color: rgb(60, 55, 70); border-radius: 4px; color: rgb(180, 175, 170); font-size: 14px; letter-spacing: 1px;" />
+            <!-- SETTINGS Button - Secondary -->
+            <ui:Button text="SETTINGS" name="btn-settings" class="vb-menu-btn-secondary" style="width: 130px; height: 44px; margin: 0 8px; background-color: rgba(25, 22, 30, 0.9); border-width: 1px; border-color: rgb(80, 70, 85); border-radius: 3px; color: rgb(160, 155, 150); font-size: 14px; letter-spacing: 2px;" />
 
-            <!-- CREDITS Button - Secondary (Dark) -->
-            <ui:Button text="CREDITS" name="btn-credits" style="width: 140px; height: 48px; margin: 0 6px; background-color: rgb(35, 30, 40); border-width: 1px; border-color: rgb(60, 55, 70); border-radius: 4px; color: rgb(180, 175, 170); font-size: 14px; letter-spacing: 1px;" />
+            <!-- CREDITS Button - Secondary -->
+            <ui:Button text="CREDITS" name="btn-credits" class="vb-menu-btn-secondary" style="width: 130px; height: 44px; margin: 0 8px; background-color: rgba(25, 22, 30, 0.9); border-width: 1px; border-color: rgb(80, 70, 85); border-radius: 3px; color: rgb(160, 155, 150); font-size: 14px; letter-spacing: 2px;" />
 
-            <!-- EXIT Button - Secondary (Dark) -->
-            <ui:Button text="EXIT" name="btn-exit" style="width: 140px; height: 48px; margin: 0 6px; background-color: rgb(35, 30, 40); border-width: 1px; border-color: rgb(60, 55, 70); border-radius: 4px; color: rgb(180, 175, 170); font-size: 14px; letter-spacing: 1px;" />
+            <!-- EXIT Button - Secondary -->
+            <ui:Button text="EXIT" name="btn-exit" class="vb-menu-btn-secondary" style="width: 100px; height: 44px; margin: 0 8px; background-color: rgba(25, 22, 30, 0.9); border-width: 1px; border-color: rgb(80, 70, 85); border-radius: 3px; color: rgb(160, 155, 150); font-size: 14px; letter-spacing: 2px;" />
 
         </ui:VisualElement>
 
