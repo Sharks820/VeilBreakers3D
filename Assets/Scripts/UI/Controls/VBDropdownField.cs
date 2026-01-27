@@ -80,20 +80,28 @@ namespace VeilBreakers.UI.Controls
         {
             AddToClassList("vb-dropdown");
             focusable = true;
+            pickingMode = PickingMode.Position;
 
             _display = new VisualElement();
             _display.AddToClassList("vb-dropdown__display");
+            _display.style.flexGrow = 1;
+            _display.style.height = new StyleLength(StyleKeyword.Auto);
+            _display.pickingMode = PickingMode.Position;
             hierarchy.Add(_display);
 
             _valueLabel = new Label(string.Empty);
             _valueLabel.AddToClassList("vb-dropdown__text");
+            _valueLabel.pickingMode = PickingMode.Ignore; // Let clicks pass through to display
             _display.Add(_valueLabel);
 
-            _arrowLabel = new Label("v");
+            _arrowLabel = new Label("▼");
             _arrowLabel.AddToClassList("vb-dropdown__arrow");
+            _arrowLabel.pickingMode = PickingMode.Ignore; // Let clicks pass through to display
             _display.Add(_arrowLabel);
 
             _display.RegisterCallback<PointerDownEvent>(OnDisplayPointerDown);
+            // Also register on self as fallback
+            RegisterCallback<PointerDownEvent>(OnSelfPointerDown);
             RegisterCallback<GeometryChangedEvent>(_ => PositionPopupIfOpen());
 
             // Clean up popup when this element is detached from panel
@@ -209,12 +217,25 @@ namespace VeilBreakers.UI.Controls
 
         private void OnDisplayPointerDown(PointerDownEvent evt)
         {
+            Debug.Log($"[VBDropdownField] Display clicked on {name}");
             evt.StopPropagation();
             TogglePopup();
         }
 
+        private void OnSelfPointerDown(PointerDownEvent evt)
+        {
+            // Fallback handler if display didn't catch the event
+            Debug.Log($"[VBDropdownField] Self clicked on {name}, target: {evt.target}");
+            if (evt.target == this || evt.target == _display || evt.target == _valueLabel || evt.target == _arrowLabel)
+            {
+                evt.StopPropagation();
+                TogglePopup();
+            }
+        }
+
         private void TogglePopup()
         {
+            Debug.Log($"[VBDropdownField] TogglePopup on {name}, isOpen: {_isOpen}, choices: {_choices.Count}");
             if (_isOpen)
             {
                 ClosePopup();
@@ -227,6 +248,7 @@ namespace VeilBreakers.UI.Controls
 
         private void OpenPopup()
         {
+            Debug.Log($"[VBDropdownField] OpenPopup on {name}");
             // If already open, just return
             if (_isOpen) return;
 
