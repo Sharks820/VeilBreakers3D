@@ -62,6 +62,7 @@ namespace VeilBreakers.UI.Effects
         private float _screenWidth;
         private float _screenHeight;
         private bool _isInitialized;
+        private bool _isPaused = false; // Unity Performance Guideline: Don't simulate when inactive
         
         // Object pooling for optimization
         private Queue<VisualElement> _particlePool;
@@ -169,7 +170,8 @@ namespace VeilBreakers.UI.Effects
 
         private void Update()
         {
-            if (!_isInitialized) return;
+            // OPTIMIZATION: Don't simulate when inactive (Unity Performance Guideline #4)
+            if (!_isInitialized || _isPaused) return;
 
             float deltaTime = Time.unscaledDeltaTime;
             float timeNow = Time.unscaledTime;
@@ -1305,6 +1307,30 @@ namespace VeilBreakers.UI.Effects
         }
         Debug.Log($"[VB:Lightning] MANUAL TEST - Root has {_root.childCount} children, screen size: {_screenWidth}x{_screenHeight}");
     }
+
+        /// <summary>
+        /// Pauses all particle simulation to save CPU cycles when menu is not visible.
+        /// Unity Performance Guideline: Don't simulate when inactive
+        /// </summary>
+        public void PauseParticles()
+        {
+            _isPaused = true;
+            Debug.Log("[VB:Particles] Paused particle simulation");
+        }
+
+        /// <summary>
+        /// Resumes particle simulation when menu becomes visible again.
+        /// </summary>
+        public void ResumeParticles()
+        {
+            _isPaused = false;
+            Debug.Log("[VB:Particles] Resumed particle simulation");
+        }
+
+        /// <summary>
+        /// Checks if particles are currently paused.
+        /// </summary>
+        public bool IsPaused() => _isPaused;
 
     /// <summary>
     /// Diagnostic method to inspect lightning bolt states and positions
