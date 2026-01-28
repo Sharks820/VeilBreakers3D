@@ -29,6 +29,7 @@ namespace VeilBreakers.Data
         public int primary_path;
         public string role;
         public string hero_class;
+        public string starter_monster_id;  // The monster that starts with this hero
         public string[] recommended_monsters;
         public string synergy_explanation;
 

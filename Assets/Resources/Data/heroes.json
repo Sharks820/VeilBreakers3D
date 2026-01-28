@@ -9,10 +9,12 @@
     "primary_path": 1,
     "role": "Tank",
     "hero_class": "VEILGUARD",
+    "starter_monster_id": "ironjaw",
     "recommended_monsters": [
-      "chainbound"
+      "chainbound",
+      "ironjaw"
     ],
-    "synergy_explanation": "Chainbound's IRON brand perfectly complements Bastion's IRONBOUND path. Together they form an unbreakable defensive wall.",
+    "synergy_explanation": "Ironjaw's IRON brand perfectly complements Bastion's IRONBOUND path. Together they form an unbreakable defensive wall.",
     "sprite_path": "assets/characters/heroes/bastion.png",
     "portrait_path": "assets/characters/heroes/bastion_portrait.png",
     "battle_sprite_path": "assets/characters/heroes/bastion_battle.png",
@@ -65,7 +67,9 @@
     "primary_path": 3,
     "role": "Healer",
     "hero_class": "SOULWEAVER",
+    "starter_monster_id": "hollow",
     "recommended_monsters": [
+      "hollow",
       "gluttony_polyp"
     ],
     "synergy_explanation": "Gluttony Polyp's LEECH brand aligns with Marrow's VOIDTOUCHED path. Its life-draining nature complements Marrow's drain healing abilities.",
@@ -121,7 +125,9 @@
     "primary_path": 4,
     "role": "Illusionist",
     "hero_class": "VOIDWALKER",
+    "starter_monster_id": "flicker",
     "recommended_monsters": [
+      "flicker",
       "crackling"
     ],
     "synergy_explanation": "Crackling's SURGE brand harmonizes with Mirage's UNCHAINED path. Its chaotic lightning energy amplifies Mirage's reality-bending abilities.",
@@ -177,6 +183,7 @@
     "primary_path": 2,
     "role": "DPS",
     "hero_class": "BLOODHUNTER",
+    "starter_monster_id": "mawling",
     "recommended_monsters": [
       "mawling"
     ],

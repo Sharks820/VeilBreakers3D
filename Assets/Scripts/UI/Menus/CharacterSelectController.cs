@@ -790,20 +790,8 @@ namespace VeilBreakers.UI.Menus
             if (_brandIcon1 != null)
                 _brandIcon1.style.backgroundColor = heroColor;
 
-            // Apply to stat bar fills
-            ApplyHeroColorToStatBars(heroColor);
-        }
-
-        private void ApplyHeroColorToStatBars(Color heroColor)
-        {
-            if (_statHealthFill != null)
-                _statHealthFill.style.backgroundColor = heroColor;
-            if (_statAttackFill != null)
-                _statAttackFill.style.backgroundColor = heroColor;
-            if (_statDefenseFill != null)
-                _statDefenseFill.style.backgroundColor = heroColor;
-            if (_statSpeedFill != null)
-                _statSpeedFill.style.backgroundColor = heroColor;
+            // NOTE: Stat bar colors are now defined in UXML with individual colors:
+            // Health=#DC6464, MP=#64B4DC, Attack=#E6A064, Defense=#82AAC8, Speed=#78C88C
         }
 
         // =============================================================================

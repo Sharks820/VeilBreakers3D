@@ -7,9 +7,9 @@
         <!-- Background -->
         <ui:VisualElement name="background" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgb(8, 6, 12);" />
 
-        <!-- Demon Figure - Fill screen and anchor to bottom -->
-        <ui:VisualElement name="title-monster" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; justify-content: flex-end; align-items: center;">
-            <ui:VisualElement name="monster-image" style="width: 95%; height: 92%; max-width: 1500px; margin-bottom: 50px; background-image: url('project://database/Assets/Art/UI/MainMenu/demon_figure.png?fileID=2800000&amp;guid=37ac0bd864327ca4ab90b841b55d87bc&amp;type=3'); -unity-background-scale-mode: scale-to-fit;" />
+        <!-- Demon Figure - Anchored to absolute bottom -->
+        <ui:VisualElement name="title-monster" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0;">
+            <ui:VisualElement name="monster-image" style="position: absolute; left: 50%; bottom: 0; width: 95%; max-width: 1500px; height: 95%; translate: -50% 0; background-image: url('project://database/Assets/Art/UI/MainMenu/demon_figure.png?fileID=2800000&amp;guid=37ac0bd864327ca4ab90b841b55d87bc&amp;type=3'); -unity-background-scale-mode: scale-to-fit;" />
         </ui:VisualElement>
 
         <!-- VEILBREAKERS LOGO - Higher up -->
