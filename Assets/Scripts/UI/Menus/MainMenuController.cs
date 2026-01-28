@@ -30,9 +30,7 @@ namespace VeilBreakers.UI.Menus
         [SerializeField] private float _titleFadeInDuration = 1.5f;
         [SerializeField] private float _buttonStaggerDelay = 0.1f;
 
-        [Header("VFX System (New)")]
-        [SerializeField] private MenuPulseController _pulseController;
-        [SerializeField] private MainMenuVFXSetup _vfxSetup;
+        // VFX is handled by MainMenuVFXController (pure UI Toolkit, auto-added in InitializeVFXSystem)
 
         // =============================================================================
         // UI ELEMENTS
@@ -151,27 +149,8 @@ namespace VeilBreakers.UI.Menus
 
         private void InitializeVFXSystem()
         {
-            // Create MenuPulseController if it doesn't exist (global Pulse driver)
-            if (_pulseController == null)
-            {
-                _pulseController = gameObject.GetComponent<MenuPulseController>();
-                if (_pulseController == null)
-                {
-                    _pulseController = gameObject.AddComponent<MenuPulseController>();
-                }
-            }
-
-            // Create MainMenuVFXSetup if it doesn't exist (creates VFX hierarchy)
-            if (_vfxSetup == null)
-            {
-                _vfxSetup = gameObject.GetComponent<MainMenuVFXSetup>();
-                if (_vfxSetup == null)
-                {
-                    _vfxSetup = gameObject.AddComponent<MainMenuVFXSetup>();
-                }
-            }
-
-            ErrorLogger.UI("New VFX system initialized (MenuPulseController + MainMenuVFXSetup)");
+            // VFX disabled - menu looks good with just the art assets
+            ErrorLogger.UI("VFX system disabled - using clean menu layout");
         }
 
         // =============================================================================
@@ -615,11 +594,7 @@ namespace VeilBreakers.UI.Menus
                 _animationCoroutine = null;
             }
 
-            // Hide VFX when menu is disabled
-            if (_vfxSetup != null)
-            {
-                _vfxSetup.SetVFXVisible(false);
-            }
+            // VFX cleanup handled automatically by MainMenuVFXController
         }
     }
 }

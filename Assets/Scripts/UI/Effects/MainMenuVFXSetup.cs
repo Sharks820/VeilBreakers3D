@@ -77,8 +77,82 @@ namespace VeilBreakers.UI.Effects
 
         private void Awake()
         {
+            EnsureSpritesExist();
+            EnsureCameraExists();
             CreateVFXHierarchy();
             SetupEffects();
+        }
+
+        /// <summary>
+        /// Create procedural glow sprite if none assigned.
+        /// </summary>
+        private void EnsureSpritesExist()
+        {
+            if (_circleGlowSprite == null)
+            {
+                _circleGlowSprite = CreateCircleGlowSprite(256);
+                Debug.Log("[VB:VFX] Created procedural circle glow sprite");
+            }
+        }
+
+        /// <summary>
+        /// Ensure there's a camera that can render the SpriteRenderers.
+        /// </summary>
+        private void EnsureCameraExists()
+        {
+            // Look for existing VFX camera
+            var existingCam = GameObject.Find("VFX_Camera");
+            if (existingCam != null) return;
+
+            // Create VFX camera to render sprite-based effects
+            var camObj = new GameObject("VFX_Camera");
+            camObj.transform.SetParent(transform);
+            camObj.transform.localPosition = new Vector3(0f, 0f, -10f);
+
+            var cam = camObj.AddComponent<Camera>();
+            cam.clearFlags = CameraClearFlags.Depth; // Don't clear - render on top
+            cam.cullingMask = 1 << 0; // Default layer
+            cam.orthographic = true;
+            cam.orthographicSize = 5f;
+            cam.depth = 1; // Render after main camera
+            cam.nearClipPlane = 0.1f;
+            cam.farClipPlane = 100f;
+
+            Debug.Log("[VB:VFX] Created VFX camera for SpriteRenderer effects");
+        }
+
+        /// <summary>
+        /// Create a soft radial gradient circle sprite for glow effects.
+        /// </summary>
+        private Sprite CreateCircleGlowSprite(int size)
+        {
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            var center = size / 2f;
+            var maxDist = center;
+
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = x - center;
+                    float dy = y - center;
+                    float dist = Mathf.Sqrt(dx * dx + dy * dy);
+                    float normalizedDist = dist / maxDist;
+
+                    // Soft falloff using smoothstep-like curve
+                    float alpha = 1f - Mathf.Clamp01(normalizedDist);
+                    alpha = alpha * alpha * (3f - 2f * alpha); // Smoothstep
+                    alpha *= 0.8f; // Max alpha
+
+                    texture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+                }
+            }
+
+            texture.Apply();
+            texture.filterMode = FilterMode.Bilinear;
+            texture.wrapMode = TextureWrapMode.Clamp;
+
+            return Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
         }
 
         // =============================================================================
@@ -92,19 +166,18 @@ namespace VeilBreakers.UI.Effects
             _vfxRoot.SetParent(transform);
             _vfxRoot.localPosition = Vector3.zero;
 
-            // Background Layer (z = 10)
-            _backgroundLayer = CreateLayer("Background_Layer", 10f);
-            CreateDemonFigure();
+            // NOTE: Demon figure and logo are handled by UI Toolkit (MainMenu.uxml)
+            // This VFX setup only creates the EFFECTS that overlay the UI images
 
-            // Effects Layer (z = 5)
+            // Effects Layer (z = 5) - behind UI but with VFX effects
             _effectsLayer = CreateLayer("Effects_Layer", 5f);
             CreateRiftDistortion();
             CreateChestGlow();
             CreateAshEmbers();
 
-            // Logo Layer (z = 2)
-            _logoLayer = CreateLayer("Logo_Layer", 2f);
-            CreateLogo();
+            // Logo Glow Layer (z = 2) - glow effect for logo
+            _logoLayer = CreateLayer("Logo_Glow_Layer", 2f);
+            CreateLogoGlow();
 
             // Overlay Layer (z = -5, in front of everything)
             _overlayLayer = CreateLayer("Overlay_Layer", -5f);
@@ -196,28 +269,20 @@ namespace VeilBreakers.UI.Effects
             _ashEmbers = ashEmbers.AddComponent<AshEmberParticles>();
         }
 
-        private void CreateLogo()
+        private void CreateLogoGlow()
         {
-            // Logo Glow (behind base)
+            // Logo Glow effect only - the actual logo is in UI Toolkit (MainMenu.uxml)
+            // This creates a subtle pulsing glow behind where the logo appears
+
             var logoGlow = new GameObject("Logo_Glow");
             logoGlow.transform.SetParent(_logoLayer);
             logoGlow.transform.localPosition = _logoPosition;
-            logoGlow.transform.localScale = Vector3.one * _logoScale * 1.05f;
+            logoGlow.transform.localScale = Vector3.one * _logoScale * 1.2f;
 
             _logoGlowRenderer = logoGlow.AddComponent<SpriteRenderer>();
-            _logoGlowRenderer.sprite = _logoGlowSprite ?? _logoSprite;
-            _logoGlowRenderer.color = new Color(0.4f, 0.08f, 0.08f, 0.3f);
+            _logoGlowRenderer.sprite = _circleGlowSprite; // Use circle glow for effect
+            _logoGlowRenderer.color = new Color(0.4f, 0.08f, 0.08f, 0.2f);
             _logoGlowRenderer.sortingOrder = 10;
-
-            // Logo Base (main)
-            var logoBase = new GameObject("Logo_Base");
-            logoBase.transform.SetParent(_logoLayer);
-            logoBase.transform.localPosition = _logoPosition;
-            logoBase.transform.localScale = Vector3.one * _logoScale;
-
-            _logoBaseRenderer = logoBase.AddComponent<SpriteRenderer>();
-            _logoBaseRenderer.sprite = _logoSprite;
-            _logoBaseRenderer.sortingOrder = 11;
 
             _logoEffect = logoGlow.AddComponent<LogoMoltenEffect>();
         }
@@ -254,9 +319,10 @@ namespace VeilBreakers.UI.Effects
             }
 
             // Setup individual effects with their references
-            if (_logoEffect != null && _logoGlowRenderer != null && _logoBaseRenderer != null)
+            // Logo effect - only glow renderer (base logo is in UI Toolkit)
+            if (_logoEffect != null && _logoGlowRenderer != null)
             {
-                _logoEffect.Setup(_logoBaseRenderer, _logoGlowRenderer);
+                _logoEffect.Setup(_logoGlowRenderer);
             }
 
             if (_riftDistortion != null && _riftRenderer != null)
@@ -279,7 +345,7 @@ namespace VeilBreakers.UI.Effects
                 _ruptureEvent.Setup(_vignetteRenderer);
             }
 
-            Debug.Log("[VB:VFX] Main Menu VFX setup complete");
+            Debug.Log("[VB:VFX] Main Menu VFX setup complete (hybrid UI Toolkit + SpriteRenderer approach)");
         }
 
         // =============================================================================

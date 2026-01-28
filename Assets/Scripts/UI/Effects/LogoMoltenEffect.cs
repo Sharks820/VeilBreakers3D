@@ -234,6 +234,24 @@ namespace VeilBreakers.UI.Effects
             }
         }
 
+
+        /// <summary>
+        /// Setup at runtime with only SpriteRenderer glow (for hybrid UI Toolkit approach).
+        /// When logo base is in UI Toolkit, we only need the glow effect.
+        /// </summary>
+        public void Setup(SpriteRenderer logoGlow)
+        {
+            _logoGlowSR = logoGlow;
+            _logoBaseSR = null;
+            _useImage = false;
+
+            if (_logoGlowSR != null)
+            {
+                _glowTransform = _logoGlowSR.transform;
+                _baseScale = _glowTransform.localScale;
+            }
+        }
+
         /// <summary>
         /// Force an overexposure effect (used during Crimson Rupture).
         /// </summary>

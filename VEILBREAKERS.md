@@ -237,9 +237,11 @@ Scenario (2D concept) → Tripo (2D→3D + auto-rig) → Cascadeur (physics anim
 - **Docs:** `Docs/VFX_AI_TOOLS_2026.md`
 
 ### Map/Environment Pipeline
-- **Core:** Scenario→Tripo for style-consistent assets
-- **Hero Pieces:** AI-generated landmarks per biome
+- **Terrain:** Gaea (FREE→$99 Indie) for 8K heightmaps
+- **In-Engine:** MapMagic 2 (FREE) for procedural refinement
+- **Props/Landmarks:** Scenario→Tripo (your existing pipeline)
 - **Atmosphere:** Unity VFX Graph + URP fog/lighting
+- **Docs:** `Docs/MAP_TERRAIN_AI_TOOLS_2026.md`
 
 ### 6 Biomes (Light → Red Veil Progression)
 
