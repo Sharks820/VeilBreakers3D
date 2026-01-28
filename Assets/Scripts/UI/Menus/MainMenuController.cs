@@ -573,14 +573,66 @@ namespace VeilBreakers.UI.Menus
 
         private void AddButtonHoverEffects(Button button)
         {
-            // Subtle glow pulse on hover - lightweight and performant
+            // PROGRAMMATIC HOVER COLORS - bypasses USS specificity issues with Unity's built-in Button theme
+            // USS hover states get overridden by Unity's default Button:hover, so we set colors directly via C#
+
+            bool isPrimary = button.name == "btn-new-game" || button.name == "btn-continue";
+
+            // Define colors programmatically (matches USS molten orange theme)
+            // Primary buttons: Molten orange
+            Color primaryBaseColor = new Color(180f / 255f, 80f / 255f, 20f / 255f, 1f);
+            Color primaryHoverColor = new Color(210f / 255f, 100f / 255f, 30f / 255f, 1f);
+            Color primaryBorderBase = new Color(255f / 255f, 140f / 255f, 50f / 255f, 1f);
+            Color primaryBorderHover = new Color(255f / 255f, 180f / 255f, 80f / 255f, 1f);
+
+            // Secondary buttons: Dark gray with warm amber hover
+            Color secondaryBaseColor = new Color(60f / 255f, 50f / 255f, 45f / 255f, 1f);
+            Color secondaryHoverColor = new Color(90f / 255f, 70f / 255f, 50f / 255f, 1f);
+            Color secondaryBorderBase = new Color(180f / 255f, 90f / 255f, 40f / 255f, 1f);
+            Color secondaryBorderHover = new Color(200f / 255f, 120f / 255f, 60f / 255f, 1f);
+
+            // Set initial base colors
+            Color baseColor = isPrimary ? primaryBaseColor : secondaryBaseColor;
+            Color baseBorder = isPrimary ? primaryBorderBase : secondaryBorderBase;
+            button.style.backgroundColor = baseColor;
+            button.style.borderTopColor = baseBorder;
+            button.style.borderBottomColor = baseBorder;
+            button.style.borderLeftColor = baseBorder;
+            button.style.borderRightColor = baseBorder;
+
+            // Hover: Set bright colors directly
             button.RegisterCallback<MouseEnterEvent>(evt =>
             {
+                Color hoverColor = isPrimary ? primaryHoverColor : secondaryHoverColor;
+                Color hoverBorder = isPrimary ? primaryBorderHover : secondaryBorderHover;
+
+                button.style.backgroundColor = hoverColor;
+                button.style.borderTopColor = hoverBorder;
+                button.style.borderBottomColor = hoverBorder;
+                button.style.borderLeftColor = hoverBorder;
+                button.style.borderRightColor = hoverBorder;
+
+                // Scale up slightly for visual feedback
+                button.style.scale = new Scale(new Vector2(1.05f, 1.05f));
+
                 button.AddToClassList("vb-button-hover-glow");
             });
 
+            // Mouse leave: Restore base colors
             button.RegisterCallback<MouseLeaveEvent>(evt =>
             {
+                Color restoreColor = isPrimary ? primaryBaseColor : secondaryBaseColor;
+                Color restoreBorder = isPrimary ? primaryBorderBase : secondaryBorderBase;
+
+                button.style.backgroundColor = restoreColor;
+                button.style.borderTopColor = restoreBorder;
+                button.style.borderBottomColor = restoreBorder;
+                button.style.borderLeftColor = restoreBorder;
+                button.style.borderRightColor = restoreBorder;
+
+                // Restore normal scale
+                button.style.scale = new Scale(Vector2.one);
+
                 button.RemoveFromClassList("vb-button-hover-glow");
             });
         }
