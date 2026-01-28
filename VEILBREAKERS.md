@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **SINGLE SOURCE OF TRUTH** | Version: **v4.0** | Last updated: 2026-01-27
+> **SINGLE SOURCE OF TRUTH** | Version: **v4.01** | Last updated: 2026-01-27
 
 ---
 
@@ -97,11 +97,19 @@ Failure: Flee (low corrupt) or Berserk (high corrupt)
 ```
 Assets/
 ├── Scripts/           # C# code (VeilBreakers.* namespaces)
-│   ├── Core/          # GameManager, EventBus, Constants
+│   ├── Core/          # GameManager, EventBus, Constants, GameBootstrap
 │   ├── Combat/        # BattleManager, DamageCalculator, Combatant
-│   ├── Systems/       # BrandSystem, SynergySystem, CorruptionSystem
-│   ├── UI/            # UI controllers
-│   └── Data/          # Enums, ScriptableObjects
+│   ├── Systems/       # BrandSystem, SynergySystem, CorruptionSystem, VERASystem
+│   ├── AI/            # GambitController, GambitEvaluator, AIPersonality
+│   ├── Capture/       # CaptureManager, QTEController, CaptureFormulaCalculator
+│   ├── Commands/      # QuickCommandManager, RadialMenuController, TimeSlowController
+│   ├── Managers/      # SaveManager, SettingsManager, AutoSaveManager, ShrineManager
+│   ├── Audio/         # AudioManager, MusicManager, VERAVoiceController
+│   ├── UI/            # UI controllers (Menus/, Combat/, Core/, Controls/, Effects/)
+│   ├── Data/          # Enums, ScriptableObjects (MonsterData, HeroData, etc.)
+│   ├── Utils/         # ObjectPool, Extensions, SingletonMonoBehaviour
+│   ├── Editor/        # Editor scripts (TestArenaSetup, UITextSettingsSetup)
+│   └── Test/          # Test scripts (CombatTests, SaveTests, etc.)
 ├── Art/               # Visual assets (3D_Models/, Textures/, VFX/)
 ├── Audio/             # Music/, SFX/, Voice/
 ├── Data/              # JSON data, ScriptableObjects
@@ -214,7 +222,11 @@ unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler
 
 | Document | Location |
 |----------|----------|
+| Combat System | Docs/plans/2026-01-15-combat-system-design.md |
+| Combat Implementation | Docs/plans/2026-01-17-combat-implementation-plan.md |
 | Combat UI | Docs/plans/2026-01-17-combat-ui-design.md |
+| MCP Arsenal | Docs/plans/2026-01-17-mcp-arsenal-design.md |
+| Rigging/Animation | Docs/plans/2026-01-17-rigging-animation-facial-design.md |
 | Gambits AI | Docs/plans/2026-01-18-gambits-ai-design.md |
 | Status Effects | Docs/plans/2026-01-18-status-effects-design.md |
 | Quick Commands | Docs/plans/2026-01-18-quick-command-design.md |
