@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **SINGLE SOURCE OF TRUTH** | Version: **v4.01** | Last updated: 2026-01-27
+> **SINGLE SOURCE OF TRUTH** | Version: **v4.03** | Last updated: 2026-01-27
 
 ---
 
@@ -214,7 +214,8 @@ unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler
 - Auto-commit + push on all commits
 - AAA quality, pixel-perfect alignment
 - Fresh Unity UI (don't port Godot patterns)
-- **Use Sonnet** for primary work (Opus wastes tokens)
+- **Use Sonnet** for primary work, research tasks, and agent spawns (Opus wastes tokens)
+- **VFX Pipeline:** Unity VFX Graph (primary) + EmberGen (fluid effects) - See `Docs/VFX_AI_TOOLS_2026.md` for comprehensive AI tool research
 
 ---
 
