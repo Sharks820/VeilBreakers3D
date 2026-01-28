@@ -72,7 +72,7 @@
       "hollow",
       "gluttony_polyp"
     ],
-    "synergy_explanation": "Gluttony Polyp's LEECH brand aligns with Marrow's VOIDTOUCHED path. Its life-draining nature complements Marrow's drain healing abilities.",
+    "synergy_explanation": "Hollow's VOID brand perfectly aligns with Marrow's VOIDTOUCHED path. Its ethereal nature complements Marrow's drain healing abilities.",
     "sprite_path": "assets/characters/heroes/marrow.png",
     "portrait_path": "assets/characters/heroes/marrow_portrait.png",
     "battle_sprite_path": "assets/characters/heroes/marrow_battle.png",
@@ -130,7 +130,7 @@
       "flicker",
       "crackling"
     ],
-    "synergy_explanation": "Crackling's SURGE brand harmonizes with Mirage's UNCHAINED path. Its chaotic lightning energy amplifies Mirage's reality-bending abilities.",
+    "synergy_explanation": "Flicker's SURGE brand harmonizes with Mirage's UNCHAINED path. Its chaotic energy amplifies Mirage's reality-bending abilities.",
     "sprite_path": "assets/characters/heroes/mirage.png",
     "portrait_path": "assets/characters/heroes/mirage_portrait.png",
     "battle_sprite_path": "assets/characters/heroes/mirage_battle.png",
