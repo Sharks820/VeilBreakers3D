@@ -1,6 +1,14 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v3.0** | Last updated: 2026-01-27
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v3.01** | Last updated: 2026-01-27
+
+---
+
+## v3.01 - PROPER TRANSPARENT TITLE IMAGE
+
+### Changes:
+- Replaced title_monster.png with true transparent PNG (no baked checkerboard)
+- Enabled alphaIsTransparency in Unity import settings
 
 ---
 
