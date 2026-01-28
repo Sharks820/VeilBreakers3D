@@ -13,8 +13,7 @@ namespace VeilBreakers.UI.Effects
     ///  │   └─ Demon_Figure
     ///  ├─ Effects_Layer
     ///  │   ├─ Veil_Rift_Distortion (behind logo)
-    ///  │   ├─ Chest_Glow
-    ///  │   └─ Ash_Embers (ParticleSystem)
+    ///  │   └─ Chest_Glow
     ///  ├─ Logo_Layer
     ///  │   ├─ Logo_Glow
     ///  │   └─ Logo_Base
@@ -50,7 +49,6 @@ namespace VeilBreakers.UI.Effects
         [SerializeField] private LogoMoltenEffect _logoEffect;
         [SerializeField] private VeilRiftDistortion _riftDistortion;
         [SerializeField] private DemonChestBreathing _chestBreathing;
-        [SerializeField] private AshEmberParticles _ashEmbers;
         [SerializeField] private CrimsonRuptureEvent _ruptureEvent;
 
         // =============================================================================
@@ -69,7 +67,6 @@ namespace VeilBreakers.UI.Effects
         private SpriteRenderer _chestGlowRenderer;
         private SpriteRenderer _riftRenderer;
         private SpriteRenderer _vignetteRenderer;
-        private ParticleSystem _particleSystem;
 
         // =============================================================================
         // UNITY LIFECYCLE
