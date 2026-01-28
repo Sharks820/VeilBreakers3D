@@ -25,12 +25,22 @@ namespace VeilBreakers.UI.Menus
         [Header("Hero Model Prefabs (keyed by hero_id)")]
         [SerializeField] private List<HeroModelMapping> _heroModelMappings;
 
+        [Header("Monster Model Prefabs (keyed by monster_id)")]
+        [SerializeField] private List<MonsterModelMapping> _monsterModelMappings;
+
         [Serializable]
         public class HeroModelMapping
         {
             public string heroId;
             public GameObject modelPrefab;
             public Sprite portrait;
+        }
+
+        [Serializable]
+        public class MonsterModelMapping
+        {
+            public string monsterId;
+            public GameObject modelPrefab;
         }
 
         // Non-allocating event handler for hero cards
@@ -78,6 +88,7 @@ namespace VeilBreakers.UI.Menus
         [SerializeField] private Transform _previewModelParent;
         [SerializeField] private Camera _previewCamera;
         [SerializeField] private RenderTexture _previewRenderTexture;
+        [SerializeField] private HeroMonsterPairPreview _pairPreview;
 
         [Header("Scenes")]
         [SerializeField] private string _mainMenuScene = "MainMenu";
@@ -554,6 +565,12 @@ namespace VeilBreakers.UI.Menus
         {
             if (_heroModelMappings == null) return null;
             return _heroModelMappings.Find(m => m.heroId == heroId);
+        }
+
+        private MonsterModelMapping GetMonsterMapping(string monsterId)
+        {
+            if (_monsterModelMappings == null) return null;
+            return _monsterModelMappings.Find(m => m.monsterId == monsterId);
         }
 
         // =============================================================================
@@ -1125,6 +1142,20 @@ namespace VeilBreakers.UI.Menus
 
         private void UpdatePreviewModel(HeroData hero)
         {
+            // Use pair preview system if available
+            if (_pairPreview != null)
+            {
+                var heroMapping = GetHeroMapping(hero.hero_id);
+                var monsterMapping = GetMonsterMapping(hero.starter_monster_id);
+
+                _pairPreview.ShowPair(
+                    heroMapping?.modelPrefab,
+                    monsterMapping?.modelPrefab
+                );
+                return;
+            }
+
+            // Fallback to single model preview
             ClearPreviewModel();
 
             var mapping = GetHeroMapping(hero.hero_id);
@@ -1141,6 +1172,12 @@ namespace VeilBreakers.UI.Menus
 
         private void ClearPreviewModel()
         {
+            // Clear pair preview if using it
+            if (_pairPreview != null)
+            {
+                _pairPreview.ClearAllModels();
+            }
+
             if (_currentPreviewModel != null)
             {
                 Destroy(_currentPreviewModel);
