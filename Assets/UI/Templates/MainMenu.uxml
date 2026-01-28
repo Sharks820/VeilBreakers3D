@@ -18,15 +18,15 @@
         <!-- Menu Buttons - Molten orange theme via USS -->
         <ui:VisualElement name="button-container" style="position: absolute; left: 0; right: 0; bottom: 20px; flex-direction: row; justify-content: center; align-items: center; padding: 20px 20px; background-color: rgba(8, 6, 12, 0.80);">
 
-            <ui:Button text="NEW GAME" name="btn-new-game" class="vb-menu-btn-primary" style="width: 240px; height: 70px; margin: 0 16px; border-width: 2px; border-radius: 6px; font-size: 26px; letter-spacing: 4px; -unity-font-style: bold;" />
+            <ui:Button text="NEW GAME" name="btn-new-game" class="vb-menu-btn-primary" style="width: 320px; height: 90px; margin: 0 20px; border-width: 2px; border-radius: 8px; font-size: 36px; letter-spacing: 5px; -unity-font-style: bold;" />
 
-            <ui:Button text="CONTINUE" name="btn-continue" class="vb-menu-btn-primary" style="display: none; width: 240px; height: 70px; margin: 0 16px; border-width: 2px; border-radius: 6px; font-size: 26px; letter-spacing: 4px; -unity-font-style: bold;" />
+            <ui:Button text="CONTINUE" name="btn-continue" class="vb-menu-btn-primary" style="display: none; width: 320px; height: 90px; margin: 0 20px; border-width: 2px; border-radius: 8px; font-size: 36px; letter-spacing: 5px; -unity-font-style: bold;" />
 
-            <ui:Button text="SETTINGS" name="btn-settings" class="vb-menu-btn-secondary" style="width: 200px; height: 70px; margin: 0 16px; border-width: 2px; border-radius: 6px; font-size: 22px; letter-spacing: 4px; -unity-font-style: bold;" />
+            <ui:Button text="SETTINGS" name="btn-settings" class="vb-menu-btn-secondary" style="width: 260px; height: 90px; margin: 0 20px; border-width: 2px; border-radius: 8px; font-size: 30px; letter-spacing: 5px; -unity-font-style: bold;" />
 
-            <ui:Button text="CREDITS" name="btn-credits" class="vb-menu-btn-secondary" style="width: 200px; height: 70px; margin: 0 16px; border-width: 2px; border-radius: 6px; font-size: 22px; letter-spacing: 4px; -unity-font-style: bold;" />
+            <ui:Button text="CREDITS" name="btn-credits" class="vb-menu-btn-secondary" style="width: 260px; height: 90px; margin: 0 20px; border-width: 2px; border-radius: 8px; font-size: 30px; letter-spacing: 5px; -unity-font-style: bold;" />
 
-            <ui:Button text="EXIT" name="btn-exit" class="vb-menu-btn-secondary" style="width: 160px; height: 70px; margin: 0 16px; border-width: 2px; border-radius: 6px; font-size: 22px; letter-spacing: 4px; -unity-font-style: bold;" />
+            <ui:Button text="EXIT" name="btn-exit" class="vb-menu-btn-secondary" style="width: 200px; height: 90px; margin: 0 20px; border-width: 2px; border-radius: 8px; font-size: 30px; letter-spacing: 5px; -unity-font-style: bold;" />
 
         </ui:VisualElement>
 
