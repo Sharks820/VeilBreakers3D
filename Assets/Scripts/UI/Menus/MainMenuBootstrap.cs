@@ -133,6 +133,9 @@ namespace VeilBreakers.UI.Menus
                 // Initialize controller
                 _mainMenuController = gameObject.AddComponent<MainMenuController>();
                 _mainMenuController.Initialize(_root);
+
+                // Setup button hover effects (C# fallback since USS transitions can be flaky)
+                SetupButtonHoverEffects(menuContent);
             }
             else
             {
@@ -188,6 +191,78 @@ namespace VeilBreakers.UI.Menus
             }
 
             _root.Add(_settingsOverlay);
+        }
+
+        // =============================================================================
+        // BUTTON HOVER EFFECTS
+        // =============================================================================
+
+        private void SetupButtonHoverEffects(VisualElement container)
+        {
+            var buttons = container.Query<Button>().ToList();
+            foreach (var btn in buttons)
+            {
+                var originalBg = btn.resolvedStyle.backgroundColor;
+                var originalBorder = btn.resolvedStyle.borderTopColor;
+                var originalScale = btn.resolvedStyle.scale;
+
+                bool isPrimary = btn.ClassListContains("vb-menu-btn-primary") ||
+                                 btn.name == "btn-new-game" || btn.name == "btn-continue";
+
+                btn.RegisterCallback<MouseEnterEvent>(evt =>
+                {
+                    btn.style.scale = new Scale(new Vector2(1.05f, 1.05f));
+                    if (isPrimary)
+                    {
+                        btn.style.backgroundColor = new StyleColor(new Color(0.65f, 0.18f, 0.25f, 1f));
+                        btn.style.borderTopColor = new StyleColor(new Color(0.9f, 0.35f, 0.4f, 1f));
+                        btn.style.borderBottomColor = new StyleColor(new Color(0.9f, 0.35f, 0.4f, 1f));
+                        btn.style.borderLeftColor = new StyleColor(new Color(0.9f, 0.35f, 0.4f, 1f));
+                        btn.style.borderRightColor = new StyleColor(new Color(0.9f, 0.35f, 0.4f, 1f));
+                    }
+                    else
+                    {
+                        btn.style.backgroundColor = new StyleColor(new Color(0.2f, 0.18f, 0.25f, 0.98f));
+                        btn.style.borderTopColor = new StyleColor(new Color(0.5f, 0.45f, 0.55f, 1f));
+                        btn.style.borderBottomColor = new StyleColor(new Color(0.5f, 0.45f, 0.55f, 1f));
+                        btn.style.borderLeftColor = new StyleColor(new Color(0.5f, 0.45f, 0.55f, 1f));
+                        btn.style.borderRightColor = new StyleColor(new Color(0.5f, 0.45f, 0.55f, 1f));
+                        btn.style.color = new StyleColor(new Color(0.95f, 0.93f, 0.9f, 1f));
+                    }
+                });
+
+                btn.RegisterCallback<MouseLeaveEvent>(evt =>
+                {
+                    btn.style.scale = new Scale(Vector2.one);
+                    if (isPrimary)
+                    {
+                        btn.style.backgroundColor = new StyleColor(new Color(0.51f, 0.12f, 0.18f, 1f));
+                        btn.style.borderTopColor = new StyleColor(new Color(0.7f, 0.2f, 0.27f, 1f));
+                        btn.style.borderBottomColor = new StyleColor(new Color(0.7f, 0.2f, 0.27f, 1f));
+                        btn.style.borderLeftColor = new StyleColor(new Color(0.7f, 0.2f, 0.27f, 1f));
+                        btn.style.borderRightColor = new StyleColor(new Color(0.7f, 0.2f, 0.27f, 1f));
+                    }
+                    else
+                    {
+                        btn.style.backgroundColor = new StyleColor(new Color(0.08f, 0.07f, 0.11f, 0.95f));
+                        btn.style.borderTopColor = new StyleColor(new Color(0.27f, 0.24f, 0.31f, 1f));
+                        btn.style.borderBottomColor = new StyleColor(new Color(0.27f, 0.24f, 0.31f, 1f));
+                        btn.style.borderLeftColor = new StyleColor(new Color(0.27f, 0.24f, 0.31f, 1f));
+                        btn.style.borderRightColor = new StyleColor(new Color(0.27f, 0.24f, 0.31f, 1f));
+                        btn.style.color = new StyleColor(new Color(0.67f, 0.65f, 0.63f, 1f));
+                    }
+                });
+
+                btn.RegisterCallback<MouseDownEvent>(evt =>
+                {
+                    btn.style.scale = new Scale(new Vector2(0.95f, 0.95f));
+                });
+
+                btn.RegisterCallback<MouseUpEvent>(evt =>
+                {
+                    btn.style.scale = new Scale(new Vector2(1.05f, 1.05f));
+                });
+            }
         }
 
         // =============================================================================
