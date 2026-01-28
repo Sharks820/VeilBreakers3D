@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **SINGLE SOURCE OF TRUTH** | Version: **v4.07** | Last updated: 2026-01-27
+> **SINGLE SOURCE OF TRUTH** | Version: **v4.08** | Last updated: 2026-01-27
 
 ---
 
@@ -276,6 +276,7 @@ Scenario (2D concept) → Tripo (2D→3D + auto-rig) → Cascadeur (physics anim
 | Hero Design | Docs/plans/2026-01-19-hero-character-design.md |
 | Implementation | Docs/plans/2026-01-19-implementation-strategy.md |
 | Migration | Docs/MIGRATION_PLAN.md |
+| Character Select | Docs/plans/2026-01-27-character-select-design.md |
 
 ---
 
