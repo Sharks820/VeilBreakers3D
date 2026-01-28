@@ -1,6 +1,15 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v2.98** | Last updated: 2026-01-27
+> **THE SINGLE SOURCE OF TRUTH** | Version: **v3.0** | Last updated: 2026-01-27
+
+---
+
+## v3.0 - EYE GLOW REMOVED
+
+### Changes:
+- Removed animated eye glow overlay from MainMenuBootstrap.cs
+- Monster art already has eyes baked in - no overlay needed
+- Cleaner code, no Update() loop running on title screen
 
 ---
 
