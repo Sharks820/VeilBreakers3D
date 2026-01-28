@@ -50,6 +50,10 @@ namespace VeilBreakers.UI.Menus
         private List<Button> _cachedButtons; // Cache for entrance animation (avoid ToList allocation)
         private Coroutine _animationCoroutine;
 
+        // Hover callback storage for proper unregistration (prevents memory leaks)
+        private Dictionary<Button, EventCallback<MouseEnterEvent>> _hoverEnterCallbacks;
+        private Dictionary<Button, EventCallback<MouseLeaveEvent>> _hoverLeaveCallbacks;
+
         // =============================================================================
         // EVENTS
         // =============================================================================
@@ -106,6 +110,10 @@ namespace VeilBreakers.UI.Menus
 
             // Cache buttons for entrance animation (avoid ToList allocation)
             _cachedButtons = _buttonContainer.Query<Button>().ToList();
+
+            // Initialize hover callback dictionaries for proper cleanup
+            _hoverEnterCallbacks = new Dictionary<Button, EventCallback<MouseEnterEvent>>();
+            _hoverLeaveCallbacks = new Dictionary<Button, EventCallback<MouseLeaveEvent>>();
 
             // Set version
             if (_versionLabel != null)
@@ -573,6 +581,8 @@ namespace VeilBreakers.UI.Menus
 
         private void AddButtonHoverEffects(Button button)
         {
+            if (button == null) return;
+
             // PROGRAMMATIC HOVER COLORS - bypasses USS specificity issues with Unity's built-in Button theme
             // USS hover states get overridden by Unity's default Button:hover, so we set colors directly via C#
 
@@ -594,52 +604,54 @@ namespace VeilBreakers.UI.Menus
             // Set initial base colors
             Color baseColor = isPrimary ? primaryBaseColor : secondaryBaseColor;
             Color baseBorder = isPrimary ? primaryBorderBase : secondaryBorderBase;
-            button.style.backgroundColor = baseColor;
-            button.style.borderTopColor = baseBorder;
-            button.style.borderBottomColor = baseBorder;
-            button.style.borderLeftColor = baseBorder;
-            button.style.borderRightColor = baseBorder;
+            SetButtonColors(button, baseColor, baseBorder);
 
-            // Hover: Set bright colors directly
-            button.RegisterCallback<MouseEnterEvent>(evt =>
+            // Create and store hover enter callback (for proper unregistration)
+            EventCallback<MouseEnterEvent> enterCallback = evt =>
             {
                 Color hoverColor = isPrimary ? primaryHoverColor : secondaryHoverColor;
                 Color hoverBorder = isPrimary ? primaryBorderHover : secondaryBorderHover;
-
-                button.style.backgroundColor = hoverColor;
-                button.style.borderTopColor = hoverBorder;
-                button.style.borderBottomColor = hoverBorder;
-                button.style.borderLeftColor = hoverBorder;
-                button.style.borderRightColor = hoverBorder;
-
-                // Scale up slightly for visual feedback
+                SetButtonColors(button, hoverColor, hoverBorder);
                 button.style.scale = new Scale(new Vector2(1.05f, 1.05f));
-
                 button.AddToClassList("vb-button-hover-glow");
-            });
+            };
 
-            // Mouse leave: Restore base colors
-            button.RegisterCallback<MouseLeaveEvent>(evt =>
+            // Create and store hover leave callback (for proper unregistration)
+            EventCallback<MouseLeaveEvent> leaveCallback = evt =>
             {
                 Color restoreColor = isPrimary ? primaryBaseColor : secondaryBaseColor;
                 Color restoreBorder = isPrimary ? primaryBorderBase : secondaryBorderBase;
-
-                button.style.backgroundColor = restoreColor;
-                button.style.borderTopColor = restoreBorder;
-                button.style.borderBottomColor = restoreBorder;
-                button.style.borderLeftColor = restoreBorder;
-                button.style.borderRightColor = restoreBorder;
-
-                // Restore normal scale
+                SetButtonColors(button, restoreColor, restoreBorder);
                 button.style.scale = new Scale(Vector2.one);
-
                 button.RemoveFromClassList("vb-button-hover-glow");
-            });
+            };
+
+            // Register callbacks
+            button.RegisterCallback(enterCallback);
+            button.RegisterCallback(leaveCallback);
+
+            // Store for unregistration in OnDisable (prevents memory leaks)
+            _hoverEnterCallbacks[button] = enterCallback;
+            _hoverLeaveCallbacks[button] = leaveCallback;
+        }
+
+        /// <summary>
+        /// Helper to set button background and border colors.
+        /// </summary>
+        private void SetButtonColors(Button button, Color bgColor, Color borderColor)
+        {
+            button.style.backgroundColor = bgColor;
+            button.style.borderTopColor = borderColor;
+            button.style.borderBottomColor = borderColor;
+            button.style.borderLeftColor = borderColor;
+            button.style.borderRightColor = borderColor;
         }
 
         private void OnDisable()
         {
             UnbindEvents();
+            UnbindHoverCallbacks();
+
             if (_animationCoroutine != null)
             {
                 StopCoroutine(_animationCoroutine);
@@ -647,6 +659,30 @@ namespace VeilBreakers.UI.Menus
             }
 
             // VFX cleanup handled automatically by MainMenuVFXController
+        }
+
+        /// <summary>
+        /// Unregister all hover callbacks to prevent memory leaks.
+        /// </summary>
+        private void UnbindHoverCallbacks()
+        {
+            if (_hoverEnterCallbacks != null)
+            {
+                foreach (var kvp in _hoverEnterCallbacks)
+                {
+                    kvp.Key?.UnregisterCallback(kvp.Value);
+                }
+                _hoverEnterCallbacks.Clear();
+            }
+
+            if (_hoverLeaveCallbacks != null)
+            {
+                foreach (var kvp in _hoverLeaveCallbacks)
+                {
+                    kvp.Key?.UnregisterCallback(kvp.Value);
+                }
+                _hoverLeaveCallbacks.Clear();
+            }
         }
     }
 }
