@@ -10,9 +10,9 @@
         <!-- Demon Figure - Background anchored to bottom center -->
         <ui:VisualElement name="monster-image" picking-mode="Ignore" style="position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-image: url('project://database/Assets/Art/UI/MainMenu/demon_figure.png?fileID=2800000&amp;guid=37ac0bd864327ca4ab90b841b55d87bc&amp;type=3'); -unity-background-scale-mode: scale-to-fit; background-position-x: center; background-position-y: bottom;" />
 
-        <!-- VEILBREAKERS LOGO - Higher up -->
-        <ui:VisualElement name="logo-container" picking-mode="Ignore" style="position: absolute; left: 0; right: 0; top: -50px; height: 400px; justify-content: flex-start; align-items: center;">
-            <ui:VisualElement name="logo-image" style="width: 100%; height: 380px; max-width: 2600px; background-image: url('project://database/Assets/Art/UI/MainMenu/logo_veilbreakers.png?fileID=2800000&amp;guid=068214e22c8853d4c8fe90c83ab65bbc&amp;type=3'); -unity-background-scale-mode: scale-to-fit;" />
+        <!-- VEILBREAKERS LOGO - Dedicated top space, not overlapping monster -->
+        <ui:VisualElement name="logo-container" picking-mode="Ignore" style="position: absolute; left: 0; right: 0; top: 0; height: 200px; justify-content: flex-start; align-items: center; padding-top: 20px;">
+            <ui:VisualElement name="logo-image" style="width: 90%; height: 160px; max-width: 1800px; background-image: url('project://database/Assets/Art/UI/MainMenu/logo_veilbreakers.png?fileID=2800000&amp;guid=068214e22c8853d4c8fe90c83ab65bbc&amp;type=3'); -unity-background-scale-mode: scale-to-fit;" />
         </ui:VisualElement>
 
         <!-- Menu Buttons - Molten orange theme via USS -->

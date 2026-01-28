@@ -2174,11 +2174,61 @@
 }
 
 /* =============================================================================
-   MAIN MENU BUTTONS
+   MAIN MENU BUTTONS - MOLTEN ORANGE THEME
+   Using #menu-root context for maximum specificity
+   Overrides Unity's built-in Button styling
    ============================================================================= */
 
-/* Molten Orange Theme - Primary Buttons */
-.vb-menu-btn-primary {
+/* Override Unity's default Button pseudo-states within main menu */
+/* Primary buttons (NEW GAME, CONTINUE) - Bright molten orange */
+#button-container #btn-new-game,
+#button-container #btn-continue {
+    background-color: rgb(180, 80, 20);
+    border-color: rgb(255, 140, 50);
+    color: rgb(255, 245, 220);
+}
+
+#button-container #btn-new-game:hover,
+#button-container #btn-continue:hover {
+    background-color: rgb(210, 100, 30);
+    border-color: rgb(255, 180, 80);
+    color: rgb(255, 255, 240);
+}
+
+#button-container #btn-new-game:active,
+#button-container #btn-continue:active {
+    background-color: rgb(140, 60, 15);
+    border-color: rgb(200, 100, 40);
+}
+
+/* Secondary buttons (SETTINGS, CREDITS, EXIT) - Subdued amber */
+#button-container #btn-settings,
+#button-container #btn-credits,
+#button-container #btn-exit {
+    background-color: rgba(25, 18, 12, 0.95);
+    border-color: rgb(120, 70, 30);
+    color: rgb(200, 160, 100);
+}
+
+#button-container #btn-settings:hover,
+#button-container #btn-credits:hover,
+#button-container #btn-exit:hover {
+    background-color: rgba(55, 35, 20, 0.98);
+    border-color: rgb(180, 110, 50);
+    color: rgb(255, 200, 130);
+}
+
+#button-container #btn-settings:active,
+#button-container #btn-credits:active,
+#button-container #btn-exit:active {
+    background-color: rgba(15, 10, 5, 0.98);
+    border-color: rgb(100, 60, 25);
+}
+
+/* Primary Buttons - Base state */
+#menu-root .vb-menu-btn-primary,
+#menu-root #btn-new-game,
+#menu-root #btn-continue {
     -unity-text-align: middle-center;
     background-color: rgb(180, 80, 20);
     border-color: rgb(255, 140, 50);
@@ -2186,50 +2236,30 @@
     transition: background-color 0.2s, border-color 0.2s, scale 0.1s;
 }
 
-.vb-menu-btn-primary:hover {
+/* Primary Buttons - Hover state */
+#menu-root .vb-menu-btn-primary:hover,
+#menu-root #btn-new-game:hover,
+#menu-root #btn-continue:hover {
     background-color: rgb(210, 100, 30);
     border-color: rgb(255, 180, 80);
+    color: rgb(255, 255, 240);
     scale: 1.03 1.03;
 }
 
-.vb-menu-btn-primary:active {
+/* Primary Buttons - Active state */
+#menu-root .vb-menu-btn-primary:active,
+#menu-root #btn-new-game:active,
+#menu-root #btn-continue:active {
     background-color: rgb(140, 60, 15);
+    border-color: rgb(200, 100, 40);
     scale: 0.97 0.97;
 }
 
-/* Name-specific overrides for main menu buttons */
-#btn-new-game {
-    background-color: rgb(180, 80, 20);
-    border-color: rgb(255, 140, 50);
-    color: rgb(255, 245, 220);
-}
-
-#btn-new-game:hover {
-    background-color: rgb(210, 100, 30);
-    border-color: rgb(255, 180, 80);
-}
-
-#btn-new-game:active {
-    background-color: rgb(140, 60, 15);
-}
-
-#btn-continue {
-    background-color: rgb(180, 80, 20);
-    border-color: rgb(255, 140, 50);
-    color: rgb(255, 245, 220);
-}
-
-#btn-continue:hover {
-    background-color: rgb(210, 100, 30);
-    border-color: rgb(255, 180, 80);
-}
-
-#btn-continue:active {
-    background-color: rgb(140, 60, 15);
-}
-
-/* Molten Amber Theme - Secondary Buttons */
-.vb-menu-btn-secondary {
+/* Secondary Buttons - Base state */
+#menu-root .vb-menu-btn-secondary,
+#menu-root #btn-settings,
+#menu-root #btn-credits,
+#menu-root #btn-exit {
     -unity-text-align: middle-center;
     background-color: rgba(25, 18, 12, 0.95);
     border-color: rgb(120, 70, 30);
@@ -2237,31 +2267,23 @@
     transition: background-color 0.2s, border-color 0.2s, color 0.2s, scale 0.1s;
 }
 
-.vb-menu-btn-secondary:hover {
-    background-color: rgba(45, 30, 18, 0.98);
+/* Secondary Buttons - Hover state */
+#menu-root .vb-menu-btn-secondary:hover,
+#menu-root #btn-settings:hover,
+#menu-root #btn-credits:hover,
+#menu-root #btn-exit:hover {
+    background-color: rgba(55, 35, 20, 0.98);
     border-color: rgb(180, 110, 50);
     color: rgb(255, 200, 130);
     scale: 1.03 1.03;
 }
 
-.vb-menu-btn-secondary:active {
+/* Secondary Buttons - Active state */
+#menu-root .vb-menu-btn-secondary:active,
+#menu-root #btn-settings:active,
+#menu-root #btn-credits:active,
+#menu-root #btn-exit:active {
     background-color: rgba(15, 10, 5, 0.98);
+    border-color: rgb(100, 60, 25);
     scale: 0.97 0.97;
-}
-
-/* Name-specific overrides for secondary buttons */
-#btn-settings, #btn-credits, #btn-exit {
-    background-color: rgba(25, 18, 12, 0.95);
-    border-color: rgb(120, 70, 30);
-    color: rgb(200, 160, 100);
-}
-
-#btn-settings:hover, #btn-credits:hover, #btn-exit:hover {
-    background-color: rgba(45, 30, 18, 0.98);
-    border-color: rgb(180, 110, 50);
-    color: rgb(255, 200, 130);
-}
-
-#btn-settings:active, #btn-credits:active, #btn-exit:active {
-    background-color: rgba(15, 10, 5, 0.98);
 }

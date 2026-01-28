@@ -90,6 +90,9 @@ namespace VeilBreakers.UI.Menus
         [SerializeField] private RenderTexture _previewRenderTexture;
         [SerializeField] private HeroMonsterPairPreview _pairPreview;
 
+        [Header("Backdrop")]
+        [SerializeField] private CharacterSelectBackdropController _backdropController;
+
         [Header("Scenes")]
         [SerializeField] private string _mainMenuScene = "MainMenu";
         [SerializeField] private string _gameScene = "TestArena";
@@ -172,6 +175,7 @@ namespace VeilBreakers.UI.Menus
         private GameObject _currentPreviewModel;
         private List<VisualElement> _heroCards = new();
         private List<HeroCardEventHandler> _heroCardHandlers = new(); // Cache event handlers (no allocation)
+        private Coroutine _statBarAnimationCoroutine;
 
         // =============================================================================
         // EVENTS
@@ -600,6 +604,9 @@ namespace VeilBreakers.UI.Menus
             // Update preview
             UpdatePreviewModel(_selectedHero);
 
+            // Update backdrop to match hero's Path
+            _backdropController?.TransitionToHero(_selectedHero);
+
             // Enable select button
             _btnSelect?.SetEnabled(true);
 
@@ -1013,47 +1020,82 @@ namespace VeilBreakers.UI.Menus
 
         private void UpdateStatBars(HeroData hero)
         {
-            const float maxStat = 150f; // For percentage calculation
-
-            // Health
-            if (_statHealthFill != null && _statHealthValue != null)
+            // Stop any running animation
+            if (_statBarAnimationCoroutine != null)
             {
-                float healthPercent = Mathf.Clamp01(hero.base_hp / maxStat);
-                _statHealthFill.style.width = Length.Percent(healthPercent * 100);
-                _statHealthValue.text = hero.base_hp.ToString();
+                StopCoroutine(_statBarAnimationCoroutine);
             }
 
-            // MP (NEW)
-            if (_statMpFill != null && _statMpValue != null)
+            // Start animated stat bar update
+            _statBarAnimationCoroutine = StartCoroutine(AnimateStatBars(hero));
+        }
+
+        private System.Collections.IEnumerator AnimateStatBars(HeroData hero)
+        {
+            const float maxStat = 150f;
+            const float animationDuration = 0.4f;
+            const float staggerDelay = 0.05f;
+
+            // Calculate target percentages
+            float healthTarget = Mathf.Clamp01(hero.base_hp / maxStat) * 100f;
+            float mpTarget = Mathf.Clamp01(hero.base_mp / maxStat) * 100f;
+            float attackTarget = Mathf.Clamp01(hero.base_attack / maxStat) * 100f;
+            float defenseTarget = Mathf.Clamp01(hero.base_defense / maxStat) * 100f;
+            float speedTarget = Mathf.Clamp01(hero.base_speed / maxStat) * 100f;
+
+            // Reset all bars to 0
+            if (_statHealthFill != null) _statHealthFill.style.width = Length.Percent(0);
+            if (_statMpFill != null) _statMpFill.style.width = Length.Percent(0);
+            if (_statAttackFill != null) _statAttackFill.style.width = Length.Percent(0);
+            if (_statDefenseFill != null) _statDefenseFill.style.width = Length.Percent(0);
+            if (_statSpeedFill != null) _statSpeedFill.style.width = Length.Percent(0);
+
+            // Set final text values immediately
+            if (_statHealthValue != null) _statHealthValue.text = hero.base_hp.ToString();
+            if (_statMpValue != null) _statMpValue.text = hero.base_mp.ToString();
+            if (_statAttackValue != null) _statAttackValue.text = hero.base_attack.ToString();
+            if (_statDefenseValue != null) _statDefenseValue.text = hero.base_defense.ToString();
+            if (_statSpeedValue != null) _statSpeedValue.text = hero.base_speed.ToString();
+
+            // Brief pause before animation
+            yield return new WaitForSeconds(0.1f);
+
+            // Animate each bar with stagger
+            float[] targets = { healthTarget, mpTarget, attackTarget, defenseTarget, speedTarget };
+            VisualElement[] fills = { _statHealthFill, _statMpFill, _statAttackFill, _statDefenseFill, _statSpeedFill };
+
+            float elapsed = 0f;
+            while (elapsed < animationDuration + (staggerDelay * fills.Length))
             {
-                float mpPercent = Mathf.Clamp01(hero.base_mp / maxStat);
-                _statMpFill.style.width = Length.Percent(mpPercent * 100);
-                _statMpValue.text = hero.base_mp.ToString();
+                elapsed += Time.deltaTime;
+
+                for (int i = 0; i < fills.Length; i++)
+                {
+                    if (fills[i] == null) continue;
+
+                    float barElapsed = elapsed - (staggerDelay * i);
+                    if (barElapsed < 0f) continue;
+
+                    float t = Mathf.Clamp01(barElapsed / animationDuration);
+                    // Ease out cubic
+                    t = 1f - Mathf.Pow(1f - t, 3f);
+
+                    fills[i].style.width = Length.Percent(targets[i] * t);
+                }
+
+                yield return null;
             }
 
-            // Attack
-            if (_statAttackFill != null && _statAttackValue != null)
+            // Ensure final values
+            for (int i = 0; i < fills.Length; i++)
             {
-                float attackPercent = Mathf.Clamp01(hero.base_attack / maxStat);
-                _statAttackFill.style.width = Length.Percent(attackPercent * 100);
-                _statAttackValue.text = hero.base_attack.ToString();
+                if (fills[i] != null)
+                {
+                    fills[i].style.width = Length.Percent(targets[i]);
+                }
             }
 
-            // Defense
-            if (_statDefenseFill != null && _statDefenseValue != null)
-            {
-                float defensePercent = Mathf.Clamp01(hero.base_defense / maxStat);
-                _statDefenseFill.style.width = Length.Percent(defensePercent * 100);
-                _statDefenseValue.text = hero.base_defense.ToString();
-            }
-
-            // Speed
-            if (_statSpeedFill != null && _statSpeedValue != null)
-            {
-                float speedPercent = Mathf.Clamp01(hero.base_speed / maxStat);
-                _statSpeedFill.style.width = Length.Percent(speedPercent * 100);
-                _statSpeedValue.text = hero.base_speed.ToString();
-            }
+            _statBarAnimationCoroutine = null;
         }
 
         private void UpdateOrbColors(HeroData hero)
