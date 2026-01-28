@@ -5,164 +5,138 @@ using System.Collections;
 namespace VeilBreakers.UI.Effects
 {
     /// <summary>
-    /// Pure UI Toolkit VFX controller for the main menu.
-    /// Uses VisualElements with animated styles - no sprites or cameras needed.
-    ///
-    /// Effects:
-    /// 1. Logo Glow - Pulsing crimson glow behind the title
-    /// 2. Vignette - Screen edge darkening with pulse
-    /// 3. Embers - Small particle-like elements rising
-    /// 4. Rift Effect - Animated distortion behind logo
+    /// Molten-themed VFX for main menu matching the demon's aesthetic.
+    /// Creates subtle amber/orange glow effects and rising embers.
     /// </summary>
     public class MainMenuVFXController : MonoBehaviour
     {
-        // =============================================================================
-        // CONFIGURATION
-        // =============================================================================
-
         [Header("Pulse Settings")]
-        [SerializeField] private float _pulseFrequency = 0.15f; // Slow, ominous
-        [SerializeField] private float _pulseMinValue = 0.3f;
-        [SerializeField] private float _pulseMaxValue = 1.0f;
+        [SerializeField] private float _pulseFrequency = 0.12f;
+        [SerializeField] private float _pulseMin = 0.4f;
+        [SerializeField] private float _pulseMax = 1.0f;
 
-        [Header("Logo Glow")]
-        [SerializeField] private float _logoGlowIntensity = 0.4f;
-        [SerializeField] private Color _logoGlowColor = new Color(0.7f, 0.15f, 0.2f, 0.5f);
-
-        [Header("Vignette")]
-        [SerializeField] private float _vignetteBaseAlpha = 0.3f;
-        [SerializeField] private float _vignettePulseAmount = 0.15f;
+        [Header("Molten Colors")]
+        [SerializeField] private Color _moltenCore = new Color(1f, 0.5f, 0.15f, 0.4f);    // Bright orange
+        [SerializeField] private Color _moltenGlow = new Color(0.9f, 0.35f, 0.1f, 0.2f);  // Deep amber
+        [SerializeField] private Color _emberColor = new Color(1f, 0.6f, 0.2f, 0.8f);     // Ember orange
 
         [Header("Embers")]
-        [SerializeField] private int _emberCount = 12;
-        [SerializeField] private float _emberRiseSpeed = 30f; // pixels per second
-
-        // =============================================================================
-        // RUNTIME STATE
-        // =============================================================================
+        [SerializeField] private int _emberCount = 20;
+        [SerializeField] private float _emberSpeed = 25f;
 
         private UIDocument _uiDocument;
         private VisualElement _root;
-        private VisualElement _logoGlowElement;
-        private VisualElement _vignetteElement;
-        private VisualElement _riftElement;
+        private VisualElement _chestGlow;
+        private VisualElement _ambientGlow;
         private VisualElement _embersContainer;
         private VisualElement[] _embers;
 
         private float _pulsePhase;
         private float _currentPulse;
-        private bool _isInitialized;
-
-        // =============================================================================
-        // UNITY LIFECYCLE
-        // =============================================================================
+        private bool _initialized;
 
         private void Start()
         {
-            StartCoroutine(InitializeAfterFrame());
+            StartCoroutine(InitializeDelayed());
         }
 
-        private IEnumerator InitializeAfterFrame()
+        private IEnumerator InitializeDelayed()
         {
-            // Wait for UI to be ready
             yield return null;
 
             _uiDocument = GetComponent<UIDocument>();
-            if (_uiDocument == null || _uiDocument.rootVisualElement == null)
-            {
-                Debug.LogWarning("[VB:VFX] No UIDocument found, VFX disabled");
-                yield break;
-            }
+            if (_uiDocument?.rootVisualElement == null) yield break;
 
             _root = _uiDocument.rootVisualElement.Q<VisualElement>("menu-root");
-            if (_root == null)
-            {
-                Debug.LogWarning("[VB:VFX] menu-root not found in UXML");
-                yield break;
-            }
+            if (_root == null) yield break;
 
-            CreateVFXElements();
-            _isInitialized = true;
-            Debug.Log("[VB:VFX] Main Menu VFX initialized (UI Toolkit mode)");
+            CreateMoltenEffects();
+            _initialized = true;
+            Debug.Log("[VB:VFX] Molten VFX initialized");
         }
 
         private void Update()
         {
-            if (!_isInitialized) return;
+            if (!_initialized) return;
 
-            UpdatePulse();
-            UpdateLogoGlow();
-            UpdateVignette();
+            // Update pulse
+            _pulsePhase += Time.deltaTime * _pulseFrequency * Mathf.PI * 2f;
+            float raw = (Mathf.Sin(_pulsePhase) + 1f) * 0.5f;
+            _currentPulse = Mathf.Lerp(_pulseMin, _pulseMax, raw);
+
+            UpdateChestGlow();
             UpdateEmbers();
         }
 
-        // =============================================================================
-        // VFX ELEMENT CREATION
-        // =============================================================================
-
-        private void CreateVFXElements()
+        private void CreateMoltenEffects()
         {
-            // Create VFX container at the back (insert at index 1, after background)
+            // Insert VFX after background but before monster
+            var bg = _root.Q<VisualElement>("background");
+            int insertIndex = bg != null ? _root.IndexOf(bg) + 1 : 0;
+
+            // Container for all VFX
             var vfxContainer = new VisualElement();
-            vfxContainer.name = "vfx-container";
+            vfxContainer.name = "molten-vfx";
             vfxContainer.pickingMode = PickingMode.Ignore;
             vfxContainer.style.position = Position.Absolute;
             vfxContainer.style.left = 0;
             vfxContainer.style.top = 0;
             vfxContainer.style.right = 0;
             vfxContainer.style.bottom = 0;
+            _root.Insert(insertIndex, vfxContainer);
 
-            // Insert after background element
-            var background = _root.Q<VisualElement>("background");
-            if (background != null)
-            {
-                int bgIndex = _root.IndexOf(background);
-                _root.Insert(bgIndex + 1, vfxContainer);
-            }
-            else
-            {
-                _root.Insert(0, vfxContainer);
-            }
+            // Chest glow - positioned where the demon's chest/core glows
+            CreateChestGlow(vfxContainer);
 
-            CreateLogoGlow(vfxContainer);
-            CreateRiftEffect(vfxContainer);
+            // Ambient glow around chest area
+            CreateAmbientGlow(vfxContainer);
+
+            // Rising embers
             CreateEmbers(vfxContainer);
-            CreateVignette(); // Vignette goes on top, in root
         }
 
-        private void CreateLogoGlow(VisualElement container)
+        private void CreateChestGlow(VisualElement container)
         {
-            // Subtle glow behind logo - very faint, not distracting
-            _logoGlowElement = new VisualElement();
-            _logoGlowElement.name = "logo-glow-vfx";
-            _logoGlowElement.pickingMode = PickingMode.Ignore;
-            _logoGlowElement.style.position = Position.Absolute;
-            _logoGlowElement.style.left = new StyleLength(new Length(50, LengthUnit.Percent));
-            _logoGlowElement.style.top = 60;
-            _logoGlowElement.style.translate = new Translate(new Length(-50, LengthUnit.Percent), 0);
-            _logoGlowElement.style.width = 800;
-            _logoGlowElement.style.height = 120;
-
-            // Very subtle glow - barely visible
-            _logoGlowElement.style.borderTopLeftRadius = new Length(50, LengthUnit.Percent);
-            _logoGlowElement.style.borderTopRightRadius = new Length(50, LengthUnit.Percent);
-            _logoGlowElement.style.borderBottomLeftRadius = new Length(50, LengthUnit.Percent);
-            _logoGlowElement.style.borderBottomRightRadius = new Length(50, LengthUnit.Percent);
-            _logoGlowElement.style.backgroundColor = new Color(_logoGlowColor.r, _logoGlowColor.g, _logoGlowColor.b, 0.03f);
-
-            container.Add(_logoGlowElement);
+            _chestGlow = new VisualElement();
+            _chestGlow.name = "chest-glow";
+            _chestGlow.pickingMode = PickingMode.Ignore;
+            _chestGlow.style.position = Position.Absolute;
+            _chestGlow.style.left = new StyleLength(new Length(50, LengthUnit.Percent));
+            _chestGlow.style.top = new StyleLength(new Length(55, LengthUnit.Percent));
+            _chestGlow.style.translate = new Translate(new Length(-50, LengthUnit.Percent), new Length(-50, LengthUnit.Percent));
+            _chestGlow.style.width = 200;
+            _chestGlow.style.height = 200;
+            _chestGlow.style.borderTopLeftRadius = new Length(50, LengthUnit.Percent);
+            _chestGlow.style.borderTopRightRadius = new Length(50, LengthUnit.Percent);
+            _chestGlow.style.borderBottomLeftRadius = new Length(50, LengthUnit.Percent);
+            _chestGlow.style.borderBottomRightRadius = new Length(50, LengthUnit.Percent);
+            _chestGlow.style.backgroundColor = _moltenCore;
+            container.Add(_chestGlow);
         }
 
-        private void CreateRiftEffect(VisualElement container)
+        private void CreateAmbientGlow(VisualElement container)
         {
-            // Rift effect disabled - was too visible
-            _riftElement = null;
+            _ambientGlow = new VisualElement();
+            _ambientGlow.name = "ambient-glow";
+            _ambientGlow.pickingMode = PickingMode.Ignore;
+            _ambientGlow.style.position = Position.Absolute;
+            _ambientGlow.style.left = new StyleLength(new Length(50, LengthUnit.Percent));
+            _ambientGlow.style.top = new StyleLength(new Length(55, LengthUnit.Percent));
+            _ambientGlow.style.translate = new Translate(new Length(-50, LengthUnit.Percent), new Length(-50, LengthUnit.Percent));
+            _ambientGlow.style.width = 500;
+            _ambientGlow.style.height = 400;
+            _ambientGlow.style.borderTopLeftRadius = new Length(50, LengthUnit.Percent);
+            _ambientGlow.style.borderTopRightRadius = new Length(50, LengthUnit.Percent);
+            _ambientGlow.style.borderBottomLeftRadius = new Length(50, LengthUnit.Percent);
+            _ambientGlow.style.borderBottomRightRadius = new Length(50, LengthUnit.Percent);
+            _ambientGlow.style.backgroundColor = _moltenGlow;
+            container.Add(_ambientGlow);
         }
 
         private void CreateEmbers(VisualElement container)
         {
             _embersContainer = new VisualElement();
-            _embersContainer.name = "embers-container";
+            _embersContainer.name = "embers";
             _embersContainer.pickingMode = PickingMode.Ignore;
             _embersContainer.style.position = Position.Absolute;
             _embersContainer.style.left = 0;
@@ -176,12 +150,10 @@ namespace VeilBreakers.UI.Effects
             for (int i = 0; i < _emberCount; i++)
             {
                 var ember = new VisualElement();
-                ember.name = $"ember-{i}";
                 ember.pickingMode = PickingMode.Ignore;
                 ember.style.position = Position.Absolute;
 
-                // Random size
-                float size = Random.Range(2f, 5f);
+                float size = Random.Range(2f, 6f);
                 ember.style.width = size;
                 ember.style.height = size;
                 ember.style.borderTopLeftRadius = new Length(50, LengthUnit.Percent);
@@ -189,24 +161,27 @@ namespace VeilBreakers.UI.Effects
                 ember.style.borderBottomLeftRadius = new Length(50, LengthUnit.Percent);
                 ember.style.borderBottomRightRadius = new Length(50, LengthUnit.Percent);
 
-                // Random warm color (ash/ember tones)
-                float hue = Random.Range(0.02f, 0.08f); // Orange-red
-                float sat = Random.Range(0.3f, 0.6f);
-                float val = Random.Range(0.2f, 0.4f);
-                ember.style.backgroundColor = Color.HSVToRGB(hue, sat, val);
-                ember.style.opacity = Random.Range(0.3f, 0.7f);
+                // Vary ember colors from orange to yellow
+                float hueShift = Random.Range(-0.05f, 0.05f);
+                var color = _emberColor;
+                color.r = Mathf.Clamp01(color.r + hueShift);
+                color.g = Mathf.Clamp01(color.g + hueShift * 0.5f);
+                ember.style.backgroundColor = color;
 
-                // Random starting position
-                ember.style.left = new StyleLength(new Length(Random.Range(20f, 80f), LengthUnit.Percent));
-                ember.style.top = new StyleLength(new Length(Random.Range(80f, 120f), LengthUnit.Percent));
+                // Start position - around chest area
+                float startX = Random.Range(35f, 65f);
+                float startY = Random.Range(55f, 75f);
+                ember.style.left = new StyleLength(new Length(startX, LengthUnit.Percent));
+                ember.style.top = new StyleLength(new Length(startY, LengthUnit.Percent));
+                ember.style.opacity = Random.Range(0.4f, 0.9f);
 
-                // Store initial speed in userData
                 ember.userData = new EmberData
                 {
-                    speed = Random.Range(0.5f, 1.5f),
-                    drift = Random.Range(-0.3f, 0.3f),
-                    phase = Random.Range(0f, Mathf.PI * 2f),
-                    startY = Random.Range(80f, 120f)
+                    speed = Random.Range(0.6f, 1.4f),
+                    drift = Random.Range(-0.4f, 0.4f),
+                    startX = startX,
+                    startY = startY,
+                    phase = Random.Range(0f, Mathf.PI * 2f)
                 };
 
                 _embersContainer.Add(ember);
@@ -214,83 +189,23 @@ namespace VeilBreakers.UI.Effects
             }
         }
 
-        private void CreateVignette()
+        private void UpdateChestGlow()
         {
-            _vignetteElement = new VisualElement();
-            _vignetteElement.name = "vignette-vfx";
-            _vignetteElement.pickingMode = PickingMode.Ignore;
-            _vignetteElement.style.position = Position.Absolute;
-            _vignetteElement.style.left = 0;
-            _vignetteElement.style.top = 0;
-            _vignetteElement.style.right = 0;
-            _vignetteElement.style.bottom = 0;
+            if (_chestGlow == null) return;
 
-            // Create vignette effect using border with large inset shadow
-            _vignetteElement.style.borderLeftWidth = 100;
-            _vignetteElement.style.borderRightWidth = 100;
-            _vignetteElement.style.borderTopWidth = 80;
-            _vignetteElement.style.borderBottomWidth = 80;
-            _vignetteElement.style.borderLeftColor = new Color(0.03f, 0.02f, 0.05f, _vignetteBaseAlpha);
-            _vignetteElement.style.borderRightColor = new Color(0.03f, 0.02f, 0.05f, _vignetteBaseAlpha);
-            _vignetteElement.style.borderTopColor = new Color(0.03f, 0.02f, 0.05f, _vignetteBaseAlpha);
-            _vignetteElement.style.borderBottomColor = new Color(0.03f, 0.02f, 0.05f, _vignetteBaseAlpha);
+            // Pulse the glow
+            float alpha = _moltenCore.a * (0.7f + _currentPulse * 0.3f);
+            _chestGlow.style.backgroundColor = new Color(_moltenCore.r, _moltenCore.g, _moltenCore.b, alpha);
 
-            // Insert before loading overlay
-            var loadingOverlay = _root.Q<VisualElement>("loading-overlay");
-            if (loadingOverlay != null)
+            float scale = 1f + (_currentPulse - 0.5f) * 0.15f;
+            _chestGlow.style.scale = new Scale(new Vector3(scale, scale, 1f));
+
+            // Ambient also pulses
+            if (_ambientGlow != null)
             {
-                _root.Insert(_root.IndexOf(loadingOverlay), _vignetteElement);
+                float ambientAlpha = _moltenGlow.a * (0.6f + _currentPulse * 0.4f);
+                _ambientGlow.style.backgroundColor = new Color(_moltenGlow.r, _moltenGlow.g, _moltenGlow.b, ambientAlpha);
             }
-            else
-            {
-                _root.Add(_vignetteElement);
-            }
-        }
-
-        // =============================================================================
-        // UPDATE METHODS
-        // =============================================================================
-
-        private void UpdatePulse()
-        {
-            _pulsePhase += Time.deltaTime * _pulseFrequency * Mathf.PI * 2f;
-
-            // Sine wave pulse with slight asymmetry (faster rise, slower fall)
-            float rawPulse = (Mathf.Sin(_pulsePhase) + 1f) * 0.5f;
-            rawPulse = Mathf.Pow(rawPulse, 0.8f); // Slight asymmetry
-
-            _currentPulse = Mathf.Lerp(_pulseMinValue, _pulseMaxValue, rawPulse);
-        }
-
-        private void UpdateLogoGlow()
-        {
-            if (_logoGlowElement == null) return;
-
-            // Pulse the glow alpha and scale
-            float glowAlpha = _logoGlowIntensity * _currentPulse * 0.25f;
-            _logoGlowElement.style.backgroundColor = new Color(
-                _logoGlowColor.r,
-                _logoGlowColor.g,
-                _logoGlowColor.b,
-                glowAlpha
-            );
-
-            // Subtle scale pulse
-            float scale = 1f + (_currentPulse - 0.5f) * 0.05f;
-            _logoGlowElement.style.scale = new Scale(new Vector3(scale, scale, 1f));
-        }
-
-        private void UpdateVignette()
-        {
-            if (_vignetteElement == null) return;
-
-            // Pulse vignette darkness
-            float alpha = _vignetteBaseAlpha + (_currentPulse - 0.5f) * _vignettePulseAmount;
-            var vignetteColor = new Color(0.03f, 0.02f, 0.05f, alpha);
-            _vignetteElement.style.borderLeftColor = vignetteColor;
-            _vignetteElement.style.borderRightColor = vignetteColor;
-            _vignetteElement.style.borderTopColor = vignetteColor;
-            _vignetteElement.style.borderBottomColor = vignetteColor;
         }
 
         private void UpdateEmbers()
@@ -302,45 +217,45 @@ namespace VeilBreakers.UI.Effects
                 var ember = _embers[i];
                 if (ember?.userData is not EmberData data) continue;
 
-                // Get current position
-                float currentTop = ember.style.top.value.value;
-                float currentLeft = ember.style.left.value.value;
+                float currentTop = ember.resolvedStyle.top;
+                float currentLeft = ember.resolvedStyle.left;
+
+                // Convert to percentage-based movement
+                float topPercent = (currentTop / _embersContainer.resolvedStyle.height) * 100f;
+                float leftPercent = (currentLeft / _embersContainer.resolvedStyle.width) * 100f;
 
                 // Rise up
-                currentTop -= _emberRiseSpeed * data.speed * Time.deltaTime * 0.1f;
+                topPercent -= _emberSpeed * data.speed * Time.deltaTime * 0.08f;
 
-                // Horizontal drift with sine wave
-                float drift = Mathf.Sin(Time.time * 2f + data.phase) * data.drift * 0.5f;
-                currentLeft += drift * Time.deltaTime;
+                // Drift sideways
+                float drift = Mathf.Sin(Time.time * 1.5f + data.phase) * data.drift * 0.3f;
+                leftPercent += drift * Time.deltaTime;
 
                 // Fade as rising
-                float normalizedY = 1f - (currentTop / 100f);
-                float opacity = Mathf.Lerp(0.6f, 0f, Mathf.Clamp01(normalizedY));
+                float fadeStart = 40f;
+                float opacity = topPercent > fadeStart ? 0.8f : Mathf.Lerp(0f, 0.8f, topPercent / fadeStart);
                 ember.style.opacity = opacity;
 
                 // Reset when off screen
-                if (currentTop < -10f)
+                if (topPercent < 5f || opacity < 0.05f)
                 {
-                    currentTop = data.startY;
-                    currentLeft = Random.Range(20f, 80f);
+                    topPercent = data.startY + Random.Range(-5f, 5f);
+                    leftPercent = data.startX + Random.Range(-5f, 5f);
                     data.phase = Random.Range(0f, Mathf.PI * 2f);
                 }
 
-                ember.style.top = new StyleLength(new Length(currentTop, LengthUnit.Percent));
-                ember.style.left = new StyleLength(new Length(currentLeft, LengthUnit.Percent));
+                ember.style.top = new StyleLength(new Length(topPercent, LengthUnit.Percent));
+                ember.style.left = new StyleLength(new Length(leftPercent, LengthUnit.Percent));
             }
         }
-
-        // =============================================================================
-        // DATA CLASSES
-        // =============================================================================
 
         private class EmberData
         {
             public float speed;
             public float drift;
-            public float phase;
+            public float startX;
             public float startY;
+            public float phase;
         }
     }
 }

@@ -149,8 +149,13 @@ namespace VeilBreakers.UI.Menus
 
         private void InitializeVFXSystem()
         {
-            // VFX disabled - menu looks good with just the art assets
-            ErrorLogger.UI("VFX system disabled - using clean menu layout");
+            // Add molten-themed VFX controller (pure UI Toolkit approach)
+            var vfxController = gameObject.GetComponent<MainMenuVFXController>();
+            if (vfxController == null)
+            {
+                vfxController = gameObject.AddComponent<MainMenuVFXController>();
+            }
+            ErrorLogger.UI("Molten VFX system initialized");
         }
 
         // =============================================================================
