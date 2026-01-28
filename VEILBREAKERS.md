@@ -1,183 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **THE SINGLE SOURCE OF TRUTH** | Version: **v3.01** | Last updated: 2026-01-27
-
----
-
-## v3.01 - PROPER TRANSPARENT TITLE IMAGE
-
-### Changes:
-- Replaced title_monster.png with true transparent PNG (no baked checkerboard)
-- Enabled alphaIsTransparency in Unity import settings
-
----
-
-## v3.0 - EYE GLOW REMOVED
-
-### Changes:
-- Removed animated eye glow overlay from MainMenuBootstrap.cs
-- Monster art already has eyes baked in - no overlay needed
-- Cleaner code, no Update() loop running on title screen
-
----
-
-## v2.95 - TITLE SCREEN COMPLETE WITH MONSTER ART
-
-### Changes Made:
-1. **Added title monster art** - Crimson demon with built-in "VEILBREAKERS" title and tagline
-2. **Removed old title text** - Title-section removed since text is baked into monster image
-3. **Horizontal button row** - Buttons repositioned to bottom center in horizontal layout
-4. **Cleaned scrollbar code** - Removed broken scrollbar, kept mouse wheel scrolling
-
-### Files Modified:
-- `Assets/Art/UI/MainMenu/title_monster.png` - NEW: Monster title art with transparent background
-- `Assets/UI/Templates/MainMenu.uxml` - Complete title screen layout overhaul
-- `Assets/Scripts/UI/Controls/VBDropdownField.cs` - Removed scrollbar styling
-
-### Layering Order (back to front):
-1. Background (dark rgb(8,6,12))
-2. Veil pulse layer (ambient glow)
-3. **Spark-container** - Lightning effects BEHIND monster
-4. **Title monster** - Monster art with title text (90% size, 0.85 opacity)
-5. **Particle/ember containers** - Effects IN FRONT of monster
-6. **Button container** - Horizontal row at bottom (above effects)
-7. Footer - Copyright and version
-
-### Button Layout:
-- NEW GAME (red/crimson) | CONTINUE (hidden by default) | SETTINGS | CREDITS | EXIT
-- All 140x48px with 6px margin between
-
-### Scrollbar Lesson Learned:
-**Unity UI Toolkit ScrollView scrollbar positioning is buggy when:**
-- ScrollView is created programmatically
-- Added to popup layer (outside normal visual tree)
-- No USS styles inherited
-
-**Solution:** Hide scrollbar, rely on mouse wheel scrolling for dropdowns. Works better for UX anyway.
-
----
-
-## v2.93 - SETTINGS PANEL LAYOUT FIXES + DROPDOWN DEBUG
-
-### Changes:
-- Added debug logging to dropdown open/close
-- Fixed settings panel layout issues
-
----
-
-## v2.92 - SETTINGS PANEL COMPREHENSIVE FIX
-
-### Issues Fixed:
-1. **Dropdown glitches on reopen** - Added `ForceCloseAndCleanup()` method to VBDropdownField that properly removes popup from hierarchy and resets state
-2. **Button overlap on tab switch** - `CloseAllDropdowns()` called before any tab switch to prevent z-order issues
-3. **GAMEPLAY tab not working** - Added 4th tab handler (was missing from controller)
-4. **Unsaved changes lost** - Added confirmation dialog (SAVE/DISCARD/CANCEL) when closing with pending changes
-5. **Popup layer persistence** - Popup layer now only hides when no popups are visible
-
-### Files Modified:
-- `VBDropdownField.cs` - Added cleanup methods, z-order management
-- `SettingsPanelController.cs` - Added all 4 tabs, confirmation dialog, dropdown cleanup
-
-### Key Methods Added:
-- `VBDropdownField.ForceCloseAndCleanup()` - Public cleanup method
-- `SettingsPanelController.CloseAllDropdowns()` - Closes all dropdown popups
-- `SettingsPanelController.HasUnsavedChanges()` - Compares pending vs current settings
-- `SettingsPanelController.ShowConfirmationDialog()` - SAVE/DISCARD/CANCEL dialog
-
----
-
-## v2.91 - FONT OPTIMIZATION LESSON (FAILED)
-
-**CRITICAL LESSON: NEVER reference fonts that don't exist in Unity project.**
-
-### What Happened:
-1. Attempted to update USS stylesheets to reference Google Fonts (Cinzel, Barlow Condensed)
-2. Updated `-unity-font-definition` URLs to point to font files that hadn't been imported yet
-3. **RESULT: Entire menu disappeared** - Unity couldn't load fonts, failed to render all text
-
-### The CORRECT Workflow:
-1. **FIRST**: Download .ttf files from Google Fonts to local machine
-2. **SECOND**: Import .ttf files into Unity project (`Assets/UI/Fonts/`)
-3. **THIRD**: Update USS stylesheets to reference imported fonts
-4. **FOURTH**: Test in Play Mode to verify fonts load correctly
-
-### What We Did Wrong:
-- Skipped steps 1-2 entirely
-- Went straight to step 3 (updating USS)
-- Assumed fonts would "just work" without importing them first
-
-### Files Reverted:
-- `Assets/UI/Styles/VeilBreakers.uss` - reverted to Arial
-- `Assets/Resources/UI/Templates/MainMenu.uxml` - removed font-title class
-
-### Documentation Created:
-- `Docs/FONT_OPTIMIZATION_AAA.md` - Research complete, 3 font packages ready
-- **Package 1 (Recommended)**: Cinzel Bold + Cinzel Italic + Barlow Condensed
-- **Status**: Research done, implementation BLOCKED until fonts imported
-
-### Next Steps (When Ready):
-1. Download font files from Google Fonts
-2. Import to `Assets/UI/Fonts/`
-3. Re-apply stylesheet changes (already tested, just need fonts present)
-
----
-
-## v2.84 - PARTICLE VISIBILITY FIXES
-
-**Fixed critical particle visibility issues - particles were invisible due to multiple factors:**
-
-### Root Causes Fixed:
-1. **Texture Alpha** - Lightning bolt textures had `alphaIsTransparency: 0` - changed to `1` in all .meta files
-2. **Container Overflow** - Containers had `overflow: hidden` clipping particles outside bounds - changed to `overflow: visible`
-3. **Container Z-Order** - Containers were being inserted at index 0 (behind background) - changed to index 2, 3, 4
-4. **Missing spark-container** - UXML templates were missing spark-container for lightning bolts - added to both UXML files
-
-### Files Changed:
-- `Assets/Resources/UI/Lightning/lightning_bolt_01-04.png.meta` - enabled alphaIsTransparency
-- `Assets/UI/Templates/MainMenu.uxml` - added spark-container, fixed overflow
-- `Assets/Resources/UI/Templates/MainMenu.uxml` - added all particle containers, fixed overflow
-- `Assets/UI/Styles/VeilBreakers.uss` - .particle-layer overflow: visible
-- `Assets/UI/Styles/VeilBreakersUI.uss` - .particle-layer overflow: visible
-- `Assets/Scripts/UI/Effects/UIParticleController.cs` - fixed container creation with correct overflow and z-order
-
----
-
-## v2.81 - LIGHTNING SYSTEM REIMPLEMENTED
-
-**AAA-quality sprite-based lightning system now working.**
-
-### What Was Fixed:
-1. Extracted 4 lightning bolt sprites from source art to `Resources/UI/Lightning/`
-2. Re-enabled lightning in UIParticleController.cs (Initialize + Update)
-3. Fixed TriggerLightningBolt() positioning:
-   - X: Random across full screen width (0 to screenWidth)
-   - Y: TOP of screen ONLY (-200 to 0) - lightning comes DOWN
-   - Rotation: 0 to 30 degrees ONLY (downward angle, randomly left or right)
-4. Lightning sprites load from `lightning_bolt_01.png` through `lightning_bolt_04.png`
-5. Width: 100-250px, Height: screenHeight * 1.2
-
-### Lightning Physics (CRITICAL):
-- Lightning ALWAYS comes DOWN from TOP
-- Y position: -200 to 0 (above visible area)
-- Rotation: 0-30 degrees (slight diagonal allowed, NEVER upward)
-
----
-
-## Previous Issue (RESOLVED)
-
-**Handoff document:** `Docs/LIGHTNING_HANDOFF_TO_CODEX.md`
-
-**Issues:**
-1. Lightning bolts not rendering (`resolvedStyle.width=NaN`)
-2. Purple screen on bottom half of UI
-3. Game freezing (started in v2.73-2.74)
-
-**Last stable commit:** `2838ebb` (v2.62) - before lightning changes
-
-**Emergency revert if needed:**
-```bash
-git reset --hard 2838ebb
-```
+> **SINGLE SOURCE OF TRUTH** | Version: **v4.0** | Last updated: 2026-01-27
 
 ---
 
@@ -185,1809 +8,234 @@ git reset --hard 2838ebb
 
 | Field | Value |
 |-------|-------|
-| Engine | **Unity 3D** |
+| Engine | **Unity 3D** (UI Toolkit) |
 | Genre | AAA 3D Real-Time Tactical Monster RPG |
 | Combat Style | Dragon Age: Inquisition action-forward |
-| Art Style | Dark Fantasy Horror (3D models from 2D art) |
-| Resolution | 1920x1080 |
+| Art Style | Dark Fantasy Horror |
 | GitHub | Sharks820/VeilBreakers3D |
-
-### Core Systems
-- Real-time tactical combat with party command system
-- Monster capturing (post-battle phase with QTE)
-- VERA/VERATH demon-in-disguise system
-- 4 Veilbreaker Paths (IRONBOUND, FANGBORN, VOIDTOUCHED, UNCHAINED)
-- **10-Brand system** (complete redesign from 12-brand)
-- Path/Brand synergy (buff-only, no penalties)
-- Corruption system (affects monster obedience)
+| Branch | `backup/pre-unity6` |
 
 ---
 
-## 🎮 UNITY 3D PROJECT STRUCTURE
-
-### Root Folders
-```
-VeilBreakers3D/
-├── Assets/                    # ALL game assets
-│   ├── Art/                   # Visual assets
-│   │   ├── 2D_Reference/      # Original 2D art for 3D conversion
-│   │   │   └── Monsters/      # 2D monster concept art
-│   │   ├── 3D_Models/         # 3D model files
-│   │   │   ├── Characters/    # Player, heroes
-│   │   │   ├── Monsters/      # Monster 3D models
-│   │   │   ├── Props/         # Environmental props
-│   │   │   └── Weapons/       # Weapon models
-│   │   ├── Animations/        # Animation clips
-│   │   │   ├── Characters/    # Player/hero animations
-│   │   │   ├── Monsters/      # Monster animations
-│   │   │   └── Shared/        # Reusable animations
-│   │   ├── Rigs/              # Rigging files
-│   │   │   ├── Characters/    # Character rigs
-│   │   │   └── Monsters/      # Monster rigs
-│   │   ├── Materials/         # Material definitions
-│   │   ├── Textures/          # Texture files
-│   │   └── VFX/               # Visual effects
-│   ├── Audio/                 # Sound assets
-│   │   ├── Music/             # Background music
-│   │   ├── SFX/               # Sound effects
-│   │   └── Voice/             # Voice lines
-│   ├── Data/                  # Game data (JSON, ScriptableObjects)
-│   │   ├── Monsters/          # Monster definitions
-│   │   ├── Skills/            # Skill definitions
-│   │   ├── Items/             # Item definitions
-│   │   └── Brands/            # Brand configurations
-│   ├── Prefabs/               # Prefab assets
-│   │   ├── Characters/        # Character prefabs
-│   │   ├── Monsters/          # Monster prefabs
-│   │   ├── UI/                # UI prefabs
-│   │   └── VFX/               # Effect prefabs
-│   ├── Scenes/                # Unity scenes
-│   │   ├── Main/              # Core game scenes
-│   │   ├── Battle/            # Combat scenes
-│   │   └── Test/              # Testing scenes
-│   ├── Scripts/               # C# scripts
-│   │   ├── Core/              # Core systems (GameManager, EventBus)
-│   │   ├── Combat/            # Battle logic (BattleManager, Combatant)
-│   │   ├── Systems/           # Game systems (Brand, Synergy, Corruption)
-│   │   ├── Data/              # Enums, ScriptableObject definitions
-│   │   ├── Commands/          # Quick Command system (v1.59)
-│   │   ├── Capture/           # Monster capture system (v1.60)
-│   │   ├── Gambits/           # AI Gambits system (v1.58)
-│   │   ├── Audio/             # Audio system (v1.62)
-│   │   ├── UI/                # UI controllers
-│   │   │   └── Combat/        # Combat HUD (v1.61)
-│   │   ├── Managers/          # SaveManager
-│   │   ├── Monsters/          # Monster logic (TODO)
-│   │   ├── Characters/        # Character logic (TODO)
-│   │   ├── Test/              # Test scripts
-│   │   └── Utils/             # Utility scripts
-│   └── UI/                    # UI assets
-│       ├── Sprites/           # UI sprites
-│       ├── Fonts/             # Font files
-│       └── Prefabs/           # UI prefabs
-├── Docs/                      # Documentation
-│   ├── ArtReference/          # Art style guides
-│   ├── Design/                # Design documents
-│   └── LEGACY_Godot/          # [OUTDATED] Old Godot docs
-├── screenshots/               # In-game screenshots (debug)
-├── CLAUDE.md                  # AI agent instructions
-└── VEILBREAKERS.md            # This file (single source of truth)
-```
-
-### 3D Model Naming Convention
-```
-[type]_[name]_[variant].fbx
-monster_hollow_base.fbx
-monster_hollow_corrupted.fbx
-hero_bastion_armor01.fbx
-```
-
-### Animation Naming Convention
-```
-[character]@[action]_[variant].anim
-hollow@idle_loop.anim
-hollow@attack_slash.anim
-hollow@death_fall.anim
-bastion@walk_forward.anim
-```
-
-### Rig File Naming
-```
-rig_[character]_[type].prefab
-rig_hollow_generic.prefab
-rig_bastion_humanoid.prefab
-```
-
----
-
-## 📸 SCREENSHOT PROTOCOL
-
-**Location:** `screenshots/` (root folder)
-
-**Naming Convention:**
-```
-screenshot_[date]_[description].png
-screenshot_2026-01-15_battle_ui_test.png
-screenshot_2026-01-15_monster_hollow_ingame.png
-```
-
-**Use Cases:**
-- Visual verification of in-game assets
-- UI layout debugging
-- Before/after comparisons
-- Bug documentation
-
-**NEVER save screenshots to:** Assets/, Docs/, or project root
-
----
-
-## 🔧 CLAUDE MCP TOOLS (v1.72 - VERIFIED)
-
-**ALL Claude sessions have access to these tools. USE THEM.**
-
-### Configuration Status (Verified 2026-01-24)
-```
-✅ 6 local MCPs configured in .mcp.json (cleaned 2026-01-24)
-✅ All npm packages verified (versions confirmed)
-✅ 2 environment variables set (GITHUB_TOKEN, NOTION_API_KEY)
-✅ Blender addon installed (port 9876)
-✅ Documentation synced
-⚠️ Removed: mcp-hfspace, fish-audio (non-functional)
-```
-
-### Local MCPs (6 Total)
-| MCP | Trigger | What It Does |
-|-----|---------|--------------|
-| **sequential-thinking** | "analyze", "complex" | Multi-step problem solving, game balance |
-| **mcp-unity** | "Unity", "compile", "screenshot" | Control Unity Editor directly |
-| **github** | "PR", "issue", "merge" | GitHub operations |
-| **blender** | "3D model", "mesh", "render" | Control Blender for 3D |
-| **image-process** | "crop", "resize" | Image manipulation |
-| **notion** | "track", "backlog", "database", "doc" | Project management, monster DB, design docs |
-
-### Plugin MCPs (Auto-loaded)
-| MCP | Purpose |
-|-----|---------|
-| **Serena** | Code intelligence (USE FOR ALL CODE) |
-| **Context7** | Unity API documentation |
-| **Greptile** | Cross-repo search |
-| **Episodic Memory** | Past conversation search |
-| **Chrome** | Web browsing |
-
-### Custom Agents (10 Total)
-- **unity-architect** - System design
-- **unity-code-reviewer** - Code review
-- **unity-debugger** - Bug investigation
-- **unity-performance-profiler** - Performance analysis
-- **balance-analyzer** - Game balance validation
-- **vera-dialogue-tester** - VERA personality testing
-- **bug-hunter** - Proactive bug scanning
-- **asset-generator** - Art prompt generation
-- **commit-helper** - Git commits
-- **documentation-writer** - Doc updates
-
-### Environment Variables (Set in system)
-- `GITHUB_TOKEN` ✅ - GitHub operations
-- `NOTION_API_KEY` ⚠️ - Notion project management (needs setup)
-
-**Blender Addon:** Must install addon.py from github.com/ahujasid/blender-mcp (port 9876)
-
-### Audio Stack (FREE - Web Only)
-| Type | Service | Status |
-|------|---------|--------|
-| **Voice** | ElevenLabs / PlayHT | ⚠️ No MCP (use web or local TTS) |
-| **Music** | Udio | ⚠️ No MCP (use web: udio.com, 1,200 free/month) |
-| **SFX** | SFX Engine | ⚠️ No MCP (use web: sfxengine.com, unlimited free) |
-
----
-
-## 🛠️ UNITY DEVELOPMENT BEST PRACTICES
-
-### C# Code Style (Unity Standard)
-```csharp
-// Namespace all scripts
-namespace VeilBreakers.Combat
-{
-    // Class names: PascalCase
-    public class BattleManager : MonoBehaviour
-    {
-        // Constants: PascalCase with k prefix
-        private const int kMaxPartySize = 3;
-
-        // Private fields: _camelCase
-        [SerializeField] private int _currentTurn;
-
-        // Public properties: PascalCase
-        public int CurrentTurn => _currentTurn;
-
-        // Events: PascalCase with On prefix
-        public event Action<int> OnTurnChanged;
-
-        // Methods: PascalCase
-        public void StartBattle() { }
-        private void ProcessTurn() { }
-    }
-}
-```
-
-### ScriptableObject Pattern (Use for Data)
-```csharp
-// Assets/Data/Monsters/
-[CreateAssetMenu(fileName = "Monster", menuName = "VeilBreakers/Monster Data")]
-public class MonsterData : ScriptableObject
-{
-    public string monsterName;
-    public Brand primaryBrand;
-    public int baseHealth;
-    public Sprite portrait;
-    public GameObject modelPrefab;
-}
-```
-
-### Required Namespaces
-| Namespace | Purpose |
-|-----------|---------|
-| `VeilBreakers.Core` | Core systems, managers |
-| `VeilBreakers.Combat` | Battle logic, damage |
-| `VeilBreakers.Monsters` | Monster classes, AI |
-| `VeilBreakers.Characters` | Player, heroes |
-| `VeilBreakers.UI` | UI controllers |
-| `VeilBreakers.Data` | ScriptableObjects, configs |
-| `VeilBreakers.Utils` | Helper classes |
-
-### Manager Pattern (Singleton)
-```csharp
-public class GameManager : MonoBehaviour
-{
-    public static GameManager Instance { get; private set; }
-
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
-}
-```
-
-### Event System (Use UnityEvents for Inspector)
-```csharp
-// For inspector binding
-[SerializeField] private UnityEvent<int> onDamageDealt;
-
-// For code-only events
-public event Action<Monster, int> OnMonsterDamaged;
-```
-
-### Prefab Workflow
-1. Create prefab in `Assets/Prefabs/[Category]/`
-2. Configure components in Inspector
-3. Use prefab variants for differences
-4. Never modify prefab instances directly (use overrides)
-
-### Animation Controller Setup
-```
-Assets/Art/Animations/[Character]/
-├── [Character]_AnimController.controller
-├── [Character]@idle.anim
-├── [Character]@walk.anim
-├── [Character]@attack.anim
-└── [Character]@death.anim
-```
-
-### Layer Management
-| Layer | Purpose |
-|-------|---------|
-| Default | Environment |
-| Player | Player character |
-| Enemies | Enemy monsters |
-| Allies | Allied monsters |
-| UI | UI elements |
-| Projectiles | Attacks |
-| Triggers | Interaction zones |
-
-### Tags
-| Tag | Purpose |
-|-----|---------|
-| Player | Main player |
-| Enemy | Enemy units |
-| Ally | Allied units |
-| Interactable | Clickable objects |
-| Spawn | Spawn points |
-
-### Input System (New Input System)
-Use Unity's new Input System package for:
-- Action maps: `Combat`, `UI`, `Exploration`
-- Rebindable controls
-- Multiple input device support
-
-### Addressables (Recommended)
-Use Addressables for:
-- Monster models (load on demand)
-- Audio files
-- Large textures
-- Level assets
-
----
-
-## 🎨 UI TOOLKIT SYSTEM (v1.94 - COMPLETE)
-
-### Overview
-Complete AAA menu system built with Unity UI Toolkit (USS/UXML).
-
-**Files:**
-- `Assets/UI/Styles/VeilBreakers.uss` - Core stylesheet (700+ lines)
-- `Assets/UI/Styles/VeilBreakersTheme.uss` - Theme extensions
-- `Assets/UI/Templates/*.uxml` - UI document templates
-
-### Completed UI Screens
-
-| Screen | Controller | UXML Template | Status |
-|--------|------------|---------------|--------|
-| **Main Menu** | `MainMenuController.cs` | `MainMenu.uxml` | ✅ Complete |
-| **Settings** | `SettingsPanelController.cs` | `SettingsPanel.uxml` | ✅ Complete |
-| **Character Select** | `CharacterSelectController.cs` | `CharacterSelect.uxml` | ✅ Complete |
-| **Inventory** | `InventoryController.cs` | `Inventory.uxml` | ✅ Complete |
-| **Monster Collection** | `MonsterCollectionController.cs` | `MonsterCollection.uxml` | ✅ Complete |
-| **VERA Dialogue** | `VERADialogueController.cs` | `Dialogue.uxml` | ✅ Complete |
-
-### UI Architecture
-
-```
-Assets/UI/
-├── Styles/
-│   ├── VeilBreakers.uss      # Core styles, all UI components
-│   └── VeilBreakersTheme.uss # Shared theme variables
-├── Templates/
-│   ├── MainMenu.uxml         # Main menu layout
-│   ├── SettingsPanel.uxml    # Settings with tabs
-│   ├── CharacterSelect.uxml  # Hero selection grid
-│   ├── Inventory.uxml        # Item management
-│   ├── MonsterCollection.uxml # Captured monsters
-│   └── Dialogue.uxml         # VERA dialogue system
-│
-Assets/Scripts/UI/
-├── Core/
-│   ├── ThemeManager.cs       # Theme switching, USS variables
-│   └── UIAnimationController.cs # Transitions, animations
-└── Menus/
-    ├── MainMenuController.cs
-    ├── SettingsPanelController.cs
-    ├── CharacterSelectController.cs
-    ├── InventoryController.cs
-    ├── MonsterCollectionController.cs
-    └── VERADialogueController.cs
-```
-
-### USS Class Conventions
-
-| Prefix | Purpose | Example |
-|--------|---------|---------|
-| `.vb-` | VeilBreakers core component | `.vb-button`, `.vb-panel` |
-| `.menu-` | Menu-specific styles | `.menu-item`, `.menu-title` |
-| `.dialogue-` | Dialogue UI styles | `.dialogue-box`, `.dialogue-text` |
-| `.vera-` | VERA portrait/effects | `.vera-portrait`, `.vera-scanlines` |
-| `.inventory-` | Inventory grid styles | `.inventory-tab`, `.item-slot` |
-| `.monster-` | Monster collection | `.monster-card`, `.monster-skill` |
-| `.rarity-` | Rarity border colors | `.rarity-rare`, `.rarity-legendary` |
-| `.corruption-` | Corruption level states | `.corruption-low`, `.corruption-critical` |
-| `.integrity-` | Veil Integrity states | `.integrity-pip`, `.integrity-bar-fill` |
-
-### Asset Mapping Pattern
-Controllers use mapping classes to connect JSON data with Unity assets:
-
-```csharp
-[Serializable]
-public class HeroModelMapping
-{
-    public string heroId;        // Matches HeroData.hero_id from JSON
-    public Sprite portrait;      // Unity asset reference
-    public GameObject modelPrefab;
-}
-
-// In Inspector: Drag assets for each hero_id
-[SerializeField] private List<HeroModelMapping> _heroMappings;
-```
-
-### VERA Dialogue Features
-- **Typewriter effect** with punctuation pauses
-- **Glitch effects** (character swapping, scanlines, flickering)
-- **Veil Integrity bar** with dynamic color states
-- **Choice system** with consequence indicators
-
-### Rarity Colors (Item/Monster)
-| Rarity | Border Color |
-|--------|--------------|
-| COMMON | `#555555` (gray) |
-| UNCOMMON | `#40ff40` (green) |
-| RARE | `#4080ff` (blue) |
-| EPIC | `#a040ff` (purple) |
-| LEGENDARY | `#ffa040` (orange) |
-| MYTHIC | `#ff4080` (crimson) |
-
-### Corruption State Colors
-| State | Range | Bar Color |
-|-------|-------|-----------|
-| ASCENDED | 0-10% | `#40ff80` (bright green) |
-| Purified | 11-25% | `#80c060` (green) |
-| Unstable | 26-50% | `#c0c040` (yellow) |
-| Corrupted | 51-75% | `#c06040` (orange) |
-| ABYSSAL | 76-100% | `#a020ff` (purple) |
-
----
-
-## ⚠️ LEGACY: Godot Utilities (5,285 lines) - [OUTDATED]
-
-> **⚠️ THIS SECTION IS FROM GODOT 2D - NOT APPLICABLE TO UNITY 3D**
-> Kept for reference during transition. Do NOT use in Unity project.
-
-### UIStyleFactory (889 lines) - `scripts/utils/ui_style_factory.gd` [GODOT ONLY]
-| ❌ DON'T DO THIS | ✅ DO THIS INSTEAD |
-|------------------|-------------------|
-| `var label = Label.new()` + font overrides | `UIStyleFactory.create_label("text", FONT_NORMAL, COLOR_PARCHMENT)` |
-| `add_theme_font_size_override("font_size", 14)` | Use `UIStyleFactory.FONT_*` constants |
-| `add_theme_color_override("font_color", Color(...))` | Use `UIStyleFactory.COLOR_*` constants |
-| `var bar = ProgressBar.new()` + styling | `UIStyleFactory.create_hp_bar()` or `create_mp_bar()` |
-| `var style = StyleBoxFlat.new()` + manual setup | `UIStyleFactory.create_dark_panel()` or `create_panel_style()` |
-| `control.mouse_filter = MOUSE_FILTER_PASS` | `UIStyleFactory.set_mouse_pass(control)` |
-| `control.size_flags_horizontal = SIZE_EXPAND_FILL` | `UIStyleFactory.expand_horizontal(control)` |
-| `var btn = Button.new()` + manual styling | `UIStyleFactory.create_button("text")` |
-
-**Key Constants:** `FONT_TINY(9)`, `FONT_SMALL(10)`, `FONT_NORMAL(14)`, `FONT_HEADING(18)`, `FONT_HERO(42)`
-**Key Colors:** `COLOR_PARCHMENT`, `COLOR_GOLD`, `COLOR_HP_VALUE`, `COLOR_MP_VALUE`, `COLOR_DAMAGE`, `COLOR_HEAL`
-
-### AnimationEffects (783 lines) - `scripts/utils/animation_effects.gd`
-| ❌ DON'T DO THIS | ✅ DO THIS INSTEAD |
-|------------------|-------------------|
-| Manual popup fade+scale tween | `AnimationEffects.popup_entrance(popup)` / `popup_exit(popup)` |
-| Button hover scale+modulate tween | `AnimationEffects.button_hover(btn)` / `button_unhover(btn)` |
-| `node.modulate = Color(1.5,...)` flash | `AnimationEffects.flash_white(node)` or `flash_color(node, color)` |
-| Death fade sequence | `AnimationEffects.death_animation(sprite)` |
-| `.set_ease(EASE_OUT).set_trans(TRANS_BACK)` | `AnimationEffects.ease_out_back(tween)` |
-| `node.create_tween().set_parallel(true)` | `AnimationEffects.create_parallel_tween(node)` |
-| Manual position tween | `AnimationEffects.move_to(node, pos)` or `knockback(node, dir)` |
-| Looping modulate pulse | `AnimationEffects.color_pulse_loop(node, color)` |
-
-**Key Functions:** `fade_in()`, `fade_out()`, `slide_in()`, `slide_out()`, `button_press()`, `skill_announcement()`
-
-### NodeHelpers (385 lines) - `scripts/utils/node_helpers.gd`
-| ❌ DON'T DO THIS | ✅ DO THIS INSTEAD |
-|------------------|-------------------|
-| `if is_instance_valid(node): node.queue_free()` | `NodeHelpers.safe_free(node)` |
-| `for child in parent.get_children(): child.queue_free()` | `NodeHelpers.clear_children(parent)` |
-| Manual type filtering in loops | `NodeHelpers.get_children_of_type(parent, Label)` |
-| `if is_instance_valid(node) and node.visible` | `NodeHelpers.is_valid_visible(node)` |
-| `node.visible = true` with validity check | `NodeHelpers.show(node)` / `hide(node)` |
-| `scene.instantiate(); parent.add_child(inst)` | `NodeHelpers.instantiate_to(scene, parent)` |
-| Manual signal connection with duplicate check | `NodeHelpers.safe_connect(source, "signal", callable)` |
-
-### StringHelpers (304 lines) - `scripts/utils/string_helpers.gd`
-| ❌ DON'T DO THIS | ✅ DO THIS INSTEAD |
-|------------------|-------------------|
-| `"%d/%d" % [hp, max_hp]` | `StringHelpers.format_hp(hp, max_hp)` |
-| `"+%d" % value` or `"-%d" % value` | `StringHelpers.format_stat_change(value)` |
-| `"%.0f%%" % (value * 100)` | `StringHelpers.format_percent(value)` |
-| `"Lv. %d" % level` | `StringHelpers.format_level(level)` |
-| `name.replace("_", " ").capitalize()` | `StringHelpers.enum_to_display(name)` |
-| `"[color=#...]text[/color]"` | `StringHelpers.bbcode_color(text, color)` |
-| Manual pluralization | `StringHelpers.pluralize(count, "item")` |
-
-### MathHelpers (228 lines) - `scripts/utils/math_helpers.gd`
-| ❌ DON'T DO THIS | ✅ DO THIS INSTEAD |
-|------------------|-------------------|
-| `float(hp) / float(max_hp)` | `MathHelpers.get_hp_percent(hp, max_hp)` |
-| `clampf(value, 0.05, 0.95)` | `MathHelpers.clamp_probability(value)` |
-| Division without zero check | `MathHelpers.safe_divide(a, b, default)` |
-| Manual damage variance | `MathHelpers.apply_damage_variance(damage)` |
-
-### Constants (635 lines) - `scripts/utils/constants.gd`
-| ❌ DON'T DO THIS | ✅ DO THIS INSTEAD |
-|------------------|-------------------|
-| `await get_tree().create_timer(0.3).timeout` | `await get_tree().create_timer(Constants.WAIT_SHORT).timeout` |
-| `await get_tree().create_timer(0.5).timeout` | `await get_tree().create_timer(Constants.WAIT_STANDARD).timeout` |
-| Hardcoded animation duration | Use `Constants.ANIM_*` or `Constants.UI_*` |
-| Hardcoded damage multipliers | Use `Constants.SKILL_*` or `Constants.DAMAGE_*` |
-
-**Wait Constants:** `WAIT_INSTANT(0.1)`, `WAIT_QUICK(0.2)`, `WAIT_SHORT(0.3)`, `WAIT_STANDARD(0.5)`, `WAIT_LONG(0.8)`
-
----
-
-## LEGACY: Main Menu UI [GODOT 2D - OUTDATED]
-
-> **⚠️ These values are from Godot 2D project - rebuild in Unity**
-
-### Logo
-| Property | Value |
-|----------|-------|
-| Scale | 0.11 |
-| Pulse Range | 0.11 - 0.112 |
-| Position | (960, 160) |
-
-### Buttons
-| Property | Value |
-|----------|-------|
-| Size | 480x220 |
-| Spacing | -200 (HBoxContainer separation) |
-| Container Offset | left=-420, top=-320, right=1100, bottom=-100 |
-| NewGame/Continue Y Offset | -20 (alignment fix) |
-| Position | Right side over lava field, raised to cliff edge |
-
-### Monster Eye Animation (Sprite Sheet)
-| Property | Value |
-|----------|-------|
-| Sprite Sheet | assets/ui/demon_eyes_angular_stretch.png |
-| Dimensions | 1536x1792 (6x7 grid) |
-| Frame Count | 42 frames |
-| Frame Size | 256x256 |
-| Position | (480, 400) |
-| Scale | 0.5 |
-| Frame Rate | 12 FPS |
-| Z-Index | 10 |
-| Source Video | asset_xfXLxe1WPDrs9pbE4TvEjUPz.mp4 |
-| Background | Transparent (white removed via Python PIL) |
-
----
-
-## LEGACY: Battle System [GODOT 2D - OUTDATED]
-
-> **⚠️ This was 2D turn-based. Transitioning to 3D real-time tactical.**
-
-**Status: DEPRECATED - Rebuilding in Unity 3D**
-
-### Architecture
-- BattleManager, TurnManager, DamageCalculator
-- StatusEffectManager, AIController
-- 17 status effects (POISON, BURN, FREEZE, etc.)
-- Lock-in turn order system (v2.8)
-
-### Turn Order System (Lock-in)
-```
-1. PARTY LOCK-IN: All allies select actions (protagonist + AI monsters)
-2. PARTY EXECUTION: All queued actions execute in order
-3. ENEMY PHASE: Enemies get attack phases = alive party count
-4. ROUND END: Return to step 1
-```
-
-**Key States:** PARTY_LOCK_IN, PARTY_EXECUTING, ENEMY_EXECUTING
-
-### Damage Formula
-```
-power * ATK/DEF * level * element * variance * crits
-```
-
-### Battle UI (v4.1)
-| Element | Size | Details |
-|---------|------|---------|
-| Party Sidebar | 170px wide | Left side, green HP/MP bars, death state fading |
-| Enemy Sidebar | 170px wide | Right side, red HP bars, death state fading |
-| Action Bar | 700px centered | Attack, Skills, Purify, Item, Defend, Flee (transparent bg) |
-| Combat Log | 300x220 | Bottom-right corner, draggable, skill names shown |
-| Player Sprite | 0.16 scale | Protagonist |
-| Enemy Sprite | 0.15 scale | Regular monsters |
-| Allied Monster | 0.14 scale | Captured monsters |
-| Boss Sprite | 0.22 scale | Boss encounters |
-| Turn Order | Top bar | Shows character names |
-
-### Recent Fixes (Dec 2025)
-- Lock-in turn system: party selects all actions before execution
-- Turn order display with actual character portraits + arrows
-- Enemy attacks = alive party members count
-- Fixed stat modifier cleanup bug in StatusEffectManager
-- Created KnockbackAnimator with multiple types (normal, critical, heavy, flinch, shake, death)
-- AI healer targeting: +100 threat for healers, +30 for support
-- AOE skill evaluation fixed: per-target bonus 15.0, base bonus 10.0
-- Hit flash shader on damage with fallback modulate
-- Screen shake: 12.0 intensity (crits), 4.0 (big hits)
-- Status effect icons above characters with tooltips
-
----
-
-## Heroes (Path-Based, No Brands) - v1.64 FINAL BALANCE
-
-**8 Heroes Total:** 4 Unlocked at start, 4 Unlockable through gameplay
-**Role:** Commanders who support/amplify monster teams (not primary damage dealers)
-**Resource:** Command Gauge (0-100) - built by attacks (+8), commands (+12), kills (+20)
-
-| Path | Starter Hero | Role | Locked Hero | Role |
-|------|--------------|------|-------------|------|
-| IRONBOUND | **Bastion** | Fortress Commander | **Warden** | Retribution Commander |
-| FANGBORN | **Rend** | Pack Alpha | **Vex** | Kill Coordinator |
-| VOIDTOUCHED | **Marrow** | Life Weaver (Healer) | **Shade** | Entropy Caster |
-| UNCHAINED | **Mirage** | Master of Misdirection | **Flux** | Chaos Catalyst |
-
-**Commander ↔ Fighter Spectrum:**
-```
-COMMANDER ←―――――――――――――――――――――――→ FIGHTER
-IRONBOUND ―― VOIDTOUCHED ―― UNCHAINED ―― FANGBORN
-```
-
-### Balance Philosophy (v1.64)
-**Balance through GATING, not NERFING:**
-- Keep abilities powerful and exciting (+15% to +100% buffs)
-- Gate with cooldowns (12-55s)
-- Gate with Command Gauge costs (15-30 CG)
-- Gate with conditions (requires setup, positioning, synergy)
-- Healing: 1 mechanic per non-healer, 2-3 for dedicated healers
-
-**See:** `Docs/plans/2026-01-19-hero-character-design.md` for full ability details
-
-### Path-Brand Synergy (v7.0 - TIERED)
-
-**Core Philosophy:** Synergy = BUFF. Non-synergy = NEUTRAL. Partial synergy now rewards building toward full composition.
+## Core Game Systems
+
+### 10-Brand Combat System
+
+| Brand | Role | Strong Against (2x) | Weak Against (0.5x) |
+|-------|------|---------------------|---------------------|
+| **IRON** | Tank | SURGE, DREAD | SAVAGE, RUIN |
+| **SAVAGE** | Melee Burst | IRON, MEND | LEECH, GRACE |
+| **SURGE** | Ranged DPS | VENOM, LEECH | IRON, VOID |
+| **VENOM** | DoT/Debuff | GRACE, MEND | SURGE, RUIN |
+| **DREAD** | CC/Terror | SAVAGE, GRACE | IRON, VOID |
+| **LEECH** | Drain Tank | SAVAGE, RUIN | SURGE, VENOM |
+| **GRACE** | Battle Healer | VOID, RUIN | SAVAGE, VENOM |
+| **MEND** | Ward Healer | VOID, LEECH | SAVAGE, VENOM |
+| **RUIN** | AOE Devastator | IRON, VENOM | LEECH, GRACE |
+| **VOID** | Chaos Mage | SURGE, DREAD | GRACE, MEND |
+
+### 4 Veilbreaker Paths
+
+| Path | Strong Synergy Brands | Weak Synergy Brands | Starter Hero | Locked Hero |
+|------|----------------------|---------------------|--------------|-------------|
+| IRONBOUND | IRON, MEND, LEECH | VOID, SAVAGE, RUIN | Bastion | Warden |
+| FANGBORN | SAVAGE, VENOM, RUIN | GRACE, MEND, IRON | Rend | Vex |
+| VOIDTOUCHED | VOID, DREAD, SURGE | IRON, GRACE, MEND | Marrow | Shade |
+| UNCHAINED | All Neutral | None (flex) | Mirage | Flux |
+
+### Path-Brand Synergy (Tiered)
 
 | Tier | Requirement | Damage | Defense | Corruption | Combo? |
 |------|-------------|--------|---------|------------|--------|
-| **FULL** | 3/3 monsters match | +8% | +8% | 0.5x | ✅ YES |
-| **PARTIAL** | 2/3 monsters match | +5% | +5% | 0.75x | ❌ No |
-| **NEUTRAL** | 0-1/3 monsters match | +0% | +0% | 1.0x | ❌ No |
-| **ANTI** | Any Weak brand | +0% | +0% | 1.5x each | ❌ No |
+| **FULL** | 3/3 match | +8% | +8% | 0.5x | YES |
+| **PARTIAL** | 2/3 match | +5% | +5% | 0.75x | NO |
+| **NEUTRAL** | 0-1/3 match | +0% | +0% | 1.0x | NO |
+| **ANTI** | Any Weak brand | +0% | +0% | 1.5x each | NO |
 
-| Path | Strong Synergy Brands | Weak Synergy Brands |
-|------|----------------------|---------------------|
-| IRONBOUND | IRON, MEND, LEECH | VOID, SAVAGE, RUIN |
-| FANGBORN | SAVAGE, VENOM, RUIN | GRACE, MEND, IRON |
-| VOIDTOUCHED | VOID, DREAD, SURGE | IRON, GRACE, MEND |
-| UNCHAINED | All Neutral | None (flex path) |
+### Corruption System
 
-### Combo Abilities (Require FULL 3/3 Synergy)
+| Range | Status | Effect |
+|-------|--------|--------|
+| 0-10% | ASCENDED | +25% all stats |
+| 11-25% | Purified | +10% all stats |
+| 26-50% | Unstable | Normal |
+| 51-75% | Corrupted | -10% all stats |
+| 76-79% | Abyssal | -20% all stats |
+| **80-100%** | **UNTAMED** | Monster uncontrollable |
 
-| Path | Combo | Effect | Cooldown |
-|------|-------|--------|----------|
-| IRONBOUND | Bulwark Formation | +12% defense, 25% damage redirects to tank, 6s | 60s |
-| FANGBORN | Blood Frenzy | +10% damage, attacks heal 3% dealt, 5s | 60s |
-| VOIDTOUCHED | Reality Fracture | 15% chance reset cooldowns on ability use, 8s | 75s |
-| UNCHAINED | Adaptive Surge | Next ability copies to random ally at 40% (instant) | 60s |
+### Monster Evolution
 
-- Heroes get Paths (not Brands) - synergize with multiple monster brands
-- 15 stats per character with growth rates
-- Equipment: weapon, armor, 2 accessories
-
----
-
-## 10-Brand Combat System (v6.0 - NEW)
-
-### The 10 Brands
-
-| Brand | Role | Archetype | Primary Stat |
-|-------|------|-----------|--------------|
-| **IRON** | Tank | Defensive Wall | Defense |
-| **SAVAGE** | Melee Burst | Berserker | Attack |
-| **SURGE** | Ranged DPS | Artillery | Attack |
-| **VENOM** | DoT/Debuff | Poison Master | Effect Power |
-| **DREAD** | CC/Terror | Fear Mage | Control |
-| **LEECH** | Drain Tank | Lifesteal Bruiser | Sustain |
-| **GRACE** | Battle Healer | Combat Medic | Healing |
-| **MEND** | Ward Healer | Shield Support | Healing |
-| **RUIN** | AOE Devastator | Explosion Mage | AOE Damage |
-| **VOID** | Chaos Mage | Reality Warper | Chaos/Random |
-
-### Brand Effectiveness Matrix
-
-Each brand deals **2x damage** to 2 brands, **0.5x damage** to 2 brands, and **1x damage** to 6 brands.
-
-| Attacker | Strong Against (2x) | Weak Against (0.5x) |
-|----------|---------------------|---------------------|
-| IRON | SURGE, DREAD | SAVAGE, RUIN |
-| SAVAGE | IRON, MEND | LEECH, GRACE |
-| SURGE | VENOM, LEECH | IRON, VOID |
-| VENOM | GRACE, MEND | SURGE, RUIN |
-| DREAD | SAVAGE, GRACE | IRON, VOID |
-| LEECH | SAVAGE, RUIN | SURGE, VENOM |
-| GRACE | VOID, RUIN | SAVAGE, VENOM |
-| MEND | VOID, LEECH | SAVAGE, VENOM |
-| RUIN | IRON, VENOM | LEECH, GRACE |
-| VOID | SURGE, DREAD | GRACE, MEND |
-
-### Universal Monster Actions
-
-All monsters have these regardless of Brand:
-
-| Action | Effect | Cooldown |
-|--------|--------|----------|
-| Basic Attack | Brand-flavored auto-attack | None |
-| Defend Self | 50% damage reduction | None |
-| Guard Ally | Intercept, 75% damage redirected | None |
-| Guard Champion | Intercept, 100% damage taken | None |
-
-### 6-Slot Ability Structure
-
-| Slot | Type | Cooldown | Purpose |
-|------|------|----------|---------|
-| 1 | Basic Attack | None | Always available damage |
-| 2 | Defend/Guard | None | Always available defense |
-| 3 | Skill 1 | 4-6 seconds | Spammable utility |
-| 4 | Skill 2 | 10-15 seconds | Core rotation |
-| 5 | Skill 3 | 18-25 seconds | Situational power |
-| 6 | Ultimate | 45-90 seconds | Fight-changer |
+**Pure/Hybrid:** 3 stages (Birth 1-25 → Evo2 26-50 → Evo3 51-100)
+**PRIMAL:** 2 stages (Birth 1-35 → Evolved 36-109 → Overflow 110-120)
 
 ### Party Structure
 - **3 Active** + **3 Backpack** + Unlimited Storage
-- Swap cooldown: 3-5 seconds (for abilities)
-- Basic attacks/defense available immediately on swap
+- Swap cooldown: 3-5s for abilities, instant for basic attacks
 
----
+### 6-Slot Ability Structure
 
-## Evolution & Leveling System (v5.0 - LOCKED)
+| Slot | Type | Cooldown |
+|------|------|----------|
+| 1 | Basic Attack | None |
+| 2 | Defend/Guard | None |
+| 3 | Skill 1 | 4-6s |
+| 4 | Skill 2 | 10-15s |
+| 5 | Skill 3 | 18-25s |
+| 6 | Ultimate | 45-90s |
 
-### Pure/Hybrid Monsters (3 Stages)
-
-| Stage | Level Range | XP Multiplier | Stat Growth/Level |
-|-------|-------------|---------------|-------------------|
-| Birth | 1-25 | 1.0x | Normal |
-| Evo 2 | 26-50 | 1.5x (slower) | +15% bonus |
-| **Evo 3** | 51-100 | **2.5x (much slower)** | **+30% bonus** |
-
-**Evo 3 Pure Brand Bonus:**
-- Brand bonus increases to 120% (was 100%)
-- Unlocks ultimate skill
-- Visual transformation (aura, size, effects)
-
-### PRIMAL Monsters (2 Stages)
-
-| Stage | Level Range | XP Multiplier | Stat Growth/Level |
-|-------|-------------|---------------|-------------------|
-| Birth | 1-35 | **0.6x (very fast)** | Normal |
-| **Evolved** | 36-109 | **0.8x (fast)** | +10% bonus |
-| **Overflow** | 110-120 | 1.0x | **+5% ALL stats/level** |
-
-**PRIMAL Bonuses:**
-- Level cap: 120 (vs 100 for Pure/Hybrid)
-- No Path weakness (neutral to all paths)
-- Both brands count as PRIMARY for skill scaling (50%+50%)
-- Overflow stats Lv110-120: +50% all stats total
-- Brands assigned at Evolution based on monster behavior
-
-### Endgame Power Comparison (~150 hours)
-
-| Monster Type | Likely Level | Strength |
-|--------------|--------------|----------|
-| Pure Evo 3 | ~85 | MASSIVE stats, ultimate skills, specialist |
-| Hybrid Evo 3 | ~88 | Strong stats, versatile coverage |
-| PRIMAL Evolved | ~115 | Highest level, no weakness, flexible |
-
----
-
-## Corruption System (v6.0 - NEW)
-
-### Overview
-Player choices corrupt MONSTERS, not the player. Corruption affects monster obedience and power.
-
-### Corruption Sources
-| Source | Points |
-|--------|--------|
-| Conversational choices | 1-3 |
-| Quest decisions | 8-10 |
-| Major story choices | 25+ |
-
-### Corruption Thresholds
-
-| Corruption % | Status | Effect |
-|--------------|--------|--------|
-| 0-10% | ASCENDED | +25% all stats |
-| 11-25% | Purified | +10% all stats |
-| 26-50% | Unstable | Normal stats |
-| 51-75% | Corrupted | -10% all stats |
-| 76-79% | Abyssal | -20% all stats |
-| **80-100%** | **UNTAMED** | Monster becomes uncontrollable |
-
-### Untamed State (80%+)
-- Monster no longer obeys commands
-- May attack allies or flee
-- Must be purified or released
-
----
-
-## Capture System (v6.0 - NEW)
-
-### Post-Battle Capture Phase
-Capturing occurs AFTER combat ends, not during.
-
-### Capture Formula
+### Capture System (Post-Battle)
 ```
 Capture Chance = f(HP%, Corruption%, Item Tier) + QTE Bonus
 ```
-
-### Capture Items
-
-| Tier | Name | Base Modifier |
-|------|------|---------------|
-| Basic | Veil Shard | +0% |
-| Strong | Veil Crystal | +15% |
-| Master | Veil Core | +30% |
-| Legendary | Veil Heart | +50% |
-
-### Capture Failure Outcomes
-| Monster State | Failure Result |
-|---------------|----------------|
-| Low Corruption | Escapes (flees) |
-| High Corruption | Berserk (+30-50% damage, fight again) |
-
-### QTE Bonus
-Successful Quick Time Event adds +5-15% to capture chance.
+Items: Veil Shard (+0%) → Crystal (+15%) → Core (+30%) → Heart (+50%)
+Failure: Flee (low corrupt) or Berserk (high corrupt)
 
 ---
 
-## MCP & Plugin Arsenal
+## Project Structure
 
-### Active MCP Servers (6 Local + 5 Plugin)
+```
+Assets/
+├── Scripts/           # C# code (VeilBreakers.* namespaces)
+│   ├── Core/          # GameManager, EventBus, Constants
+│   ├── Combat/        # BattleManager, DamageCalculator, Combatant
+│   ├── Systems/       # BrandSystem, SynergySystem, CorruptionSystem
+│   ├── UI/            # UI controllers
+│   └── Data/          # Enums, ScriptableObjects
+├── Art/               # Visual assets (3D_Models/, Textures/, VFX/)
+├── Audio/             # Music/, SFX/, Voice/
+├── Data/              # JSON data, ScriptableObjects
+├── Prefabs/           # Prefab assets
+├── Scenes/            # Unity scenes
+└── UI/                # UI Toolkit (Styles/, Templates/)
+Docs/                  # Documentation (plans/, MIGRATION_PLAN.md)
+screenshots/           # Debug screenshots only
+```
 
-**Local (.mcp.json):**
-| Server | Purpose | Usage Trigger |
-|--------|---------|---------------|
-| sequential-thinking | Complex problem decomposition | "Design...", "Plan...", system architecture |
-| image-process | Image manipulation (crop, resize) | 2D UI asset pipeline |
-| **mcp-unity** | Unity Editor control | Run builds, get debug output, scene manipulation |
-| **blender** | 3D modeling via Blender | Create/edit 3D models, render |
-| **github** | GitHub integration | PRs, issues, CI/CD, code review (PAT-based) |
-| **notion** | Project management | Track tasks, design docs, backlog |
-
-**Plugin-provided:**
-| Server | Purpose | Usage Trigger |
-|--------|---------|---------------|
-| Context7 | Unity API docs (23k snippets) | Before writing ANY Unity C# |
-| Serena | C# semantic code tools | Any code modification |
-| Greptile | Codebase-wide search | "Where is X used?" |
-| Episodic Memory | Cross-session conversation history | Every session start |
-| Chrome | Browser automation | Web research (rare) |
-
-**DELETED (2026-01-17):**
-- ~~memory~~ - Redundant (VEILBREAKERS.md is single source of truth)
-- ~~sentry~~ - Not configured
-
-### Installed Claude Code Plugins (17 Active - Cleaned 2026-01-17)
-
-#### Official Plugins (11)
-| Plugin | Purpose |
-|--------|---------|
-| frontend-design | UI/UX design assistance |
-| context7 | Unity API docs (23k snippets) |
-| serena | C# semantic code intelligence |
-| code-review | Code review assistance |
-| security-guidance | Security best practices |
-| feature-dev | Feature development |
-| commit-commands | Git commit assistance |
-| pr-review-toolkit | Pull request reviews |
-| agent-sdk-dev | Agent/VERA development |
-| greptile | Codebase-wide semantic search |
-| **csharp-lsp** | **C# language server (Unity!)** |
-
-#### Superpowers Marketplace (6)
-| Plugin | Purpose |
-|--------|---------|
-| double-shot-latte | Prevents "continue?" interruptions |
-| superpowers-chrome | Browser automation |
-| episodic-memory | Cross-session conversation memory |
-| elements-of-style | Clear writing style |
-| superpowers | Core workflows (brainstorm, plan, execute) |
-| superpowers-lab | Duplicate function detection |
-
-#### Removed Plugins (2026-01-17)
-| Plugin | Reason |
-|--------|--------|
-| ralph-wiggum | Caused intrusive popups |
-| explanatory-output-style | Caused code popups |
-| superpowers-developing-for-claude-code | Not developing plugins |
-| typescript-lsp | Not using TypeScript |
-| pyright-lsp | Not using Python |
-| gopls-lsp | Not using Go |
-| clangd-lsp | Not using C/C++ |
-| github | Broken (requires Copilot) |
-| sentry | Not configured |
-
-### Custom VeilBreakers Agents (.claude/agents/)
-
-**Unity Development:**
-| Agent | Purpose |
-|-------|---------|
-| unity-architect | System architecture design |
-| unity-code-reviewer | Unity-specific code review |
-| unity-debugger | Systematic Unity debugging |
-| unity-performance-profiler | Performance analysis |
-
-**Game-Specific:**
-| Agent | Purpose |
-|-------|---------|
-| balance-analyzer | Game balance validation |
-| vera-dialogue-tester | VERA personality testing |
-| bug-hunter | Proactive bug detection |
-| asset-generator | AI art with VeilBreakers style |
-
-### Custom VeilBreakers Skills (.claude/skills/)
-
-| Skill | Purpose |
-|-------|---------|
-| unity-component-design | Design MonoBehaviour/ScriptableObject |
-| unity-performance-check | Pre-commit performance check |
-| veilbreakers-balance-check | Balance validation |
-| veilbreakers-vera-test | VERA dialogue testing |
-
-### Memory Protocol
-**VEILBREAKERS.md is THE source of truth.** Memory MCP should reflect this file's content.
-
-When memory MCP is available:
-1. Create entities for: Heroes, Brands, Paths, Systems
-2. Relations should match Brand effectiveness wheel
-3. Observations should match Lessons Learned section
-
-**Tools are LOCAL ONLY** - never committed to git:
-- `.claude/skills/` - Claude Code skills
-- `.claude/rules/` - Claude Code rules
-
-### Asset Pipeline
-1. Generate art with AI tools
-2. Image Process resizes/crops to spec
-3. Unity imports to Assets/
-4. Verify in-game with Play mode
+### Naming Conventions
+- 3D Models: `[type]_[name]_[variant].fbx` (e.g., `monster_hollow_base.fbx`)
+- Animations: `[character]@[action]_[variant].anim` (e.g., `hollow@attack_slash.anim`)
+- Namespaces: `VeilBreakers.Core`, `.Combat`, `.Systems`, `.UI`, `.Data`
 
 ---
 
-## Trello Board
+## C# Code Standards
 
-**Board:** VEILBREAKERS GAME DEV
-**URL:** https://trello.com/b/6VhzFXH3/veilbreakers
+```csharp
+namespace VeilBreakers.Combat
+{
+    public class BattleManager : MonoBehaviour
+    {
+        private const int kMaxPartySize = 3;        // Constants: k prefix
+        [SerializeField] private int _currentTurn;  // Private: _ prefix
+        public int CurrentTurn => _currentTurn;     // Properties: PascalCase
+        public event Action<int> OnTurnChanged;     // Events: On prefix
+    }
+}
+```
 
-### Lists
-| List | ID |
-|------|-----|
-| BACKLOG | 6950d4eb393f78982014d8e5 |
-| SPRINT | 6950d4ec787ad16c300203c9 |
-| IN_PROGRESS | 6950d4ecff7a641faf2597c6 |
-| TESTING | 6950d4ec9a6a7a3910f3fd16 |
-| BUGS | 6950d4ed076082243950cf2e |
-| IDEAS | 6950d4edb39f6b5aeed96742 |
+**Patterns:**
+- Singletons: `Instance` property with `DontDestroyOnLoad`
+- Data: ScriptableObjects for monsters, skills, items
+- Events: C# `Action<T>` or `UnityEvent` for Inspector binding
+- Pooling: `ObjectPool<T>` for frequently spawned objects
 
-### Labels
-battle, ui, art, audio, vera, monsters, critical
+---
+
+## UI System (UI Toolkit)
+
+| Screen | Controller | Status |
+|--------|------------|--------|
+| Main Menu | MainMenuController.cs | ✅ |
+| Settings | SettingsPanelController.cs | ✅ |
+| Character Select | CharacterSelectController.cs | ✅ |
+| Inventory | InventoryController.cs | ✅ |
+| Monster Collection | MonsterCollectionController.cs | ✅ |
+| VERA Dialogue | VERADialogueController.cs | ✅ |
+
+**USS Classes:** `.vb-` (core), `.menu-`, `.dialogue-`, `.vera-`, `.inventory-`, `.monster-`, `.rarity-`, `.corruption-`
+
+**Rarity Colors:** Common (#555), Uncommon (#40ff40), Rare (#4080ff), Epic (#a040ff), Legendary (#ffa040), Mythic (#ff4080)
+
+---
+
+## MCP & Tools
+
+### Local MCPs (6)
+| MCP | Purpose |
+|-----|---------|
+| sequential-thinking | Complex problem solving |
+| mcp-unity | Unity Editor control |
+| github | PRs, issues, CI |
+| blender | 3D modeling |
+| image-process | Image manipulation |
+| notion | Project management |
+
+### Plugin MCPs
+Serena (code), Context7 (Unity docs), Greptile (search), Episodic Memory, Chrome
+
+### Custom Agents
+unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler, balance-analyzer, vera-dialogue-tester, bug-hunter, asset-generator, commit-helper, documentation-writer
+
+---
+
+## Critical Lessons (Don't Repeat)
+
+### Unity Gotchas
+- **NEVER** create files named `nul`, `con`, `prn`, `aux`, `com1-9`, `lpt1-9` (Windows reserved - causes infinite import loop)
+- **NEVER** reference fonts that don't exist in project (UI disappears)
+- **NEVER** use `Find()` or `FindObjectOfType()` in Update - cache references
+- **NEVER** allocate in Update (no `new`, no LINQ, no string concat)
+- Delete `Library/` folder to fix import loops (Unity rebuilds it)
+
+### UI Toolkit Lessons
+- Scrollbar positioning buggy in programmatic popups - hide scrollbar, use mouse wheel
+- UXML files need valid asset GUIDs, not placeholders
+- Set `alphaIsTransparency: 1` in texture .meta files for transparency
+- Set `overflow: visible` on particle containers (not hidden)
+
+### Save System
+- Use `Path.ChangeExtension()` not `.Replace()` for file paths
+- Add timeout to mutex operations (prevent silent failures)
 
 ---
 
 ## User Preferences
 
-- Prefers visual verification with screenshots
-- Wants auto-commit + push on all commits
-- Likes AAA quality animations
-- Prefers subtle, fast button animations
-- Values pixel-perfect alignment
-- **Use csharp-lsp** for C# validation before committing
-- Add all new requirements/tools to memory files
-- **UI must be fresh** - Don't port old Godot UI patterns, build new in Unity UI Toolkit
-- **USE SONNET (claude-sonnet-4-5-20250929)** - Primary model. Opus 4.5 wastes tokens. Sonnet is the workhorse.
+- Visual verification with screenshots
+- Auto-commit + push on all commits
+- AAA quality, pixel-perfect alignment
+- Fresh Unity UI (don't port Godot patterns)
+- **Use Sonnet** for primary work (Opus wastes tokens)
 
 ---
 
-## Lessons Learned
+## Design Documents
 
-### FAILED (Don't Repeat) - GODOT ERA (Archived)
-> These are from Godot 2D. Keep as historical reference only.
-- Lightning effects - background already has them
-- Custom eye drawing - artwork has them
-- Complex logo animation - caused glitching
-- Fake transparency (checker pattern) - use REAL alpha
-- Spine/Cutout rigging for 2D - Too complex, now using 3D
-
-### UNITY LESSONS (Active)
-*Building this section as we learn*
-
-- **UI Toolkit > UGUI** for complex UIs (better styling, USS)
-- **DOTween** for animations (replaces Godot tweens)
-- **ScriptableObjects** for game data (monsters, skills, items)
-- **Events** for decoupling (C# events or UnityEvents)
-- **Object pooling** for frequently spawned objects
-- **Addressables** for async asset loading
-- **Library folder corruption** - Delete entire Library/ to fix import loops (Unity rebuilds it)
-- **AAA Menu Animations (v2.51)** - Lightweight dramatic animations using coroutines + easing functions
-  - Elastic/Bounce/BackOut easing for "WOW" factor without lag
-  - Staggered button entrances (0.15s delay between each)
-  - Hover glow effects via dynamic CSS class application
-  - Keep animations lightweight: no heavy particles, just smooth interpolation
-- **UI Theme vs Game Systems** - CRITICAL distinction:
-  - UI theme colors (buttons, panels, tooltips) can change for visual redesign
-  - Game system colors (brands, rarities) are GAMEPLAY MECHANICS - don't touch!
-  - Example: VOID brand purple is a game system, menu button purple is UI theme
-- **Comprehensive Bug Analysis (v2.52-v2.54)** - Full codebase audit and performance optimization:
-  - Analyzed 87+ C# files across all systems
-  - Found 2 CRITICAL (SaveFileHandler path, SaveManager mutex) - ✅ FIXED v2.53
-  - Found 7 HIGH (GC allocations in combat, lambda closures, singleton patterns) - ✅ 4/7 FIXED v2.54
-  - Found 19 MEDIUM/LOW optimization opportunities
-  - Overall code quality: GOOD - solid architecture, proper event handling
-  - Report saved to: `Docs/BUG_AND_OPTIMIZATION_REPORT.md`
-  - Key strengths: pre-allocated buffers, cached objects, proper Unity lifecycle
-  - **Phase 1 Complete (v2.53)**: All critical data integrity issues resolved
-    - Replaced `.Replace()` with `Path.ChangeExtension()` for safe file path handling
-    - Added 5-second mutex timeout to prevent silent save/load failures
-  - **Phase 2 In Progress (v2.54)**: High priority performance optimizations - 4/7 complete
-    - UIParticleController: Random.Range() → Perlin noise (eliminates GC in Update)
-    - GameManager: Lazy singleton → quit flag pattern (prevents phantom objects)
-    - BattleManager: Removed array allocation in combat (uses buffer directly)
-    - EventBus: ClearAllListeners → editor-only with [Conditional] attribute
-- **Font Import Workflow (v2.91)** - CRITICAL: Assets must exist in Unity BEFORE referencing them:
-  - ❌ WRONG: Update USS to reference font files → Import fonts later
-  - ✅ CORRECT: Import font .ttf files to Unity → Update USS to reference them
-  - Referencing non-existent fonts causes entire UI to disappear (no fallback)
-  - Always test font changes in Play Mode immediately after import
-  - Document created: `Docs/FONT_OPTIMIZATION_AAA.md` (3 complete font packages ready)
-
-### MCP LESSONS (Active)
-- **Greptile** uses Bearer token auth, NOT OAuth. Add with: `claude mcp add --transport http greptile https://api.greptile.com/mcp --header "Authorization: Bearer [key]"`
-- **mcp-unity** requires Unity Editor open with MCP package installed
-- **Blender MCP** requires Blender running with addon.py loaded
-
-### UNITY GOTCHAS (Avoid These)
-- Don't use `Find()` or `FindObjectOfType()` in Update - cache references
-- Don't allocate in Update (no `new`, no LINQ, no string concat)
-- Don't forget to unsubscribe events in OnDisable/OnDestroy
-- SerializeField private > public fields for Inspector
-- Use `[RequireComponent]` to ensure dependencies
-- **NEVER create files named `nul`, `con`, `prn`, `aux`, `com1-9`, `lpt1-9`** - Windows reserved names cause Unity infinite import loops. Fix: backup Scripts folder, create new one, copy files excluding bad names, delete Library folder, reopen Unity
+| Document | Location |
+|----------|----------|
+| Combat UI | Docs/plans/2026-01-17-combat-ui-design.md |
+| Gambits AI | Docs/plans/2026-01-18-gambits-ai-design.md |
+| Status Effects | Docs/plans/2026-01-18-status-effects-design.md |
+| Quick Commands | Docs/plans/2026-01-18-quick-command-design.md |
+| Monster Capture | Docs/plans/2026-01-18-monster-capture-design.md |
+| Save/Load | Docs/plans/2026-01-19-save-load-system-design.md |
+| Audio System | Docs/plans/2026-01-19-audio-system-design.md |
+| Hero Design | Docs/plans/2026-01-19-hero-character-design.md |
+| Implementation | Docs/plans/2026-01-19-implementation-strategy.md |
+| Migration | Docs/MIGRATION_PLAN.md |
 
 ---
 
-## Version History
+## Current Status
 
-| Commit | Description |
-|--------|-------------|
-| bebbda3 | VEILBREAKERSV2 - Complete system restoration |
-| 7c71562 | Add GDAI MCP, minimal-godot MCP, godot-docs MCP |
-| e89dfed | Enable Godot VCS integration + Git MCP |
-| d67bf4e | Main menu button layout finalized |
-
----
-
-## Session Log
-
-| Date | Summary |
-|------|---------|
-| 2026-01-26 | **v2.55: Phase 2 Complete (6/7 HIGH fixes)** - Fixed Combatant.cs LINQ RemoveAll (manual reverse iteration), MainMenuController.cs LINQ ToList (cached button list). All critical + 6 high priority performance issues resolved. Only CharacterSelectController lambda closures remain. |
-| 2026-01-25 | **v2.40: GODOT MIGRATION 100% COMPLETE** - Created VERASystem.cs (dual personality, veil integrity, glitch effects), SettingsManager.cs (full PlayerPrefs persistence), added AudioMixer support to AudioManager.cs, added ErrorLogger.Settings(). Created UNITY6_MIGRATION_PLAN.md (5-phase upgrade plan). Unity-specific features (Input System, Addressables, Cinemachine) deferred to Unity 6 for better implementation. **Ready for Unity 6 upgrade!** |
-| 2026-01-26 | v2.47: **USER PREF: Claude 4.1 Opus preferred over Opus 4.5** - Opus 4.5 too verbose/token-wasteful. Use claude-opus-4-20250514 instead. |
-| 2026-01-26 | v2.46: Dropdown popup now absolute with z-index 4000, 260px max-height + auto-scroll to keep in-view; scrollview remains relative; crimson theme intact. |
-| 2026-01-25 | v2.36: Fixed UI Toolkit text rendering - USS was using TMP font (LiberationSans SDF) instead of TTF. Changed to Arial.ttf with proper Unity GUID reference. Added UITextSettingsSetup editor script. Addressables package auto-initialized. |
-| 2026-01-24 | v2.35: Rider IDE setup (added com.unity.ide.rider package), UI text fix - replaced placeholder GUIDs in 6 UXML files, added global font definition to USS |
-| 2025-12-29 | Consolidated memory to single VEILBREAKERS.md file |
-| 2025-12-29 | v2.3: Security fix - removed API keys from git history |
-| 2025-12-29 | v2.4: Screenshot organization - all screenshots to screenshots/ folder |
-| 2025-12-30 | v3.0: New Capture System - 4 methods (ORB, PURIFY, BARGAIN, FORCE), 4 orb tiers, 80%+ corruption baseline |
-| 2025-12-31 | v3.7: Monster XP/leveling system, level up notifications, XP distribution to allied monsters |
-| 2025-12-31 | v3.8: Battle animation interface in CharacterBase, victory->overworld transition for dev testing |
-| 2025-12-31 | v4.0: Battle UI overhaul - party/enemy sidebars with portraits, centered action bar, combat log with scroll |
-| 2025-12-31 | v4.1: Sidebar HP/MP bars now update on damage/heal/skill use via metadata references |
-| 2025-12-31 | v4.2: Bug fixes - debug code removal, tween memory leaks, BargainUI Color fix, EventBus.skill_used signal |
-| 2025-12-31 | v4.3: Critical fixes - DataManager innate_skills, status icon display on panels, CrashHandler init, SaveManager integration |
-| 2025-12-31 | v4.5: Target highlighting - RED for enemies, BLUE for allies with glow effects |
-| 2026-01-01 | v5.0: **MAJOR** - Brand System v5.0 LOCKED (12 brands, 3 tiers, evolution system) |
-| 2026-01-01 | v5.2: Removed deprecated Element system, modernized to Brand-only damage |
-| 2026-01-01 | v5.2.4: Fixed game_manager.gd to use new 4-Path system |
-| 2026-01-01 | v0.53: Fixed Variant type inference errors in player_character.gd, added AGENTS.md + opencode.json |
-| 2026-01-02 | **v0.60: MAJOR** - Agent architecture (6 agents), documentation system, style guide, version format change |
-| 2026-01-02 | v0.61: Battle UI polish - VERA tutorial panel repositioned with continue button, combat log skill names + battle header, damage rebalanced (15-35 dmg), larger monster sprites, transparent action bar, sidebar death state handling |
-| 2026-01-04 | **v0.96: CODE DEDUPLICATION** - Major refactoring, utility systems created |
-| 2026-01-04 | **v1.16: CLEANUP** - Removed tools/ from git (258K lines). Tools are LOCAL DEV ONLY. Documented rigging failure. |
-| 2026-01-04 | **v1.21: HOLLOW EXPANSION** - 8 sprite sheets configured, 7 new skills, Scenario MCP added |
-| 2026-01-12 | v1.28: Lint fixes - renamed shadowed `material` to `particle_material` in battle_monster_sprite.gd |
-| 2026-01-13 | v1.29: Memory protocol - VEILBREAKERS.md is single source of truth, tools stay LOCAL (not in git) |
-| 2026-01-14 | v1.34: Character Select fixes - confirmation popup centering, VERA portrait caching, hero card idle animation, highlight state management |
-| 2026-01-15 | **v1.35: MAJOR REDESIGN** - VeilBreakers3D combat system, 10-Brand system (from 12), real-time tactical combat, Path/Brand synergy (buff-only), corruption mechanics, post-battle capture with QTE |
-| 2026-01-15 | v1.36: Added 26 Claude Code plugins (19 official + 7 superpowers), updated MCP servers (3 active), added mandatory session protocols |
-| 2026-01-15 | **v1.37: 3D ORGANIZATION** - Complete Unity 3D folder structure, 3D model/animation/rig naming conventions, marked all Godot sections as LEGACY/OUTDATED, screenshot protocol added |
-| 2026-01-15 | **v1.38: LEGACY CLEANUP** - Moved Godot docs to Docs/LEGACY_Godot/ with README warning, created 40+ Unity 3D asset folders with .gitkeep files, full branch/file structure documented |
-| 2026-01-17 | **v1.39: MCP ARSENAL OPTIMIZATION** - Deleted 3 redundant MCPs (memory, github, sentry), documented usage triggers for all 7 MCPs, added mcp-unity installation plan, created Docs/plans/2026-01-17-mcp-arsenal-design.md |
-| 2026-01-17 | **v1.40: COMBAT SYSTEM v2.0** - 6-slot abilities (basic, defend, 3 skills, ultimate), tiered synergy (full/partial/neutral/anti), rebalanced combo abilities, AAA rigging/animation/facial pipeline design doc |
-| 2026-01-17 | **v1.41: COMBAT IMPLEMENTATION** - Implemented 10-brand effectiveness matrix (2x/0.5x), SynergySystem (full/partial/neutral/anti tiers), AbilityLoadout (6-slot with cooldowns), Combatant base class, DamageCalculator, BattleManager, EventBus combat events, comprehensive test script |
-| 2026-01-17 | **v1.42: SERENA PROTOCOL** - Added mandatory Serena Code Intelligence Protocol to CLAUDE.md. Serena now required for all code operations to save 70-90% tokens. Documented when to use Serena vs basic tools. |
-| 2026-01-17 | **v1.43: SUPERPOWERS WORKFLOW** - Added mandatory 3-phase workflow: (1) Brainstorm → (2) Write Plan → (3) Execute Plan. Review checkpoints require Serena + C# LSP analysis before proceeding. |
-| 2026-01-17 | **v1.44: MIGRATION PLAN & TOOL PROTOCOLS** - Created Docs/MIGRATION_PLAN.md (48% complete, weighted tracking). Plugin cleanup (26→17): removed Ralph Wiggum, explanatory-output-style, 5 unused LSPs, broken plugins. Complete CLAUDE.md overhaul: removed Godot content, added Protocol #5 (Migration), Protocol #10 (Tool Protocols for all 17 plugins + 7 MCPs), Tool Usage Matrix. |
-| 2026-01-17 | **v1.45: CUSTOM AGENTS & SKILLS** - Added 3 new MCPs (mcp-unity, game-asset-generator, github). Created 8 custom agents: unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler, balance-analyzer, vera-dialogue-tester, bug-hunter, asset-generator. Created 4 custom skills: unity-component-design, unity-performance-check, veilbreakers-balance-check, veilbreakers-vera-test. AAA studio vision established. |
-| 2026-01-18 | **v1.46: AGENT OPTIMIZATION** - Upgraded 6 agents to Opus model (unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler, balance-analyzer, vera-dialogue-tester). Created 2 new Haiku agents (commit-helper, documentation-writer). Created 3 MCP skills (unity-editor-control, generate-game-asset, github-workflow). Added Agent Orchestration Protocol to CLAUDE.md. |
-| 2026-01-18 | **v1.47: COMBAT UI DESIGN** - Completed full UI brainstorming session. Final approved HUD: Player info (top-left), Enemy info (top-center), Menu icons (top-right), Allies floating (right side vertical), Skills with keybinds (bottom-center), Capture banner with C keybind (bottom-right). Game-style floating elements, NO webpage boxes. Single C button for capture (mark → flash → capture). Updated Docs/plans/2026-01-17-combat-ui-design.md to v2.0 FINAL. |
-| 2026-01-18 | **v1.48: GAMBITS AI DESIGN** - Completed Utility-based AI system design for all 10 brands. Dragon Age Tactics style with presets + customizable thresholds. Brand-specific multipliers: IRON (tank/guard), SAVAGE (execute DPS), SURGE (ranged kite), VENOM (DoT/debuff), DREAD (CC chain), LEECH (drain sustain), GRACE (reactive heal), MEND (proactive shield), RUIN (AOE cluster), VOID (chaos/desperation). Universal multipliers: Execute (<25% HP = ×2.5-3.0), Focus fire (debuffed = ×1.5), Tank avoidance (no shred = ×0.3-0.5). Ultimate Override Window (5s player priority). Created Docs/plans/2026-01-18-gambits-ai-design.md. |
-| 2026-01-18 | **v1.49: STATUS EFFECTS DESIGN** - Complete status effect system: Brand+Type dual categories, no-stacking rule (AI won't target with same effect), scaling formula (Base×Stat×SkillRank×BrandEffectiveness). 11 Control effects (Stun→Petrify), 20+ Buffs (stat/defensive/offensive/utility/emergency), 20+ Debuffs (stat downs/vulnerabilities/restrictions/anti-sustain/death sentences). Cleanse removes 1-3 by skill rank with AI triage (Doom>CC>DoT>Stat). VOID steals buffs instead of dispelling. Created Docs/plans/2026-01-18-status-effects-design.md. |
-| 2026-01-18 | **v1.50: QUICK COMMAND DESIGN** - Radial wheel ally command system. Q opens menu (25% time slow), click/Enter confirms. Commands: Attack/Defend Target, Defend Player, On Me (auto-defend+attack threats+reform), Fall Back, Reposition (ground target), Return to Formation. Tactical presets: Aggressive/Defensive/Support/Focus/Protect. 12s cooldown per ally after commanding. TAB cycles enemies, CTRL cycles allies. Created Docs/plans/2026-01-18-quick-command-design.md. |
-| 2026-01-18 | **v1.51: MONSTER CAPTURE DESIGN** - Two-phase system: C marks during combat (allies switch to Bind mode), post-battle QTE capture. Bind threshold based on corruption (LOW=easier +15%, HIGH=harder -15%), rarity, speed, brand, intimidation. Capture formula: HP% + Corruption + Rarity (Common 0%, Legendary -75%) + Level diff (±3-5%/level) + Items (Shard +10% → Heart +50%) + QTE. Items INCREASE chance, never guarantee. Failure: Flee (70% low corrupt) or Berserk (70% high corrupt), either possible at any level. Legendary requires top-tier items. Created Docs/plans/2026-01-18-monster-capture-design.md. |
-| 2026-01-19 | **v1.52: SAVE/LOAD SYSTEM DESIGN** - Shrine-based save zones: manual save only within discovered shrine radius (large areas have multiple shrines). 3 save slots + dedicated auto.sav. Auto-save on story objectives + all boss victories. JSON + AES-256 encryption. SaveData stores IDs (stats recalculated on load for balance patches). Sequential migrations (v1→v2→v3). Load screen shows: hero portrait, level, path, location, playtime, strongest monster. Settings global via PlayerPrefs. Created Docs/plans/2026-01-19-save-load-system-design.md. |
-| 2026-01-19 | **v1.53: BULLETPROOF SAVE SYSTEM** - Enterprise-grade corruption prevention: 11-layer protection (magic bytes, SHA-256 checksum, GZip compression, atomic writes, write verification, disk space check, 3x retries, flush to disk, rotating backups .bak1/.bak2, save mutex, orphan cleanup). Partial recovery via regex fallback. Opt-in telemetry sends corrupted files for analysis. Hold-to-delete/overwrite UI. Auto-save after character creation + tutorial battle. Unity async/await with Awaitable.BackgroundThreadAsync(). Target: <0.001% corruption, >95% recovery. |
-| 2026-01-19 | **v1.54: AAA AUDIO SYSTEM** - Full immersive audio: FMOD primary + Wwise spatial. Full voice (VERA, heroes, NPCs, unique per monster). Adaptive music (horizontal+vertical layers). VERA voice dynamically changes with Veil Integrity. Veil proximity audio (whispers, distortion, otherworldly). Low health heartbeat+frantic music. Environmental zones with time/weather variants. Smart contextual loading: predictive preloading, ~250MB budget, zero latency. Accessibility: mono, subtitles, sound descriptions, visualize cues. Created Docs/plans/2026-01-19-audio-system-design.md. |
-| 2026-01-19 | **v1.55: IMPLEMENTATION STRATEGY + PHASE 1 FOUNDATION** - Created comprehensive implementation strategy document (8 phases, agent coordination, quality gates). Completed Phase 1 Foundation: EventBus expanded to 50 events (+14 new: save/load, shrine, progression triggers). Created ObjectPool<T> generic pooling utility with IPoolable interface and GameObjectPool wrapper. Code reviewed by unity-code-reviewer. Migration 49% complete. |
-| 2026-01-19 | **v1.89: CRITICAL FIX - Unity Infinite Import Loop** - Fixed corrupted Unity project caused by Windows reserved filename "nul" in Assets/Scripts. Solution: backup Scripts folder, create fresh folder, copy all files EXCEPT nul/nul.meta, delete entire Library folder. Unity rebuilt cleanly. Added gotcha to CLAUDE.md: NEVER create files named nul/con/prn/aux/com1-9/lpt1-9. |
-| 2026-01-20 | **v1.94-1.98: AAA MENU UI SYSTEM** - Complete UI Toolkit implementation: VeilBreakers.uss (base styles), VeilBreakersTheme.uss (color theme), all UXML templates. Controllers: MainMenuController.cs, MainMenuBootstrap.cs, SettingsPanelController.cs, CharacterSelectController.cs, InventoryController.cs, MonsterCollectionController.cs, VERADialogueController.cs. Core: ThemeManager.cs, UIAnimationController.cs. Bug fixes: ErrorLogger.Warning→Warn, added GameManager.ResetGame(), fixed IStyle borderColor/borderRadius. Migration 49%→92%! |
-| 2026-01-24 | **v2.21: AI INTELLIGENCE SYSTEM** - Comprehensive intelligence scaling for monster AI. Smarts scale with Rarity+Level+Evolution (additive, not capped - trained Commons can match base Legendaries). Attack AI: combo detection, threat assessment, overkill prevention, ultimate timing. Healer AI: smart triage, role priority, DOT awareness, optimal buff/cleanse targets. Defender AI: defensive timing, anticipation, team awareness. BattleContext expanded: GetOptimalHealTarget, GetOptimalBuffTarget, GetOptimalCleanseTarget, threat tracking, damage estimation. Training now genuinely makes monsters smarter! |
-| 2026-01-24 | **v2.30-2.34: UI TOOLKIT FIXES** - Fixed compile errors (SingletonMonoBehaviour inheritance, StatusEffectType.WEAKNESS→DEFENSE_DOWN). Fixed UXML stylesheet GUIDs (were "placeholder"). Added Arial.ttf font for UI text rendering. Fixed PanelSettings scale mode (ScreenMatchMode=1, Match=1 for height-based scaling). Fixed Bootstrap scene loading (wait for VBSceneManager singleton). Scene flow: Bootstrap→MainMenu working. **GOTCHA: UXML files need valid GUIDs, not placeholders. UI Toolkit needs a font file in project!** |
+- **UI System:** Complete (all 6 screens)
+- **Core Systems:** Implemented (Brand, Synergy, Corruption, EventBus)
+- **Combat:** Framework ready, needs 3D integration
+- **Title Screen:** Monster art with transparent PNG, lightning effects
+- **Migration:** ~92% complete to Unity standards
+- **Next:** Unity 6 upgrade prep
 
 ---
 
-## CURRENT STATUS (2026-01-25)
-
-### 🎯 CURRENT STATUS: Migration 100% Complete ✅ → READY FOR UNITY 6
-
----
-
-### PHASE 1: QUICK WINS (Get to 55%)
-*Estimated: 1-2 hours*
-
-| Task | Category | Impact |
-|------|----------|--------|
-| ✅ Create ErrorLogger.cs | Core | +4% Core (80→100%) |
-| ✅ Create StatusEffectData.cs | Data | +10% Data (90→100%) |
-| ✅ Create Extensions.cs | Utils | +25% Utils |
-
-**ErrorLogger.cs** - Simple Debug.Log wrapper:
-```csharp
-// Assets/Scripts/Core/ErrorLogger.cs
-public static class ErrorLogger {
-    public static void Log(string msg) => Debug.Log($"[VB] {msg}");
-    public static void Warn(string msg) => Debug.LogWarning($"[VB] {msg}");
-    public static void Error(string msg) => Debug.LogError($"[VB] {msg}");
-}
-```
-
----
-
-### PHASE 2: COMBAT COMPLETION (Get to 65%)
-*Estimated: 3-4 hours*
-
-| Task | Category | Design Doc |
-|------|----------|------------|
-| 🔲 StatusEffectManager.cs | Combat | 2026-01-18-status-effects-design.md |
-| 🔲 AIController.cs | Combat | 2026-01-18-gambits-ai-design.md |
-
-**StatusEffectManager** requirements:
-- ScriptableObject-based effect definitions
-- Apply/Remove/Tick effects
-- Brand+Type dual categorization
-- No-stacking rule enforcement
-- Cleanse with AI triage (Doom>CC>DoT>Stat)
-
-**AIController** requirements:
-- Utility-based decision making
-- Brand-specific multipliers (10 brands)
-- Universal multipliers (Execute, Focus Fire, Tank Avoidance)
-- Presets (Aggressive/Defensive/Support/Focus/Protect)
-
----
-
-### PHASE 3: UI FOUNDATION (Critical for Testing)
-*Estimated: 4-6 hours*
-
-| Task | Priority | Notes |
-|------|----------|-------|
-| 🔲 UI Toolkit Setup | HIGH | USS base styles, UXML templates |
-| 🔲 Battle UI (basic) | HIGH | Player HP, enemy HP, skill bar |
-| 🔲 Combat Log | MEDIUM | Scrollable damage/skill display |
-
-**UI Toolkit Setup**:
-1. Create `Assets/UI/Styles/VeilBreakers.uss` (base stylesheet)
-2. Create `Assets/UI/Templates/` folder structure
-3. Set up UIDocument on main canvas
-
----
-
-### PHASE 4: REMAINING SYSTEMS (After UI)
-
-| System | Priority | Notes |
-|--------|----------|-------|
-| 🔲 Save/Load | HIGH | Bulletproof design ready |
-| 🔲 AudioManager | MEDIUM | FMOD integration |
-| 🔲 CaptureSystem | MEDIUM | Post-battle QTE |
-| 🔲 VERASystem | LOW | AI dialogue (needs UI first) |
-| 🔲 Input System | LOW | Rebindable controls |
-
----
-
-### MIGRATION QUICK REFERENCE
-
-```
-Current: 100% Complete ✅ → UNITY 6 MIGRATION READY
-
-├── Core:      100% ✅ (GameManager, EventBus, ErrorLogger, GameDatabase)
-├── Combat:    100% ✅ (BattleManager, AI Gambits, StatusEffects)
-├── Data:      100% ✅ (All data models complete)
-├── UI:        100% ✅ (Combat HUD + AAA Menu System!)
-├── Audio:     100% ✅ (AudioManager + AudioMixer support)
-├── Save:      100% ✅ (SaveManager, AutoSave, Migrations)
-├── Systems:   100% ✅ (Brand, Synergy, Corruption, Path, VERA)
-├── Managers:  100% ✅ (VBSceneManager, SettingsManager complete!)
-├── Utils:     100% ✅ (ObjectPool, Extensions, GameObjectPool)
-└── Unity:     ⏸️ DEFERRED (Input System, Addressables, Cinemachine → Unity 6)
-```
-
----
-
-### 12 DESIGN DOCUMENTS READY
-All designs complete - IMPLEMENTATION ONLY tomorrow!
-
----
-
-## DESIGN DOCUMENTS COMPLETE (12 Total)
-
-| Document | File |
-|----------|------|
-| Combat System | 2026-01-15-combat-system-design.md |
-| Combat Implementation | 2026-01-17-combat-implementation-plan.md |
-| Combat UI | 2026-01-17-combat-ui-design.md |
-| Rigging/Animation | 2026-01-17-rigging-animation-facial-design.md |
-| MCP Arsenal | 2026-01-17-mcp-arsenal-design.md |
-| Gambits AI | 2026-01-18-gambits-ai-design.md |
-| Status Effects | 2026-01-18-status-effects-design.md |
-| Quick Command | 2026-01-18-quick-command-design.md |
-| Monster Capture | 2026-01-18-monster-capture-design.md |
-| Save/Load System | 2026-01-19-save-load-system-design.md |
-| Audio System | 2026-01-19-audio-system-design.md |
-| **Implementation Strategy** | 2026-01-19-implementation-strategy.md |
-| **Unity 6 Migration** | UNITY6_MIGRATION_PLAN.md |
-
----
-
-## IMPLEMENTATION STATUS (v1.54)
-
-**C# Code Ready:**
-- ✅ 10-Brand effectiveness system (BrandSystem.cs)
-- ✅ Tiered synergy system (SynergySystem.cs)
-- ✅ 6-slot ability structure (AbilityData.cs, Enums.cs)
-- ✅ Combatant base class (Combatant.cs)
-- ✅ Damage calculation (DamageCalculator.cs)
-- ✅ Real-time battle manager (BattleManager.cs)
-- ✅ Combat events in EventBus
-- ✅ Comprehensive test script (CombatTestSetup.cs)
-
-**Needs Implementation:**
-- ❌ StatusEffectManager (design complete)
-- ❌ AIController / Gambits (design complete)
-- ❌ QuickCommandSystem (design complete)
-- ❌ CaptureSystem (design complete)
-- ❌ Combat UI (design complete)
-- ❌ Save/Load (design complete - bulletproof)
-- ❌ Audio (design complete - AAA immersive)
-
----
-
-## LEGACY: Hollow Sprite Sheets [GODOT 2D - OUTDATED]
-
-> **⚠️ 2D sprite sheets - Now using 3D models. Keep as reference for 3D conversion.**
-
-**Original Task**: Use Scenario MCP to remove gray backgrounds from 5 sprite sheets.
-
-**Files to create** (save to assets/sprites/monsters/sheets/):
-- hollow_claw_sheet.png (4x4) - X-slash, beam, death
-- hollow_hurt_sheet.png (4x4) - Hurt reactions, stagger  
-- hollow_tendril_sheet.png (4x4) - Sweep, lance, orb
-- hollow_vortex_sheet.png (4x4) - Channel, whip, vortex
-- hollow_power_sheet.png (4x5) - Rage mode, heavy attacks
-
-**Skills created**: shadow_rend, void_orb, tendril_lash, tendril_sweep, consuming_vortex, dread_surge, abyssal_rage
-
----
-
-## LEGACY: Recent Godot Changes (v0.96) [OUTDATED]
-
-> **⚠️ These changes were for Godot 2D project**
-
-### New Utility Systems (scripts/utils/) [GODOT]
-- **BrandSystem** - Centralized brand effectiveness, colors, and classification
-- **UIStyleFactory** - Standardized StyleBoxFlat creation for panels, buttons, bars
-- **AnimationEffects** - Reusable flash, shake, fade, scale, button hover effects
-
-### Deleted Files (archive/deprecated_scripts/)
-- bargain_system.gd (duplicate of active)
-- bargain_ui.gd (duplicate of active)
-- battle_camera_controller.gd (older version)
-- battle_ui_animator.gd (older version)
-- battle_sequencer.gd (older version)
-- screen_effects_manager.gd (older version)
-- vfx_manager.gd (byte-for-byte duplicate)
-- damage_number_system.gd (refactored into damage_number.gd + damage_number_spawner.gd)
-
-### Refactored Files
-- `damage_calculator.gd` - Uses BrandSystem for effectiveness calculations
-- `ai_controller.gd` - Uses BrandSystem (removed 50+ lines of duplicate code)
-- `game_manager.gd` - Removed duplicate window setup (handled by ErrorLogger)
-- `audio_manager.gd` - Added ambience caching to prevent disk reloads
-
----
-
-## LEGACY: Recent Godot Changes (v0.53-v0.60) [OUTDATED]
-
-> **⚠️ These changes were for Godot 2D project**
-
-### Removed Systems [GODOT]
-- **Element System** - Completely removed (was deprecated)
-  - Deleted `Element_DEPRECATED` enum and `Element` alias from enums.gd
-  - Removed legacy Path values (SHADE, TWILIGHT, NEUTRAL, LIGHT, SERAPH)
-  - Removed `BRAND_BONUSES_DEPRECATED` dictionary from constants.gd
-  - Updated damage_calculator.gd for Brand-only effectiveness
-
-### Fixed Files
-- `game_manager.gd` - `get_current_path()` renamed to `get_dominant_path()`, uses PathSystem
-- `player_character.gd` - Fixed Variant type inference (line 167, 175)
-- `damage_calculator.gd` - Rewritten for Brand-only effectiveness
-- `character_base.gd` - Removed `elements` property
-- `monster.gd`, `monster_data.gd` - Removed element references
-- `skill_data.gd` - Removed deprecated `element` export
-- `item_data.gd` - Removed `element_affinity` export
-- `helpers.gd` - Removed `get_element_color()` function
-- `data_manager.gd` - Removed `get_skills_by_element()`
-- `status_effect_manager.gd` - Removed element-based immunities
-
-### New Files
-- `AGENTS.md` - Instructions for AI coding agents (OpenCode format)
-- `opencode.json` - MCP server configuration for OpenCode (15 servers)
-
----
-
-## Session Log - 2026-01-19 (v1.77)
-
-### Comprehensive Error Verification
-
-**12 Parallel Bug-Hunter Agents Deployed:**
-| Folder | Issues Found | Critical |
-|--------|--------------|----------|
-| Data/ | 15 | 0 |
-| UI/ | 7 | 0 |
-| Managers/ | 11 | 1* |
-| Audio/ | 8 | 0 |
-| Capture/ | 16 | 1 |
-| Test/ | 12 | 0 |
-| Combat/ | 12 | 0 |
-| Commands/ | 11 | 2 |
-| Core/ | 12 | 0 |
-| AI/ | 11 | 1 |
-| Systems/ | 2 | 0 |
-| Full Code Review | 1 | 1 |
-
-*Note: Managers CRITICAL was false positive - CompressionLevel fix is correct
-
-**4 Previous Fixes Verified 100% Correct:**
-1. ✅ `DamageResult.wasBlocked/wasDodged` - DamageCalculator.cs:94-95
-2. ✅ `Combatant.GetMagic()` - Combatant.cs:88
-3. ✅ `AbilityLoadout.GetCooldownRemaining/Duration` - AbilityData.cs:90-103
-4. ✅ `System.IO.Compression.CompressionLevel` fully qualified - SaveFileHandler.cs:464
-
-**NEW Critical Issues Discovered (Pending Fix):**
-1. ❌ Duplicate `StatusEffectInstance` class in Combatant.cs (lines 354-368) - conflicts with Systems/StatusEffectInstance.cs
-2. ❌ `GambitCondition.Create()` missing `statusEffectType` initialization for status conditions
-3. ❌ `RadialMenuController.cs:262` - null reference on `_commandOptions` access
-4. ❌ `CaptureFormulaCalculator.cs:83` - MonsterRarity bounds (MYTHIC=5 clamped to 4)
-5. ❌ `SkillBarController.cs:183` - Index mapping bug for skill cooldowns (HIGH priority)
-
-**Verification Method:**
-- Sequential-thinking MCP for structured analysis
-- Unity MCP offline C# LSP for symbol verification
-- 12 parallel agent deployment across all script folders
-- 118 total issues cataloged across codebase
-
----
-
-## Session Log - 2026-01-19 (v1.66)
-
-### Performance Optimizations (v1.66)
-
-**BattleManager.cs:**
-- Removed LINQ from Update() loop - replaced with manual for loops
-- Removed LINQ from CheckBattleEnd() - manual loop for alive checks
-- Removed LINQ from GetGuardInterceptor() - manual loop
-- Removed LINQ from RecalculateSynergy() - pre-allocated Brand[] buffer
-- Added pre-allocated buffer `_brandBuffer` to avoid GC allocation
-
-**StatusEffectManager.cs:**
-- Replaced 6 LINQ hot path methods with manual loops:
-  - HasEffect(), HasEffectCategory(), GetEffect()
-  - GetStatModifier(), CanAct(), ApplyEffect() existing check
-- Methods now allocation-free for combat performance
-
-**GambitController.cs:**
-- Added `[RequireComponent(typeof(Combatant))]` attribute
-
-**HealthBarController.cs / CaptureBannerController.cs:**
-- Cached `WaitForSeconds` instances to avoid GC allocation in coroutines
-
----
-
-## Session Log - 2026-01-19 (v1.65)
-
-### Unity Integration & Testing Infrastructure
-
-**New Files Created:**
-- `Assets/Scripts/Core/GameBootstrap.cs` - Initializes all managers in correct order
-- `Assets/Scripts/Test/TestArenaManager.cs` - Spawns test battles with configurable combatants
-- `Assets/Scripts/Editor/TestArenaSetup.cs` - Unity menu tools for creating test scenes
-- `Docs/UNITY_INTEGRATION_GUIDE.md` - Comprehensive setup guide
-
-**Critical Bug Fixes:**
-- `BattleManager.cs` - Fixed event subscription memory leak (OnDeath handlers now properly tracked and unsubscribed)
-- `CaptureManager.cs` - Completed capture flow TODOs:
-  - HandleCaptureSuccess now adds monsters to party via GameManager
-  - HandleCaptureFailure properly removes fleeing monsters
-  - Added RemoveMonsterFromBattle helper method
-  - Berserk monsters now signal battle resume via EventBus
-
-**Code Analysis Results:**
-- 81 C# files analyzed
-- 47 issues found (3 Critical, 5 High, 12 Medium, 27 Low)
-- Critical issues fixed this session
-
-**Unity Scene Setup:**
-- VeilBreakers → Create Test Arena Scene (menu)
-- Auto-creates GameBootstrap, TestArenaManager, spawn points, UI Canvas
-- Run All System Tests and System Health Check menu options
-
----
-
-## SESSION HANDOFF (v2.04 - 2026-01-22)
-
-### What Was Done This Session
-
-**Environment Updates:**
-- Claude Code updated: 2.1.7 → 2.1.17
-- PowerShell 7.5.4 confirmed current
-
-**Terminal Recommendation (for Unity dev):**
-- **PowerShell 7 + Windows Terminal** is the most powerful combo for Unity game dev
-- Native .NET/C# integration, object pipeline, Unity CLI designed for Windows shells
-- WezTerm is an alternative if Shift+Enter in Claude Code is needed
-
-**New Plugins Installed (Community Recommended):**
-- **claude-hud** - Shows context %, active tools, running agents, todo progress (always visible)
-- **dx** (ykdojo) - 40+ tips, `/dx:clone`, `/dx:gha`, handoff docs
-
-**New Skills Created:**
-- **`/mockup-ui`** - MANDATORY before any UI work, generates FLUX AI image mockups
-- **`/draw-diagram`** - MANDATORY before system design, shows ASCII/Mermaid diagrams
-
-**Keyboard Shortcuts (Important):**
-| Key | Action |
-|-----|--------|
-| `Ctrl+O` | Toggle verbose mode (see Claude's thinking) |
-| `Ctrl+T` | Toggle task list display |
-| `Shift+Tab` | Toggle Plan Mode |
-| `/fork` | Clone conversation |
-| `/clear` | Fresh context (use often!) |
-
-**CLAUDE.md Updated:**
-- Added Protocol 6.5: Visual Preview Before Implementation (MANDATORY)
-- Added Protocol 6.6: Workflow Visibility Plugins
-- Added mockup-ui and draw-diagram to skills table
-
----
-
-## SESSION HANDOFF (v2.03 - 2026-01-22)
-
----
-
-## SESSION HANDOFF (v2.01 - 2026-01-21)
-
-### What Was Completed This Session
-
-**Bug Fixes:**
-- Fixed `GameDatabase.cs` - Added null checks for all 4 JSON wrapper arrays
-- Fixed `SynergySystem.cs` - Tier logic now uses `>= 3` instead of `== 3` for FULL tier
-
-**UI Auto-Bootstrap System Created:**
-- `MenuBootstrap.cs` - Uses `[RuntimeInitializeOnLoadMethod]` to auto-create UI at runtime
-- `UIAutoSetup.cs` - Alternative Resources-based asset loading system
-- UI assets copied to `Assets/Resources/UI/` for runtime loading
-
-**Scenes Created (Assets/Scenes/):**
-| Scene | Purpose | Auto-Loads |
-|-------|---------|------------|
-| `MainMenu.unity` | Main menu with buttons | MainMenu.uxml + MainMenuController |
-| `CharacterSelect.unity` | Character/party selection | CharacterSelect.uxml + CharacterSelectController |
-| `TestArena.unity` | 3D gameplay arena with floor/lighting | N/A (gameplay scene) |
-
-**Build Settings Updated:**
-- All 3 scenes added to EditorBuildSettings
-- MainMenu is scene index 0 (default start scene)
-
-### How to Test UI
-
-1. Open Unity
-2. Open `Assets/Scenes/MainMenu.unity`
-3. Press Play
-4. Menu auto-initializes (no manual setup needed)
-
-### Known State
-
-| System | Status |
-|--------|--------|
-| Code Migration | 92% complete |
-| UI System | Working (auto-bootstrap) |
-| Combat System | Code complete, needs visual testing |
-| Save System | Code complete |
-| Audio System | Code complete |
-
-### Next Session Priorities
-
-1. **Test the UI in Unity** - Verify MainMenu loads and buttons work
-2. **Add 3D visuals** - Characters/monsters in TestArena
-3. **VERA dialogue system** - Connect to UI
-4. **Combat HUD** - Integrate with BattleManager
-
-### Files Created This Session
-
-```
-Assets/Scripts/UI/Core/MenuBootstrap.cs      # Auto-bootstraps UI on scene load
-Assets/Scripts/UI/Core/UIAutoSetup.cs        # Alternative manual setup
-Assets/UI/VeilBreakersPanelSettings.asset    # UI scaling settings
-Assets/Resources/UI/VeilBreakersPanelSettings.asset
-Assets/Resources/UI/Templates/*.uxml         # All UXML templates
-Assets/Resources/UI/Styles/*.uss             # All stylesheets
-Assets/Scenes/MainMenu.unity
-Assets/Scenes/CharacterSelect.unity
-Assets/Scenes/TestArena.unity
-```
-
----
-
-## SESSION HANDOFF (v2.60 - 2026-01-26)
-
-### CRITICAL DROPDOWN FIX (Issue Resolved)
-
-**Problem:**
-- Dropdowns appeared at the bottom of the entire settings panel instead of directly below the field
-- Clicking dropdowns caused the settings box to glitch and shrink
-- User reported: "WHEN I CLICK THE DAMN THING IT DROPS DOWN FROM THERE, NOT JUST RANDOMLY APPEARING UNDER THE WHOLE SETTINGS BOX"
-
-**Root Cause:**
-- Previous fix (v2.57) added CSS overrides for `.unity-popup-window` and `.unity-base-dropdown__container-outer`
-- These CSS rules fought Unity's native dropdown positioning logic
-- `position: relative` on container-outer caused parent to resize when dropdown appeared
-- `position: absolute` with z-index made dropdown appear at wrong screen location
-
-**Solution:**
-- **REMOVED all position/z-index CSS overrides** from dropdown classes
-- Let Unity's native positioning system handle dropdown placement
-- Kept styling (colors, borders, padding, shadows) but removed positioning
-- Unity now correctly calculates dropdown position relative to trigger element
-
-**CSS Changes:**
-```css
-/* BEFORE (v2.57-v2.59) - BROKEN */
-.unity-popup-window {
-    position: absolute !important;
-    z-index: 9999 !important;
-}
-.unity-base-dropdown__container-outer {
-    position: relative/absolute !important;  /* Both tried, both failed */
-    z-index: 10000 !important;
-}
-
-/* AFTER (v2.60) - WORKS */
-.unity-base-dropdown__container-outer {
-    /* NO position, NO z-index - Unity handles it */
-    background-color: rgb(18, 14, 18);
-    border-color: rgb(180, 40, 60);
-    /* ...styling only... */
-}
-```
-
-**Affected Dropdowns (All Now Working):**
-- Resolution dropdown (Display Mode settings)
-- Display Mode dropdown (Fullscreen/Windowed/Borderless)
-- Quality Preset dropdown (Low/Medium/High/Ultra)
-
-### Files Modified This Session
-
-```
-Assets/UI/Styles/VeilBreakers.uss                    # Removed dropdown positioning overrides
-Assets/Scripts/UI/Effects/UIParticleController.cs    # Complete rewrite (v2.59)
-```
-
-### Lesson Learned
-
-**DO NOT override Unity UI Toolkit's positioning system for dropdown popups.** Unity dynamically calculates popup positions based on trigger element location and available screen space. CSS overrides break this calculation and cause:
-- Wrong positioning (appearing at bottom of panel instead of below field)
-- Parent container resizing glitches
-- Z-index fighting between CSS and Unity's runtime styles
-
-**Rule:** Only style appearance (colors, borders, shadows), never override position/z-index for Unity-managed popups.
-
----
-
-## SESSION HANDOFF (v2.59 - 2026-01-26)
-
-### What Was Completed This Session
-
-**PARTICLE SYSTEM ENHANCEMENT (Task #7 COMPLETE):**
-
-Transformed the particle system from basic CSS circles into a dramatic dark crimson lightning effect system. The new particles create an **ominous, foreboding atmosphere** perfect for VeilBreakers' dark fantasy horror aesthetic.
-
-**New Particle Types:**
-
-1. **Lightning Sparks** (8 particles)
-   - Sharp angular particles with rapid rotation
-   - Fast diagonal movement (-80 to -56 px/s upward)
-   - Rapid flicker effect (3x frequency sine wave)
-   - Creates electric energy feel
-   - Color: Bright crimson `rgb(217, 64, 89)` = `(0.85, 0.25, 0.35)`
-
-2. **Lightning Bolts** (3 bolts)
-   - Vertical screen-height crimson bolts
-   - Random triggers every 3.5-7 seconds
-   - 0.15 second flash duration (quick bright → fade)
-   - Creates dramatic atmosphere spikes
-   - Color: `rgb(230, 77, 102)` = `(0.90, 0.30, 0.40)` with white glow borders
-
-3. **Dark Embers** (12 particles)
-   - **DARKENED** from old bright crimson to ominous dark red
-   - Old: `rgb(179, 64, 77)` → New: `rgb(115, 26, 38)` = `(0.45, 0.10, 0.15)`
-   - Glow border: Brighter `rgb(179, 41, 61)` = `(0.70, 0.16, 0.24)`
-   - Slow rotation (±30°/s) for organic movement
-   - Float upward with Perlin noise drift
-
-4. **Very Dark Dust** (20 particles)
-   - **DARKENED** even further for subtle depth
-   - Color: `rgb(51, 31, 38)` = `(0.20, 0.12, 0.15)` - nearly black
-   - Extremely subtle, barely visible background particles
-   - Slow wraparound movement
-
-5. **Veil Pulses** (3 background circles)
-   - Slowed down from 0.5 to 0.4 speed (more ominous)
-   - Darker base color: `rgb(128, 31, 46)` = `(0.50, 0.12, 0.18)`
-   - Gentler pulsing (0.12 scale variation instead of 0.15)
-   - Lower opacity (0.02 base + 0.015 pulse)
-
-**Performance Optimizations:**
-
-- **Object Pooling**: 100-particle pre-allocated pool, zero GC in Update loop
-- **Pre-sized Collections**: All Lists initialized with exact capacity (no reallocations)
-- **Clamped Speeds**: All particle velocities clamped to prevent runaway values
-- **Perlin Noise**: Used for organic movement (no Random allocations in Update)
-- **Active Flags**: Particles can be deactivated without destroying (pool reuse)
-
-**Visual Impact:**
-
-```
-BEFORE:                          AFTER:
-  ● ● ●                          ⚡ ✦ ✧ [BOLT FLASH!]
- ● ○ ● ●                         ✦ ✨ ⚡ ✧
-● ● ○ ●                          ✧ ✦ ✨ ⚡
- ● ● ●                           ⚡ ✧ ✦
-  ● ●                            ✦ ✨
-
-Bright solid circles            Dark ominous crimson lightning
-Flat, static feeling            Dynamic, dramatic atmosphere
-No variation                    Sharp sparks + occasional bolts
-```
-
-**Technical Details:**
-
-- **ParticleType Enum**: EMBER, DUST, SPARK, LIGHTNING
-- **Rotation Support**: Particles can rotate for electric effect
-- **Enhanced Rendering**: Better border glows, sharper spark shapes
-- **Lightning Timing**: `_nextLightningTime` with random intervals (3.5-7s)
-- **Total Active Particles**: 43 max (12 embers + 20 dust + 8 sparks + 3 bolts)
-
-**Color Palette (Dark & Ominous):**
-
-| Particle | RGB | Normalized | Purpose |
-|----------|-----|------------|---------|
-| Ember | (115, 26, 38) | (0.45, 0.10, 0.15) | Dark crimson glow |
-| Ember Glow | (179, 41, 61) | (0.70, 0.16, 0.24) | Bright border |
-| Dust | (51, 31, 38) | (0.20, 0.12, 0.15) | Nearly black |
-| Spark | (217, 64, 89) | (0.85, 0.25, 0.35) | Electric crimson |
-| Lightning | (230, 77, 102) | (0.90, 0.30, 0.40) | Bolt flash |
-| Veil | (128, 31, 46) | (0.50, 0.12, 0.18) | Dark background pulse |
-
-### Files Modified This Session
-
-```
-Assets/Scripts/UI/Effects/UIParticleController.cs    # Complete rewrite: 415→650 lines, added sparks/lightning/pooling
-```
-
-### Next Session Priorities
-
-1. **Unity 6 Upgrade** - ALL pre-upgrade tasks complete, ready to migrate
-2. **3D Model Integration** - Import hero/monster 3D models
-3. **Combat HUD** - Build battle interface
-4. **Audio Integration** - Add background music, SFX triggers
-
-### Performance Notes
-
-**Before Enhancement:**
-- 40 particles (15 embers + 25 dust)
-- ~0.5 KB allocations per frame (minor GC pressure)
-- Simple Update loops
-
-**After Enhancement:**
-- 43 particles (12 embers + 20 dust + 8 sparks + 3 lightning)
-- **ZERO allocations in Update loop** (object pooling)
-- More particles, better performance
-- Dramatic visual upgrade with no performance cost
-
----
-
-## SESSION HANDOFF (v2.58 - 2026-01-26)
-
-### What Was Completed This Session
-
-**CRITICAL UI FIXES (All Tasks Completed Before Unity 6 Upgrade):**
-
-1. **Fixed Settings Dropdown Positioning Bug** (v2.57)
-   - Added `.unity-popup-window` CSS with `z-index: 9999 !important`
-   - Changed `.unity-base-dropdown__container-outer` from `position: absolute` to `position: relative`
-   - Dropdowns now appear directly below fields instead of at bottom of panel
-
-2. **Added Brand/Path Affinity Names to Character Cards** (v2.57)
-   - Character cards now show "IRON • IRONBOUND" style labels
-   - Brand name colored with hero-specific color
-   - Path name in neutral gray
-   - Added below hero name, above brand indicator circles
-
-3. **Fixed Hero Color Palettes** (v2.56)
-   - Bastion: Changed from gray to **BLUE** rgb(60, 140, 220) = (0.24, 0.55, 0.86)
-   - Mirage: Changed from purple to **GREEN** rgb(40, 200, 80) = (0.16, 0.78, 0.31)
-   - All hero colors now correct throughout UI
-
-4. **Optimized CharacterSelectController** (v2.56)
-   - Eliminated lambda closure allocations in CreateHeroCard loop
-   - Created `HeroCardEventHandler` class for reusable event handlers
-   - Cached handlers in `_heroCardHandlers` list to prevent GC allocations
-
-5. **Updated Version Display** (v2.58)
-   - Changed from "v0.1.0 Alpha" to "v2.58 Alpha" in MainMenu footer
-
-6. **Settings Panel Polish** (v2.56)
-   - Dropdown scrollbar: Thin crimson style with hover/active states
-   - Close X button: Perfectly centered with scale transitions
-   - Tab colors: Lighter gray for better visibility (165, 155, 145)
-   - Character details scrollbars: Already properly configured (verified)
-
-### Tasks Status
-
-| Task | Status | Notes |
-|------|--------|-------|
-| CharacterSelectController lambda closures | ✅ | Eliminated GC allocations |
-| Settings dropdown positioning | ✅ | Fixed with .unity-popup-window CSS |
-| Settings scrollbar styling | ✅ | Thin crimson with hover states |
-| Settings close button alignment | ✅ | Perfectly centered |
-| Settings font colors | ✅ | Lighter gray tabs |
-| Character details scrollbars | ✅ | Already complete |
-| Hero color accuracy | ✅ | Bastion blue, Mirage green |
-| Brand/Path affinity names | ✅ | Added to character cards |
-| Version display | ✅ | Updated to v2.58 |
-| Particle enhancement | ⚠️ | Deferred - particles work, need image sprites |
-| Character selection functionality | ✅ | Likely fixed by above changes |
-
-### Technical Details
-
-**Dropdown Fix Explanation:**
-- Unity UI Toolkit creates dropdown menus as `.unity-popup-window` elements at root level
-- Without CSS for popup-window, they positioned incorrectly (bottom of container)
-- Solution: High z-index on popup-window, relative positioning on container-outer
-
-**Hero Color System:**
-- Colors stored in `Assets/Resources/Data/heroes.json`
-- Each hero has `color_palette` with RGBA values (0-1 range)
-- Colors theme entire UI when hero selected (card borders, details panel, path badge)
-
-**Performance Optimization:**
-- Lambda closures in loops create per-iteration allocations
-- Solution: Reusable event handler class with cached instances
-- Pattern: Create handler object, cache in list, register handler methods (not lambdas)
-
-### Files Modified This Session
-
-```
-Assets/Scripts/UI/Menus/CharacterSelectController.cs  # Lambda optimization + Brand/Path labels
-Assets/UI/Styles/VeilBreakers.uss                     # Dropdown positioning fix
-Assets/UI/Templates/SettingsPanel.uxml                # Close button alignment
-Assets/Resources/Data/heroes.json                     # Bastion/Mirage colors
-Assets/UI/Templates/MainMenu.uxml                     # Version display
-```
-
-### Next Session Priorities
-
-1. **Unity 6 Upgrade** - All menus perfected, ready for engine upgrade
-2. **Particle Image Assets** - Create/source sprite textures for embers, sparks, dust
-3. **3D Model Integration** - Import hero/monster 3D models
-4. **Combat HUD** - Build battle interface
-
-### Known Issues
-
-- **Particles work but basic** - Currently use colored circles, need image-based sprites
-- **Quality dropdown no choices in code** - UXML has choices, but controller doesn't set them (line 109 has choices="Low,Medium,High,Ultra")
-
----
-
-*Claude Code reads this file at the start of every session per CLAUDE.md protocol.*
+*Memory optimized v4.0 - Reduced from 1300+ lines to essential reference*
