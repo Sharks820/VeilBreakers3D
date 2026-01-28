@@ -920,23 +920,27 @@ namespace VeilBreakers.UI.Menus
                     hero.color_palette.b,
                     1f
                 );
-                
+
                 if (_monsterSectionBar != null)
                     _monsterSectionBar.style.backgroundColor = heroColor;
                 if (_monsterSectionLabel != null)
                     _monsterSectionLabel.style.color = heroColor;
             }
-            
-            // Get signature monster from recommended_monsters
-            if (hero.recommended_monsters != null && hero.recommended_monsters.Length > 0)
-            {
-                string signatureMonsterId = hero.recommended_monsters[0];
 
+            // Get starter monster - prefer starter_monster_id, fallback to recommended_monsters[0]
+            string starterMonsterId = hero?.starter_monster_id;
+            if (string.IsNullOrEmpty(starterMonsterId) && hero?.recommended_monsters != null && hero.recommended_monsters.Length > 0)
+            {
+                starterMonsterId = hero.recommended_monsters[0];
+            }
+
+            if (!string.IsNullOrEmpty(starterMonsterId))
+            {
                 // Try to get monster data from GameDatabase
                 MonsterData monsterData = null;
                 if (GameDatabase.Instance != null)
                 {
-                    monsterData = GameDatabase.Instance.GetMonster(signatureMonsterId);
+                    monsterData = GameDatabase.Instance.GetMonster(starterMonsterId);
                 }
 
                 if (monsterData != null)
@@ -955,16 +959,16 @@ namespace VeilBreakers.UI.Menus
                         if (_monsterAbilityName != null)
                             _monsterAbilityName.text = FormatMonsterId(monsterData.innate_skills[0]);
                         if (_monsterAbilityDesc != null)
-                            _monsterAbilityDesc.text = monsterData.description ?? "Signature monster ability";
+                            _monsterAbilityDesc.text = monsterData.description ?? "Starter monster ability";
                     }
                 }
                 else
                 {
                     // Fallback - just display the ID cleaned up
                     if (_monsterName != null)
-                        _monsterName.text = FormatMonsterId(signatureMonsterId);
+                        _monsterName.text = FormatMonsterId(starterMonsterId);
                     if (_monsterType != null)
-                        _monsterType.text = "Signature Monster";
+                        _monsterType.text = "Starter Monster";
                 }
             }
             else

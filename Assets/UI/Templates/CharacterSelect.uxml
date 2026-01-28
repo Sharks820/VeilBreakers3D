@@ -114,10 +114,10 @@
 
                     <ui:VisualElement style="height: 1px; background-color: rgba(120, 50, 70, 0.4); margin-bottom: 16px;" />
 
-                    <!-- Signature Monster Section -->
+                    <!-- Starter Monster Section -->
                     <ui:VisualElement name="monster-section" style="flex-direction: row; align-items: center; margin-bottom: 12px;">
                     <ui:VisualElement name="monster-section-bar" style="width: 4px; height: 14px; background-color: rgb(180, 40, 60); border-radius: 2px; margin-right: 8px;" />
-                    <ui:Label name="monster-section-label" text="SIGNATURE MONSTER" style="font-size: 10px; letter-spacing: 2px; color: rgb(180, 40, 60); -unity-font-style: bold;" />
+                    <ui:Label name="monster-section-label" text="STARTER MONSTER" style="font-size: 10px; letter-spacing: 2px; color: rgb(180, 40, 60); -unity-font-style: bold;" />
                     </ui:VisualElement>
 
                     <ui:VisualElement name="signature-monster-card" style="flex-direction: row; padding: 12px; background-color: rgba(30, 20, 25, 0.8); border-width: 1px; border-color: rgba(180, 40, 60, 0.3); border-radius: 8px; margin-bottom: 12px; flex-shrink: 0;">
