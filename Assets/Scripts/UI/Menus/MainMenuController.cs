@@ -29,8 +29,10 @@ namespace VeilBreakers.UI.Menus
         [Header("Animation Settings")]
         [SerializeField] private float _titleFadeInDuration = 1.5f;
         [SerializeField] private float _buttonStaggerDelay = 0.1f;
-        [SerializeField] private float _veilPulseSpeed = 2f;
-        [SerializeField] private float _veilPulseScale = 1.15f;
+
+        [Header("VFX System (New)")]
+        [SerializeField] private MenuPulseController _pulseController;
+        [SerializeField] private MainMenuVFXSetup _vfxSetup;
 
         // =============================================================================
         // UI ELEMENTS
@@ -47,10 +49,8 @@ namespace VeilBreakers.UI.Menus
         private Label _tagline;
         private VisualElement _titleSection;
         private VisualElement _buttonContainer;
-        private List<VisualElement> _veilPulses = new List<VisualElement>();
         private List<Button> _cachedButtons; // Cache for entrance animation (avoid ToList allocation)
         private Coroutine _animationCoroutine;
-        private UIParticleController _particleController;
 
         // =============================================================================
         // EVENTS
@@ -106,15 +106,6 @@ namespace VeilBreakers.UI.Menus
             _titleSection = _root.Q<VisualElement>("title-section");
             _buttonContainer = _root.Q<VisualElement>("button-container");
 
-            // Query veil pulse elements
-            _veilPulses.Clear();
-            for (int i = 1; i <= 3; i++)
-            {
-                var pulse = _root.Q<VisualElement>($"veil-pulse-{i}");
-                if (pulse != null)
-                    _veilPulses.Add(pulse);
-            }
-
             // Cache buttons for entrance animation (avoid ToList allocation)
             _cachedButtons = _buttonContainer.Query<Button>().ToList();
 
@@ -127,14 +118,13 @@ namespace VeilBreakers.UI.Menus
             // Bind button events
             BindEvents();
 
-            // Initialize particle effects
-            InitializeParticleEffects();
+            // Initialize new VFX system (replaces old particle effects)
+            InitializeVFXSystem();
 
             // Start animations
             PlayEntranceAnimation();
-            StartVeilPulseAnimation();
 
-            ErrorLogger.UI("MainMenu initialized");
+            ErrorLogger.UI("MainMenu initialized with new VFX system");
         }
 
         private void BindEvents()
@@ -159,22 +149,29 @@ namespace VeilBreakers.UI.Menus
             _root?.UnregisterCallback<KeyDownEvent>(OnKeyDown);
         }
 
-        private void InitializeParticleEffects()
+        private void InitializeVFXSystem()
         {
-            // Create particle controller if it doesn't exist
-            if (_particleController == null)
+            // Create MenuPulseController if it doesn't exist (global Pulse driver)
+            if (_pulseController == null)
             {
-                _particleController = gameObject.GetComponent<UIParticleController>();
-                if (_particleController == null)
+                _pulseController = gameObject.GetComponent<MenuPulseController>();
+                if (_pulseController == null)
                 {
-                    _particleController = gameObject.AddComponent<UIParticleController>();
+                    _pulseController = gameObject.AddComponent<MenuPulseController>();
                 }
             }
 
-            // Initialize with the root element
-            _particleController.Initialize(_root);
+            // Create MainMenuVFXSetup if it doesn't exist (creates VFX hierarchy)
+            if (_vfxSetup == null)
+            {
+                _vfxSetup = gameObject.GetComponent<MainMenuVFXSetup>();
+                if (_vfxSetup == null)
+                {
+                    _vfxSetup = gameObject.AddComponent<MainMenuVFXSetup>();
+                }
+            }
 
-            ErrorLogger.UI("Particle effects initialized");
+            ErrorLogger.UI("New VFX system initialized (MenuPulseController + MainMenuVFXSetup)");
         }
 
         // =============================================================================
@@ -522,44 +519,8 @@ namespace VeilBreakers.UI.Menus
             element.style.scale = new Scale(new Vector2(toScale, toScale));
         }
 
-        private void StartVeilPulseAnimation()
-        {
-            if (_animationCoroutine != null)
-                StopCoroutine(_animationCoroutine);
-            _animationCoroutine = StartCoroutine(VeilPulseLoop());
-        }
-
-        private IEnumerator VeilPulseLoop()
-        {
-            float[] phases = { 0f, 0.33f, 0.66f };
-            float[] baseOpacities = { 0.06f, 0.05f, 0.04f };
-
-            while (true)
-            {
-                for (int i = 0; i < _veilPulses.Count; i++)
-                {
-                    if (_veilPulses[i] == null) continue;
-
-                    float phase = phases[i];
-                    float t = (Time.time * _veilPulseSpeed + phase * Mathf.PI * 2) % (Mathf.PI * 2);
-
-                    // Pulse scale
-                    float scale = 1f + (Mathf.Sin(t) * 0.5f + 0.5f) * (_veilPulseScale - 1f);
-                    _veilPulses[i].style.scale = new Scale(new Vector2(scale, scale));
-
-                    // Pulse opacity
-                    float opacity = baseOpacities[i] * (0.5f + Mathf.Sin(t) * 0.5f + 0.5f);
-                    _veilPulses[i].style.opacity = opacity;
-
-                    // Subtle position drift
-                    float driftX = Mathf.Sin(t * 0.5f) * 20f;
-                    float driftY = Mathf.Cos(t * 0.3f) * 15f;
-                    _veilPulses[i].style.translate = new Translate(driftX, driftY);
-                }
-
-                yield return null;
-            }
-        }
+        // NOTE: Old VeilPulseLoop removed - VFX now handled by MenuPulseController
+        // and MainMenuVFXSetup which create SpriteRenderer-based effects
 
         // =============================================================================
         // EASING FUNCTIONS
@@ -654,10 +615,10 @@ namespace VeilBreakers.UI.Menus
                 _animationCoroutine = null;
             }
 
-            // Disable particle effects
-            if (_particleController != null)
+            // Hide VFX when menu is disabled
+            if (_vfxSetup != null)
             {
-                _particleController.enabled = false;
+                _vfxSetup.SetVFXVisible(false);
             }
         }
     }

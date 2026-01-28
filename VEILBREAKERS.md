@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **SINGLE SOURCE OF TRUTH** | Version: **v4.03** | Last updated: 2026-01-27
+> **SINGLE SOURCE OF TRUTH** | Version: **v4.06** | Last updated: 2026-01-27
 
 ---
 
@@ -215,7 +215,44 @@ unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler
 - AAA quality, pixel-perfect alignment
 - Fresh Unity UI (don't port Godot patterns)
 - **Use Sonnet** for primary work, research tasks, and agent spawns (Opus wastes tokens)
-- **VFX Pipeline:** Unity VFX Graph (primary) + EmberGen (fluid effects) - See `Docs/VFX_AI_TOOLS_2026.md` for comprehensive AI tool research
+- **Art Style:** Grimdark Painterly / Dark Fantasy Stylized Realism
+
+---
+
+## Technical Pipelines
+
+### Render Pipeline Upgrade
+| Current | Target | When |
+|---------|--------|------|
+| Built-in (2022.3 LTS) | **URP** (Unity 6) | Before heavy VFX work |
+
+### Asset Pipeline
+```
+Scenario (2D concept) → Tripo (2D→3D + auto-rig) → Cascadeur (physics animation) → Blender (polish) → Unity
+```
+
+### VFX Pipeline
+- **Primary:** Unity VFX Graph (requires URP)
+- **AI Assist:** God Mode AI
+- **Docs:** `Docs/VFX_AI_TOOLS_2026.md`
+
+### Map/Environment Pipeline
+- **Core:** Scenario→Tripo for style-consistent assets
+- **Hero Pieces:** AI-generated landmarks per biome
+- **Atmosphere:** Unity VFX Graph + URP fog/lighting
+
+### 6 Biomes (Light → Red Veil Progression)
+
+| # | Biome | Path | Brands | Theme |
+|---|-------|------|--------|-------|
+| 1 | **The Waking Shore** | Start | Mixed | Last light, fading hope |
+| 2 | **The Ironmaw** | IRONBOUND | IRON, MEND, LEECH | Rusted fortresses, parasitic growth |
+| 3 | **The Ravaged** | FANGBORN | SAVAGE, VENOM, RUIN | Primal carnage, toxic wastelands |
+| 4 | **The Unbound** | UNCHAINED | GRACE + flex | Contested twilight, unstable |
+| 5 | **The Hollowing** | VOIDTOUCHED | VOID, DREAD, SURGE | Reality tears, nightmare realm |
+| 6 | **The Bleeding Veil** | Endgame | UNTAMED | Pure red veil energy, max corruption |
+
+**Visual Progression:** Red veil energy intensifies from subtle hints (Biome 1) to overwhelming crimson (Biome 6)
 
 ---
 

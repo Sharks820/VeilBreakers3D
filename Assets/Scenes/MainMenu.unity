@@ -267,6 +267,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &768737076
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 768737077}
+  m_Layer: 0
+  m_Name: MainMenuVFX
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &768737077
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 768737076}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -347,6 +378,8 @@ GameObject:
   - component: {fileID: 1100000002}
   - component: {fileID: 1100000003}
   - component: {fileID: 1100000004}
+  - component: {fileID: 1100000006}
+  - component: {fileID: 1100000005}
   m_Layer: 5
   m_Name: MainMenuUI
   m_TagString: Untagged
@@ -414,7 +447,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1100000000}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 236ad01b21b84e04c86b81f822c1d76e, type: 3}
   m_Name: 
@@ -436,6 +469,58 @@ MonoBehaviour:
   _sparkColor: {r: 0.85, g: 0.25, b: 0.35, a: 0.9}
   _lightningColor: {r: 0.9, g: 0.3, b: 0.4, a: 0.95}
   _veilColor: {r: 0.50980395, g: 0.010902463, b: 0.05810133, a: 0.06}
+--- !u!114 &1100000005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1100000000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b46ad5e8fbe7b3b4e9442f2fe3812a87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _demonFigureSprite: {fileID: 0}
+  _logoSprite: {fileID: 0}
+  _logoGlowSprite: {fileID: 0}
+  _circleGlowSprite: {fileID: 0}
+  _demonPosition: {x: 0, y: -1, z: 0}
+  _logoPosition: {x: 0, y: 3, z: 0}
+  _chestGlowOffset: {x: 0, y: 0.5, z: 0}
+  _demonScale: 5
+  _logoScale: 2
+  _chestGlowScale: 1.5
+  _riftScale: 3
+  _vignetteScale: 20
+  _pulseController: {fileID: 0}
+  _logoEffect: {fileID: 0}
+  _riftDistortion: {fileID: 0}
+  _chestBreathing: {fileID: 0}
+  _ashEmbers: {fileID: 0}
+  _ruptureEvent: {fileID: 0}
+--- !u!114 &1100000006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1100000000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bd7c8f4bacbdfa45afbaf3ea9f1e84f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _idleIntensity: 0.15
+  _peakIntensity: 1.25
+  _pulseDuration: 0.35
+  _minDelayBetweenPulses: 6
+  _maxDelayBetweenPulses: 10
+  _idleNoiseSpeed: 0.3
+  _idleNoiseAmplitude: 0.05
+  _minRuptureInterval: 20
+  _maxRuptureInterval: 30
+  _ruptureDuration: 0.3
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -444,3 +529,4 @@ SceneRoots:
   - {fileID: 963194228}
   - {fileID: 1100000001}
   - {fileID: 724518088}
+  - {fileID: 768737077}
