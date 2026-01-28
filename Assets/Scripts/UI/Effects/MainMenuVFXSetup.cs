@@ -170,7 +170,6 @@ namespace VeilBreakers.UI.Effects
             _effectsLayer = CreateLayer("Effects_Layer", 5f);
             CreateRiftDistortion();
             CreateChestGlow();
-            CreateAshEmbers();
 
             // Logo Glow Layer (z = 2) - glow effect for logo
             _logoLayer = CreateLayer("Logo_Glow_Layer", 2f);
@@ -229,41 +228,6 @@ namespace VeilBreakers.UI.Effects
             _chestGlowRenderer.sortingOrder = 2;
 
             _chestBreathing = chestGlow.AddComponent<DemonChestBreathing>();
-        }
-
-        private void CreateAshEmbers()
-        {
-            var ashEmbers = new GameObject("Ash_Embers");
-            ashEmbers.transform.SetParent(_effectsLayer);
-            ashEmbers.transform.localPosition = _demonPosition;
-
-            // Create particle system
-            _particleSystem = ashEmbers.AddComponent<ParticleSystem>();
-            var main = _particleSystem.main;
-            main.startLifetime = 4f;
-            main.startSpeed = 0.5f;
-            main.startSize = 0.05f;
-            main.startColor = new Color(0.2f, 0.18f, 0.15f, 0.6f);
-            main.simulationSpace = ParticleSystemSimulationSpace.World;
-            main.maxParticles = 100;
-            main.playOnAwake = true;
-            main.loop = true;
-
-            // Shape (sphere around demon chest)
-            var shape = _particleSystem.shape;
-            shape.shapeType = ParticleSystemShapeType.Sphere;
-            shape.radius = 2f;
-
-            // Emission
-            var emission = _particleSystem.emission;
-            emission.rateOverTime = 5f;
-
-            // Renderer
-            var renderer = _particleSystem.GetComponent<ParticleSystemRenderer>();
-            renderer.material = new Material(Shader.Find("Sprites/Default"));
-            renderer.sortingOrder = 5;
-
-            _ashEmbers = ashEmbers.AddComponent<AshEmberParticles>();
         }
 
         private void CreateLogoGlow()
@@ -330,11 +294,6 @@ namespace VeilBreakers.UI.Effects
             if (_chestBreathing != null && _chestGlowRenderer != null)
             {
                 _chestBreathing.Setup(_chestGlowRenderer.transform, _chestGlowRenderer);
-            }
-
-            if (_ashEmbers != null && _particleSystem != null)
-            {
-                _ashEmbers.Setup(_particleSystem, _chestGlowOffset);
             }
 
             if (_ruptureEvent != null && _vignetteRenderer != null)
