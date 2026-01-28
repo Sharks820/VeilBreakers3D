@@ -1528,31 +1528,31 @@
    AAA MENU BUTTON STYLES
    ============================================================================= */
 
-/* Primary button with glow effect */
+/* Primary button with glow effect - MOLTEN ORANGE THEME */
 .btn-primary {
     min-height: 54px;
     font-size: 16px;
     letter-spacing: 3px;
     -unity-font-style: bold;
-    background-color: rgba(180, 40, 60, 0.9);
+    background-color: rgb(180, 80, 20);
     border-width: 2px;
-    border-color: rgb(220, 60, 80);
+    border-color: rgb(255, 140, 50);
     border-radius: 8px;
-    color: rgb(235, 225, 215);
+    color: rgb(255, 245, 220);
     padding: 14px 24px;
     transition-duration: 0.2s;
     transition-property: background-color, border-color, scale, translate;
 }
 
 .btn-primary:hover {
-    background-color: rgb(160, 50, 80);
-    border-color: rgb(220, 60, 80);
+    background-color: rgb(210, 100, 30);
+    border-color: rgb(255, 180, 80);
     scale: 1.02;
     translate: -2px 0;
 }
 
 .btn-primary:active {
-    background-color: rgb(120, 30, 50);
+    background-color: rgb(140, 60, 15);
     scale: 0.98;
 }
 
@@ -1560,25 +1560,25 @@
     min-height: 44px;
     font-size: 14px;
     letter-spacing: 2px;
-    background-color: rgba(40, 25, 30, 0.85);
+    background-color: rgba(25, 18, 12, 0.95);
     border-width: 1px;
-    border-color: rgba(130, 60, 70, 0.6);
+    border-color: rgb(120, 70, 30);
     border-radius: 6px;
-    color: rgb(165, 155, 145);
+    color: rgb(200, 160, 100);
     padding: 10px 20px;
     transition-duration: 0.15s;
     transition-property: background-color, border-color, color, translate;
 }
 
 .btn-secondary:hover {
-    background-color: rgba(60, 50, 80, 0.9);
-    border-color: rgba(180, 40, 60, 0.8);
-    color: rgb(200, 190, 180);
+    background-color: rgba(55, 35, 20, 0.98);
+    border-color: rgb(180, 110, 50);
+    color: rgb(255, 200, 130);
     translate: -2px 0;
 }
 
 .btn-secondary:active {
-    background-color: rgb(55, 35, 45);
+    background-color: rgba(15, 10, 5, 0.98);
 }
 
 .btn-tertiary {
