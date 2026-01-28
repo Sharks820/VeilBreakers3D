@@ -9,11 +9,11 @@
 
         <!-- VEILBREAKERS LOGO - Large at very top -->
         <ui:VisualElement name="logo-container" picking-mode="Ignore" style="position: absolute; left: 0; right: 0; top: -40px; height: 380px; justify-content: flex-start; align-items: center;">
-            <ui:VisualElement name="logo-image" style="width: 100%; height: 360px; max-width: 2600px; background-image: url('project://database/Assets/Art/UI/MainMenu/logo_veilbreakers.png?fileID=2800000&amp;guid=068214e22c8853d4c8fe90c83ab65bbc&amp;type=3'); -unity-background-scale-mode: scale-to-fit;" />
+            <ui:VisualElement name="logo-image" style="width: 100%; height: 360px; background-image: url('project://database/Assets/Art/UI/MainMenu/logo_veilbreakers.png?fileID=2800000&amp;guid=068214e22c8853d4c8fe90c83ab65bbc&amp;type=3'); -unity-background-scale-mode: scale-to-fit;" />
         </ui:VisualElement>
 
         <!-- Demon Figure - Smaller, anchored to bottom center -->
-        <ui:VisualElement name="monster-image" picking-mode="Ignore" style="position: absolute; left: 10%; right: 10%; top: 20%; bottom: 0; background-image: url('project://database/Assets/Art/UI/MainMenu/demon_figure.png?fileID=2800000&amp;guid=37ac0bd864327ca4ab90b841b55d87bc&amp;type=3'); -unity-background-scale-mode: scale-to-fit; background-position-x: center; background-position-y: bottom;" />
+        <ui:VisualElement name="monster-image" picking-mode="Ignore" style="position: absolute; left: 0; right: 0; top: 20%; bottom: 0; background-image: url('project://database/Assets/Art/UI/MainMenu/demon_figure.png?fileID=2800000&amp;guid=37ac0bd864327ca4ab90b841b55d87bc&amp;type=3'); -unity-background-scale-mode: scale-to-fit; background-position-x: center; background-position-y: bottom;" />
 
         <!-- Menu Buttons - Molten orange theme via USS -->
         <ui:VisualElement name="button-container" style="position: absolute; left: 0; right: 0; bottom: 20px; flex-direction: row; justify-content: center; align-items: center; padding: 20px 20px; background-color: rgba(8, 6, 12, 0.80);">

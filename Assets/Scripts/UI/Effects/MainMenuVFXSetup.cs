@@ -40,8 +40,8 @@ namespace VeilBreakers.UI.Effects
         [Header("Scales")]
         [SerializeField] private float _demonScale = 5f;
         [SerializeField] private float _logoScale = 2f;
-        [SerializeField] private float _chestGlowScale = 1.5f;
-        [SerializeField] private float _riftScale = 3f;
+        [SerializeField] private float _chestGlowScale = 5f;
+        [SerializeField] private float _riftScale = 10f;
         [SerializeField] private float _vignetteScale = 20f;
 
         [Header("Effect Components (Auto-created if null)")]
@@ -204,12 +204,12 @@ namespace VeilBreakers.UI.Effects
         {
             var rift = new GameObject("Veil_Rift_Distortion");
             rift.transform.SetParent(_effectsLayer);
-            rift.transform.localPosition = _logoPosition + new Vector3(0f, 0f, 1f); // Slightly behind logo
+            rift.transform.localPosition = _demonPosition + new Vector3(0f, 1f, 1f); // Behind monster
             rift.transform.localScale = Vector3.one * _riftScale;
 
             _riftRenderer = rift.AddComponent<SpriteRenderer>();
             _riftRenderer.sprite = _circleGlowSprite;
-            _riftRenderer.color = new Color(0.8f, 0.2f, 0.3f, 0.05f);
+            _riftRenderer.color = new Color(0.8f, 0.2f, 0.3f, 0.5f);
             _riftRenderer.sortingOrder = 1;
 
             _riftDistortion = rift.AddComponent<VeilRiftDistortion>();
@@ -224,7 +224,7 @@ namespace VeilBreakers.UI.Effects
 
             _chestGlowRenderer = chestGlow.AddComponent<SpriteRenderer>();
             _chestGlowRenderer.sprite = _circleGlowSprite;
-            _chestGlowRenderer.color = new Color(1f, 0.5f, 0.2f, 0.3f);
+            _chestGlowRenderer.color = new Color(1f, 0.5f, 0.2f, 0.7f);
             _chestGlowRenderer.sortingOrder = 2;
 
             _chestBreathing = chestGlow.AddComponent<DemonChestBreathing>();
