@@ -19,10 +19,7 @@ namespace VeilBreakers.Audio
         {
             get
             {
-                if (_instance == null && !_isQuitting)
-                {
-                    Debug.LogError("[MusicManager] Instance is null. Ensure MusicManager exists in scene.");
-                }
+                // Instance null before bootstrap is expected - no error needed
                 return _instance;
             }
         }

@@ -21,10 +21,7 @@ namespace VeilBreakers.Capture
         {
             get
             {
-                if (_instance == null && !_isQuitting)
-                {
-                    Debug.LogError("[CaptureManager] Instance is null. Ensure CaptureManager exists in scene.");
-                }
+                // Instance null before bootstrap is expected - no error needed
                 return _instance;
             }
         }

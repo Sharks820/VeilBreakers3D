@@ -33,10 +33,7 @@ namespace VeilBreakers.Commands
         {
             get
             {
-                if (_instance == null && !_isQuitting)
-                {
-                    Debug.LogError("[RadialMenuController] Instance is null. Ensure RadialMenuController exists in scene.");
-                }
+                // Instance null before bootstrap is expected - no error needed
                 return _instance;
             }
         }

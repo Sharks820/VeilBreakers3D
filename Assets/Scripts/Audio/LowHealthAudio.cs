@@ -18,10 +18,7 @@ namespace VeilBreakers.Audio
         {
             get
             {
-                if (_instance == null && !_isQuitting)
-                {
-                    Debug.LogError("[LowHealthAudio] Instance is null.");
-                }
+                // Instance null before bootstrap is expected - no error needed
                 return _instance;
             }
         }

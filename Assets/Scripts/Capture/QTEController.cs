@@ -42,10 +42,7 @@ namespace VeilBreakers.Capture
         {
             get
             {
-                if (_instance == null && !_isQuitting)
-                {
-                    Debug.LogError("[QTEController] Instance is null. Ensure QTEController exists in scene.");
-                }
+                // Instance null before bootstrap is expected - no error needed
                 return _instance;
             }
         }

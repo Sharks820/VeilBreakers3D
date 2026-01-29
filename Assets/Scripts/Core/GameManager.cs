@@ -22,10 +22,7 @@ namespace VeilBreakers.Core
         {
             get
             {
-                if (_instance == null && !_isQuitting)
-                {
-                    Debug.LogError("[GameManager] Instance accessed but not found! Ensure GameManager exists in scene.");
-                }
+                // Instance null before bootstrap is expected - no error needed
                 return _instance;
             }
         }

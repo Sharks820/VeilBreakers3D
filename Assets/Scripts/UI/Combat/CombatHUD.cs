@@ -21,10 +21,7 @@ namespace VeilBreakers.UI.Combat
         {
             get
             {
-                if (_instance == null && !_isQuitting)
-                {
-                    Debug.LogError("[CombatHUD] Instance is null. Ensure CombatHUD exists in scene.");
-                }
+                // Instance null before bootstrap is expected - no error needed
                 return _instance;
             }
         }

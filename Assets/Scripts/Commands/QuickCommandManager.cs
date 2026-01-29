@@ -22,10 +22,7 @@ namespace VeilBreakers.Commands
         {
             get
             {
-                if (_instance == null && !_isQuitting)
-                {
-                    Debug.LogError("[QuickCommandManager] Instance is null. Ensure QuickCommandManager exists in scene.");
-                }
+                // Instance null before bootstrap is expected - no error needed
                 return _instance;
             }
         }

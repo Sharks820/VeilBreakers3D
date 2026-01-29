@@ -19,10 +19,7 @@ namespace VeilBreakers.Commands
         {
             get
             {
-                if (_instance == null && !_isQuitting)
-                {
-                    Debug.LogError("[TimeSlowController] Instance is null. Ensure TimeSlowController exists in scene.");
-                }
+                // Instance null before bootstrap is expected - no error needed
                 return _instance;
             }
         }
