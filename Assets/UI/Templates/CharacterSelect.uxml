@@ -41,7 +41,7 @@
 
             <!-- Right Panel - Hero Details -->
             <ui:VisualElement name="details-panel" style="width: 340px; padding: 20px; background-color: rgba(15, 12, 20, 0.95); border-width: 2px; border-color: rgba(255, 140, 60, 0.3); border-radius: 12px; margin-left: 20px; overflow: hidden;">
-                <ui:ScrollView class="scrollview" style="flex-grow: 1;" mode="Vertical" vertical-scroller-visibility="AlwaysVisible" mouse-wheel-scroll-size="80">
+                <ui:ScrollView class="scrollview" style="flex-grow: 1;" mode="Vertical" vertical-scroller-visibility="Auto" mouse-wheel-scroll-size="120" scroll-deceleration-rate="0.135" elasticity="0.1">
                     <ui:VisualElement name="details-content" style="flex-direction: column; width: 100%; padding-right: 8px;">
 
                     <!-- Hero Name -->
@@ -57,7 +57,7 @@
                             <ui:Label text="PATH" style="font-size: 10px; letter-spacing: 3px; color: rgb(160, 150, 140); margin-bottom: 8px;" />
                             <ui:VisualElement name="path-badge" style="flex-direction: row; align-items: center; padding: 8px 14px; background-color: rgba(255, 140, 60, 0.12); border-width: 1px; border-color: rgba(255, 140, 60, 0.4); border-radius: 6px;">
                                 <ui:VisualElement name="path-orb" style="width: 10px; height: 10px; border-radius: 5px; background-color: rgb(255, 140, 60); margin-right: 10px;" />
-                                <ui:Label name="path-name" text="--" style="font-size: 12px; letter-spacing: 2px; color: rgb(255, 200, 160); -unity-font-style: bold;" />
+                                <ui:Label name="path-name" text="--" style="font-size: 12px; letter-spacing: 2px; color: rgb(255, 217, 128); -unity-font-style: bold;" />
                             </ui:VisualElement>
                         </ui:VisualElement>
                         <!-- Resource Type Section -->
@@ -188,8 +188,8 @@
 
         </ui:VisualElement>
 
-        <!-- Footer - Centered Button -->
-        <ui:VisualElement name="footer" style="position: absolute; left: 276px; right: 356px; bottom: 0; height: 100px; justify-content: center; align-items: center; background-color: rgba(8, 6, 12, 0.95); border-top-width: 2px; border-top-color: rgba(255, 140, 60, 0.5);">
+        <!-- Footer - Centered Button (spans between hero list and details panel) -->
+        <ui:VisualElement name="footer" style="position: absolute; left: 280px; right: 360px; bottom: 0; height: 100px; flex-direction: row; justify-content: center; align-items: center; background-color: rgba(8, 6, 12, 0.95); border-top-width: 2px; border-top-color: rgba(255, 140, 60, 0.5);">
             <ui:Button text="► EMBARK" name="btn-select" class="btn-primary" style="width: 240px; height: 50px; font-size: 18px; letter-spacing: 4px;" />
         </ui:VisualElement>
 

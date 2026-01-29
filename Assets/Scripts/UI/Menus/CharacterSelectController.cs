@@ -884,14 +884,9 @@ namespace VeilBreakers.UI.Menus
             if (_pathName != null)
             {
                 _pathName.text = path.ToString();
-                // Also color the path name text with hero color
-                var heroColor = GetHeroColor(hero);
-                _pathName.style.color = new Color(
-                    Mathf.Min(1f, heroColor.r * 1.2f + 0.2f),
-                    Mathf.Min(1f, heroColor.g * 1.2f + 0.2f),
-                    Mathf.Min(1f, heroColor.b * 1.2f + 0.2f),
-                    1f
-                );
+                // Use a bright gold/amber color for path name - easy to read
+                _pathName.style.color = new Color(1f, 0.85f, 0.5f, 1f); // Bright gold
+                _pathName.style.unityFontStyleAndWeight = FontStyle.Bold;
             }
 
             // Path badge is now updated in ApplyHeroThemeColors using hero color
@@ -901,9 +896,12 @@ namespace VeilBreakers.UI.Menus
         {
             if (hero == null) return;
 
+            // Debug: Log the raw resource_type field value
+            Debug.Log($"[CharacterSelect] Hero '{hero.display_name}' resource_type field = '{hero.resource_type}' -> enum = {hero.GetResourceType()}");
+
             var resourceType = hero.GetResourceType();
 
-            // Resource colors
+            // Resource colors - distinct for each type
             Color resourceColor;
             string resourceText;
 
@@ -914,11 +912,11 @@ namespace VeilBreakers.UI.Menus
                     resourceText = "MANA";
                     break;
                 case ResourceType.GUARD:
-                    resourceColor = new Color(130f/255f, 170f/255f, 200f/255f); // Steel blue
+                    resourceColor = new Color(180f/255f, 200f/255f, 220f/255f); // Bright steel blue
                     resourceText = "GUARD";
                     break;
                 case ResourceType.FURY:
-                    resourceColor = new Color(220f/255f, 100f/255f, 100f/255f); // Red
+                    resourceColor = new Color(255f/255f, 100f/255f, 80f/255f); // Bright red-orange
                     resourceText = "FURY";
                     break;
                 default:
@@ -967,14 +965,20 @@ namespace VeilBreakers.UI.Menus
             if (_brandName1 != null)
                 _brandName1.text = primaryBrand.ToString();
 
-            // Show path in second badge for clarity
+            // Show second brand from path synergies (not path name)
             var primaryPath = hero.GetPrimaryPath();
+            Brand secondaryBrand = GetPathSecondaryBrand(primaryPath, primaryBrand);
+            var secondaryBrandColor = ThemeManager.Instance.GetBrandColor(secondaryBrand);
+
             if (_brandIcon2 != null)
+            {
                 _brandIcon2.style.display = DisplayStyle.Flex;
+                _brandIcon2.style.backgroundColor = secondaryBrandColor;
+            }
             if (_brandName2 != null)
             {
                 _brandName2.style.display = DisplayStyle.Flex;
-                _brandName2.text = primaryPath.ToString();
+                _brandName2.text = secondaryBrand.ToString();
             }
 
             // Also update the old primary brand element if it exists
@@ -989,11 +993,36 @@ namespace VeilBreakers.UI.Menus
                     name.text = primaryBrand.ToString();
             }
 
-            // Hide secondary brand display since HeroData only has primary
+            // Hide secondary brand display since we now use brand badges
             if (_secondaryBrand != null)
             {
                 _secondaryBrand.style.display = DisplayStyle.None;
             }
+        }
+
+        /// <summary>
+        /// Get a secondary brand from the path's synergy brands (excluding primary brand)
+        /// Path synergies: IRONBOUND (IRON, MEND, LEECH), FANGBORN (SAVAGE, VENOM, RUIN),
+        /// VOIDTOUCHED (VOID, DREAD, SURGE), UNCHAINED (neutral/flex)
+        /// </summary>
+        private Brand GetPathSecondaryBrand(Path path, Brand primaryBrand)
+        {
+            Brand[] synergies = path switch
+            {
+                Path.IRONBOUND => new[] { Brand.IRON, Brand.MEND, Brand.LEECH },
+                Path.FANGBORN => new[] { Brand.SAVAGE, Brand.VENOM, Brand.RUIN },
+                Path.VOIDTOUCHED => new[] { Brand.VOID, Brand.DREAD, Brand.SURGE },
+                Path.UNCHAINED => new[] { Brand.GRACE, Brand.SURGE, Brand.VOID }, // Flex path, use common brands
+                _ => new[] { Brand.IRON, Brand.SAVAGE, Brand.VOID }
+            };
+
+            // Return first synergy brand that isn't the primary brand
+            foreach (var brand in synergies)
+            {
+                if (brand != primaryBrand)
+                    return brand;
+            }
+            return synergies[0];
         }
 
         private void UpdateMonsterDisplay(HeroData hero)
@@ -1085,7 +1114,7 @@ namespace VeilBreakers.UI.Menus
             if (hero.innate_skills != null && hero.innate_skills.Length > 0)
             {
                 if (_innateAbilityName != null)
-                    _innateAbilityName.text = hero.innate_skills[0];
+                    _innateAbilityName.text = FormatSkillName(hero.innate_skills[0]);
                 if (_innateAbilityDesc != null)
                     _innateAbilityDesc.text = hero.combat_description ?? "Hero innate ability";
             }
@@ -1096,6 +1125,19 @@ namespace VeilBreakers.UI.Menus
                 if (_innateAbilityDesc != null)
                     _innateAbilityDesc.text = "";
             }
+        }
+
+        private string FormatSkillName(string skillId)
+        {
+            // Convert "attack_basic" to "Attack Basic", "shield_bash" to "Shield Bash"
+            if (string.IsNullOrEmpty(skillId)) return "Unknown";
+            var words = skillId.Split('_');
+            for (int i = 0; i < words.Length; i++)
+            {
+                if (words[i].Length > 0)
+                    words[i] = char.ToUpper(words[i][0]) + words[i].Substring(1).ToLower();
+            }
+            return string.Join(" ", words);
         }
 
         private void UpdateStatBars(HeroData hero)
