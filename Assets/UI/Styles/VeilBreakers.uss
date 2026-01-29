@@ -257,7 +257,7 @@
 }
 
 .vb-slider .unity-base-slider__dragger {
-    background-color: var(--color-accent-crimson);
+    background-color: rgb(180, 80, 20);
     border-radius: 50%;
     width: 20px;
     height: 20px;
@@ -271,7 +271,7 @@
 }
 
 .vb-slider .unity-base-slider__drag-container {
-    background-color: var(--color-accent-crimson-glow);
+    background-color: rgb(200, 100, 30);
     border-radius: var(--radius-sm);
 }
 
@@ -294,8 +294,8 @@
 }
 
 .vb-toggle:checked .unity-toggle__checkmark {
-    background-color: var(--color-accent-crimson);
-    border-color: var(--color-accent-crimson-glow);
+    background-color: rgb(180, 80, 20);
+    border-color: rgb(255, 140, 50);
 }
 
 .vb-toggle .unity-toggle__text {
@@ -1764,7 +1764,7 @@
 .settings-panel-container {
     background-color: rgba(12, 9, 18, 0.95);
     border-width: 2px;
-    border-color: rgba(180, 40, 60, 0.4);
+    border-color: rgba(180, 80, 20, 0.4);
     border-radius: 16px;
     padding: 32px;
     overflow: visible !important; /* CRITICAL: Allow dropdown popups to render outside panel */
@@ -1776,13 +1776,13 @@
 }
 
 .settings-panel-container #btn-close:hover {
-    border-color: rgb(220, 60, 80);
-    color: rgb(220, 80, 100);
+    border-color: rgb(255, 140, 50);
+    color: rgb(255, 180, 100);
     scale: 1.05;
 }
 
 .settings-panel-container #btn-close:active {
-    background-color: rgba(180, 40, 60, 0.2);
+    background-color: rgba(180, 80, 20, 0.2);
     scale: 0.95;
 }
 
@@ -1793,7 +1793,7 @@
     margin-bottom: 24px;
     padding-bottom: 16px;
     border-bottom-width: 1px;
-    border-bottom-color: rgba(180, 40, 60, 0.3);
+    border-bottom-color: rgba(180, 80, 20, 0.3);
 }
 
 .settings-title {
@@ -1809,15 +1809,15 @@
     font-size: 24px;
     background-color: transparent;
     border-width: 1px;
-    border-color: rgba(180, 50, 70, 0.3);
+    border-color: rgba(180, 100, 30, 0.3);
     border-radius: 50%;
-    color: rgb(180, 50, 70);
+    color: rgb(200, 140, 80);
     transition-duration: 0.15s;
 }
 
 .settings-close-btn:hover {
-    background-color: rgba(180, 50, 70, 0.2);
-    border-color: rgb(180, 50, 70);
+    background-color: rgba(180, 80, 20, 0.2);
+    border-color: rgb(255, 140, 50);
 }
 
 /* Settings Tab Bar */
@@ -1843,17 +1843,17 @@
 }
 
 .settings-tab:hover {
-    background-color: rgba(180, 40, 60, 0.15);
-    color: rgb(165, 155, 145);
+    background-color: rgba(180, 80, 20, 0.15);
+    color: rgb(200, 160, 100);
 }
 
 .settings-tab-active {
-    background-color: rgb(180, 40, 60);
-    color: rgb(235, 225, 215);
+    background-color: rgb(180, 80, 20);
+    color: rgb(255, 245, 220);
 }
 
 .settings-tab-active:hover {
-    background-color: rgb(160, 50, 80);
+    background-color: rgb(210, 100, 30);
 }
 
 .settings-tab-inactive {
@@ -1890,7 +1890,7 @@
     min-width: 60px;
     flex-shrink: 0;
     font-size: 14px;
-    color: rgb(180, 40, 60);
+    color: rgb(200, 120, 40);
     -unity-text-align: middle-right;
     -unity-font-style: bold;
 }
@@ -1899,12 +1899,12 @@
 .settings-section-header {
     font-size: 12px;
     letter-spacing: 3px;
-    color: rgb(180, 40, 60);
+    color: rgb(200, 120, 40);
     margin-top: 24px;
     margin-bottom: 16px;
     padding-bottom: 8px;
     border-bottom-width: 1px;
-    border-bottom-color: rgba(180, 40, 60, 0.3);
+    border-bottom-color: rgba(180, 80, 20, 0.3);
 }
 
 /* Settings Button Row */
@@ -1914,7 +1914,7 @@
     margin-top: 24px;
     padding-top: 16px;
     border-top-width: 1px;
-    border-top-color: rgba(180, 40, 60, 0.2);
+    border-top-color: rgba(180, 80, 20, 0.2);
 }
 
 .settings-scroll {
@@ -1942,9 +1942,9 @@
 }
 
 .aaa-slider .unity-base-slider__dragger {
-    background-color: rgb(180, 40, 60);
+    background-color: rgb(180, 80, 20);
     border-width: 2px;
-    border-color: rgb(220, 60, 80);
+    border-color: rgb(255, 140, 50);
     border-radius: 50%;
     width: 22px;
     height: 22px;
@@ -1953,12 +1953,12 @@
 }
 
 .aaa-slider:hover .unity-base-slider__dragger {
-    background-color: rgb(170, 50, 80);
+    background-color: rgb(210, 100, 30);
     scale: 1.1;
 }
 
 .aaa-slider .unity-base-slider__drag-container {
-    background-color: rgb(180, 40, 60);
+    background-color: rgb(180, 80, 20);
     border-radius: 6px;
 }
 
@@ -1970,7 +1970,7 @@
 
 .aaa-toggle .unity-toggle__input {
     background-color: rgba(40, 32, 55, 0.8);
-    border-color: rgba(100, 50, 65, 0.5);
+    border-color: rgba(120, 70, 30, 0.5);
     border-width: 2px;
     border-radius: 14px;
     width: 52px;
@@ -1980,8 +1980,8 @@
 }
 
 .aaa-toggle:checked .unity-toggle__input {
-    background-color: rgba(180, 40, 60, 0.5);
-    border-color: rgb(180, 40, 60);
+    background-color: rgba(180, 80, 20, 0.5);
+    border-color: rgb(180, 80, 20);
 }
 
 .aaa-toggle .unity-toggle__checkmark {
@@ -1994,7 +1994,7 @@
 }
 
 .aaa-toggle:checked .unity-toggle__checkmark {
-    background-color: rgb(180, 40, 60);
+    background-color: rgb(180, 80, 20);
     translate: 24px 0;
 }
 
