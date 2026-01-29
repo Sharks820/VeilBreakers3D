@@ -31,12 +31,12 @@ Material:
     m_Floats:
     - _FadeBottom: 0
     - _FadeTop: 0.5
-    - _Intensity: 0
+    - _Intensity: 0.5
     - _Layer2Intensity: 0.25
     - _Layer2Scale: 1.5
     - _TileScale: 2
     m_Colors:
-    - _Color: {r: 1, g: 0.4, b: 0.15, a: 0.25}
+    - _Color: {r: 1, g: 0.5, b: 0.2, a: 0.6}
     - _Layer2Speed: {r: 0.025, g: 0.01, b: 0, a: 0}
     - _ScrollSpeed: {r: 0.04, g: 0.015, b: 0, a: 0}
   m_BuildTextureStacks: []

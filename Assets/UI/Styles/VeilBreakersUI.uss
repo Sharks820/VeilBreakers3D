@@ -134,7 +134,8 @@
 
 .vb-root {
     flex-grow: 1;
-    background-color: var(--surface-abyss);
+    /* Transparent to allow 3D VFX to show through */
+    background-color: transparent;
 }
 
 /* =============================================================================

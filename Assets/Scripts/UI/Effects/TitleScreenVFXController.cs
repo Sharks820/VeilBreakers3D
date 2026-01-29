@@ -80,12 +80,9 @@ namespace VeilBreakers.UI.Effects
         {
             Debug.Log("[TitleScreenVFX] Start() called - initializing VFX");
 
-            // Initialize all VFX with zero intensity
-            SetGlobalIntensity(0f);
-
-            // Begin fade in
-            FadeIn();
-            Debug.Log("[TitleScreenVFX] Fade-in started");
+            // Start at full intensity immediately (no fade, for visibility testing)
+            SetGlobalIntensity(1f);
+            Debug.Log("[TitleScreenVFX] VFX now at full intensity");
         }
 
         private void OnEnable()

@@ -82,7 +82,8 @@
 
 .vb-root {
     flex-grow: 1;
-    background-color: var(--color-background-dark);
+    /* Transparent to allow 3D VFX to show through */
+    background-color: transparent;
 }
 
 /* =============================================================================
