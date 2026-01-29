@@ -651,6 +651,7 @@ namespace VeilBreakers.UI.Controls
         {
             if (!_isOpen || _popup == null || _panelRoot == null || _popupLayer == null) return;
 
+            // Wait for a valid layout before positioning
             if (_popup.resolvedStyle.height <= 0 && _positionAttempts < 3)
             {
                 _positionAttempts++;
@@ -661,37 +662,29 @@ namespace VeilBreakers.UI.Controls
             var fieldBounds = _display.worldBound;
             if (fieldBounds.height <= 0 || fieldBounds.width <= 0) return;
 
-            // Get the popup layer's world position to calculate relative coordinates
-            var layerBounds = _popupLayer.worldBound;
-
-            float panelHeight = _panelRoot.resolvedStyle.height;
-            if (panelHeight <= 0)
-            {
-                panelHeight = Screen.height;
-            }
+            // Convert the display bounds into popup-layer local space for accurate positioning
+            var localTopLeft = _popupLayer.WorldToLocal(fieldBounds.position);
+            var localBottomLeft = _popupLayer.WorldToLocal(new Vector2(fieldBounds.xMin, fieldBounds.yMax));
 
             float popupHeight = _popup.resolvedStyle.height;
-            if (popupHeight <= 0) popupHeight = 200; // Estimate if not yet laid out
+            if (popupHeight <= 0) popupHeight = 200; // Fallback estimate
 
-            float below = fieldBounds.y + fieldBounds.height;
-            float above = fieldBounds.y - popupHeight;
-            float targetY = below;
+            float targetY = localBottomLeft.y;
+            float layerHeight = _popupLayer.resolvedStyle.height > 0 ? _popupLayer.resolvedStyle.height : Screen.height;
 
-            // Check if popup would overflow bottom of panel, prefer showing above if there's room
-            if (popupHeight > 0 && panelHeight > 0 && (below + popupHeight) > panelHeight && above >= 0)
+            // If the popup would overflow the layer bottom, try positioning above
+            if (targetY + popupHeight > layerHeight && (localTopLeft.y - popupHeight) >= 0)
             {
-                targetY = above;
+                targetY = localTopLeft.y - popupHeight;
             }
 
-            // Calculate position relative to the popup layer (not absolute screen coords)
-            float relativeX = fieldBounds.x - layerBounds.x;
-            float relativeY = targetY - layerBounds.y;
+            // Clamp horizontally inside the layer
+            float targetX = Mathf.Clamp(localTopLeft.x, 0, Mathf.Max(0, _popupLayer.resolvedStyle.width - fieldBounds.width));
 
-            Debug.Log($"[VBDropdownField] Positioning popup: fieldBounds={fieldBounds}, layerBounds={layerBounds}, relativeX={relativeX}, relativeY={relativeY}, popupHeight={popupHeight}, choices={_choices.Count}");
-
-            _popup.style.left = relativeX;
-            _popup.style.top = relativeY;
             _popup.style.width = fieldBounds.width;
+            _popup.style.left = StyleKeyword.Auto; // avoid stale absolute positions
+            _popup.style.top = StyleKeyword.Auto;
+            _popup.style.translate = new Translate(targetX, targetY);
         }
 
         private void UpdateLabel()

@@ -3,7 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.SceneManagement;
 using VeilBreakers.Core;
+using VeilBreakers.Managers;
 
 namespace VeilBreakers.UI.Menus
 {
@@ -170,11 +172,17 @@ namespace VeilBreakers.UI.Menus
 
         private bool SaveFileExists()
         {
-            // TODO: Integrate with SaveManager when available
+            // Avoid invoking Instance when it doesn't exist (Instance logs an error)
+            if (SaveManager.HasInstance)
+            {
+                return SaveManager.Instance.SlotExists(0);
+            }
+
+            // Fallback for early initialization before SaveManager is created
             string savePath = System.IO.Path.Combine(
                 Application.persistentDataPath,
-                "Saves",
-                "save_0.vbs"
+                "saves",
+                "slot_0.sav"
             );
             return System.IO.File.Exists(savePath);
         }
@@ -277,11 +285,7 @@ namespace VeilBreakers.UI.Menus
 
         private void LoadGame()
         {
-            // TODO: Integrate with SaveManager
-            // SaveManager.Instance?.LoadGame(0);
-
-            // For now, just load the game scene
-            UnityEngine.SceneManagement.SceneManager.LoadScene(_gameScene);
+            StartCoroutine(LoadAndEnterGame());
         }
 
         private void ShowSettings()
@@ -305,6 +309,32 @@ namespace VeilBreakers.UI.Menus
             #else
             Application.Quit();
             #endif
+        }
+
+        /// <summary>
+        /// Attempts to load save slot 0 via SaveManager, then transitions to the game scene.
+        /// Falls back to direct scene load if SaveManager is unavailable or load fails.
+        /// </summary>
+        private IEnumerator LoadAndEnterGame()
+        {
+            bool loaded = false;
+
+            if (SaveManager.HasInstance)
+            {
+                var loadTask = SaveManager.Instance.LoadAsync(0);
+                while (!loadTask.IsCompleted)
+                {
+                    yield return null;
+                }
+
+                loaded = loadTask.Result;
+                if (!loaded)
+                {
+                    Debug.LogWarning("[MainMenuController] Failed to load slot 0. Proceeding to scene load.");
+                }
+            }
+
+            SceneManager.LoadScene(_gameScene);
         }
 
         // =============================================================================

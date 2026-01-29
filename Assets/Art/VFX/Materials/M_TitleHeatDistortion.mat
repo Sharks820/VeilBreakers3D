@@ -33,7 +33,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _DistortStrength: 0.012
+    - _DistortStrength: 0
     - _TileScale: 1.5
     m_Colors:
     - _ScrollSpeed: {r: 0.08, g: 0.12, b: 0, a: 0}

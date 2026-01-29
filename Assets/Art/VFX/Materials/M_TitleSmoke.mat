@@ -31,7 +31,7 @@ Material:
     m_Floats:
     - _FadeBottom: 0
     - _FadeTop: 0.5
-    - _Intensity: 0.35
+    - _Intensity: 0
     - _Layer2Intensity: 0.25
     - _Layer2Scale: 1.5
     - _TileScale: 2
