@@ -630,7 +630,11 @@ namespace VeilBreakers.UI.Menus
 
         private Color GetHeroColor(HeroData hero)
         {
-            // Use the hero's color palette from JSON
+            // Use the hero's color palette from JSON with fallback
+            if (hero?.color_palette == null)
+            {
+                return new Color(0.6f, 0.6f, 0.6f, 1f); // Default gray
+            }
             return new Color(
                 hero.color_palette.r,
                 hero.color_palette.g,
