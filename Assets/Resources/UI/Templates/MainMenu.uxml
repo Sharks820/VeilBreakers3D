@@ -4,129 +4,42 @@
 
     <ui:VisualElement name="menu-root" class="vb-root" style="flex-grow: 1;">
 
-        <!-- ====================================================================
-             BACKGROUND LAYERS (for parallax/animation effects)
-             ==================================================================== -->
+        <!-- Background -->
+        <ui:VisualElement name="background" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgb(8, 6, 12);" />
 
-        <!-- Deep background - darkest layer -->
-        <ui:VisualElement name="bg-layer-0" class="menu-bg-layer" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgb(8, 6, 12);" />
-
-        <!-- Veil effect layer - subtle purple gradient -->
-        <ui:VisualElement name="bg-veil-layer" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0;">
-            <ui:VisualElement style="position: absolute; left: 0; top: 0; right: 0; bottom: 50%; background-image: none; background-color: rgba(180, 40, 60, 0.05);" />
-            <ui:VisualElement style="position: absolute; left: 0; top: 50%; right: 0; bottom: 0; background-color: rgba(100, 20, 30, 0.1);" />
+        <!-- VEILBREAKERS LOGO - Large at very top -->
+        <ui:VisualElement name="logo-container" picking-mode="Ignore" style="position: absolute; left: 0; right: 0; top: -40px; height: 380px; justify-content: flex-start; align-items: center;">
+            <ui:VisualElement name="logo-image" style="width: 100%; height: 360px; background-image: url('project://database/Assets/Art/UI/MainMenu/logo_veilbreakers.png?fileID=2800000&amp;guid=068214e22c8853d4c8fe90c83ab65bbc&amp;type=3'); -unity-background-scale-mode: scale-to-fit;" />
         </ui:VisualElement>
 
-        <!-- Ambient particles placeholder (controlled by script) - v2.63: overflow VISIBLE to prevent clipping -->
-        <ui:VisualElement name="particle-container" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: visible;" />
-        <ui:VisualElement name="ember-container" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: visible;" />
-        <ui:VisualElement name="spark-container" picking-mode="Ignore" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; overflow: visible;" />
+        <!-- Demon Figure - Smaller, anchored to bottom center -->
+        <ui:VisualElement name="monster-image" picking-mode="Ignore" style="position: absolute; left: 0; right: 0; top: 20%; bottom: 0; background-image: url('project://database/Assets/Art/UI/MainMenu/demon_figure.png?fileID=2800000&amp;guid=37ac0bd864327ca4ab90b841b55d87bc&amp;type=3'); -unity-background-scale-mode: scale-to-fit; background-position-x: center; background-position-y: bottom;" />
 
-        <!-- Vignette overlay -->
-        <ui:VisualElement name="vignette" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; border-width: 0; background-color: transparent;">
-            <!-- Top shadow -->
-            <ui:VisualElement style="position: absolute; left: 0; top: 0; right: 0; height: 200px; background-color: rgba(0, 0, 0, 0.4);" />
-            <!-- Bottom shadow -->
-            <ui:VisualElement style="position: absolute; left: 0; bottom: 0; right: 0; height: 150px; background-color: rgba(0, 0, 0, 0.5);" />
-            <!-- Left shadow -->
-            <ui:VisualElement style="position: absolute; left: 0; top: 0; bottom: 0; width: 100px; background-color: rgba(0, 0, 0, 0.3);" />
-            <!-- Right shadow -->
-            <ui:VisualElement style="position: absolute; right: 0; top: 0; bottom: 0; width: 100px; background-color: rgba(0, 0, 0, 0.3);" />
-        </ui:VisualElement>
+        <!-- Menu Buttons - Molten orange theme via USS -->
+        <ui:VisualElement name="button-container" style="position: absolute; left: 0; right: 0; bottom: 20px; flex-direction: row; justify-content: center; align-items: center; padding: 20px 20px; background-color: rgba(8, 6, 12, 0.80);">
 
-        <!-- ====================================================================
-             MAIN CONTENT
-             ==================================================================== -->
+            <ui:Button text="NEW GAME" name="btn-new-game" class="vb-menu-btn-primary" style="width: 180px; height: 55px; margin: 0 12px; border-width: 2px; border-radius: 6px; font-size: 18px; letter-spacing: 3px; -unity-font-style: bold;" />
 
-        <ui:VisualElement name="content-container" style="flex-grow: 1; flex-direction: row;">
+            <ui:Button text="CONTINUE" name="btn-continue" class="vb-menu-btn-primary" style="display: none; width: 180px; height: 55px; margin: 0 12px; border-width: 2px; border-radius: 6px; font-size: 18px; letter-spacing: 3px; -unity-font-style: bold;" />
 
-            <!-- Left side - Title and tagline (60% width) -->
-            <ui:VisualElement name="left-panel" style="flex-grow: 1; justify-content: center; padding-left: 80px;">
+            <ui:Button text="SETTINGS" name="btn-settings" class="vb-menu-btn-secondary" style="width: 150px; height: 50px; margin: 0 12px; border-width: 2px; border-radius: 6px; font-size: 16px; letter-spacing: 3px; -unity-font-style: bold;" />
 
-                <!-- Title section -->
-                <ui:VisualElement name="title-section" style="margin-bottom: 24px;">
+            <ui:Button text="CREDITS" name="btn-credits" class="vb-menu-btn-secondary" style="width: 150px; height: 50px; margin: 0 12px; border-width: 2px; border-radius: 6px; font-size: 16px; letter-spacing: 3px; -unity-font-style: bold;" />
 
-                    <!-- Logo placeholder (can be replaced with image) -->
-                    <ui:VisualElement name="logo-container" style="height: 120px; margin-bottom: 16px;">
-                        <ui:Label text="VEILBREAKERS" name="game-title" class="vb-header" style="font-size: 72px; color: rgb(235, 225, 215); letter-spacing: 6px; -unity-text-align: middle-left; text-shadow: 0 0 20px rgba(180, 40, 60, 0.5);" />
-                    </ui:VisualElement>
-
-                    <!-- Tagline with corruption glow -->
-                    <ui:VisualElement name="tagline-container" style="flex-direction: row; align-items: center;">
-                        <ui:VisualElement style="width: 60px; height: 2px; background-color: rgb(180, 40, 60); margin-right: 16px;" />
-                        <ui:Label text="Break the Veil. Bind the Fallen." name="tagline" style="color: rgb(165, 155, 145); font-size: 18px; letter-spacing: 3px; -unity-font-style: italic;" />
-                    </ui:VisualElement>
-
-                </ui:VisualElement>
-
-                <!-- News/Updates ticker (optional) -->
-                <ui:VisualElement name="news-section" style="margin-top: 40px; max-width: 500px; display: none;">
-                    <ui:Label text="LATEST UPDATE" style="color: rgb(180, 40, 60); font-size: 12px; letter-spacing: 2px; margin-bottom: 8px;" />
-                    <ui:Label text="Version 1.0 - The Veil Awakens" style="color: rgb(165, 155, 145); font-size: 14px;" />
-                </ui:VisualElement>
-
-            </ui:VisualElement>
-
-            <!-- Right side - Menu buttons (40% width) -->
-            <ui:VisualElement name="right-panel" style="width: 400px; justify-content: center; align-items: flex-end; padding-right: 80px;">
-
-                <!-- Menu container with subtle panel effect -->
-                <ui:VisualElement name="button-container" style="width: 280px; padding: 32px; background-color: rgba(15, 12, 22, 0.7); border-radius: 8px; border-width: 1px; border-color: rgba(60, 50, 75, 0.5);">
-
-                    <!-- Continue button (shown if save exists) -->
-                    <ui:Button text="CONTINUE" name="btn-continue" class="vb-button menu-button-main" style="display: none; margin-bottom: 12px;">
-                        <ui:VisualElement class="button-glow" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; border-radius: 4px; opacity: 0;" />
-                    </ui:Button>
-
-                    <!-- New Game button -->
-                    <ui:Button text="NEW GAME" name="btn-new-game" class="vb-button menu-button-main" style="margin-bottom: 12px;">
-                        <ui:VisualElement class="button-glow" />
-                    </ui:Button>
-
-                    <!-- Divider -->
-                    <ui:VisualElement style="height: 1px; background-color: rgba(60, 50, 75, 0.5); margin: 8px 0 16px 0;" />
-
-                    <!-- Settings button -->
-                    <ui:Button text="SETTINGS" name="btn-settings" class="vb-button menu-button-secondary" style="margin-bottom: 8px;" />
-
-                    <!-- Credits button -->
-                    <ui:Button text="CREDITS" name="btn-credits" class="vb-button menu-button-secondary" style="margin-bottom: 8px;" />
-
-                    <!-- Exit button -->
-                    <ui:Button text="EXIT" name="btn-exit" class="vb-button menu-button-secondary" />
-
-                </ui:VisualElement>
-
-            </ui:VisualElement>
+            <ui:Button text="EXIT" name="btn-exit" class="vb-menu-btn-secondary" style="width: 120px; height: 50px; margin: 0 12px; border-width: 2px; border-radius: 6px; font-size: 16px; letter-spacing: 3px; -unity-font-style: bold;" />
 
         </ui:VisualElement>
 
-        <!-- ====================================================================
-             FOOTER
-             ==================================================================== -->
-
-        <ui:VisualElement name="footer" style="position: absolute; left: 0; right: 0; bottom: 0; height: 60px; flex-direction: row; justify-content: space-between; align-items: center; padding: 0 40px;">
-
-            <!-- Copyright -->
-            <ui:Label text="2024 VeilBreakers" style="color: rgb(75, 68, 65); font-size: 12px;" />
-
-            <!-- Social links placeholder -->
-            <ui:VisualElement name="social-links" style="flex-direction: row;">
-                <!-- Icons would go here -->
-            </ui:VisualElement>
-
-            <!-- Version -->
-            <ui:Label text="v2.89 Alpha" name="version-label" style="color: rgb(75, 68, 65); font-size: 12px;" />
-
+        <!-- Footer -->
+        <ui:VisualElement name="footer" style="position: absolute; left: 0; right: 0; bottom: 0; height: 50px; flex-direction: row; justify-content: space-between; align-items: center; padding: 0 50px; background-color: transparent;">
+            <ui:Label text="© 2026 VeilBreakers" style="font-size: 14px; color: rgb(80, 70, 65); letter-spacing: 2px;" />
+            <ui:Label text="v4.25 Alpha" name="version-label" style="font-size: 14px; color: rgb(80, 70, 65); letter-spacing: 2px;" />
         </ui:VisualElement>
 
-        <!-- ====================================================================
-             LOADING OVERLAY (for transitions)
-             ==================================================================== -->
-
-        <ui:VisualElement name="loading-overlay" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgb(8, 6, 12); display: none; justify-content: center; align-items: center;">
-            <ui:VisualElement name="loading-spinner" style="width: 60px; height: 60px; border-width: 3px; border-color: rgb(180, 40, 60); border-radius: 50%;" />
-            <ui:Label text="Loading..." style="color: rgb(165, 155, 145); font-size: 16px; margin-top: 20px;" />
+        <!-- Loading Overlay -->
+        <ui:VisualElement name="loading-overlay" style="display: none; position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(8, 6, 12, 0.95); justify-content: center; align-items: center;">
+            <ui:VisualElement style="width: 60px; height: 60px; border-width: 4px; border-color: rgba(180, 40, 60, 0.3); border-top-color: rgb(180, 40, 60); border-radius: 30px; margin-bottom: 25px;" />
+            <ui:Label text="ENTERING THE VEIL..." style="font-size: 18px; letter-spacing: 5px; color: rgb(180, 40, 60);" />
         </ui:VisualElement>
 
     </ui:VisualElement>
