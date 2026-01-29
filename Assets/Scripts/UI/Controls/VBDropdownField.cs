@@ -419,10 +419,10 @@ namespace VeilBreakers.UI.Controls
             // CRITICAL: Force visibility with inline styles
             // The popup layer is added to panel.visualTree directly and doesn't inherit USS from rootVisualElement!
             _popup.style.backgroundColor = new StyleColor(new Color(0.07f, 0.055f, 0.07f, 1f));
-            _popup.style.borderTopColor = new StyleColor(new Color(0.7f, 0.16f, 0.24f, 1f));
-            _popup.style.borderBottomColor = new StyleColor(new Color(0.7f, 0.16f, 0.24f, 1f));
-            _popup.style.borderLeftColor = new StyleColor(new Color(0.7f, 0.16f, 0.24f, 1f));
-            _popup.style.borderRightColor = new StyleColor(new Color(0.7f, 0.16f, 0.24f, 1f));
+            _popup.style.borderTopColor = new StyleColor(new Color(0.7f, 0.31f, 0.08f, 1f));
+            _popup.style.borderBottomColor = new StyleColor(new Color(0.7f, 0.31f, 0.08f, 1f));
+            _popup.style.borderLeftColor = new StyleColor(new Color(0.7f, 0.31f, 0.08f, 1f));
+            _popup.style.borderRightColor = new StyleColor(new Color(0.7f, 0.31f, 0.08f, 1f));
             _popup.style.borderTopWidth = 2;
             _popup.style.borderBottomWidth = 2;
             _popup.style.borderLeftWidth = 2;
@@ -496,7 +496,7 @@ namespace VeilBreakers.UI.Controls
 
             _popupScroll.Clear();
             var textColor = new Color(0.73f, 0.82f, 0.78f, 1f);
-            var selectedBgColor = new Color(0.7f, 0.16f, 0.24f, 1f);
+            var selectedBgColor = new Color(0.7f, 0.31f, 0.08f, 1f);
 
             for (int i = 0; i < _choices.Count; i++)
             {
@@ -577,7 +577,7 @@ namespace VeilBreakers.UI.Controls
             if (_popupScroll == null) return;
 
             var textColor = new Color(0.73f, 0.82f, 0.78f, 1f);
-            var selectedBgColor = new Color(0.7f, 0.16f, 0.24f, 1f);
+            var selectedBgColor = new Color(0.7f, 0.31f, 0.08f, 1f);
 
             int i = 0;
             foreach (var child in _popupScroll.Children())
