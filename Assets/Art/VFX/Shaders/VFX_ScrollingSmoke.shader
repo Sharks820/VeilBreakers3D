@@ -34,6 +34,7 @@ Shader "VeilBreakers/VFX/ScrollingSmoke"
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma target 3.0
             #include "UnityCG.cginc"
 
             struct appdata
@@ -95,4 +96,6 @@ Shader "VeilBreakers/VFX/ScrollingSmoke"
             ENDCG
         }
     }
+
+    FallBack "Transparent/VertexLit"
 }

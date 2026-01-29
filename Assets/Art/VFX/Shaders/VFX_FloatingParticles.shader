@@ -30,6 +30,7 @@ Shader "VeilBreakers/VFX/FloatingParticles"
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma target 3.0
             #include "UnityCG.cginc"
 
             struct appdata
@@ -45,6 +46,7 @@ Shader "VeilBreakers/VFX/FloatingParticles"
             };
 
             sampler2D _MainTex;
+            float4 _MainTex_ST;
             float4 _Color;
             float4 _ScrollSpeed;
             float _Intensity;
@@ -57,7 +59,7 @@ Shader "VeilBreakers/VFX/FloatingParticles"
             {
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
-                o.uv = v.uv;
+                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 return o;
             }
 
@@ -97,4 +99,6 @@ Shader "VeilBreakers/VFX/FloatingParticles"
             ENDCG
         }
     }
+
+    FallBack "Transparent/VertexLit"
 }

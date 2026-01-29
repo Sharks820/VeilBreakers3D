@@ -65,6 +65,7 @@ namespace VeilBreakers.UI.Effects
 
         private float _currentIntensityMultiplier = 0f;
         private Coroutine _fadeCoroutine;
+        private Coroutine _pulseCoroutine;
 
         private void Awake()
         {
@@ -97,6 +98,12 @@ namespace VeilBreakers.UI.Effects
             {
                 StopCoroutine(_fadeCoroutine);
                 _fadeCoroutine = null;
+            }
+
+            if (_pulseCoroutine != null)
+            {
+                StopCoroutine(_pulseCoroutine);
+                _pulseCoroutine = null;
             }
         }
 
@@ -262,6 +269,14 @@ namespace VeilBreakers.UI.Effects
 
         private IEnumerator FadeCoroutine(float from, float to, float duration)
         {
+            // Guard against division by zero
+            if (duration <= 0f)
+            {
+                SetGlobalIntensity(to);
+                _fadeCoroutine = null;
+                yield break;
+            }
+
             float elapsed = 0f;
 
             while (elapsed < duration)
@@ -284,11 +299,22 @@ namespace VeilBreakers.UI.Effects
         /// </summary>
         public void TriggerPulse(float intensity = 1.5f, float duration = 0.3f)
         {
-            StartCoroutine(PulseCoroutine(intensity, duration));
+            // Stop any existing pulse to prevent overlapping
+            if (_pulseCoroutine != null)
+                StopCoroutine(_pulseCoroutine);
+
+            _pulseCoroutine = StartCoroutine(PulseCoroutine(intensity, duration));
         }
 
         private IEnumerator PulseCoroutine(float peakIntensity, float duration)
         {
+            // Guard against division by zero
+            if (duration <= 0f)
+            {
+                _pulseCoroutine = null;
+                yield break;
+            }
+
             float originalIntensity = _currentIntensityMultiplier;
             float halfDuration = duration * 0.5f;
 
@@ -313,6 +339,7 @@ namespace VeilBreakers.UI.Effects
             }
 
             SetGlobalIntensity(originalIntensity);
+            _pulseCoroutine = null;
         }
 
 #if UNITY_EDITOR

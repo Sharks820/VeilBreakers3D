@@ -28,6 +28,7 @@ Shader "VeilBreakers/VFX/HeatDistortion"
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma target 3.0
             #include "UnityCG.cginc"
 
             struct appdata
@@ -86,5 +87,5 @@ Shader "VeilBreakers/VFX/HeatDistortion"
     }
 
     // Fallback for platforms that don't support GrabPass
-    FallBack "Diffuse"
+    FallBack "Transparent/VertexLit"
 }
