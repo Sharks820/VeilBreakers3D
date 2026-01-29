@@ -195,6 +195,8 @@ unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler
 - **NEVER** use `Find()` or `FindObjectOfType()` in Update - cache references
 - **NEVER** allocate in Update (no `new`, no LINQ, no string concat)
 - Delete `Library/` folder to fix import loops (Unity rebuilds it)
+- **CHECK** if Bootstrap/Manager components are ENABLED in scene (`m_Enabled: 1`) - disabled components = silent failure
+- **AFTER deleting scripts**, check scene for orphan GameObjects with missing script references
 
 ### UI Toolkit Lessons
 - Scrollbar positioning buggy in programmatic popups - hide scrollbar, use mouse wheel
