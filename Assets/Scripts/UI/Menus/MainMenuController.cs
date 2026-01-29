@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
-using VeilBreakers.UI.Effects;
 
 namespace VeilBreakers.UI.Menus
 {
@@ -30,7 +29,7 @@ namespace VeilBreakers.UI.Menus
         [SerializeField] private float _titleFadeInDuration = 1.5f;
         [SerializeField] private float _buttonStaggerDelay = 0.1f;
 
-        // VFX is handled by MainMenuVFXController (pure UI Toolkit, auto-added in InitializeVFXSystem)
+        // VFX will be implemented in a future update
 
         // =============================================================================
         // UI ELEMENTS
@@ -124,13 +123,10 @@ namespace VeilBreakers.UI.Menus
             // Bind button events
             BindEvents();
 
-            // Initialize new VFX system (replaces old particle effects)
-            InitializeVFXSystem();
-
             // Start animations
             PlayEntranceAnimation();
 
-            ErrorLogger.UI("MainMenu initialized with new VFX system");
+            ErrorLogger.UI("MainMenu initialized");
         }
 
         private void BindEvents()
@@ -153,12 +149,6 @@ namespace VeilBreakers.UI.Menus
             _btnCredits?.UnregisterCallback<ClickEvent>(OnCreditsButtonClicked);
             _btnExit?.UnregisterCallback<ClickEvent>(OnExitButtonClicked);
             _root?.UnregisterCallback<KeyDownEvent>(OnKeyDown);
-        }
-
-        private void InitializeVFXSystem()
-        {
-            // VFX disabled - awaiting new VFX instructions from user
-            ErrorLogger.UI("VFX disabled - awaiting new design");
         }
 
         // =============================================================================
@@ -506,9 +496,6 @@ namespace VeilBreakers.UI.Menus
             element.style.scale = new Scale(new Vector2(toScale, toScale));
         }
 
-        // NOTE: Old VeilPulseLoop removed - VFX now handled by MenuPulseController
-        // and MainMenuVFXSetup which create SpriteRenderer-based effects
-
         // =============================================================================
         // EASING FUNCTIONS
         // =============================================================================
@@ -658,7 +645,6 @@ namespace VeilBreakers.UI.Menus
                 _animationCoroutine = null;
             }
 
-            // VFX cleanup handled automatically by MainMenuVFXController
         }
 
         /// <summary>

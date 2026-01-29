@@ -425,7 +425,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1100000000}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 220fa5f5f23813142894251e7bf11635, type: 3}
   m_Name: 
@@ -452,23 +452,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 236ad01b21b84e04c86b81f822c1d76e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _uiDocument: {fileID: 1100000002}
-  _emberCount: 15
-  _dustCount: 25
-  _sparkCount: 8
-  _lightningBoltCount: 3
-  _lightningScale: 1.35
-  _emberSpeed: 30
-  _dustSpeed: 15
-  _sparkSpeed: 80
-  _veilPulseSpeed: 0.5
-  _enableVeilPulses: 0
-  _emberColor: {r: 1, g: 0.2980392, b: 0.2980392, a: 0.8}
-  _emberGlowColor: {r: 0.7, g: 0.16, b: 0.24, a: 0.6}
-  _dustColor: {r: 0.754717, g: 0.08899963, b: 0.08899963, a: 0.3}
-  _sparkColor: {r: 0.85, g: 0.25, b: 0.35, a: 0.9}
-  _lightningColor: {r: 0.9, g: 0.3, b: 0.4, a: 0.95}
-  _veilColor: {r: 0.50980395, g: 0.010902463, b: 0.05810133, a: 0.06}
 --- !u!114 &1100000005
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -497,7 +480,6 @@ MonoBehaviour:
   _logoEffect: {fileID: 0}
   _riftDistortion: {fileID: 0}
   _chestBreathing: {fileID: 0}
-  _ashEmbers: {fileID: 0}
   _ruptureEvent: {fileID: 0}
 --- !u!114 &1100000006
 MonoBehaviour:
@@ -521,6 +503,71 @@ MonoBehaviour:
   _minRuptureInterval: 20
   _maxRuptureInterval: 30
   _ruptureDuration: 0.3
+--- !u!1 &1483478209
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1483478211}
+  - component: {fileID: 1483478210}
+  m_Layer: 0
+  m_Name: TitleVFXController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1483478210
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1483478209}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76818408cef4d1245ac78d65c6f6493e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _fireRingTexture: {fileID: 0}
+  _fireRingSecondaryTexture: {fileID: 0}
+  _moltenCoreTexture: {fileID: 0}
+  _voidSmokeTexture: {fileID: 0}
+  _shockwaveTexture: {fileID: 0}
+  _vfxCenterOffset: {x: 0, y: 0.1}
+  _fireRingScale: 800
+  _fireRingSecondaryScale: 900
+  _moltenCoreScale: 400
+  _voidSmokeScale: 1200
+  _shockwaveStartScale: 200
+  _shockwaveEndScale: 1400
+  _fireRingRotationSpeed: 8
+  _fireRingSecondaryRotationSpeed: -5
+  _moltenCorePulseSpeed: 0.8
+  _voidSmokeRotationSpeed: 3
+  _shockwaveDuration: 1.5
+  _moltenCoreMinScale: 0.92
+  _moltenCoreMaxScale: 1.08
+  _moltenCoreMinAlpha: 0.7
+  _moltenCoreMaxAlpha: 1
+--- !u!4 &1483478211
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1483478209}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -530,3 +577,4 @@ SceneRoots:
   - {fileID: 1100000001}
   - {fileID: 724518088}
   - {fileID: 768737077}
+  - {fileID: 1483478211}
