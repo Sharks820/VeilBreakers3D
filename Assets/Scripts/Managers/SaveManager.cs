@@ -278,8 +278,8 @@ namespace VeilBreakers.Managers
                 }
 
                 // Delete backups
-                string bak1 = path.Replace(SAVE_EXTENSION, ".bak1");
-                string bak2 = path.Replace(SAVE_EXTENSION, ".bak2");
+                string bak1 = IOPath.ChangeExtension(path, ".bak1");
+                string bak2 = IOPath.ChangeExtension(path, ".bak2");
 
                 if (File.Exists(bak1)) File.Delete(bak1);
                 if (File.Exists(bak2)) File.Delete(bak2);

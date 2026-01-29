@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -59,6 +60,12 @@ namespace VeilBreakers.UI.Controls
         private List<string> _choices = new List<string>();
         private int _index = -1;
 
+        [Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+        private void LogDebug(string message)
+        {
+            UnityEngine.Debug.Log(message);
+        }
+
         public List<string> choices
         {
             get => _choices;
@@ -110,7 +117,9 @@ namespace VeilBreakers.UI.Controls
 
         private void OnPointerDown(PointerDownEvent evt)
         {
-            Debug.Log($"[VBDropdownField] OnPointerDown triggered on {name}, button={evt.button}");
+#if VB_DROPDOWN_DEBUG
+            LogDebug($"[VBDropdownField] OnPointerDown triggered on {name}, button={evt.button}");
+#endif
             if (evt.button == 0) // Left click only
             {
                 evt.StopPropagation();
@@ -227,7 +236,9 @@ namespace VeilBreakers.UI.Controls
 
         private void TogglePopup()
         {
-            Debug.Log($"[VBDropdownField] TogglePopup called, _isOpen={_isOpen}");
+#if VB_DROPDOWN_DEBUG
+            LogDebug($"[VBDropdownField] TogglePopup called, _isOpen={_isOpen}");
+#endif
             if (_isOpen)
             {
                 ClosePopup();
@@ -240,37 +251,49 @@ namespace VeilBreakers.UI.Controls
 
         private void OpenPopup()
         {
-            Debug.Log($"[VBDropdownField] OpenPopup called on {name}");
+#if VB_DROPDOWN_DEBUG
+            LogDebug($"[VBDropdownField] OpenPopup called on {name}");
+#endif
 
             // If already open, just return
             if (_isOpen)
             {
-                Debug.Log($"[VBDropdownField] Already open, returning");
+#if VB_DROPDOWN_DEBUG
+                LogDebug($"[VBDropdownField] Already open, returning");
+#endif
                 return;
             }
 
             // If not attached to panel yet, we can't open
             if (panel == null)
             {
-                Debug.Log($"[VBDropdownField] panel is null, returning");
+#if VB_DROPDOWN_DEBUG
+                LogDebug($"[VBDropdownField] panel is null, returning");
+#endif
                 return;
             }
 
             EnsurePopupLayer();
             if (_popupLayer == null)
             {
-                Debug.Log($"[VBDropdownField] _popupLayer is null after EnsurePopupLayer, returning");
+#if VB_DROPDOWN_DEBUG
+                LogDebug($"[VBDropdownField] _popupLayer is null after EnsurePopupLayer, returning");
+#endif
                 return;
             }
 
             EnsurePopup();
             if (_popup == null)
             {
-                Debug.Log($"[VBDropdownField] _popup is null after EnsurePopup, returning");
+#if VB_DROPDOWN_DEBUG
+                LogDebug($"[VBDropdownField] _popup is null after EnsurePopup, returning");
+#endif
                 return;
             }
 
-            Debug.Log($"[VBDropdownField] Opening popup successfully, choices count={_choices.Count}");
+#if VB_DROPDOWN_DEBUG
+            LogDebug($"[VBDropdownField] Opening popup successfully, choices count={_choices.Count}");
+#endif
             _isOpen = true;
             _scrollResetPending = true;
             _positionAttempts = 0;
@@ -278,13 +301,17 @@ namespace VeilBreakers.UI.Controls
             // Ensure popup layer is at the front and visible
             _popupLayer.BringToFront();
             _popupLayer.style.display = DisplayStyle.Flex;
-            Debug.Log($"[VBDropdownField] Popup layer set to Flex, parent={_popupLayer.parent?.name}");
+#if VB_DROPDOWN_DEBUG
+            LogDebug($"[VBDropdownField] Popup layer set to Flex, parent={_popupLayer.parent?.name}");
+#endif
 
             // Show and position this dropdown's popup
             _popup.style.display = DisplayStyle.Flex;
             _popup.BringToFront();
             AddToClassList("vb-dropdown--open");
-            Debug.Log($"[VBDropdownField] Popup set to Flex, popup parent={_popup.parent?.name}");
+#if VB_DROPDOWN_DEBUG
+            LogDebug($"[VBDropdownField] Popup set to Flex, popup parent={_popup.parent?.name}");
+#endif
 
             // Rebuild popup items to ensure fresh state
             RebuildPopupItems();
@@ -371,7 +398,7 @@ namespace VeilBreakers.UI.Controls
 
             if (rootVisualElement == null)
             {
-                Debug.LogError("[VBDropdownField] Could not find rootVisualElement!");
+                LogDebug("[VBDropdownField] Could not find rootVisualElement!");
                 return;
             }
 
@@ -382,7 +409,7 @@ namespace VeilBreakers.UI.Controls
                 _popupLayer = new VisualElement();
                 _popupLayer.name = "vb-dropdown-popup-layer";
                 rootVisualElement.Add(_popupLayer);
-                Debug.Log($"[VBDropdownField] Created popup layer as child of {rootVisualElement.name}, stylesheets={rootVisualElement.styleSheets.count}");
+                LogDebug($"[VBDropdownField] Created popup layer as child of {rootVisualElement.name}, stylesheets={rootVisualElement.styleSheets.count}");
             }
 
             // Set properties for overlay behavior

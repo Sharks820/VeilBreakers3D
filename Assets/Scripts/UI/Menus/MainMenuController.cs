@@ -50,6 +50,7 @@ namespace VeilBreakers.UI.Menus
         private VisualElement _buttonContainer;
         private List<Button> _cachedButtons; // Cache for entrance animation (avoid ToList allocation)
         private Coroutine _animationCoroutine;
+        private bool _hasValidSave;
 
         // Hover callback storage for proper unregistration (prevents memory leaks)
         private Dictionary<Button, EventCallback<MouseEnterEvent>> _hoverEnterCallbacks;
@@ -80,7 +81,7 @@ namespace VeilBreakers.UI.Menus
         private void OnEnable()
         {
             InitializeUI();
-            CheckForSaveFile();
+            StartCoroutine(RefreshContinueButton());
         }
 
         // =============================================================================
@@ -157,34 +158,62 @@ namespace VeilBreakers.UI.Menus
         // SAVE FILE CHECK
         // =============================================================================
 
+        private IEnumerator RefreshContinueButton()
+        {
+            bool saveExists = false;
+            bool corrupted = false;
+
+            if (SaveManager.HasInstance)
+            {
+                var metaTask = SaveManager.Instance.GetSlotMetadataAsync(0);
+                while (!metaTask.IsCompleted)
+                {
+                    yield return null;
+                }
+
+                var meta = metaTask.Result;
+                saveExists = meta?.hasData == true && meta.isCorrupted == false;
+                corrupted = meta?.isCorrupted == true;
+            }
+            else
+            {
+                // Fallback for early initialization before SaveManager is created
+                string savePath = System.IO.Path.Combine(
+                    Application.persistentDataPath,
+                    "saves",
+                    "slot_0.sav"
+                );
+                saveExists = System.IO.File.Exists(savePath);
+            }
+
+            SetContinueVisible(saveExists);
+            _hasValidSave = saveExists;
+
+            if (corrupted)
+            {
+                Debug.LogWarning("[MainMenuController] Save slot 0 appears corrupted; hiding Continue.");
+            }
+        }
+
+        /// <summary>
+        /// Triggers a check for existing save files and updates the Continue button visibility.
+        /// </summary>
         private void CheckForSaveFile()
         {
-            // Check if a save file exists to show/hide Continue button
-            bool saveExists = SaveFileExists();
+            StartCoroutine(RefreshContinueButton());
+        }
 
+        private void SetContinueVisible(bool visible)
+        {
             if (_btnContinue != null)
             {
-                _btnContinue.style.display = saveExists
-                    ? DisplayStyle.Flex
-                    : DisplayStyle.None;
+                _btnContinue.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
             }
         }
 
         private bool SaveFileExists()
         {
-            // Avoid invoking Instance when it doesn't exist (Instance logs an error)
-            if (SaveManager.HasInstance)
-            {
-                return SaveManager.Instance.SlotExists(0);
-            }
-
-            // Fallback for early initialization before SaveManager is created
-            string savePath = System.IO.Path.Combine(
-                Application.persistentDataPath,
-                "saves",
-                "slot_0.sav"
-            );
-            return System.IO.File.Exists(savePath);
+            return _hasValidSave;
         }
 
         // =============================================================================
@@ -317,6 +346,7 @@ namespace VeilBreakers.UI.Menus
         /// </summary>
         private IEnumerator LoadAndEnterGame()
         {
+            SetInteractable(false);
             bool loaded = false;
 
             if (SaveManager.HasInstance)
@@ -357,7 +387,7 @@ namespace VeilBreakers.UI.Menus
         public void Show()
         {
             gameObject.SetActive(true);
-            CheckForSaveFile();
+            StartCoroutine(RefreshContinueButton());
         }
 
         /// <summary>
@@ -405,7 +435,7 @@ namespace VeilBreakers.UI.Menus
             BindEvents();
 
             // Check for save
-            CheckForSaveFile();
+            StartCoroutine(RefreshContinueButton());
 
             ErrorLogger.UI("MainMenu initialized via external root");
         }
