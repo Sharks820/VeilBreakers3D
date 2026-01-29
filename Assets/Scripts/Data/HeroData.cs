@@ -29,6 +29,7 @@ namespace VeilBreakers.Data
         public int primary_path;
         public string role;
         public string hero_class;
+        public string resource_type;  // MANA, GUARD, or FURY - hero's secondary resource
         public string starter_monster_id;  // The monster that starts with this hero
         public string[] recommended_monsters;
         public string synergy_explanation;
@@ -106,6 +107,17 @@ namespace VeilBreakers.Data
                 "support" => HeroRole.SUPPORT,
                 "hybrid" => HeroRole.HYBRID,
                 _ => HeroRole.HYBRID
+            };
+        }
+
+        public ResourceType GetResourceType()
+        {
+            return resource_type?.ToUpper() switch
+            {
+                "MANA" => ResourceType.MANA,
+                "GUARD" => ResourceType.GUARD,
+                "FURY" => ResourceType.FURY,
+                _ => ResourceType.MANA
             };
         }
 

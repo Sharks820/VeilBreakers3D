@@ -122,6 +122,11 @@ namespace VeilBreakers.UI.Menus
         private Label _pathName;
         private VisualElement _pathBadge;
 
+        // Resource type elements
+        private VisualElement _resourceBadge;
+        private VisualElement _resourceIcon;
+        private Label _resourceName;
+
         // Brand affinity elements
         private VisualElement _brandIcon1;
         private Label _brandName1;
@@ -147,17 +152,19 @@ namespace VeilBreakers.UI.Menus
         private Label _innateAbilityName;
         private Label _innateAbilityDesc;
 
-        // Stat elements
-        private VisualElement _statHealthFill;
-        private VisualElement _statMpFill;
-        private VisualElement _statAttackFill;
-        private VisualElement _statDefenseFill;
-        private VisualElement _statSpeedFill;
-        private Label _statHealthValue;
-        private Label _statMpValue;
-        private Label _statAttackValue;
-        private Label _statDefenseValue;
-        private Label _statSpeedValue;
+        // Stat elements (RPG Attributes)
+        private VisualElement _statStrengthFill;
+        private VisualElement _statDexterityFill;
+        private VisualElement _statConstitutionFill;
+        private VisualElement _statIntelligenceFill;
+        private VisualElement _statWisdomFill;
+        private VisualElement _statCharismaFill;
+        private Label _statStrengthValue;
+        private Label _statDexterityValue;
+        private Label _statConstitutionValue;
+        private Label _statIntelligenceValue;
+        private Label _statWisdomValue;
+        private Label _statCharismaValue;
 
         // Ability elements
         private List<VisualElement> _abilityCards = new();
@@ -244,6 +251,11 @@ namespace VeilBreakers.UI.Menus
             _pathName = _root.Q<Label>("path-name");
             _pathBadge = _root.Q<VisualElement>("path-badge");
 
+            // Query resource type elements
+            _resourceBadge = _root.Q<VisualElement>("resource-badge");
+            _resourceIcon = _root.Q<VisualElement>("resource-icon");
+            _resourceName = _root.Q<Label>("resource-name");
+
             // Query brand affinity elements
             _brandIcon1 = _root.Q<VisualElement>("brand-icon-1");
             _brandName1 = _root.Q<Label>("brand-name-1");
@@ -268,17 +280,19 @@ namespace VeilBreakers.UI.Menus
             _innateAbilityName = _root.Q<Label>("innate-ability-name");
             _innateAbilityDesc = _root.Q<Label>("innate-ability-desc");
 
-            // Query stats
-            _statHealthFill = _root.Q<VisualElement>("stat-health-fill");
-            _statMpFill = _root.Q<VisualElement>("stat-mp-fill");
-            _statAttackFill = _root.Q<VisualElement>("stat-attack-fill");
-            _statDefenseFill = _root.Q<VisualElement>("stat-defense-fill");
-            _statSpeedFill = _root.Q<VisualElement>("stat-speed-fill");
-            _statHealthValue = _root.Q<Label>("stat-health-value");
-            _statMpValue = _root.Q<Label>("stat-mp-value");
-            _statAttackValue = _root.Q<Label>("stat-attack-value");
-            _statDefenseValue = _root.Q<Label>("stat-defense-value");
-            _statSpeedValue = _root.Q<Label>("stat-speed-value");
+            // Query stats (RPG Attributes)
+            _statStrengthFill = _root.Q<VisualElement>("stat-strength-fill");
+            _statDexterityFill = _root.Q<VisualElement>("stat-dexterity-fill");
+            _statConstitutionFill = _root.Q<VisualElement>("stat-constitution-fill");
+            _statIntelligenceFill = _root.Q<VisualElement>("stat-intelligence-fill");
+            _statWisdomFill = _root.Q<VisualElement>("stat-wisdom-fill");
+            _statCharismaFill = _root.Q<VisualElement>("stat-charisma-fill");
+            _statStrengthValue = _root.Q<Label>("stat-strength-value");
+            _statDexterityValue = _root.Q<Label>("stat-dexterity-value");
+            _statConstitutionValue = _root.Q<Label>("stat-constitution-value");
+            _statIntelligenceValue = _root.Q<Label>("stat-intelligence-value");
+            _statWisdomValue = _root.Q<Label>("stat-wisdom-value");
+            _statCharismaValue = _root.Q<Label>("stat-charisma-value");
 
             // Query abilities
             _abilityCards.Add(_root.Q<VisualElement>("ability-1"));
@@ -833,6 +847,9 @@ namespace VeilBreakers.UI.Menus
             // Update path display
             UpdatePathDisplay(hero);
 
+            // Update resource type display
+            UpdateResourceDisplay(hero);
+
             // Update brands
             UpdateBrandDisplay(hero);
 
@@ -874,6 +891,65 @@ namespace VeilBreakers.UI.Menus
             }
 
             // Path badge is now updated in ApplyHeroThemeColors using hero color
+        }
+
+        private void UpdateResourceDisplay(HeroData hero)
+        {
+            if (hero == null) return;
+
+            var resourceType = hero.GetResourceType();
+
+            // Resource colors
+            Color resourceColor;
+            string resourceText;
+
+            switch (resourceType)
+            {
+                case ResourceType.MANA:
+                    resourceColor = new Color(100f/255f, 180f/255f, 220f/255f); // Cyan blue
+                    resourceText = "MANA";
+                    break;
+                case ResourceType.GUARD:
+                    resourceColor = new Color(130f/255f, 170f/255f, 200f/255f); // Steel blue
+                    resourceText = "GUARD";
+                    break;
+                case ResourceType.FURY:
+                    resourceColor = new Color(220f/255f, 100f/255f, 100f/255f); // Red
+                    resourceText = "FURY";
+                    break;
+                default:
+                    resourceColor = new Color(100f/255f, 180f/255f, 220f/255f);
+                    resourceText = "MANA";
+                    break;
+            }
+
+            // Update resource badge styling
+            if (_resourceBadge != null)
+            {
+                _resourceBadge.style.backgroundColor = new Color(resourceColor.r, resourceColor.g, resourceColor.b, 0.12f);
+                _resourceBadge.style.borderTopColor = new Color(resourceColor.r, resourceColor.g, resourceColor.b, 0.4f);
+                _resourceBadge.style.borderRightColor = new Color(resourceColor.r, resourceColor.g, resourceColor.b, 0.4f);
+                _resourceBadge.style.borderBottomColor = new Color(resourceColor.r, resourceColor.g, resourceColor.b, 0.4f);
+                _resourceBadge.style.borderLeftColor = new Color(resourceColor.r, resourceColor.g, resourceColor.b, 0.4f);
+            }
+
+            // Update resource icon
+            if (_resourceIcon != null)
+            {
+                _resourceIcon.style.backgroundColor = resourceColor;
+            }
+
+            // Update resource name
+            if (_resourceName != null)
+            {
+                _resourceName.text = resourceText;
+                _resourceName.style.color = new Color(
+                    Mathf.Min(1f, resourceColor.r * 1.3f + 0.2f),
+                    Mathf.Min(1f, resourceColor.g * 1.3f + 0.2f),
+                    Mathf.Min(1f, resourceColor.b * 1.3f + 0.2f),
+                    1f
+                );
+            }
         }
 
         private void UpdateBrandDisplay(HeroData hero)
@@ -1032,37 +1108,49 @@ namespace VeilBreakers.UI.Menus
 
         private System.Collections.IEnumerator AnimateStatBars(HeroData hero)
         {
-            const float maxStat = 150f;
+            const float maxStat = 20f; // RPG attribute scale (1-20)
             const float animationDuration = 0.4f;
             const float staggerDelay = 0.05f;
 
+            // Map base stats to RPG attributes
+            // STR from attack, DEX from speed, CON from hp/10, INT from magic, WIS from resistance, CHA from luck
+            int strength = hero.base_attack;
+            int dexterity = hero.base_speed;
+            int constitution = Mathf.RoundToInt(hero.base_hp / 5f); // Scale HP down to attribute range
+            int intelligence = hero.base_magic;
+            int wisdom = hero.base_resistance;
+            int charisma = hero.base_luck;
+
             // Calculate target percentages
-            float healthTarget = Mathf.Clamp01(hero.base_hp / maxStat) * 100f;
-            float mpTarget = Mathf.Clamp01(hero.base_mp / maxStat) * 100f;
-            float attackTarget = Mathf.Clamp01(hero.base_attack / maxStat) * 100f;
-            float defenseTarget = Mathf.Clamp01(hero.base_defense / maxStat) * 100f;
-            float speedTarget = Mathf.Clamp01(hero.base_speed / maxStat) * 100f;
+            float strengthTarget = Mathf.Clamp01(strength / maxStat) * 100f;
+            float dexterityTarget = Mathf.Clamp01(dexterity / maxStat) * 100f;
+            float constitutionTarget = Mathf.Clamp01(constitution / maxStat) * 100f;
+            float intelligenceTarget = Mathf.Clamp01(intelligence / maxStat) * 100f;
+            float wisdomTarget = Mathf.Clamp01(wisdom / maxStat) * 100f;
+            float charismaTarget = Mathf.Clamp01(charisma / maxStat) * 100f;
 
             // Reset all bars to 0
-            if (_statHealthFill != null) _statHealthFill.style.width = Length.Percent(0);
-            if (_statMpFill != null) _statMpFill.style.width = Length.Percent(0);
-            if (_statAttackFill != null) _statAttackFill.style.width = Length.Percent(0);
-            if (_statDefenseFill != null) _statDefenseFill.style.width = Length.Percent(0);
-            if (_statSpeedFill != null) _statSpeedFill.style.width = Length.Percent(0);
+            if (_statStrengthFill != null) _statStrengthFill.style.width = Length.Percent(0);
+            if (_statDexterityFill != null) _statDexterityFill.style.width = Length.Percent(0);
+            if (_statConstitutionFill != null) _statConstitutionFill.style.width = Length.Percent(0);
+            if (_statIntelligenceFill != null) _statIntelligenceFill.style.width = Length.Percent(0);
+            if (_statWisdomFill != null) _statWisdomFill.style.width = Length.Percent(0);
+            if (_statCharismaFill != null) _statCharismaFill.style.width = Length.Percent(0);
 
             // Set final text values immediately
-            if (_statHealthValue != null) _statHealthValue.text = hero.base_hp.ToString();
-            if (_statMpValue != null) _statMpValue.text = hero.base_mp.ToString();
-            if (_statAttackValue != null) _statAttackValue.text = hero.base_attack.ToString();
-            if (_statDefenseValue != null) _statDefenseValue.text = hero.base_defense.ToString();
-            if (_statSpeedValue != null) _statSpeedValue.text = hero.base_speed.ToString();
+            if (_statStrengthValue != null) _statStrengthValue.text = strength.ToString();
+            if (_statDexterityValue != null) _statDexterityValue.text = dexterity.ToString();
+            if (_statConstitutionValue != null) _statConstitutionValue.text = constitution.ToString();
+            if (_statIntelligenceValue != null) _statIntelligenceValue.text = intelligence.ToString();
+            if (_statWisdomValue != null) _statWisdomValue.text = wisdom.ToString();
+            if (_statCharismaValue != null) _statCharismaValue.text = charisma.ToString();
 
             // Brief pause before animation
             yield return new WaitForSeconds(0.1f);
 
             // Animate each bar with stagger
-            float[] targets = { healthTarget, mpTarget, attackTarget, defenseTarget, speedTarget };
-            VisualElement[] fills = { _statHealthFill, _statMpFill, _statAttackFill, _statDefenseFill, _statSpeedFill };
+            float[] targets = { strengthTarget, dexterityTarget, constitutionTarget, intelligenceTarget, wisdomTarget, charismaTarget };
+            VisualElement[] fills = { _statStrengthFill, _statDexterityFill, _statConstitutionFill, _statIntelligenceFill, _statWisdomFill, _statCharismaFill };
 
             float elapsed = 0f;
             while (elapsed < animationDuration + (staggerDelay * fills.Length))

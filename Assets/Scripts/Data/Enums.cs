@@ -378,6 +378,18 @@ namespace VeilBreakers.Data
     }
 
     // =============================================================================
+    // HERO RESOURCE TYPES
+    // Secondary resource bar under HP for heroes
+    // =============================================================================
+
+    public enum ResourceType
+    {
+        MANA = 0,       // WIS/INT heroes - standard magic resource
+        GUARD = 1,      // Tank heroes - blocks, charged attacks
+        FURY = 2        // Attack heroes - builds per hit, 100% = guaranteed crit
+    }
+
+    // =============================================================================
     // BATTLE STATES
     // =============================================================================
 
