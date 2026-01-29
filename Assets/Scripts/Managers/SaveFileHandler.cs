@@ -23,11 +23,11 @@ namespace VeilBreakers.Managers
         /// <summary>Magic bytes to identify VeilBreakers save files</summary>
         private static readonly byte[] MAGIC_BYTES = { 0x56, 0x45, 0x49, 0x4C }; // "VEIL"
 
-        /// <summary>Header size in bytes (magic + version + flags + checksum)</summary>
+        /// <summary>Header size in bytes (magic + version + flags + integrity)</summary>
         private const int HEADER_SIZE = 44;
 
-        /// <summary>Current file format version</summary>
-        private const uint FORMAT_VERSION = 1;
+        /// <summary>Current file format version (file structure, not save data version)</summary>
+        private const uint FORMAT_VERSION = 2;
 
         /// <summary>Flag: compression enabled</summary>
         private const uint FLAG_COMPRESSED = 0x01;
@@ -41,18 +41,14 @@ namespace VeilBreakers.Managers
         /// <summary>Delay between retries in milliseconds</summary>
         private const int RETRY_DELAY_MS = 100;
 
-        // AES encryption key (32 bytes for AES-256)
-        // In production, this should be obfuscated or derived from device-specific data
-        private static readonly byte[] AES_KEY =
-        {
-            0x56, 0x65, 0x69, 0x6C, 0x42, 0x72, 0x65, 0x61,
-            0x6B, 0x65, 0x72, 0x73, 0x33, 0x44, 0x5F, 0x4B,
-            0x65, 0x79, 0x5F, 0x32, 0x30, 0x32, 0x36, 0x5F,
-            0x53, 0x61, 0x76, 0x65, 0x44, 0x61, 0x74, 0x61
-        };
+        // PBKDF2 salt for key derivation (keep constant, non-secret)
+        private static readonly byte[] PBKDF2_SALT = Encoding.UTF8.GetBytes("VeilBreakers_SaveKeySalt_v1");
 
         // AES IV size (16 bytes for CBC mode)
         private const int AES_IV_SIZE = 16;
+
+        // Integrity (HMAC-SHA256) size
+        private const int HMAC_SIZE = 32;
 
         // =============================================================================
         // PUBLIC API
@@ -73,14 +69,14 @@ namespace VeilBreakers.Managers
             // 2. Compress with GZip
             byte[] compressed = CompressGZip(jsonBytes);
 
-            // 3. Compute checksum of compressed data
-            byte[] checksum = ComputeSHA256(compressed);
-
-            // 4. Encrypt compressed data
+            // 3. Encrypt compressed data
             byte[] encrypted = EncryptAES(compressed);
 
+            // 4. Compute HMAC over encrypted payload for integrity
+            byte[] hmac = ComputeHMAC(encrypted);
+
             // 5. Build final file with header
-            return BuildFileWithHeader(encrypted, checksum);
+            return BuildFileWithHeader(encrypted, hmac, FORMAT_VERSION);
         }
 
         /// <summary>
@@ -108,41 +104,55 @@ namespace VeilBreakers.Managers
                 // 2. Read header
                 uint formatVersion = BitConverter.ToUInt32(fileData, 4);
                 uint flags = BitConverter.ToUInt32(fileData, 8);
-                byte[] storedChecksum = new byte[32];
-                Array.Copy(fileData, 12, storedChecksum, 0, 32);
+                byte[] storedIntegrity = new byte[32];
+                Array.Copy(fileData, 12, storedIntegrity, 0, 32);
 
                 // 3. Extract payload
                 int payloadLength = fileData.Length - HEADER_SIZE;
                 byte[] payload = new byte[payloadLength];
                 Array.Copy(fileData, HEADER_SIZE, payload, 0, payloadLength);
 
-                // 4. Decrypt if encrypted
+                // 4. Integrity check varies by format version
+                if (formatVersion >= 2)
+                {
+                    byte[] computedHmac = ComputeHMAC(payload);
+                    if (!CompareChecksums(storedIntegrity, computedHmac))
+                    {
+                        Debug.LogError("[SaveFileHandler] HMAC mismatch - save file tampered or corrupted");
+                        return null;
+                    }
+                }
+
+                // 5. Decrypt if encrypted
                 byte[] decrypted = payload;
                 if ((flags & FLAG_ENCRYPTED) != 0)
                 {
                     decrypted = DecryptAES(payload);
                 }
 
-                // 5. Verify checksum
-                byte[] computedChecksum = ComputeSHA256(decrypted);
-                if (!CompareChecksums(storedChecksum, computedChecksum))
+                // 6. For legacy format v1, verify checksum on decrypted (compressed) bytes
+                if (formatVersion == 1)
                 {
-                    Debug.LogError("[SaveFileHandler] Checksum mismatch - save file corrupted");
-                    return null;
+                    byte[] computedChecksum = ComputeSHA256(decrypted);
+                    if (!CompareChecksums(storedIntegrity, computedChecksum))
+                    {
+                        Debug.LogError("[SaveFileHandler] Checksum mismatch - save file corrupted (legacy v1)");
+                        return null;
+                    }
                 }
 
-                // 6. Decompress if compressed
+                // 7. Decompress if compressed
                 byte[] decompressed = decrypted;
                 if ((flags & FLAG_COMPRESSED) != 0)
                 {
                     decompressed = DecompressGZip(decrypted);
                 }
 
-                // 7. Deserialize JSON
+                // 8. Deserialize JSON
                 string json = Encoding.UTF8.GetString(decompressed);
                 SaveData data = JsonUtility.FromJson<SaveData>(json);
 
-                // 8. Validate
+                // 9. Validate
                 if (data == null || !data.Validate())
                 {
                     Debug.LogError("[SaveFileHandler] Save data validation failed");
@@ -440,7 +450,7 @@ namespace VeilBreakers.Managers
         // PRIVATE HELPERS
         // =============================================================================
 
-        private static byte[] BuildFileWithHeader(byte[] payload, byte[] checksum)
+        private static byte[] BuildFileWithHeader(byte[] payload, byte[] integrity, uint formatVersion)
         {
             byte[] result = new byte[HEADER_SIZE + payload.Length];
 
@@ -448,7 +458,7 @@ namespace VeilBreakers.Managers
             Array.Copy(MAGIC_BYTES, 0, result, 0, 4);
 
             // Format version (4-7)
-            byte[] versionBytes = BitConverter.GetBytes(FORMAT_VERSION);
+            byte[] versionBytes = BitConverter.GetBytes(formatVersion);
             Array.Copy(versionBytes, 0, result, 4, 4);
 
             // Flags (8-11) - compression and encryption enabled
@@ -456,8 +466,8 @@ namespace VeilBreakers.Managers
             byte[] flagBytes = BitConverter.GetBytes(flags);
             Array.Copy(flagBytes, 0, result, 8, 4);
 
-            // Checksum (12-43)
-            Array.Copy(checksum, 0, result, 12, 32);
+            // Integrity (HMAC or checksum) (12-43)
+            Array.Copy(integrity, 0, result, 12, 32);
 
             // Payload (44+)
             Array.Copy(payload, 0, result, HEADER_SIZE, payload.Length);
@@ -492,7 +502,7 @@ namespace VeilBreakers.Managers
         {
             using (var aes = Aes.Create())
             {
-                aes.Key = AES_KEY;
+                aes.Key = DeriveKey("AES");
                 aes.GenerateIV(); // Generate random IV for each encryption
                 aes.Mode = CipherMode.CBC;
                 aes.Padding = PaddingMode.PKCS7;
@@ -525,7 +535,7 @@ namespace VeilBreakers.Managers
                 byte[] iv = new byte[AES_IV_SIZE];
                 Array.Copy(data, 0, iv, 0, AES_IV_SIZE);
 
-                aes.Key = AES_KEY;
+                aes.Key = DeriveKey("AES");
                 aes.IV = iv;
                 aes.Mode = CipherMode.CBC;
                 aes.Padding = PaddingMode.PKCS7;
@@ -552,6 +562,59 @@ namespace VeilBreakers.Managers
             {
                 return sha256.ComputeHash(data);
             }
+        }
+
+        /// <summary>
+        /// Computes HMAC-SHA256 over the provided data using a device-derived key.
+        /// </summary>
+        private static byte[] ComputeHMAC(byte[] data)
+        {
+            using (var hmac = new HMACSHA256(DeriveKey("HMAC")))
+            {
+                return hmac.ComputeHash(data);
+            }
+        }
+
+        /// <summary>
+        /// Derives a per-device key for the given purpose using PBKDF2.
+        /// </summary>
+        private static byte[] DeriveKey(string purpose, int length = 32)
+        {
+            var baseKey = GetOrCreateDeviceKey();
+            var saltWithPurpose = CombineSalt(PBKDF2_SALT, Encoding.UTF8.GetBytes(purpose));
+            using (var pbkdf2 = new Rfc2898DeriveBytes(baseKey, saltWithPurpose, 10000, HashAlgorithmName.SHA256))
+            {
+                return pbkdf2.GetBytes(length);
+            }
+        }
+
+        private static byte[] GetOrCreateDeviceKey()
+        {
+            const string prefsKey = "vb_device_key";
+            if (PlayerPrefs.HasKey(prefsKey))
+            {
+                return Convert.FromBase64String(PlayerPrefs.GetString(prefsKey));
+            }
+
+            // Use device unique ID if available, otherwise generate and persist a GUID
+            string id = SystemInfo.deviceUniqueIdentifier;
+            if (string.IsNullOrEmpty(id) || id == SystemInfo.unsupportedIdentifier)
+            {
+                id = Guid.NewGuid().ToString("N");
+            }
+
+            var raw = Encoding.UTF8.GetBytes(id);
+            PlayerPrefs.SetString(prefsKey, Convert.ToBase64String(raw));
+            PlayerPrefs.Save();
+            return raw;
+        }
+
+        private static byte[] CombineSalt(byte[] a, byte[] b)
+        {
+            byte[] combined = new byte[a.Length + b.Length];
+            Buffer.BlockCopy(a, 0, combined, 0, a.Length);
+            Buffer.BlockCopy(b, 0, combined, a.Length, b.Length);
+            return combined;
         }
 
         private static bool CompareChecksums(byte[] a, byte[] b)

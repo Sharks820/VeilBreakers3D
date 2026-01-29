@@ -690,6 +690,7 @@ namespace VeilBreakers.UI.Menus
             _pendingSettings = _currentSettings.Clone();
             gameObject.SetActive(false);
             OnSettingsClosed?.Invoke();
+            _settingsPanel?.SetEnabled(true);
         }
 
         /// <summary>
@@ -728,6 +729,7 @@ namespace VeilBreakers.UI.Menus
             if (_confirmationDialog != null)
             {
                 _confirmationDialog.style.display = DisplayStyle.Flex;
+                _settingsPanel?.SetEnabled(false);
                 return;
             }
 
@@ -880,6 +882,7 @@ namespace VeilBreakers.UI.Menus
             // Add to root
             _root.Add(_confirmationDialog);
             _confirmationDialog.BringToFront();
+            _settingsPanel?.SetEnabled(false);
         }
 
         /// <summary>
@@ -890,6 +893,7 @@ namespace VeilBreakers.UI.Menus
             if (_confirmationDialog != null)
             {
                 _confirmationDialog.style.display = DisplayStyle.None;
+                _settingsPanel?.SetEnabled(true);
             }
         }
 

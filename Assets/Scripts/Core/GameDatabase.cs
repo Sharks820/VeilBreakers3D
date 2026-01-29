@@ -106,28 +106,41 @@ namespace VeilBreakers.Core
             try
             {
                 var jsonAsset = Resources.Load<TextAsset>("Data/monsters");
-                if (jsonAsset != null)
+                if (jsonAsset == null)
                 {
-                    var wrapper = JsonUtility.FromJson<MonsterDataWrapper>("{\"monsters\":" + jsonAsset.text + "}");
-                    if (wrapper?.monsters != null)
-                    {
-                        foreach (var monster in wrapper.monsters)
-                        {
-                            if (!string.IsNullOrEmpty(monster.monster_id))
-                            {
-                                _monsters[monster.monster_id] = monster;
-                            }
-                        }
-                    }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    throw new InvalidOperationException("[GameDatabase] monsters.json not found in Resources/Data/");
+#else
+                    Debug.LogError("[GameDatabase] monsters.json not found in Resources/Data/");
+                    return;
+#endif
                 }
-                else
+
+                var wrapper = JsonUtility.FromJson<MonsterDataWrapper>("{\"monsters\":" + jsonAsset.text + "}");
+                if (wrapper?.monsters == null)
                 {
-                    Debug.LogWarning("[GameDatabase] monsters.json not found in Resources/Data/");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    throw new InvalidOperationException("[GameDatabase] monsters.json invalid format");
+#else
+                    Debug.LogError("[GameDatabase] monsters.json invalid format");
+                    return;
+#endif
+                }
+
+                foreach (var monster in wrapper.monsters)
+                {
+                    if (!string.IsNullOrEmpty(monster.monster_id))
+                    {
+                        _monsters[monster.monster_id] = monster;
+                    }
                 }
             }
             catch (Exception e)
             {
                 Debug.LogError($"[GameDatabase] Failed to load monsters: {e.Message}");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                throw;
+#endif
             }
         }
 
@@ -136,28 +149,41 @@ namespace VeilBreakers.Core
             try
             {
                 var jsonAsset = Resources.Load<TextAsset>("Data/skills");
-                if (jsonAsset != null)
+                if (jsonAsset == null)
                 {
-                    var wrapper = JsonUtility.FromJson<SkillDataWrapper>("{\"skills\":" + jsonAsset.text + "}");
-                    if (wrapper?.skills != null)
-                    {
-                        foreach (var skill in wrapper.skills)
-                        {
-                            if (!string.IsNullOrEmpty(skill.skill_id))
-                            {
-                                _skills[skill.skill_id] = skill;
-                            }
-                        }
-                    }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    throw new InvalidOperationException("[GameDatabase] skills.json not found in Resources/Data/");
+#else
+                    Debug.LogError("[GameDatabase] skills.json not found in Resources/Data/");
+                    return;
+#endif
                 }
-                else
+
+                var wrapper = JsonUtility.FromJson<SkillDataWrapper>("{\"skills\":" + jsonAsset.text + "}");
+                if (wrapper?.skills == null)
                 {
-                    Debug.LogWarning("[GameDatabase] skills.json not found in Resources/Data/");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    throw new InvalidOperationException("[GameDatabase] skills.json invalid format");
+#else
+                    Debug.LogError("[GameDatabase] skills.json invalid format");
+                    return;
+#endif
+                }
+
+                foreach (var skill in wrapper.skills)
+                {
+                    if (!string.IsNullOrEmpty(skill.skill_id))
+                    {
+                        _skills[skill.skill_id] = skill;
+                    }
                 }
             }
             catch (Exception e)
             {
                 Debug.LogError($"[GameDatabase] Failed to load skills: {e.Message}");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                throw;
+#endif
             }
         }
 
@@ -166,28 +192,41 @@ namespace VeilBreakers.Core
             try
             {
                 var jsonAsset = Resources.Load<TextAsset>("Data/heroes");
-                if (jsonAsset != null)
+                if (jsonAsset == null)
                 {
-                    var wrapper = JsonUtility.FromJson<HeroDataWrapper>("{\"heroes\":" + jsonAsset.text + "}");
-                    if (wrapper?.heroes != null)
-                    {
-                        foreach (var hero in wrapper.heroes)
-                        {
-                            if (!string.IsNullOrEmpty(hero.hero_id))
-                            {
-                                _heroes[hero.hero_id] = hero;
-                            }
-                        }
-                    }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    throw new InvalidOperationException("[GameDatabase] heroes.json not found in Resources/Data/");
+#else
+                    Debug.LogError("[GameDatabase] heroes.json not found in Resources/Data/");
+                    return;
+#endif
                 }
-                else
+
+                var wrapper = JsonUtility.FromJson<HeroDataWrapper>("{\"heroes\":" + jsonAsset.text + "}");
+                if (wrapper?.heroes == null)
                 {
-                    Debug.LogWarning("[GameDatabase] heroes.json not found in Resources/Data/");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    throw new InvalidOperationException("[GameDatabase] heroes.json invalid format");
+#else
+                    Debug.LogError("[GameDatabase] heroes.json invalid format");
+                    return;
+#endif
+                }
+
+                foreach (var hero in wrapper.heroes)
+                {
+                    if (!string.IsNullOrEmpty(hero.hero_id))
+                    {
+                        _heroes[hero.hero_id] = hero;
+                    }
                 }
             }
             catch (Exception e)
             {
                 Debug.LogError($"[GameDatabase] Failed to load heroes: {e.Message}");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                throw;
+#endif
             }
         }
 
@@ -196,28 +235,41 @@ namespace VeilBreakers.Core
             try
             {
                 var jsonAsset = Resources.Load<TextAsset>("Data/items");
-                if (jsonAsset != null)
+                if (jsonAsset == null)
                 {
-                    var wrapper = JsonUtility.FromJson<ItemDataWrapper>("{\"items\":" + jsonAsset.text + "}");
-                    if (wrapper?.items != null)
-                    {
-                        foreach (var item in wrapper.items)
-                        {
-                            if (!string.IsNullOrEmpty(item.item_id))
-                            {
-                                _items[item.item_id] = item;
-                            }
-                        }
-                    }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    throw new InvalidOperationException("[GameDatabase] items.json not found in Resources/Data/");
+#else
+                    Debug.LogError("[GameDatabase] items.json not found in Resources/Data/");
+                    return;
+#endif
                 }
-                else
+
+                var wrapper = JsonUtility.FromJson<ItemDataWrapper>("{\"items\":" + jsonAsset.text + "}");
+                if (wrapper?.items == null)
                 {
-                    Debug.LogWarning("[GameDatabase] items.json not found in Resources/Data/");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    throw new InvalidOperationException("[GameDatabase] items.json invalid format");
+#else
+                    Debug.LogError("[GameDatabase] items.json invalid format");
+                    return;
+#endif
+                }
+
+                foreach (var item in wrapper.items)
+                {
+                    if (!string.IsNullOrEmpty(item.item_id))
+                    {
+                        _items[item.item_id] = item;
+                    }
                 }
             }
             catch (Exception e)
             {
                 Debug.LogError($"[GameDatabase] Failed to load items: {e.Message}");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                throw;
+#endif
             }
         }
 

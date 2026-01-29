@@ -9,7 +9,7 @@ namespace VeilBreakers.Data
     /// </summary>
     public static class SaveVersion
     {
-        public const int CURRENT = 1;
+        public const int CURRENT = 2;
     }
 
     /// <summary>

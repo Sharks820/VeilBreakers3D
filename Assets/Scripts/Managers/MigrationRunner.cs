@@ -185,18 +185,11 @@ namespace VeilBreakers.Managers
     {
         public int FromVersion => 1;
         public int ToVersion => 2;
-        public string Description => "Example migration (not active)";
+        public string Description => "Add save integrity HMAC/device key support";
 
         public bool Migrate(SaveData data)
         {
-            // Example migration logic:
-            // - Add new fields with defaults
-            // - Transform existing data
-            // - Remove obsolete fields (handled by JSON deserialization ignoring unknown)
-
-            // This is a placeholder - no actual migration needed for v1 yet
-            // When we need a v2 format, implement the actual changes here
-
+            // No structural changes yet; version bump to signal new security scheme
             return true;
         }
     }
@@ -214,7 +207,7 @@ namespace VeilBreakers.Managers
             var runner = new MigrationRunner(SaveVersion.CURRENT);
 
             // Register all migrations here
-            // runner.RegisterMigration(new Migration_V1_To_V2());
+            runner.RegisterMigration(new Migration_V1_To_V2());
             // runner.RegisterMigration(new Migration_V2_To_V3());
             // etc.
 

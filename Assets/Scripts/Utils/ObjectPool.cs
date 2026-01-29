@@ -150,6 +150,7 @@ namespace VeilBreakers.Utils
             if (!obj.gameObject.activeSelf)
             {
                 Debug.LogWarning($"[ObjectPool<{typeof(T).Name}>] Object already returned to pool: {obj.name}");
+                obj.gameObject.SetActive(false);
                 return;
             }
 
