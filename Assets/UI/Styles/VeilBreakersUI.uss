@@ -72,20 +72,20 @@
     --text-muted: rgb(95, 85, 80);
     --text-disabled: rgb(60, 55, 50);
     --text-glow: rgb(255, 245, 220);
-    --text-accent: rgb(220, 100, 120);
+    --text-accent: rgb(255, 140, 50);
 
     /* =========================================================================
-       ACCENT & GLOW COLORS - CRIMSON VEIL THEME
+       ACCENT & GLOW COLORS - MOLTEN ORANGE THEME
        ========================================================================= */
-    --accent-primary: rgb(180, 40, 60);
-    --accent-primary-glow: rgb(220, 60, 80);
-    --accent-primary-bright: rgb(255, 100, 120);
-    --accent-secondary: rgb(140, 30, 50);
-    --accent-secondary-glow: rgb(180, 50, 70);
+    --accent-primary: rgb(180, 80, 20);
+    --accent-primary-glow: rgb(255, 140, 50);
+    --accent-primary-bright: rgb(255, 160, 70);
+    --accent-secondary: rgb(140, 60, 15);
+    --accent-secondary-glow: rgb(210, 100, 30);
     --accent-gold: rgb(220, 180, 80);
     --accent-gold-glow: rgb(255, 220, 120);
-    --accent-teal: rgb(180, 40, 60);
-    --accent-teal-glow: rgb(220, 60, 80);
+    --accent-teal: rgb(180, 80, 20);
+    --accent-teal-glow: rgb(255, 140, 50);
 
     /* =========================================================================
        STATUS COLORS
@@ -535,7 +535,7 @@
 }
 
 .unity-base-dropdown__item:hover {
-    background-color: rgba(180, 40, 60, 0.4);
+    background-color: rgba(180, 80, 20, 0.4);
 }
 
 .unity-base-dropdown__item:checked {
