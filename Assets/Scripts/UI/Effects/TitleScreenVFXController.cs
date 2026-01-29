@@ -78,11 +78,14 @@ namespace VeilBreakers.UI.Effects
 
         private void Start()
         {
+            Debug.Log("[TitleScreenVFX] Start() called - initializing VFX");
+
             // Initialize all VFX with zero intensity
             SetGlobalIntensity(0f);
 
             // Begin fade in
             FadeIn();
+            Debug.Log("[TitleScreenVFX] Fade-in started");
         }
 
         private void OnEnable()
@@ -118,33 +121,43 @@ namespace VeilBreakers.UI.Effects
         /// </summary>
         private void CreateMaterialInstances()
         {
+            Debug.Log("[TitleScreenVFX] Creating material instances...");
+
             if (_vignetteMaterial != null)
             {
                 _vignetteMaterial = new Material(_vignetteMaterial);
                 if (_vignetteRenderer != null)
                     _vignetteRenderer.material = _vignetteMaterial;
+                Debug.Log($"[TitleScreenVFX] Vignette material created, shader: {_vignetteMaterial.shader.name}");
             }
+            else Debug.LogWarning("[TitleScreenVFX] Vignette material is NULL!");
 
             if (_smokeMaterial != null)
             {
                 _smokeMaterial = new Material(_smokeMaterial);
                 if (_smokeRenderer != null)
                     _smokeRenderer.material = _smokeMaterial;
+                Debug.Log($"[TitleScreenVFX] Smoke material created, shader: {_smokeMaterial.shader.name}");
             }
+            else Debug.LogWarning("[TitleScreenVFX] Smoke material is NULL!");
 
             if (_particlesMaterial != null)
             {
                 _particlesMaterial = new Material(_particlesMaterial);
                 if (_particlesRenderer != null)
                     _particlesRenderer.material = _particlesMaterial;
+                Debug.Log($"[TitleScreenVFX] Particles material created, shader: {_particlesMaterial.shader.name}");
             }
+            else Debug.LogWarning("[TitleScreenVFX] Particles material is NULL!");
 
             if (_heatDistortionMaterial != null)
             {
                 _heatDistortionMaterial = new Material(_heatDistortionMaterial);
                 if (_heatDistortionRenderer != null)
                     _heatDistortionRenderer.material = _heatDistortionMaterial;
+                Debug.Log($"[TitleScreenVFX] HeatDistortion material created, shader: {_heatDistortionMaterial.shader.name}");
             }
+            else Debug.LogWarning("[TitleScreenVFX] HeatDistortion material is NULL!");
         }
 
         /// <summary>
@@ -160,28 +173,28 @@ namespace VeilBreakers.UI.Effects
 
         /// <summary>
         /// Adjusts VFX based on quality settings for performance.
+        /// Note: We keep all effects enabled for AAA quality - use Inspector toggles for manual control.
         /// </summary>
         private void AdjustForQualitySettings()
         {
             int qualityLevel = QualitySettings.GetQualityLevel();
+            Debug.Log($"[TitleScreenVFX] Quality level: {qualityLevel}, Particles: {_enableParticles}, HeatDistortion: {_enableHeatDistortion}");
 
-            // Disable expensive effects on low quality
-            if (qualityLevel <= 1) // Low/Fastest
-            {
-                _enableHeatDistortion = false;
-                _enableParticles = false;
-            }
-            else if (qualityLevel <= 2) // Medium
-            {
-                _enableHeatDistortion = false;
-            }
+            // Always enable VFX regardless of quality for AAA experience
+            // Performance tuning should be done via Inspector toggles if needed
 
-            // Update renderer states
+            // Update renderer states based on Inspector settings
             if (_heatDistortionRenderer != null)
                 _heatDistortionRenderer.enabled = _enableHeatDistortion;
 
             if (_particlesRenderer != null)
                 _particlesRenderer.enabled = _enableParticles;
+
+            if (_vignetteRenderer != null)
+                _vignetteRenderer.enabled = true;
+
+            if (_smokeRenderer != null)
+                _smokeRenderer.enabled = true;
         }
 
         /// <summary>
@@ -269,6 +282,8 @@ namespace VeilBreakers.UI.Effects
 
         private IEnumerator FadeCoroutine(float from, float to, float duration)
         {
+            Debug.Log($"[TitleScreenVFX] FadeCoroutine started: {from} -> {to} over {duration}s");
+
             // Guard against division by zero
             if (duration <= 0f)
             {
@@ -292,6 +307,7 @@ namespace VeilBreakers.UI.Effects
 
             SetGlobalIntensity(to);
             _fadeCoroutine = null;
+            Debug.Log($"[TitleScreenVFX] FadeCoroutine complete, intensity now: {_currentIntensityMultiplier}");
         }
 
         /// <summary>
