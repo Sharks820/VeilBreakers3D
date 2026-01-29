@@ -146,8 +146,10 @@ namespace VeilBreakers.UI.Menus
             // Create settings overlay (hidden by default)
             CreateSettingsOverlay();
 
-            // Set initial opacity for animation
-            mainContainer.style.opacity = 0;
+            // REMOVED: mainContainer.style.opacity = 0 was hiding content permanently
+            // Animation will handle fade-in if UIAnimationController is working
+            // Failsafe: ensure content is visible
+            mainContainer.style.opacity = 1;
         }
 
         private void CreateFallbackMenu(VisualElement container)
@@ -276,6 +278,32 @@ namespace VeilBreakers.UI.Menus
         private void PlayEntranceAnimation()
         {
             StartCoroutine(EntranceAnimationSequence());
+            // FAILSAFE: Ensure all content is visible after animations should complete
+            StartCoroutine(EnsureVisibilityFailsafe());
+        }
+
+        private IEnumerator EnsureVisibilityFailsafe()
+        {
+            // Wait for all animations to complete (generous timeout)
+            yield return new WaitForSecondsRealtime(3f);
+
+            // Force all critical elements to be visible
+            var mainContainer = _root.Q<VisualElement>("main-container");
+            if (mainContainer != null) mainContainer.style.opacity = 1;
+
+            var title = _root.Q<Label>("game-title");
+            if (title != null) title.style.opacity = 1;
+
+            var buttonContainer = _root.Q<VisualElement>("button-container");
+            if (buttonContainer != null)
+            {
+                var buttons = buttonContainer.Query<Button>().ToList();
+                foreach (var btn in buttons)
+                {
+                    btn.style.opacity = 1;
+                    btn.style.translate = new Translate(0, 0);
+                }
+            }
         }
 
         private IEnumerator EntranceAnimationSequence()
