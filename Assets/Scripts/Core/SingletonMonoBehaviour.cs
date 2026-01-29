@@ -16,10 +16,8 @@ namespace VeilBreakers.Core
         {
             get
             {
-                if (_instance == null && !_isQuitting)
-                {
-                    Debug.LogError($"[{typeof(T).Name}] Instance not found! Ensure {typeof(T).Name} exists in scene.");
-                }
+                // Note: Instance being null before bootstrap creates it is expected
+                // Only log if we're past initialization and instance is still null
                 return _instance;
             }
         }

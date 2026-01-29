@@ -124,11 +124,11 @@ These deprecated APIs are NOT used in the codebase:
 
 Before starting Unity 6 migration:
 
-- [ ] Input System abstraction layer created
-- [ ] All Input.* calls go through InputManager
+- [x] Input System abstraction layer created (`InputManager.cs`)
+- [ ] All Input.* calls go through InputManager (8 files need update)
 - [ ] Input Actions asset created with all bindings
 - [ ] Test on both keyboard and gamepad
-- [ ] Backup project (already on Git)
+- [x] Backup project (already on Git)
 - [ ] Document any Unity 2022 specific workarounds
 
 ---
