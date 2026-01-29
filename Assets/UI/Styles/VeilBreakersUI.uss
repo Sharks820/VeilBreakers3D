@@ -114,8 +114,8 @@
     --border-subtle: rgb(40, 28, 32);
     --border-default: rgb(60, 40, 45);
     --border-strong: rgb(90, 50, 60);
-    --border-accent: rgb(180, 40, 60);
-    --border-glow: rgb(220, 60, 80);
+    --border-accent: rgb(180, 80, 20);
+    --border-glow: rgb(255, 140, 50);
 
     /* =========================================================================
        ANIMATION TIMING
@@ -156,12 +156,12 @@
     top: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(180, 40, 60, 0.08);
+    background-color: rgba(180, 80, 20, 0.08);
     transition-duration: 2s;
 }
 
 .bg-gradient-veil:hover {
-    background-color: rgba(180, 40, 60, 0.12);
+    background-color: rgba(180, 80, 20, 0.12);
 }
 
 /* Animated vignette */
@@ -244,7 +244,7 @@
     width: 100px;
     height: 100px;
     border-radius: 50%;
-    background-color: rgba(180, 40, 60, 0.1);
+    background-color: rgba(180, 80, 20, 0.1);
 }
 
 /* =============================================================================
@@ -258,13 +258,13 @@
     -unity-font-style: bold;
     letter-spacing: 8px;
     -unity-text-align: middle-center;
-    text-shadow: 0 0 30px rgba(180, 40, 60, 0.8), 0 0 60px rgba(180, 40, 60, 0.4), 0 4px 8px rgba(0, 0, 0, 0.9);
+    text-shadow: 0 0 30px rgba(180, 80, 20, 0.8), 0 0 60px rgba(180, 80, 20, 0.4), 0 4px 8px rgba(0, 0, 0, 0.9);
     transition-duration: 0.5s;
 }
 
 .title-hero:hover {
     color: var(--text-white);
-    text-shadow: 0 0 40px rgba(220, 60, 80, 1), 0 0 80px rgba(180, 40, 60, 0.6), 0 4px 8px rgba(0, 0, 0, 0.9);
+    text-shadow: 0 0 40px rgba(255, 140, 50, 1), 0 0 80px rgba(180, 80, 20, 0.6), 0 4px 8px rgba(0, 0, 0, 0.9);
     scale: 1.02;
 }
 
@@ -274,7 +274,7 @@
     color: var(--text-bright);
     -unity-font-style: bold;
     letter-spacing: 4px;
-    text-shadow: 0 0 15px rgba(180, 40, 60, 0.5), 0 2px 4px rgba(0, 0, 0, 0.8);
+    text-shadow: 0 0 15px rgba(180, 80, 20, 0.5), 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 /* Subtitle / Tagline */
@@ -306,7 +306,7 @@
 }
 
 .text-glow {
-    text-shadow: 0 0 10px rgba(180, 40, 60, 0.6);
+    text-shadow: 0 0 10px rgba(180, 80, 20, 0.6);
 }
 
 /* =============================================================================
@@ -346,7 +346,7 @@
 .btn-secondary {
     min-height: 54px;
     padding: 14px 32px;
-    background-color: rgba(180, 40, 60, 0.3);
+    background-color: rgba(180, 80, 20, 0.3);
     border-width: 2px;
     border-color: var(--border-accent);
     border-radius: 6px;
@@ -358,14 +358,14 @@
 }
 
 .btn-secondary:hover {
-    background-color: rgba(180, 40, 60, 0.5);
+    background-color: rgba(180, 80, 20, 0.5);
     border-color: var(--accent-primary-glow);
     color: var(--text-white);
     translate: -4px 0;
 }
 
 .btn-secondary:active {
-    background-color: rgba(180, 40, 60, 0.7);
+    background-color: rgba(180, 80, 20, 0.7);
     scale: 0.98;
 }
 
@@ -419,7 +419,7 @@
 .panel-glass {
     background-color: rgba(12, 9, 18, 0.92);
     border-width: 1px;
-    border-color: rgba(180, 40, 60, 0.3);
+    border-color: rgba(180, 80, 20, 0.3);
     border-radius: 12px;
     padding: 24px;
 }
@@ -656,13 +656,13 @@
 }
 
 .tab-button:hover {
-    background-color: rgba(180, 40, 60, 0.1);
+    background-color: rgba(180, 80, 20, 0.1);
     color: var(--text-primary);
     border-color: var(--border-strong);
 }
 
 .tab-button-active {
-    background-color: rgba(180, 40, 60, 0.2);
+    background-color: rgba(180, 80, 20, 0.2);
     color: var(--text-white);
     border-color: var(--accent-primary-glow);
 }
@@ -852,7 +852,7 @@
 }
 
 .path-badge-voidtouched {
-    background-color: rgba(180, 40, 60, 0.2);
+    background-color: rgba(180, 80, 20, 0.2);
     border-color: var(--path-voidtouched);
 }
 
@@ -909,7 +909,7 @@
     flex-direction: row;
     align-items: center;
     padding: 8px 14px;
-    background-color: rgba(180, 40, 60, 0.15);
+    background-color: rgba(180, 80, 20, 0.15);
     border-width: 1px;
     border-color: var(--accent-teal);
     border-radius: 6px;
@@ -1150,7 +1150,7 @@
 .glow-element {
     position: absolute;
     border-radius: 50%;
-    background-color: rgba(180, 40, 60, 0.3);
+    background-color: rgba(180, 80, 20, 0.3);
 }
 
 /* =============================================================================
