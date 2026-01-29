@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **SINGLE SOURCE OF TRUTH** | Version: **v4.30** | Last updated: 2026-01-28
+> **SINGLE SOURCE OF TRUTH** | Version: **v4.31** | Last updated: 2026-01-28
 
 ---
 
@@ -196,13 +196,14 @@ unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler
 - **NEVER** allocate in Update (no `new`, no LINQ, no string concat)
 - Delete `Library/` folder to fix import loops (Unity rebuilds it)
 - **CHECK** if Bootstrap/Manager components are ENABLED in scene (`m_Enabled: 1`) - disabled components = silent failure
-- **AFTER deleting scripts**, check scene for orphan GameObjects with missing script references
+- **AFTER deleting scripts**, check scene for orphan GameObjects with missing script references (causes NullReferenceException on UXML live reload)
 
 ### UI Toolkit Lessons
 - Scrollbar positioning buggy in programmatic popups - hide scrollbar, use mouse wheel
 - UXML files need valid asset GUIDs, not placeholders
 - Set `alphaIsTransparency: 1` in texture .meta files for transparency
 - Set `overflow: visible` on particle containers (not hidden)
+- **C# inline styles override USS** - `VBDropdownField.cs` uses hardcoded colors; theme changes need BOTH USS + C# updates
 
 ### Save System
 - Use `Path.ChangeExtension()` not `.Replace()` for file paths
