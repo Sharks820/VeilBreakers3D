@@ -30,11 +30,11 @@ Material:
     m_Ints: []
     m_Floats:
     - _FadeEdges: 0.1
-    - _GlowStrength: 1.5
-    - _Intensity: 0.8
+    - _GlowStrength: 0.8
+    - _Intensity: 0
     - _Layer2Scale: 6
     - _TileScale: 4
     m_Colors:
-    - _Color: {r: 1, g: 0.6, b: 0.3, a: 1}
+    - _Color: {r: 1, g: 0.5, b: 0.2, a: 0.5}
     - _ScrollSpeed: {r: 0.015, g: -0.025, b: 0.01, a: -0.018}
   m_BuildTextureStacks: []

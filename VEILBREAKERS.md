@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **SINGLE SOURCE OF TRUTH** | Version: **v4.42** | Last updated: 2026-01-29
+> **SINGLE SOURCE OF TRUTH** | Version: **v4.33** | Last updated: 2026-01-29
 
 ---
 
@@ -97,7 +97,7 @@ Failure: Flee (low corrupt) or Berserk (high corrupt)
 ```
 Assets/
 ├── Scripts/           # C# code (VeilBreakers.* namespaces)
-│   ├── Core/          # GameManager, EventBus, Constants, GameBootstrap
+│   ├── Core/          # GameManager, EventBus, Constants, GameBootstrap, InputManager
 │   ├── Combat/        # BattleManager, DamageCalculator, Combatant
 │   ├── Systems/       # BrandSystem, SynergySystem, CorruptionSystem, VERASystem
 │   ├── AI/            # GambitController, GambitEvaluator, AIPersonality
@@ -209,6 +209,10 @@ unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler
 - Use `Path.ChangeExtension()` not `.Replace()` for file paths
 - Add timeout to mutex operations (prevent silent failures)
 
+### Namespace Conflicts
+- `System.Diagnostics.Debug` vs `UnityEngine.Debug` - Use fully qualified `UnityEngine.Debug.Log()` when `[Conditional]` attributes import System.Diagnostics
+- `VeilBreakers.Data.Path` vs `System.IO.Path` - Use alias `using IOPath = System.IO.Path;` then `IOPath.Combine()`
+
 ---
 
 ## User Preferences
@@ -280,17 +284,19 @@ Scenario (2D concept) → Tripo (2D→3D + auto-rig) → Cascadeur (physics anim
 | Implementation | Docs/plans/2026-01-19-implementation-strategy.md |
 | Migration | Docs/MIGRATION_PLAN.md |
 | Character Select | Docs/plans/2026-01-27-character-select-design.md |
+| Unity 6 Prep | Docs/UNITY6_PREP.md |
 
 ---
 
 ## Current Status
 
 - **UI System:** Complete (all 6 screens)
-- **Core Systems:** Implemented (Brand, Synergy, Corruption, EventBus)
+- **Core Systems:** Implemented (Brand, Synergy, Corruption, EventBus, InputManager)
 - **Combat:** Framework ready, needs 3D integration
-- **Title Screen:** Monster art with transparent PNG, lightning effects
+- **Title Screen:** Monster art with transparent PNG, VFX effects
 - **Migration:** ~92% complete to Unity standards
-- **Next:** Unity 6 upgrade prep
+- **Unity 6 Prep:** InputManager abstraction created, 8 files need migration to use it
+- **Next:** Migrate legacy Input.* calls to InputManager, then Unity 6 upgrade
 
 ---
 
