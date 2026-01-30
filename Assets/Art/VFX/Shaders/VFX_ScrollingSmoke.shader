@@ -5,7 +5,7 @@ Shader "VeilBreakers/VFX/ScrollingSmoke"
         _MainTex ("Smoke Texture", 2D) = "white" {}
         _Color ("Smoke Color", Color) = (1, 0.5, 0.2, 0.3)
         _ScrollSpeed ("Scroll Speed", Vector) = (0.05, 0.02, 0, 0)
-        _Intensity ("Intensity", Range(0, 1)) = 0.5
+        _Intensity ("Intensity", Range(0, 10)) = 1.0
         _FadeTop ("Fade Top", Range(0, 1)) = 0.7
         _FadeBottom ("Fade Bottom", Range(0, 1)) = 0.1
         _TileScale ("Tile Scale", Range(0.5, 4)) = 2.0
@@ -13,7 +13,7 @@ Shader "VeilBreakers/VFX/ScrollingSmoke"
         // Second layer for depth
         _Layer2Speed ("Layer 2 Speed", Vector) = (0.03, 0.015, 0, 0)
         _Layer2Scale ("Layer 2 Scale", Range(0.5, 4)) = 1.5
-        _Layer2Intensity ("Layer 2 Intensity", Range(0, 1)) = 0.3
+        _Layer2Intensity ("Layer 2 Intensity", Range(0, 10)) = 0.5
     }
 
     SubShader
@@ -71,27 +71,28 @@ Shader "VeilBreakers/VFX/ScrollingSmoke"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                // Layer 1 - Main smoke
-                float2 uv1 = i.uv * _TileScale + _ScrollSpeed.xy * _Time.y;
-                fixed smoke1 = tex2D(_MainTex, uv1).r;
+                // Layer 1: Main smoke
+                float2 uv1 = i.uv * _TileScale + _Time.y * _ScrollSpeed.xy;
+                fixed4 smoke1 = tex2D(_MainTex, uv1);
 
-                // Layer 2 - Background smoke (different speed/scale for parallax)
-                float2 uv2 = i.uv * _Layer2Scale + _Layer2Speed.xy * _Time.y;
-                fixed smoke2 = tex2D(_MainTex, uv2).r;
+                // Layer 2: Secondary smoke for depth
+                float2 uv2 = i.uv * _Layer2Scale + _Time.y * _Layer2Speed.xy;
+                fixed4 smoke2 = tex2D(_MainTex, uv2);
 
                 // Combine layers
-                fixed smoke = smoke1 * _Intensity + smoke2 * _Layer2Intensity;
-                smoke = saturate(smoke);
+                float combined = smoke1.r * _Intensity + smoke2.r * _Layer2Intensity;
 
-                // Vertical gradient fade (smoke at bottom fades out at top)
-                float fade = smoothstep(_FadeBottom, _FadeTop, i.uv.y);
-                fade = 1.0 - fade; // Invert: visible at bottom, fades at top
+                // Vertical fade (stronger at bottom, fades at top)
+                float vertFade = smoothstep(_FadeBottom, _FadeTop, i.uv.y);
+                vertFade = 1.0 - vertFade; // Invert so smoke is at bottom
 
-                // Apply color and fade
-                fixed4 result = _Color;
-                result.a = smoke * fade * _Color.a;
+                // Edge fade (horizontal)
+                float edgeFade = smoothstep(0.0, 0.2, i.uv.x) * smoothstep(1.0, 0.8, i.uv.x);
 
-                return result;
+                // Final alpha
+                float alpha = combined * vertFade * edgeFade * _Color.a;
+
+                return fixed4(_Color.rgb, saturate(alpha));
             }
             ENDCG
         }

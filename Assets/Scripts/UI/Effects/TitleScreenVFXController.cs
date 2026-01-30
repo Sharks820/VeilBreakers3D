@@ -63,7 +63,7 @@ namespace VeilBreakers.UI.Effects
         private static readonly int _glowStrengthProp = Shader.PropertyToID("_GlowStrength");
         private static readonly int _distortStrengthProp = Shader.PropertyToID("_DistortStrength");
 
-        private float _currentIntensityMultiplier = 0f;
+        private float _currentIntensityMultiplier = 1f;
         private Coroutine _fadeCoroutine;
         private Coroutine _pulseCoroutine;
 

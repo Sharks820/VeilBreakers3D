@@ -5,10 +5,10 @@ Shader "VeilBreakers/VFX/FloatingParticles"
         _MainTex ("Particle Texture", 2D) = "white" {}
         _Color ("Particle Color", Color) = (1, 0.6, 0.2, 0.6)
         _ScrollSpeed ("Scroll Speed (XY main, ZW secondary)", Vector) = (0.02, -0.03, 0.015, -0.02)
-        _Intensity ("Intensity", Range(0, 2)) = 1.0
+        _Intensity ("Intensity", Range(0, 20)) = 1.0
         _TileScale ("Tile Scale", Range(1, 8)) = 4.0
         _Layer2Scale ("Layer 2 Scale", Range(1, 8)) = 6.0
-        _GlowStrength ("Glow Strength", Range(0, 2)) = 0.5
+        _GlowStrength ("Glow Strength", Range(0, 20)) = 0.5
         _FadeEdges ("Fade Edges", Range(0, 0.5)) = 0.1
     }
 
@@ -65,36 +65,30 @@ Shader "VeilBreakers/VFX/FloatingParticles"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                // Layer 1 - Large particles (foreground)
-                float2 uv1 = i.uv * _TileScale + _ScrollSpeed.xy * _Time.y;
-                fixed particles1 = tex2D(_MainTex, uv1).r;
+                // Layer 1: Main particles
+                float2 uv1 = i.uv * _TileScale + _Time.y * _ScrollSpeed.xy;
+                fixed4 particles1 = tex2D(_MainTex, uv1);
 
-                // Layer 2 - Small particles (background, different speed)
-                float2 uv2 = i.uv * _Layer2Scale + _ScrollSpeed.zw * _Time.y;
-                uv2.x += 0.5; // Offset to prevent overlap
-                fixed particles2 = tex2D(_MainTex, uv2).r;
+                // Layer 2: Secondary particles for depth/variation
+                float2 uv2 = i.uv * _Layer2Scale + _Time.y * _ScrollSpeed.zw;
+                fixed4 particles2 = tex2D(_MainTex, uv2);
 
-                // Combine layers with different weights
-                fixed particles = particles1 * 0.7 + particles2 * 0.5;
+                // Combine particles (additive style)
+                float combined = particles1.r + particles2.r * 0.6;
 
-                // Threshold to create distinct particles
-                particles = smoothstep(0.4, 0.6, particles);
+                // Edge fade
+                float edgeFadeX = smoothstep(0.0, _FadeEdges, i.uv.x) * smoothstep(1.0, 1.0 - _FadeEdges, i.uv.x);
+                float edgeFadeY = smoothstep(0.0, _FadeEdges, i.uv.y) * smoothstep(1.0, 1.0 - _FadeEdges, i.uv.y);
+                float edgeFade = edgeFadeX * edgeFadeY;
 
-                // Edge fade (optional, for softer edges)
-                float edgeFade = 1.0;
-                if (_FadeEdges > 0)
-                {
-                    float2 centered = abs(i.uv - 0.5) * 2.0;
-                    float maxDist = max(centered.x, centered.y);
-                    edgeFade = 1.0 - smoothstep(1.0 - _FadeEdges * 2, 1.0, maxDist);
-                }
+                // Apply intensity and glow
+                float glow = combined * _Intensity * _GlowStrength;
+                float alpha = combined * _Intensity * edgeFade * _Color.a;
 
-                // Apply color, intensity, and glow
-                fixed4 result = _Color;
-                result.rgb *= (1.0 + particles * _GlowStrength);
-                result.a = particles * _Intensity * edgeFade * _Color.a;
+                // Glow brightens the color
+                float3 glowColor = _Color.rgb * (1.0 + glow * 0.5);
 
-                return result;
+                return fixed4(glowColor, saturate(alpha));
             }
             ENDCG
         }

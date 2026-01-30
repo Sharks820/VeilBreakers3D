@@ -4,19 +4,19 @@
 
     <ui:VisualElement name="menu-root" class="vb-root" style="flex-grow: 1;">
 
-        <!-- Background - transparent to show 3D VFX behind UI -->
-        <ui:VisualElement name="background" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: transparent;" />
+        <!-- Background -->
+        <ui:VisualElement name="background" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgb(8, 6, 12);" />
 
-        <!-- VEILBREAKERS LOGO - Large at very top -->
+        <!-- Demon Figure - Behind vignette -->
+        <ui:VisualElement name="monster-image" picking-mode="Ignore" style="position: absolute; left: 0; right: 0; top: 20%; bottom: 0; background-image: url('project://database/Assets/Art/UI/MainMenu/demon_figure.png?fileID=2800000&amp;guid=37ac0bd864327ca4ab90b841b55d87bc&amp;type=3'); -unity-background-scale-mode: scale-to-fit; background-position-x: center; background-position-y: bottom;" />
+
+        <!-- VEILBREAKERS LOGO -->
         <ui:VisualElement name="logo-container" picking-mode="Ignore" style="position: absolute; left: 0; right: 0; top: -40px; height: 380px; justify-content: flex-start; align-items: center;">
             <ui:VisualElement name="logo-image" style="width: 100%; height: 360px; background-image: url('project://database/Assets/Art/UI/MainMenu/logo_veilbreakers.png?fileID=2800000&amp;guid=068214e22c8853d4c8fe90c83ab65bbc&amp;type=3'); -unity-background-scale-mode: scale-to-fit;" />
         </ui:VisualElement>
 
-        <!-- Demon Figure - Smaller, anchored to bottom center -->
-        <ui:VisualElement name="monster-image" picking-mode="Ignore" style="position: absolute; left: 0; right: 0; top: 20%; bottom: 0; background-image: url('project://database/Assets/Art/UI/MainMenu/demon_figure.png?fileID=2800000&amp;guid=37ac0bd864327ca4ab90b841b55d87bc&amp;type=3'); -unity-background-scale-mode: scale-to-fit; background-position-x: center; background-position-y: bottom;" />
-
-        <!-- Menu Buttons - Molten orange theme via USS -->
-        <ui:VisualElement name="button-container" style="position: absolute; left: 0; right: 0; bottom: 20px; flex-direction: row; justify-content: center; align-items: center; padding: 20px 20px; background-color: rgba(8, 6, 12, 0.80);">
+        <!-- Menu Buttons - ON TOP of vignette -->
+        <ui:VisualElement name="button-container" style="position: absolute; left: 0; right: 0; bottom: 40px; flex-direction: row; justify-content: center; align-items: center; padding: 20px 20px; background-color: transparent;">
 
             <ui:Button text="NEW GAME" name="btn-new-game" class="vb-menu-btn-primary" style="width: 180px; height: 55px; margin: 0 12px; border-width: 2px; border-radius: 6px; font-size: 18px; letter-spacing: 3px; -unity-font-style: bold;" />
 
@@ -28,12 +28,6 @@
 
             <ui:Button text="EXIT" name="btn-exit" class="vb-menu-btn-secondary" style="width: 120px; height: 50px; margin: 0 12px; border-width: 2px; border-radius: 6px; font-size: 16px; letter-spacing: 3px; -unity-font-style: bold;" />
 
-        </ui:VisualElement>
-
-        <!-- Footer -->
-        <ui:VisualElement name="footer" style="position: absolute; left: 0; right: 0; bottom: 0; height: 50px; flex-direction: row; justify-content: space-between; align-items: center; padding: 0 50px; background-color: transparent;">
-            <ui:Label text="© 2026 VeilBreakers" style="font-size: 14px; color: rgb(80, 70, 65); letter-spacing: 2px;" />
-            <ui:Label text="v4.25 Alpha" name="version-label" style="font-size: 14px; color: rgb(80, 70, 65); letter-spacing: 2px;" />
         </ui:VisualElement>
 
         <!-- Loading Overlay -->

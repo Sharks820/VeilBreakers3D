@@ -4,7 +4,7 @@ Shader "VeilBreakers/VFX/Vignette"
     {
         _MainTex ("Vignette Texture", 2D) = "white" {}
         _Color ("Tint Color", Color) = (0, 0, 0, 1)
-        _Intensity ("Intensity", Range(0, 2)) = 1.0
+        _Intensity ("Intensity", Range(0, 10)) = 1.0
         _PulseSpeed ("Pulse Speed", Range(0, 2)) = 0.0
         _PulseAmount ("Pulse Amount", Range(0, 0.3)) = 0.1
     }
@@ -18,7 +18,7 @@ Shader "VeilBreakers/VFX/Vignette"
             "IgnoreProjector" = "True"
         }
 
-        Blend DstColor Zero // Multiply blend
+        Blend SrcAlpha OneMinusSrcAlpha // Alpha blend (works on black backgrounds)
         ZWrite Off
         Cull Off
 
@@ -59,20 +59,24 @@ Shader "VeilBreakers/VFX/Vignette"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                // Sample vignette texture (white center, black edges)
+                // Sample texture for vignette shape
                 fixed4 tex = tex2D(_MainTex, i.uv);
+
+                // Calculate radial distance from center
+                float2 centered = (i.uv - 0.5) * 2.0;
+                float dist = length(centered);
 
                 // Pulse effect
                 float pulse = 1.0 + sin(_Time.y * _PulseSpeed) * _PulseAmount;
 
-                // Invert: black edges become darker when multiplied
-                // tex.r = 1 (center) stays white, tex.r = 0 (edge) becomes dark
-                float vignette = lerp(1.0, tex.r, _Intensity * pulse);
+                // Create vignette (procedural if no texture)
+                float vignette = smoothstep(0.3, 1.0, dist) * _Intensity * pulse;
 
-                // Apply color tint to darkened areas
-                fixed3 result = lerp(_Color.rgb, fixed3(1,1,1), vignette);
+                // Combine with texture (use texture alpha if available)
+                vignette = lerp(vignette, tex.a * _Intensity * pulse, tex.a > 0.01 ? 0.5 : 0.0);
 
-                return fixed4(result, 1.0);
+                // Output
+                return fixed4(_Color.rgb, saturate(vignette * _Color.a));
             }
             ENDCG
         }
