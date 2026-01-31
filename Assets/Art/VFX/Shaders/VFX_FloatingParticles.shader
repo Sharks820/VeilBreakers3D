@@ -2,14 +2,16 @@ Shader "VeilBreakers/VFX/FloatingParticles"
 {
     Properties
     {
-        _MainTex ("Particle Texture", 2D) = "white" {}
+        _MainTex ("Particle Texture (optional)", 2D) = "white" {}
         _Color ("Particle Color", Color) = (1, 0.6, 0.2, 0.6)
         _ScrollSpeed ("Scroll Speed (XY main, ZW secondary)", Vector) = (0.02, -0.03, 0.015, -0.02)
-        _Intensity ("Intensity", Range(0, 20)) = 1.0
-        _TileScale ("Tile Scale", Range(1, 8)) = 4.0
-        _Layer2Scale ("Layer 2 Scale", Range(1, 8)) = 6.0
-        _GlowStrength ("Glow Strength", Range(0, 20)) = 0.5
+        _Intensity ("Intensity", Range(0, 5)) = 1.0
+        _TileScale ("Tile Scale", Range(1, 20)) = 8.0
+        _Layer2Scale ("Layer 2 Scale", Range(1, 20)) = 12.0
+        _GlowStrength ("Glow Strength", Range(0, 5)) = 1.0
         _FadeEdges ("Fade Edges", Range(0, 0.5)) = 0.1
+        _ParticleSize ("Particle Size", Range(0.01, 0.3)) = 0.08
+        _ParticleSoftness ("Particle Softness", Range(0.01, 0.5)) = 0.15
     }
 
     SubShader
@@ -54,6 +56,67 @@ Shader "VeilBreakers/VFX/FloatingParticles"
             float _Layer2Scale;
             float _GlowStrength;
             float _FadeEdges;
+            float _ParticleSize;
+            float _ParticleSoftness;
+
+            // Hash function for procedural randomness
+            float2 hash2(float2 p)
+            {
+                p = float2(dot(p, float2(127.1, 311.7)), dot(p, float2(269.5, 183.3)));
+                return frac(sin(p) * 43758.5453);
+            }
+
+            // Create a single particle at a grid cell
+            float particle(float2 uv, float2 cellId, float time)
+            {
+                // Random offset within cell
+                float2 rand = hash2(cellId);
+                float2 particlePos = rand;
+
+                // Animate particle position slightly
+                particlePos.x += sin(time * 0.5 + rand.x * 6.28) * 0.1;
+                particlePos.y += cos(time * 0.3 + rand.y * 6.28) * 0.1;
+
+                // Distance to particle center
+                float dist = length(uv - particlePos);
+
+                // Soft circle with random size variation
+                float size = _ParticleSize * (0.5 + rand.x * 0.5);
+                float p = 1.0 - smoothstep(size * 0.3, size + _ParticleSoftness, dist);
+
+                // Random brightness
+                p *= (0.5 + rand.y * 0.5);
+
+                // Some particles twinkle
+                p *= 0.7 + 0.3 * sin(time * (2.0 + rand.x * 3.0));
+
+                return p;
+            }
+
+            // Create particle field
+            float particleField(float2 uv, float scale, float time)
+            {
+                float2 scaledUV = uv * scale;
+                float2 cellId = floor(scaledUV);
+                float2 cellUV = frac(scaledUV);
+
+                float particles = 0.0;
+
+                // Check 3x3 neighborhood for particles
+                for (int y = -1; y <= 1; y++)
+                {
+                    for (int x = -1; x <= 1; x++)
+                    {
+                        float2 neighbor = float2(x, y);
+                        float2 neighborId = cellId + neighbor;
+                        float2 neighborUV = cellUV - neighbor;
+
+                        particles += particle(neighborUV, neighborId, time);
+                    }
+                }
+
+                return particles;
+            }
 
             v2f vert (appdata v)
             {
@@ -65,16 +128,18 @@ Shader "VeilBreakers/VFX/FloatingParticles"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                // Layer 1: Main particles
-                float2 uv1 = i.uv * _TileScale + _Time.y * _ScrollSpeed.xy;
-                fixed4 particles1 = tex2D(_MainTex, uv1);
+                float time = _Time.y;
 
-                // Layer 2: Secondary particles for depth/variation
-                float2 uv2 = i.uv * _Layer2Scale + _Time.y * _ScrollSpeed.zw;
-                fixed4 particles2 = tex2D(_MainTex, uv2);
+                // Layer 1: Main particles (scrolling)
+                float2 uv1 = i.uv + time * _ScrollSpeed.xy;
+                float particles1 = particleField(uv1, _TileScale, time);
 
-                // Combine particles (additive style)
-                float combined = particles1.r + particles2.r * 0.6;
+                // Layer 2: Secondary particles for depth (different scroll)
+                float2 uv2 = i.uv + time * _ScrollSpeed.zw;
+                float particles2 = particleField(uv2, _Layer2Scale, time * 0.8);
+
+                // Combine layers
+                float combined = particles1 + particles2 * 0.6;
 
                 // Edge fade
                 float edgeFadeX = smoothstep(0.0, _FadeEdges, i.uv.x) * smoothstep(1.0, 1.0 - _FadeEdges, i.uv.x);
@@ -82,11 +147,11 @@ Shader "VeilBreakers/VFX/FloatingParticles"
                 float edgeFade = edgeFadeX * edgeFadeY;
 
                 // Apply intensity and glow
-                float glow = combined * _Intensity * _GlowStrength;
+                float glow = combined * _GlowStrength;
                 float alpha = combined * _Intensity * edgeFade * _Color.a;
 
                 // Glow brightens the color
-                float3 glowColor = _Color.rgb * (1.0 + glow * 0.5);
+                float3 glowColor = _Color.rgb * (1.0 + glow);
 
                 return fixed4(glowColor, saturate(alpha));
             }

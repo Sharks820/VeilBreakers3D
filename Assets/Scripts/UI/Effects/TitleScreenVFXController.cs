@@ -22,27 +22,27 @@ namespace VeilBreakers.UI.Effects
         [SerializeField] private MeshRenderer _heatDistortionRenderer;
 
         [Header("Vignette Settings")]
-        [SerializeField] private float _vignetteIntensity = 0.6f;
+        [SerializeField] private float _vignetteIntensity = 2.5f;
         [SerializeField] private float _vignettePulseSpeed = 0.3f;
         [SerializeField] private float _vignettePulseAmount = 0.05f;
         [SerializeField] private Color _vignetteColor = new Color(0.02f, 0.01f, 0.03f, 1f);
 
         [Header("Smoke Settings")]
-        [SerializeField] private Color _smokeColor = new Color(1f, 0.4f, 0.15f, 0.25f);
-        [SerializeField] private Vector2 _smokeScrollSpeed = new Vector2(0.04f, 0.015f);
-        [SerializeField] private float _smokeIntensity = 0.4f;
-        [SerializeField] private float _smokeFadeTop = 0.5f;
+        [SerializeField] private Color _smokeColor = new Color(1f, 0.45f, 0.15f, 0.6f);
+        [SerializeField] private Vector2 _smokeScrollSpeed = new Vector2(0.05f, 0.02f);
+        [SerializeField] private float _smokeIntensity = 1.2f;
+        [SerializeField] private float _smokeFadeTop = 0.7f;
         [SerializeField] private float _smokeFadeBottom = 0.0f;
 
         [Header("Particle Settings")]
-        [SerializeField] private Color _particleColor = new Color(1f, 0.5f, 0.2f, 0.5f);
+        [SerializeField] private Color _particleColor = new Color(1f, 0.6f, 0.3f, 0.8f);
         [SerializeField] private Vector4 _particleScrollSpeed = new Vector4(0.015f, -0.025f, 0.01f, -0.018f);
-        [SerializeField] private float _particleIntensity = 0.8f;
-        [SerializeField] private float _particleGlowStrength = 0.8f;
+        [SerializeField] private float _particleIntensity = 1.5f;
+        [SerializeField] private float _particleGlowStrength = 1.5f;
 
         [Header("Heat Distortion Settings")]
-        [SerializeField] private float _distortionStrength = 0.015f;
-        [SerializeField] private Vector2 _distortionScrollSpeed = new Vector2(0.08f, 0.12f);
+        [SerializeField] private float _distortionStrength = 0.02f;
+        [SerializeField] private Vector2 _distortionScrollSpeed = new Vector2(0.1f, 0.15f);
 
         [Header("Animation")]
         [SerializeField] private float _fadeInDuration = 2f;

@@ -2,18 +2,18 @@ Shader "VeilBreakers/VFX/ScrollingSmoke"
 {
     Properties
     {
-        _MainTex ("Smoke Texture", 2D) = "white" {}
+        _MainTex ("Smoke Texture (optional)", 2D) = "white" {}
         _Color ("Smoke Color", Color) = (1, 0.5, 0.2, 0.3)
         _ScrollSpeed ("Scroll Speed", Vector) = (0.05, 0.02, 0, 0)
-        _Intensity ("Intensity", Range(0, 10)) = 1.0
+        _Intensity ("Intensity", Range(0, 5)) = 1.0
         _FadeTop ("Fade Top", Range(0, 1)) = 0.7
         _FadeBottom ("Fade Bottom", Range(0, 1)) = 0.1
-        _TileScale ("Tile Scale", Range(0.5, 4)) = 2.0
-
-        // Second layer for depth
+        _TileScale ("Tile Scale", Range(0.5, 8)) = 2.0
         _Layer2Speed ("Layer 2 Speed", Vector) = (0.03, 0.015, 0, 0)
-        _Layer2Scale ("Layer 2 Scale", Range(0.5, 4)) = 1.5
-        _Layer2Intensity ("Layer 2 Intensity", Range(0, 10)) = 0.5
+        _Layer2Scale ("Layer 2 Scale", Range(0.5, 8)) = 1.5
+        _Layer2Intensity ("Layer 2 Intensity", Range(0, 5)) = 0.5
+        _NoiseDetail ("Noise Detail", Range(1, 8)) = 4.0
+        _SmokeThickness ("Smoke Thickness", Range(0.1, 2)) = 0.8
     }
 
     SubShader
@@ -60,6 +60,48 @@ Shader "VeilBreakers/VFX/ScrollingSmoke"
             float4 _Layer2Speed;
             float _Layer2Scale;
             float _Layer2Intensity;
+            float _NoiseDetail;
+            float _SmokeThickness;
+
+            // Hash function for procedural noise
+            float hash(float2 p)
+            {
+                return frac(sin(dot(p, float2(127.1, 311.7))) * 43758.5453);
+            }
+
+            // 2D value noise
+            float noise(float2 p)
+            {
+                float2 i = floor(p);
+                float2 f = frac(p);
+
+                // Smooth interpolation
+                f = f * f * (3.0 - 2.0 * f);
+
+                float a = hash(i);
+                float b = hash(i + float2(1.0, 0.0));
+                float c = hash(i + float2(0.0, 1.0));
+                float d = hash(i + float2(1.0, 1.0));
+
+                return lerp(lerp(a, b, f.x), lerp(c, d, f.x), f.y);
+            }
+
+            // Fractal Brownian Motion for smoke-like noise
+            float fbm(float2 p, int octaves)
+            {
+                float value = 0.0;
+                float amplitude = 0.5;
+                float frequency = 1.0;
+
+                for (int i = 0; i < octaves; i++)
+                {
+                    value += amplitude * noise(p * frequency);
+                    amplitude *= 0.5;
+                    frequency *= 2.0;
+                }
+
+                return value;
+            }
 
             v2f vert (appdata v)
             {
@@ -71,16 +113,28 @@ Shader "VeilBreakers/VFX/ScrollingSmoke"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                // Layer 1: Main smoke
-                float2 uv1 = i.uv * _TileScale + _Time.y * _ScrollSpeed.xy;
-                fixed4 smoke1 = tex2D(_MainTex, uv1);
+                float time = _Time.y;
+
+                // Layer 1: Main smoke (scrolling)
+                float2 uv1 = i.uv * _TileScale + time * _ScrollSpeed.xy;
+                float smoke1 = fbm(uv1 * _NoiseDetail, 4);
 
                 // Layer 2: Secondary smoke for depth
-                float2 uv2 = i.uv * _Layer2Scale + _Time.y * _Layer2Speed.xy;
-                fixed4 smoke2 = tex2D(_MainTex, uv2);
+                float2 uv2 = i.uv * _Layer2Scale + time * _Layer2Speed.xy;
+                float smoke2 = fbm(uv2 * _NoiseDetail * 0.8, 3);
+
+                // Add some swirling motion
+                float2 swirl = float2(
+                    sin(i.uv.y * 3.14159 + time * 0.2) * 0.02,
+                    cos(i.uv.x * 3.14159 + time * 0.15) * 0.02
+                );
+                float smoke3 = fbm((i.uv + swirl) * _TileScale * 1.5 + time * _ScrollSpeed.xy * 0.5, 3);
 
                 // Combine layers
-                float combined = smoke1.r * _Intensity + smoke2.r * _Layer2Intensity;
+                float combined = smoke1 * _Intensity + smoke2 * _Layer2Intensity + smoke3 * 0.3;
+
+                // Apply thickness threshold for more smoke-like appearance
+                combined = smoothstep(0.3, 0.3 + _SmokeThickness, combined);
 
                 // Vertical fade (stronger at bottom, fades at top)
                 float vertFade = smoothstep(_FadeBottom, _FadeTop, i.uv.y);
