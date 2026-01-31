@@ -712,19 +712,19 @@ MonoBehaviour:
   _smokeRenderer: {fileID: 2108847938}
   _particlesRenderer: {fileID: 1844317504}
   _heatDistortionRenderer: {fileID: 1668293539}
-  _vignetteIntensity: 3
+  _vignetteIntensity: 2.4
   _vignettePulseSpeed: 0.3
   _vignettePulseAmount: 0.05
   _vignetteColor: {r: 0.02, g: 0.01, b: 0.03, a: 1}
-  _smokeColor: {r: 1, g: 0.5, b: 0.2, a: 1}
+  _smokeColor: {r: 1, g: 0.5, b: 0.2, a: 0.65}
   _smokeScrollSpeed: {x: 0.04, y: 0.015}
-  _smokeIntensity: 8
+  _smokeIntensity: 2.2
   _smokeFadeTop: 1
   _smokeFadeBottom: 0
-  _particleColor: {r: 1, g: 0.6, b: 0.3, a: 1}
+  _particleColor: {r: 1, g: 0.6, b: 0.3, a: 0.75}
   _particleScrollSpeed: {x: 0.015, y: -0.025, z: 0.01, w: -0.018}
-  _particleIntensity: 15
-  _particleGlowStrength: 10
+  _particleIntensity: 2.4
+  _particleGlowStrength: 2.6
   _distortionStrength: 0.015
   _distortionScrollSpeed: {x: 0.08, y: 0.12}
   _fadeInDuration: 2

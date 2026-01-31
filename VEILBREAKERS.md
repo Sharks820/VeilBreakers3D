@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **SINGLE SOURCE OF TRUTH** | Version: **v4.35** | Last updated: 2026-01-30
+> **SINGLE SOURCE OF TRUTH** | Version: **v4.36** | Last updated: 2026-01-31
 
 ---
 
@@ -169,21 +169,35 @@ namespace VeilBreakers.Combat
 
 ## MCP & Tools
 
-### Local MCPs (6)
-| MCP | Purpose |
-|-----|---------|
-| sequential-thinking | Complex problem solving |
-| mcp-unity | Unity Editor control |
-| github | PRs, issues, CI |
-| blender | 3D modeling |
-| image-process | Image manipulation |
-| notion | Project management |
+### Project MCPs (.mcp.json)
+| MCP | Purpose | Notes |
+|-----|---------|-------|
+| sequential-thinking | Complex problem solving | Always on |
+| serena | Semantic code intelligence | Uses uvx |
+| context7 | Unity/C# docs lookup | Uses npx |
+| greptile | Codebase search/review | Requires GREPTILE_API_KEY |
+| memory-graph | Episodic memory | Uses mcp-knowledge-graph |
+| figma | Figma MCP (remote) | Requires Figma seat + MCP enabled |
+| figma-local | Figma MCP (local) | Figma desktop local server |
+| atlassian | Jira/Confluence MCP | OAuth required |
+| mcp-unity | Unity Editor control | Unity package server |
+| github | PRs, issues, CI | Requires GITHUB_TOKEN |
+| blender | 3D modeling | Blender MCP |
+| image-process | Image manipulation | Asset prep |
+| notion | Project management | Requires NOTION_API_KEY |
 
-### Plugin MCPs
-Serena (code), Context7 (Unity docs), Greptile (search), Episodic Memory, Chrome
+### Codex Skills (local)
+unity-ui-builder, unity-senior-coder, unity-engine-expert, unity-code-review-optimizer, unity-test-planner, unity-test-runner, unity-vfx-creator, unity-vfx-debugger, unity-perf-profiler, unity-asset-import-linter, unity-build-guardian, unity-data-integrity-auditor, unity-map-builder
 
 ### Custom Agents
 unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler, balance-analyzer, vera-dialogue-tester, bug-hunter, asset-generator, commit-helper, documentation-writer
+
+### Current Plan (2026-01-31)
+- Restart Codex to load updated MCPs and new skills
+- Run MCP connectivity checks (Serena + mcp-unity first)
+- Build and debug title-screen VFX using new VFX skills
+- Ensure MCPs start locally when launching repo from terminal (Unity open + Codex reopened from repo root)
+- Store Gemini full-scope output in `Docs/plans/` for reference
 
 ---
 
@@ -204,6 +218,7 @@ unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler
 - Set `alphaIsTransparency: 1` in texture .meta files for transparency
 - Set `overflow: visible` on particle containers (not hidden)
 - **C# inline styles override USS** - `VBDropdownField.cs` uses hardcoded colors; theme changes need BOTH USS + C# updates
+- Title screen VFX should use readability masks to protect logo + demon focal area
 
 ### Save System
 - Use `Path.ChangeExtension()` not `.Replace()` for file paths
@@ -294,7 +309,7 @@ Scenario (2D concept) → Tripo (2D→3D + auto-rig) → Cascadeur (physics anim
 - **Core Systems:** Implemented (Brand, Synergy, Corruption, EventBus, InputManager)
 - **Combat:** Framework ready, needs 3D integration
 - **Title Screen:** Monster art with transparent PNG, VFX effects
-- **Migration:** ~92% complete to Unity standards
+- **Migration:** 100% complete per `Docs/MIGRATION_PLAN.md` (Unity 6 prep pending)
 - **Unity 6 Prep:** InputManager abstraction created, 8 files need migration to use it
 - **Next:** Migrate legacy Input.* calls to InputManager, then Unity 6 upgrade
 

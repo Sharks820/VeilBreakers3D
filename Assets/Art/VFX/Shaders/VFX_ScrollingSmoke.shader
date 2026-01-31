@@ -14,6 +14,19 @@ Shader "VeilBreakers/VFX/ScrollingSmoke"
         _Layer2Intensity ("Layer 2 Intensity", Range(0, 5)) = 0.5
         _NoiseDetail ("Noise Detail", Range(1, 8)) = 4.0
         _SmokeThickness ("Smoke Thickness", Range(0.1, 2)) = 0.8
+        _UnscaledTime ("Unscaled Time", Float) = 0
+        _BottomClearStart ("Bottom Clear Start", Range(0, 1)) = 0.10
+        _BottomClearEnd ("Bottom Clear End", Range(0, 1)) = 0.28
+        _TopClearStart ("Top Clear Start", Range(0, 1)) = 0.70
+        _TopClearEnd ("Top Clear End", Range(0, 1)) = 0.90
+        _SubjectCenter ("Subject Center (UV)", Vector) = (0.5, 0.42, 0, 0)
+        _SubjectRadius ("Subject Radius", Range(0, 1)) = 0.32
+        _SubjectSoftness ("Subject Softness", Range(0.01, 1)) = 0.18
+        _SubjectStrength ("Subject Strength", Range(0, 1)) = 0.9
+        _LogoCenter ("Logo Center (UV)", Vector) = (0.5, 0.88, 0, 0)
+        _LogoRadius ("Logo Radius", Range(0, 1)) = 0.2
+        _LogoSoftness ("Logo Softness", Range(0.01, 1)) = 0.12
+        _LogoStrength ("Logo Strength", Range(0, 1)) = 0.85
     }
 
     SubShader
@@ -62,6 +75,19 @@ Shader "VeilBreakers/VFX/ScrollingSmoke"
             float _Layer2Intensity;
             float _NoiseDetail;
             float _SmokeThickness;
+            float _UnscaledTime;
+            float _BottomClearStart;
+            float _BottomClearEnd;
+            float _TopClearStart;
+            float _TopClearEnd;
+            float4 _SubjectCenter;
+            float _SubjectRadius;
+            float _SubjectSoftness;
+            float _SubjectStrength;
+            float4 _LogoCenter;
+            float _LogoRadius;
+            float _LogoSoftness;
+            float _LogoStrength;
 
             // Hash function for procedural noise
             float hash(float2 p)
@@ -103,6 +129,30 @@ Shader "VeilBreakers/VFX/ScrollingSmoke"
                 return value;
             }
 
+            float uiClearMask(float2 uv)
+            {
+                float bottom = smoothstep(_BottomClearStart, _BottomClearEnd, uv.y);
+                float top = 1.0 - smoothstep(_TopClearStart, _TopClearEnd, uv.y);
+                return saturate(bottom * top);
+            }
+
+            float readabilityMask(float2 uv)
+            {
+                float aspect = _ScreenParams.x / max(_ScreenParams.y, 1.0);
+
+                float2 subj = (uv - _SubjectCenter.xy) * float2(aspect, 1.0);
+                float subjDist = length(subj);
+                float subjMask = smoothstep(_SubjectRadius, _SubjectRadius + _SubjectSoftness, subjDist);
+
+                float2 logo = (uv - _LogoCenter.xy) * float2(aspect, 1.0);
+                float logoDist = length(logo);
+                float logoMask = smoothstep(_LogoRadius, _LogoRadius + _LogoSoftness, logoDist);
+
+                float mask = lerp(1.0, subjMask, _SubjectStrength);
+                mask *= lerp(1.0, logoMask, _LogoStrength);
+                return mask;
+            }
+
             v2f vert (appdata v)
             {
                 v2f o;
@@ -113,7 +163,7 @@ Shader "VeilBreakers/VFX/ScrollingSmoke"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                float time = _Time.y;
+                float time = (_UnscaledTime > 0.0) ? _UnscaledTime : _Time.y;
 
                 // Layer 1: Main smoke (scrolling)
                 float2 uv1 = i.uv * _TileScale + time * _ScrollSpeed.xy;
@@ -144,7 +194,8 @@ Shader "VeilBreakers/VFX/ScrollingSmoke"
                 float edgeFade = smoothstep(0.0, 0.2, i.uv.x) * smoothstep(1.0, 0.8, i.uv.x);
 
                 // Final alpha
-                float alpha = combined * vertFade * edgeFade * _Color.a;
+                float alpha = combined * vertFade * edgeFade * uiClearMask(i.uv) * _Color.a;
+                alpha *= readabilityMask(i.uv);
 
                 return fixed4(_Color.rgb, saturate(alpha));
             }

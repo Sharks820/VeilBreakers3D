@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace VeilBreakers.UI.Effects
 {
@@ -14,12 +15,16 @@ namespace VeilBreakers.UI.Effects
         [SerializeField] private Material _smokeMaterial;
         [SerializeField] private Material _particlesMaterial;
         [SerializeField] private Material _heatDistortionMaterial;
+        [SerializeField] private Material _backGlowMaterial;
+        [SerializeField] private Material _lightRaysMaterial;
 
         [Header("VFX Renderers")]
         [SerializeField] private MeshRenderer _vignetteRenderer;
         [SerializeField] private MeshRenderer _smokeRenderer;
         [SerializeField] private MeshRenderer _particlesRenderer;
         [SerializeField] private MeshRenderer _heatDistortionRenderer;
+        [SerializeField] private MeshRenderer _backGlowRenderer;
+        [SerializeField] private MeshRenderer _lightRaysRenderer;
 
         [Header("Vignette Settings")]
         [SerializeField] private float _vignetteIntensity = 2.5f;
@@ -44,6 +49,36 @@ namespace VeilBreakers.UI.Effects
         [SerializeField] private float _distortionStrength = 0.02f;
         [SerializeField] private Vector2 _distortionScrollSpeed = new Vector2(0.1f, 0.15f);
 
+        [Header("Back Glow Settings")]
+        [SerializeField] private Color _backGlowColor = new Color(0.95f, 0.35f, 0.1f, 0.7f);
+        [SerializeField] private float _backGlowIntensity = 1.2f;
+        [SerializeField] private float _backGlowRadius = 0.55f;
+        [SerializeField] private float _backGlowSoftness = 0.45f;
+        [SerializeField] private float _backGlowFlickerAmount = 0.12f;
+        [SerializeField] private float _backGlowFlickerSpeed = 0.6f;
+        [SerializeField] private Vector2 _backGlowCenter = new Vector2(0.5f, 0.42f);
+
+        [Header("Light Rays Settings")]
+        [SerializeField] private Color _lightRaysColor = new Color(1f, 0.55f, 0.2f, 0.5f);
+        [SerializeField] private float _lightRaysIntensity = 0.65f;
+        [SerializeField] private float _lightRaysRayCount = 24f;
+        [SerializeField] private float _lightRaysSharpness = 4.5f;
+        [SerializeField] private float _lightRaysRotationSpeed = 0.03f;
+        [SerializeField] private float _lightRaysRaySpeed = 0.35f;
+        [SerializeField] private float _lightRaysRadius = 0.85f;
+        [SerializeField] private float _lightRaysSoftness = 0.4f;
+        [SerializeField] private Vector2 _lightRaysCenter = new Vector2(0.5f, 0.85f);
+
+        [Header("Readability Masks")]
+        [SerializeField] private Vector2 _subjectCenter = new Vector2(0.5f, 0.42f);
+        [SerializeField] private float _subjectRadius = 0.32f;
+        [SerializeField] private float _subjectSoftness = 0.18f;
+        [SerializeField] private float _subjectStrength = 0.9f;
+        [SerializeField] private Vector2 _logoCenter = new Vector2(0.5f, 0.88f);
+        [SerializeField] private float _logoRadius = 0.2f;
+        [SerializeField] private float _logoSoftness = 0.12f;
+        [SerializeField] private float _logoStrength = 0.85f;
+
         [Header("Animation")]
         [SerializeField] private float _fadeInDuration = 2f;
         [SerializeField] private AnimationCurve _fadeInCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
@@ -51,6 +86,8 @@ namespace VeilBreakers.UI.Effects
         [Header("Performance")]
         [SerializeField] private bool _enableHeatDistortion = true;
         [SerializeField] private bool _enableParticles = true;
+        [SerializeField] private bool _enableBackGlow = true;
+        [SerializeField] private bool _enableLightRays = true;
 
         // Shader property IDs (cached for performance)
         private static readonly int _colorProp = Shader.PropertyToID("_Color");
@@ -62,6 +99,23 @@ namespace VeilBreakers.UI.Effects
         private static readonly int _fadeBottomProp = Shader.PropertyToID("_FadeBottom");
         private static readonly int _glowStrengthProp = Shader.PropertyToID("_GlowStrength");
         private static readonly int _distortStrengthProp = Shader.PropertyToID("_DistortStrength");
+        private static readonly int _radiusProp = Shader.PropertyToID("_Radius");
+        private static readonly int _softnessProp = Shader.PropertyToID("_Softness");
+        private static readonly int _flickerAmountProp = Shader.PropertyToID("_FlickerAmount");
+        private static readonly int _flickerSpeedProp = Shader.PropertyToID("_FlickerSpeed");
+        private static readonly int _centerProp = Shader.PropertyToID("_Center");
+        private static readonly int _rayCountProp = Shader.PropertyToID("_RayCount");
+        private static readonly int _raySharpnessProp = Shader.PropertyToID("_RaySharpness");
+        private static readonly int _rotationSpeedProp = Shader.PropertyToID("_RotationSpeed");
+        private static readonly int _raySpeedProp = Shader.PropertyToID("_RaySpeed");
+        private static readonly int _subjectCenterProp = Shader.PropertyToID("_SubjectCenter");
+        private static readonly int _subjectRadiusProp = Shader.PropertyToID("_SubjectRadius");
+        private static readonly int _subjectSoftnessProp = Shader.PropertyToID("_SubjectSoftness");
+        private static readonly int _subjectStrengthProp = Shader.PropertyToID("_SubjectStrength");
+        private static readonly int _logoCenterProp = Shader.PropertyToID("_LogoCenter");
+        private static readonly int _logoRadiusProp = Shader.PropertyToID("_LogoRadius");
+        private static readonly int _logoSoftnessProp = Shader.PropertyToID("_LogoSoftness");
+        private static readonly int _logoStrengthProp = Shader.PropertyToID("_LogoStrength");
 
         private float _currentIntensityMultiplier = 1f;
         private Coroutine _fadeCoroutine;
@@ -69,6 +123,8 @@ namespace VeilBreakers.UI.Effects
 
         private void Awake()
         {
+            EnsureRuntimeLayers();
+
             // Create material instances to avoid modifying shared materials
             CreateMaterialInstances();
 
@@ -155,6 +211,30 @@ namespace VeilBreakers.UI.Effects
                 Debug.Log($"[TitleScreenVFX] HeatDistortion material created, shader: {_heatDistortionMaterial.shader.name}");
             }
             else Debug.LogWarning("[TitleScreenVFX] HeatDistortion material is NULL!");
+
+            if (_backGlowMaterial == null)
+            {
+                _backGlowMaterial = CreateRuntimeMaterial("VeilBreakers/VFX/BackGlow");
+            }
+            else
+            {
+                _backGlowMaterial = new Material(_backGlowMaterial);
+            }
+
+            if (_backGlowMaterial != null && _backGlowRenderer != null)
+                _backGlowRenderer.material = _backGlowMaterial;
+
+            if (_lightRaysMaterial == null)
+            {
+                _lightRaysMaterial = CreateRuntimeMaterial("VeilBreakers/VFX/LightRays");
+            }
+            else
+            {
+                _lightRaysMaterial = new Material(_lightRaysMaterial);
+            }
+
+            if (_lightRaysMaterial != null && _lightRaysRenderer != null)
+                _lightRaysRenderer.material = _lightRaysMaterial;
         }
 
         /// <summary>
@@ -166,6 +246,8 @@ namespace VeilBreakers.UI.Effects
             if (_smokeMaterial != null) Destroy(_smokeMaterial);
             if (_particlesMaterial != null) Destroy(_particlesMaterial);
             if (_heatDistortionMaterial != null) Destroy(_heatDistortionMaterial);
+            if (_backGlowMaterial != null) Destroy(_backGlowMaterial);
+            if (_lightRaysMaterial != null) Destroy(_lightRaysMaterial);
         }
 
         /// <summary>
@@ -192,6 +274,12 @@ namespace VeilBreakers.UI.Effects
 
             if (_smokeRenderer != null)
                 _smokeRenderer.enabled = true;
+
+            if (_backGlowRenderer != null)
+                _backGlowRenderer.enabled = _enableBackGlow;
+
+            if (_lightRaysRenderer != null)
+                _lightRaysRenderer.enabled = _enableLightRays;
         }
 
         /// <summary>
@@ -203,6 +291,9 @@ namespace VeilBreakers.UI.Effects
             ApplySmokeSettings();
             ApplyParticleSettings();
             ApplyHeatDistortionSettings();
+            ApplyBackGlowSettings();
+            ApplyLightRaysSettings();
+            ApplyReadabilityMaskSettings();
         }
 
         private void ApplyVignetteSettings()
@@ -242,6 +333,67 @@ namespace VeilBreakers.UI.Effects
 
             _heatDistortionMaterial.SetFloat(_distortStrengthProp, _distortionStrength * _currentIntensityMultiplier);
             _heatDistortionMaterial.SetVector(_scrollSpeedProp, new Vector4(_distortionScrollSpeed.x, _distortionScrollSpeed.y, 0, 0));
+        }
+
+        private void ApplyBackGlowSettings()
+        {
+            if (_backGlowMaterial == null) return;
+
+            _backGlowMaterial.SetColor(_colorProp, _backGlowColor);
+            _backGlowMaterial.SetFloat(_intensityProp, _backGlowIntensity * _currentIntensityMultiplier);
+            _backGlowMaterial.SetFloat(_radiusProp, _backGlowRadius);
+            _backGlowMaterial.SetFloat(_softnessProp, _backGlowSoftness);
+            _backGlowMaterial.SetFloat(_flickerAmountProp, _backGlowFlickerAmount);
+            _backGlowMaterial.SetFloat(_flickerSpeedProp, _backGlowFlickerSpeed);
+            _backGlowMaterial.SetVector(_centerProp, new Vector4(_backGlowCenter.x, _backGlowCenter.y, 0, 0));
+        }
+
+        private void ApplyLightRaysSettings()
+        {
+            if (_lightRaysMaterial == null) return;
+
+            _lightRaysMaterial.SetColor(_colorProp, _lightRaysColor);
+            _lightRaysMaterial.SetFloat(_intensityProp, _lightRaysIntensity * _currentIntensityMultiplier);
+            _lightRaysMaterial.SetFloat(_rayCountProp, _lightRaysRayCount);
+            _lightRaysMaterial.SetFloat(_raySharpnessProp, _lightRaysSharpness);
+            _lightRaysMaterial.SetFloat(_rotationSpeedProp, _lightRaysRotationSpeed);
+            _lightRaysMaterial.SetFloat(_raySpeedProp, _lightRaysRaySpeed);
+            _lightRaysMaterial.SetFloat(_radiusProp, _lightRaysRadius);
+            _lightRaysMaterial.SetFloat(_softnessProp, _lightRaysSoftness);
+            _lightRaysMaterial.SetVector(_centerProp, new Vector4(_lightRaysCenter.x, _lightRaysCenter.y, 0, 0));
+        }
+
+        private void ApplyReadabilityMaskSettings()
+        {
+            ApplyReadabilityMask(_vignetteMaterial);
+            ApplyReadabilityMask(_smokeMaterial);
+            ApplyReadabilityMask(_particlesMaterial);
+            ApplyReadabilityMask(_heatDistortionMaterial);
+            ApplyReadabilityMask(_backGlowMaterial);
+            ApplyReadabilityMask(_lightRaysMaterial);
+        }
+
+        private void ApplyReadabilityMask(Material material)
+        {
+            if (material == null) return;
+
+            if (material.HasProperty(_subjectCenterProp))
+                material.SetVector(_subjectCenterProp, new Vector4(_subjectCenter.x, _subjectCenter.y, 0f, 0f));
+            if (material.HasProperty(_subjectRadiusProp))
+                material.SetFloat(_subjectRadiusProp, _subjectRadius);
+            if (material.HasProperty(_subjectSoftnessProp))
+                material.SetFloat(_subjectSoftnessProp, _subjectSoftness);
+            if (material.HasProperty(_subjectStrengthProp))
+                material.SetFloat(_subjectStrengthProp, _subjectStrength);
+
+            if (material.HasProperty(_logoCenterProp))
+                material.SetVector(_logoCenterProp, new Vector4(_logoCenter.x, _logoCenter.y, 0f, 0f));
+            if (material.HasProperty(_logoRadiusProp))
+                material.SetFloat(_logoRadiusProp, _logoRadius);
+            if (material.HasProperty(_logoSoftnessProp))
+                material.SetFloat(_logoSoftnessProp, _logoSoftness);
+            if (material.HasProperty(_logoStrengthProp))
+                material.SetFloat(_logoStrengthProp, _logoStrength);
         }
 
         /// <summary>
@@ -353,6 +505,55 @@ namespace VeilBreakers.UI.Effects
 
             SetGlobalIntensity(originalIntensity);
             _pulseCoroutine = null;
+        }
+
+        private void EnsureRuntimeLayers()
+        {
+            _backGlowRenderer ??= FindNamedRenderer("VFX_BackGlow");
+            _lightRaysRenderer ??= FindNamedRenderer("VFX_LightRays");
+
+            if (_backGlowRenderer == null)
+                _backGlowRenderer = CreateQuadRenderer("VFX_BackGlow", new Vector3(0, 0, 1f), new Vector3(22f, 14f, 1f));
+
+            if (_lightRaysRenderer == null)
+                _lightRaysRenderer = CreateQuadRenderer("VFX_LightRays", new Vector3(0, 0, 1.5f), new Vector3(22f, 14f, 1f));
+        }
+
+        private MeshRenderer FindNamedRenderer(string name)
+        {
+            Transform child = transform.Find(name);
+            return child != null ? child.GetComponent<MeshRenderer>() : null;
+        }
+
+        private MeshRenderer CreateQuadRenderer(string name, Vector3 localPosition, Vector3 localScale)
+        {
+            GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            quad.name = name;
+            quad.transform.SetParent(transform, false);
+            quad.transform.localPosition = localPosition;
+            quad.transform.localRotation = Quaternion.identity;
+            quad.transform.localScale = localScale;
+
+            var collider = quad.GetComponent<Collider>();
+            if (collider != null)
+                Destroy(collider);
+
+            var renderer = quad.GetComponent<MeshRenderer>();
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            return renderer;
+        }
+
+        private Material CreateRuntimeMaterial(string shaderName)
+        {
+            Shader shader = Shader.Find(shaderName);
+            if (shader == null)
+            {
+                Debug.LogWarning($"[TitleScreenVFX] Shader not found: {shaderName}");
+                return null;
+            }
+
+            return new Material(shader);
         }
 
 #if UNITY_EDITOR

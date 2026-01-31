@@ -8,6 +8,14 @@ Shader "VeilBreakers/VFX/HeatDistortion"
         _ScrollSpeed ("Scroll Speed", Vector) = (0.1, 0.15, 0, 0)
         _TileScale ("Tile Scale", Range(0.5, 8)) = 2.0
         _MaskFalloff ("Mask Falloff", Range(0.1, 2)) = 0.8
+        _SubjectCenter ("Subject Center (UV)", Vector) = (0.5, 0.42, 0, 0)
+        _SubjectRadius ("Subject Radius", Range(0, 1)) = 0.32
+        _SubjectSoftness ("Subject Softness", Range(0.01, 1)) = 0.18
+        _SubjectStrength ("Subject Strength", Range(0, 1)) = 0.9
+        _LogoCenter ("Logo Center (UV)", Vector) = (0.5, 0.88, 0, 0)
+        _LogoRadius ("Logo Radius", Range(0, 1)) = 0.2
+        _LogoSoftness ("Logo Softness", Range(0.01, 1)) = 0.12
+        _LogoStrength ("Logo Strength", Range(0, 1)) = 0.85
     }
 
     SubShader
@@ -53,6 +61,14 @@ Shader "VeilBreakers/VFX/HeatDistortion"
             float4 _ScrollSpeed;
             float _TileScale;
             float _MaskFalloff;
+            float4 _SubjectCenter;
+            float _SubjectRadius;
+            float _SubjectSoftness;
+            float _SubjectStrength;
+            float4 _LogoCenter;
+            float _LogoRadius;
+            float _LogoSoftness;
+            float _LogoStrength;
 
             // Hash function for procedural noise
             float hash(float2 p)
@@ -92,6 +108,23 @@ Shader "VeilBreakers/VFX/HeatDistortion"
                 return (n1 + n2 * 0.5) / 1.5;
             }
 
+            float readabilityMask(float2 uv)
+            {
+                float aspect = _ScreenParams.x / max(_ScreenParams.y, 1.0);
+
+                float2 subj = (uv - _SubjectCenter.xy) * float2(aspect, 1.0);
+                float subjDist = length(subj);
+                float subjMask = smoothstep(_SubjectRadius, _SubjectRadius + _SubjectSoftness, subjDist);
+
+                float2 logo = (uv - _LogoCenter.xy) * float2(aspect, 1.0);
+                float logoDist = length(logo);
+                float logoMask = smoothstep(_LogoRadius, _LogoRadius + _LogoSoftness, logoDist);
+
+                float mask = lerp(1.0, subjMask, _SubjectStrength);
+                mask *= lerp(1.0, logoMask, _LogoStrength);
+                return mask;
+            }
+
             v2f vert (appdata v)
             {
                 v2f o;
@@ -111,6 +144,11 @@ Shader "VeilBreakers/VFX/HeatDistortion"
 
                 // Bottom fade (heat is stronger at bottom)
                 mask *= smoothstep(0.0, 0.4, 1.0 - i.uv.y);
+
+                // Optional mask texture to focus distortion (e.g., chest glow)
+                float maskTex = tex2D(_MaskTex, i.uv).r;
+                mask *= maskTex;
+                mask *= readabilityMask(i.uv);
 
                 // Get procedural distortion
                 float2 distort = distortionNoise(i.uv, _Time.y);
