@@ -30,14 +30,40 @@ Build an AAA-quality 3D monster RPG using Unity. Quality over speed, but don't o
 
 ---
 
-# TOOL GUIDANCE (Not Mandates)
+# TOOL GUIDANCE (Smart Judgment)
 
-## Prefer These Tools When Appropriate
+## Serena - Use Judgment, Not Defaults
+
+Serena is powerful but **not always needed**. Use your judgment:
+
+| Task | Use Serena? | Instead |
+|------|-------------|---------|
+| Understand unfamiliar file structure | YES - `get_symbols_overview` | - |
+| Find where a method is called | YES - `find_referencing_symbols` | - |
+| Refactor a symbol | YES - `replace_symbol_body` | - |
+| Read a file you know the path to | **NO** | Just use `Read` tool |
+| Quick text search | **NO** | Just use `Grep` tool |
+| Small edit to known code | **NO** | Just use `Edit` tool |
+| Navigate to line you already know | **NO** | Just use `Read` tool |
+
+**Serena saves tokens when:** You don't know what's in a file, or need semantic understanding.
+**Serena wastes tokens when:** You already know what you need and where it is.
+
+## Superpowers Skills - Use When Valuable
+
+| Skill | USE for | SKIP for |
+|-------|---------|----------|
+| brainstorming | New systems, unclear requirements | Simple additions, bug fixes |
+| writing-plans | Multi-file implementations | Single-file changes |
+| systematic-debugging | Complex/mysterious bugs | Obvious errors |
+| verification-before-completion | Major changes, PRs | Quick fixes |
+
+**Default:** Skip skills for simple tasks. Use skills when complexity justifies structure.
+
+## Other Tools
 
 | Situation | Recommended Tool | Why |
 |-----------|------------------|-----|
-| Exploring unfamiliar code | Serena `get_symbols_overview` | Faster than reading whole file |
-| Finding symbol usage | Serena `find_referencing_symbols` | Semantic, not text search |
 | Unity API questions | Context7 `query-docs` | Up-to-date documentation |
 | Complex analysis | `sequential-thinking` | Structured breakdown |
 | Unity Editor control | `mcp-unity` | Direct editor access |
