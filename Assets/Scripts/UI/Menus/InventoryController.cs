@@ -472,7 +472,7 @@ namespace VeilBreakers.UI.Menus
             if (_itemCount == null) return;
 
             int totalItems = _playerInventory.Values.Sum();
-            int maxCapacity = 100; // TODO: Get from GameManager
+            // TODO: Add capacity display when GameManager provides max capacity
             _itemCount.text = $"{_filteredItems.Count} items ({totalItems} total)";
         }
 

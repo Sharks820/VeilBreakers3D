@@ -440,7 +440,7 @@ namespace VeilBreakers.UI.Menus
             if (mapping?.portrait != null)
             {
                 portrait.style.backgroundImage = new StyleBackground(mapping.portrait);
-                portrait.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                portrait.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
             }
 
             card.Add(portrait);

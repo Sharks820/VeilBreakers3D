@@ -15,16 +15,16 @@ namespace VeilBreakers.Commands
         // =============================================================================
 
         private static TimeSlowController _instance;
+        private static bool _isQuitting = false;
+
         public static TimeSlowController Instance
         {
             get
             {
-                // Instance null before bootstrap is expected - no error needed
+                if (_isQuitting) return null;
                 return _instance;
             }
         }
-
-        private static bool _isQuitting = false;
 
         // =============================================================================
         // CONFIGURATION

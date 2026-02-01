@@ -175,7 +175,7 @@ namespace VeilBreakers.UI.Menus
             layer.style.top = 0;
             layer.style.right = 0;
             layer.style.bottom = 0;
-            layer.style.unityBackgroundScaleMode = ScaleMode.ScaleAndCrop;
+            layer.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
             layer.pickingMode = PickingMode.Ignore;
 
             return layer;

@@ -85,8 +85,9 @@ namespace VeilBreakers.Managers
             }
         }
 
-        private void OnApplicationQuit()
+        protected override void OnApplicationQuit()
         {
+            base.OnApplicationQuit();
             // Update playtime before quit
             UpdatePlaytime();
         }

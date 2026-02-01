@@ -18,16 +18,16 @@ namespace VeilBreakers.Commands
         // =============================================================================
 
         private static QuickCommandManager _instance;
+        private static bool _isQuitting = false;
+
         public static QuickCommandManager Instance
         {
             get
             {
-                // Instance null before bootstrap is expected - no error needed
+                if (_isQuitting) return null;
                 return _instance;
             }
         }
-
-        private static bool _isQuitting = false;
 
         // =============================================================================
         // CONFIGURATION

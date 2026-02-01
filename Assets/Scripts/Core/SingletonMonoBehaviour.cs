@@ -16,16 +16,22 @@ namespace VeilBreakers.Core
         {
             get
             {
-                // Note: Instance being null before bootstrap creates it is expected
-                // Only log if we're past initialization and instance is still null
+                // Don't return or create instances during application quit
+                if (_isQuitting)
+                    return null;
                 return _instance;
             }
         }
 
         /// <summary>
-        /// Returns true if a valid instance exists.
+        /// Returns true if a valid instance exists (and app is not quitting).
         /// </summary>
-        public static bool HasInstance => _instance != null;
+        public static bool HasInstance => _instance != null && !_isQuitting;
+
+        /// <summary>
+        /// Returns true if the application is quitting.
+        /// </summary>
+        protected static bool IsQuitting => _isQuitting;
 
         protected virtual void Awake()
         {

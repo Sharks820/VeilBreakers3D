@@ -22,7 +22,8 @@ namespace VeilBreakers.Core
         {
             get
             {
-                // Instance null before bootstrap is expected - no error needed
+                // Don't return instance during application quit
+                if (_isQuitting) return null;
                 return _instance;
             }
         }

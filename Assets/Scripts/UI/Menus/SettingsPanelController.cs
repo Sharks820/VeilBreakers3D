@@ -293,7 +293,12 @@ namespace VeilBreakers.UI.Menus
             // Fallback if no resolutions were added (unusual displays)
             if (choices.Count == 0)
             {
-                var fallback = new Resolution { width = 1920, height = 1080, refreshRate = 60 };
+                var fallback = new Resolution
+                {
+                    width = 1920,
+                    height = 1080,
+                    refreshRateRatio = new RefreshRate { numerator = 60, denominator = 1 }
+                };
                 choices.Add("1920 x 1080");
                 _availableResolutions.Add(fallback);
             }
