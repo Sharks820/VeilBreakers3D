@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+cmd.exe /c "\"$ROOT_DIR\\Tools\\sync_backup.bat\""

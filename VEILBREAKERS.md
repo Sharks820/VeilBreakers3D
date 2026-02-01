@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **SINGLE SOURCE OF TRUTH** | Version: **v4.38** | Last updated: 2026-02-01
+> **SINGLE SOURCE OF TRUTH** | Version: **v4.40** | Last updated: 2026-02-01
 
 ---
 
@@ -244,6 +244,7 @@ unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler
 - **Use Sonnet** for primary work, research tasks, and agent spawns (Opus wastes tokens)
 - **Art Style:** Grimdark Painterly / Dark Fantasy Stylized Realism
 - Keep only the OneDrive canonical project + one local backup; archive older copies
+- Git hook runs `Tools/sync_backup.bat` on every commit (core.hooksPath = .githooks)
 
 ---
 
