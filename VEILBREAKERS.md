@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **SINGLE SOURCE OF TRUTH** | Version: **v4.37** | Last updated: 2026-02-01
+> **SINGLE SOURCE OF TRUTH** | Version: **v4.38** | Last updated: 2026-02-01
 
 ---
 
@@ -14,6 +14,9 @@
 | Art Style | Dark Fantasy Horror |
 | GitHub | Sharks820/VeilBreakers3D |
 | Branch | `backup/pre-unity6` |
+| Canonical Path | `C:\Users\Conner\OneDrive\Documents\VeilBreakers3DCurrent` |
+| Local Backup | `C:\Users\Conner\VeilBreakers3DCurrent_BACKUP` |
+| Archive | `C:\Users\Conner\Archive\VeilBreakers_Archive_2026-02-01` |
 
 ---
 
@@ -198,6 +201,7 @@ unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler
 - Build and debug title-screen VFX using new VFX skills
 - Ensure MCPs start locally when launching repo from terminal (Unity open + Codex reopened from repo root)
 - Store Gemini full-scope output in `Docs/plans/` for reference
+- After each commit/memory save, sync OneDrive → local backup (`robocopy` mirror)
 
 ---
 
@@ -239,6 +243,7 @@ unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler
 - Fresh Unity UI (don't port Godot patterns)
 - **Use Sonnet** for primary work, research tasks, and agent spawns (Opus wastes tokens)
 - **Art Style:** Grimdark Painterly / Dark Fantasy Stylized Realism
+- Keep only the OneDrive canonical project + one local backup; archive older copies
 
 ---
 
