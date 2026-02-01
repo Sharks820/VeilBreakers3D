@@ -430,6 +430,7 @@ GameObject:
   - component: {fileID: 1100000001}
   - component: {fileID: 1100000002}
   - component: {fileID: 1100000003}
+  - component: {fileID: 1100000004}
   m_Layer: 5
   m_Name: MainMenuUI
   m_TagString: Untagged
@@ -487,9 +488,26 @@ MonoBehaviour:
   _titleAnimDelay: 0.1
   _buttonStaggerDelay: 0.1
   _fadeInDuration: 0.5
+  _rootBackdropAlpha: 0.2
+  _rootBackdropColor: {r: 0.03, g: 0.02, b: 0.05, a: 1}
   _menuMusic: {fileID: 0}
   _buttonHoverSound: {fileID: 0}
   _buttonClickSound: {fileID: 0}
+--- !u!114 &1100000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1100000000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b36e84fd6b107046a23fd358ac2043c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _uiDocument: {fileID: 1100000002}
+  _pulseSpeed: 0.5
+  _pulseIntensity: 0.02
 --- !u!1 &1668293537
 GameObject:
   m_ObjectHideFlags: 0
@@ -704,56 +722,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c302ad8916b97d4fb5abe8c154e610e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _vignetteMaterial: {fileID: 2100000, guid: 5a23a331f908ae34fa975bb4312e5ce1, type: 2}
-  _smokeMaterial: {fileID: 2100000, guid: cd4595eb2433c4a46b45d57a4c81dea5, type: 2}
-  _particlesMaterial: {fileID: 2100000, guid: 146580f12cb6bdc4dbfac4d276230ba3, type: 2}
-  _heatDistortionMaterial: {fileID: 2100000, guid: 166765019a733e049b50217dac876e14, type: 2}
-  _vignetteRenderer: {fileID: 508798743}
-  _smokeRenderer: {fileID: 2108847938}
-  _particlesRenderer: {fileID: 1844317504}
-  _heatDistortionRenderer: {fileID: 1668293539}
-  _vignetteIntensity: 1.35
-  _vignettePulseSpeed: 0.2
-  _vignettePulseAmount: 0.035
-  _vignetteColor: {r: 0.02, g: 0.01, b: 0.03, a: 1}
-  _smokeColor: {r: 1, g: 0.45, b: 0.16, a: 0.35}
-  _smokeScrollSpeed: {x: 0.035, y: 0.015}
-  _smokeIntensity: 0.9
-  _smokeFadeTop: 0.75
-  _smokeFadeBottom: 0.12
-  _particleColor: {r: 1, g: 0.6, b: 0.3, a: 0.45}
-  _particleScrollSpeed: {x: 0.012, y: -0.02, z: 0.008, w: -0.015}
-  _particleIntensity: 0.9
-  _particleGlowStrength: 1.2
-  _distortionStrength: 0.01
-  _distortionScrollSpeed: {x: 0.06, y: 0.09}
-  _fadeInDuration: 1.6
-  _fadeInCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  _enableHeatDistortion: 0
-  _enableParticles: 0
 --- !u!1 &2108847936
 GameObject:
   m_ObjectHideFlags: 0
