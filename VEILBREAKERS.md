@@ -201,7 +201,7 @@ unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler
 - Build and debug title-screen VFX using new VFX skills
 - Ensure MCPs start locally when launching repo from terminal (Unity open + Codex reopened from repo root)
 - Store Gemini full-scope output in `Docs/plans/` for reference
-- After each commit/memory save, sync OneDrive → local backup (`robocopy` mirror)
+- After each commit/memory save, sync OneDrive → local backup (`Tools/sync_backup.ps1` or `Tools/sync_backup.bat`)
 
 ---
 
