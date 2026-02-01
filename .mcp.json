@@ -6,12 +6,28 @@
       "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
       "description": "Complex problem breakdown, multi-step reasoning, game balance calculations"
     },
+    "memory-graph": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "mcp-knowledge-graph", "--memory-path", "C:/Users/Conner/.claude/memory"],
+      "description": "Episodic memory / knowledge graph"
+    },
     "mcp-unity": {
+      "type": "stdio",
       "command": "node",
       "args": [
         "C:/Users/Conner/OneDrive/Documents/VeilBreakers3DCurrent/Library/PackageCache/com.gamelovers.mcp-unity@5dbd851fc5/Server~/build/index.js"
       ],
       "description": "Unity Editor control - screenshots, scenes, GameObjects, builds, console output, prefabs, components"
+    },
+    "gemini-cli": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "mcp-gemini-cli", "--allow-npx"],
+      "env": {
+        "PATH": "C:\\nvm4w\\nodejs;${PATH}"
+      },
+      "description": "Gemini CLI - search, chat, analyze files. Use for second opinions and web research."
     },
     "github": {
       "type": "stdio",
@@ -44,10 +60,10 @@
       "env": {
         "NOTION_API_KEY": "${NOTION_API_KEY}"
       },
-      "description": "Project management - monster database, feature backlog, design docs, game bible"
+      "description": "Project management - monster database, feature backlog, design docs"
     }
   },
-  "_disabled": {
-    "_comment": "Placeholders only; all servers enabled above"
+  "_removed_duplicates": {
+    "_comment": "Removed serena, context7, greptile - these are provided by plugins. Removed figma, figma-local, atlassian - not actively used."
   }
 }

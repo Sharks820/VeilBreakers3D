@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **SINGLE SOURCE OF TRUTH** | Version: **v4.42** | Last updated: 2026-02-01
+> **SINGLE SOURCE OF TRUTH** | Version: **v4.43** | Last updated: 2026-02-01
 
 ---
 
@@ -172,35 +172,36 @@ namespace VeilBreakers.Combat
 
 ## MCP & Tools
 
-### Project MCPs (.mcp.json)
+### Project MCPs (.mcp.json) - Optimized v4.43
 | MCP | Purpose | Notes |
 |-----|---------|-------|
 | sequential-thinking | Complex problem solving | Always on |
-| serena | Semantic code intelligence | Uses uvx |
-| context7 | Unity/C# docs lookup | Uses npx |
-| greptile | Codebase search/review | Requires GREPTILE_API_KEY |
 | memory-graph | Episodic memory | Uses mcp-knowledge-graph |
-| figma | Figma MCP (remote) | Requires Figma seat + MCP enabled |
-| figma-local | Figma MCP (local) | Figma desktop local server |
-| atlassian | Jira/Confluence MCP | OAuth required |
 | mcp-unity | Unity Editor control | Unity package server |
+| gemini-cli | Claude+Gemini collaboration | Second opinions, web research |
 | github | PRs, issues, CI | Requires GITHUB_TOKEN |
 | blender | 3D modeling | Blender MCP |
 | image-process | Image manipulation | Asset prep |
 | notion | Project management | Requires NOTION_API_KEY |
 
-### Codex Skills (local)
-unity-ui-builder, unity-senior-coder, unity-engine-expert, unity-code-review-optimizer, unity-test-planner, unity-test-runner, unity-vfx-creator, unity-vfx-debugger, unity-perf-profiler, unity-asset-import-linter, unity-build-guardian, unity-data-integrity-auditor, unity-map-builder
+**Plugin-Provided MCPs (auto-loaded):** Serena, Context7, Greptile, Episodic Memory, Chrome
+**Removed (v4.43):** serena, context7, greptile (duplicates of plugins), figma, figma-local, atlassian (unused)
+
+### Claude+Gemini Collaboration Skills (NEW v4.43)
+| Skill | Purpose |
+|-------|---------|
+| gemini-collab | 5 collaboration modes: Second Opinion, Parallel Analysis, Research, Adversarial Review, Balance Validation |
+| feature-template | Structured template for feature requests with acceptance criteria |
+| refactor-template | Structured template for refactoring with constraints |
+| tdd-loop | Automated TDD with Gemini debugging assistance |
 
 ### Custom Agents
 unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler, balance-analyzer, vera-dialogue-tester, bug-hunter, asset-generator, commit-helper, documentation-writer
 
-### Current Plan (2026-01-31)
-- Restart Codex to load updated MCPs and new skills
-- Run MCP connectivity checks (Serena + mcp-unity first)
-- Build and debug title-screen VFX using new VFX skills
-- Ensure MCPs start locally when launching repo from terminal (Unity open + Codex reopened from repo root)
-- Store Gemini full-scope output in `Docs/plans/` for reference
+### Current Plan (2026-02-01)
+- ✅ Configuration overhaul: Removed duplicate MCPs, rewrote CLAUDE.md to be lean
+- ✅ Created Claude+Gemini hybrid system with collaboration skills
+- Next: Test new lean configuration in development
 - After each commit/memory save, sync OneDrive → local backup (`Tools/sync_backup.ps1` or `Tools/sync_backup.bat`)
 
 ---
@@ -238,7 +239,7 @@ unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler
 ## User Preferences
 
 - Visual verification with screenshots
-- Auto-commit + push on all commits
+- Commit on logical completion (not arbitrary time intervals)
 - AAA quality, pixel-perfect alignment
 - Fresh Unity UI (don't port Godot patterns)
 - **Use Sonnet** for primary work, research tasks, and agent spawns (Opus wastes tokens)
@@ -246,6 +247,7 @@ unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler
 - Keep only the OneDrive canonical project + one local backup; archive older copies
 - Git hook runs `Tools/sync_backup.bat` on every commit (core.hooksPath = .githooks, uses cygpath)
 - Pre-commit hook blocks commit if backup sync fails
+- **Claude+Gemini hybrid approach:** Use Gemini for second opinions, research, adversarial review (v4.43)
 
 ---
 
@@ -322,5 +324,21 @@ Scenario (2D concept) → Tripo (2D→3D + auto-rig) → Cascadeur (physics anim
 - **Next:** Migrate legacy Input.* calls to InputManager, then Unity 6 upgrade
 
 ---
+
+---
+
+## Configuration Lessons (v4.43)
+
+### Claude Code Optimization
+- **Duplicate MCPs waste context:** Plugin-provided MCPs (Serena, Context7, Greptile) don't need local duplicates
+- **Rigid mandates hurt reasoning:** "1% = MUST invoke" rules consume context and reduce flexibility
+- **Lean CLAUDE.md is better:** 150 lines of flexible principles > 650 lines of rigid rules
+- **Claude+Gemini hybrid:** Use Gemini for fresh perspective, web research, adversarial review
+
+### What Was Removed (v4.43)
+- Duplicate MCPs: serena, context7, greptile (plugins provide these)
+- Unused MCPs: figma, figma-local, atlassian
+- Rigid time-based commits (now commit on completion)
+- "NO EXCEPTIONS" / "MANDATORY" language in CLAUDE.md
 
 *Memory optimized v4.0 - Reduced from 1300+ lines to essential reference*

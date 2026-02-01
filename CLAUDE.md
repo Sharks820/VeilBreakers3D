@@ -1,652 +1,171 @@
-# VEILBREAKERS 3D - UNITY PROJECT
+# VEILBREAKERS 3D - CLAUDE CONFIGURATION
 
-## Mission: BUILD AN AAA GAME STUDIO. NO COMPROMISES. NO RIVALS.
+## Mission
+Build an AAA-quality 3D monster RPG using Unity. Quality over speed, but don't overthink simple tasks.
 
-**The Vision:** Claude + Unity = Unstoppable game development. We're not just making a game, we're building a studio.
-
-**Engine:** Unity (migrated from Godot)
-**Project Path:** `C:/Users/Conner/Downloads/VeilBreakers3D`
-**Migration Status:** See `Docs/MIGRATION_PLAN.md` for detailed progress
-
----
-
-# CRITICAL: MANDATORY RULES (READ FIRST)
-
-## THE THREE ABSOLUTES - NEVER SKIP
-
-### 1. SAVE MEMORIES EVERY 15 MINUTES
-- Update `VEILBREAKERS.md` with any new decisions, values, or lessons
-- This is the SINGLE SOURCE OF TRUTH across sessions
-- If you learned something, WRITE IT DOWN
-
-### 2. COMMIT EVERY 15 MINUTES
-- `git add -A && git commit -m "descriptive message" && git push`
-- NO EXCEPTIONS. Losing work is UNACCEPTABLE.
-- Increment version in VEILBREAKERS.md header before each commit
-
-### 3. ORGANIZE FILES INTO CORRECT GIT LOCATIONS
-- EVERY file goes to its designated folder
-- EVERY commit goes to the correct branch
-- NEVER dump files randomly
+**Engine:** Unity 3D (UI Toolkit)
+**Memory:** `VEILBREAKERS.md` (read at session start)
+**Migration:** `Docs/MIGRATION_PLAN.md`
 
 ---
 
-# MANDATORY: SESSION PROTOCOLS
+# CORE PRINCIPLES (Not Rules)
 
-## 1. Memory Protocol
-**EVERY SESSION MUST:**
-1. **READ `VEILBREAKERS.md`** at the start of every conversation
-2. **READ `Docs/MIGRATION_PLAN.md`** to know current migration status
-3. **ACKNOWLEDGE** current project state before taking any action
-4. **UPDATE** both files when making significant changes
+## 1. Trust Your Reasoning
+- Use tools when they genuinely help, not because a rule says so
+- Simple questions get simple answers
+- Complex tasks benefit from structured approaches
+- You decide what's appropriate for each situation
 
-> **VEILBREAKERS.md is THE SINGLE SOURCE OF TRUTH for cross-session memory.**
+## 2. Context Efficiency
+- Don't read entire files when you only need a symbol
+- Use Serena for semantic code navigation (it saves tokens)
+- Ask Gemini for second opinions on complex decisions
+- Keep responses focused and concise
 
-## 2. Auto-Save Protocol (EVERY 15 MINUTES - NO EXCEPTIONS)
-
-**COMMIT AND PUSH EVERY 15 MINUTES. PERIOD.**
-
-1. Increment version in VEILBREAKERS.md header (v1.44 → v1.45...)
-2. `git add -A`
-3. `git commit -m "v1.X: [brief description]"`
-4. `git push`
-
-### Commit Message Rules
-- **NO** "Generated with Claude Code" tags
-- **NO** "Co-Authored-By: Claude" tags
-- **NO** mentions of Claude or AI in commits
-
-## 3. File Naming Rules (MANDATORY)
-
-**NEVER create files with Windows reserved names:**
-- `NUL`, `CON`, `PRN`, `AUX`, `COM1`-`COM9`, `LPT1`-`LPT9`
-
-## 4. Screenshot Protocol (MANDATORY)
-
-**ALL screenshots MUST go to: `screenshots/`**
-
-## 5. Migration Tracking Protocol (MANDATORY)
-
-**CHECK `Docs/MIGRATION_PLAN.md` BEFORE ANY WORK**
-
-When completing migration tasks:
-1. Update task status (❌ → ✅) in MIGRATION_PLAN.md
-2. Recalculate category percentage
-3. Recalculate overall percentage
-4. Update "Last Updated" date
-
-**Migration is complete when overall = 100%**
-
-## 6. High-Risk Items (MUST ASK USER)
-
-- Change Brand/Path system design
-- Modify save file format
-- Remove or rename core classes
-- Change corruption philosophy
-- Major UI flow changes
-- Game function/story/big script changes
-- Delete ANY file (archive only, never delete)
-
-## 6.5 MANDATORY: Visual Preview Before Implementation (NEW)
-
-**BEFORE writing ANY UI or visual code, you MUST:**
-
-1. **Use `/mockup-ui`** to create a visual mockup (ASCII layout recommended)
-2. **Use `/draw-diagram`** to show architecture/data flow
-3. **Get user approval** before writing code
-
-**Triggers:**
-| User Says | YOU MUST DO |
-|-----------|-------------|
-| "Add UI for..." | `/mockup-ui` FIRST |
-| "Create a screen..." | `/mockup-ui` FIRST |
-| "Design the..." | `/mockup-ui` FIRST |
-| "Implement [system]..." | `/draw-diagram` FIRST |
-| "Add [feature]..." | `/draw-diagram` FIRST |
-
-**NEVER skip visual preview. User wants to SEE before you BUILD.**
-
-## 6.6 MANDATORY: Workflow Visibility Plugins (NEW)
-
-**These plugins are INSTALLED and must be ACTIVE:**
-
-| Plugin | What It Shows | Status |
-|--------|---------------|--------|
-| **claude-hud** | Context %, active tools, agents, todos | ✅ Installed |
-| **dx** | Clone conversations, handoffs, GHA analysis | ✅ Installed |
-
-**Keyboard shortcuts to remind user:**
-- `Ctrl+O` - Toggle verbose mode (see thinking)
-- `Ctrl+T` - Toggle task list
-- `Shift+Tab` - Toggle Plan Mode
-- `/fork` - Clone conversation
-- `/clear` - Fresh context
-
-## 7. Git Organization Protocol (MANDATORY)
-
-### Branch Naming Convention
-| Prefix | Purpose | Example |
-|--------|---------|---------|
-| `feature/` | New features | `feature/battle-system` |
-| `bugfix/` | Bug fixes | `bugfix/hp-display` |
-| `docs/` | Documentation only | `docs/api-reference` |
-| `hotfix/` | Urgent production fixes | `hotfix/crash-on-load` |
-| `refactor/` | Code cleanup | `refactor/manager-classes` |
-
-### File Organization Rules
-| File Type | Location | Branch |
-|-----------|----------|--------|
-| C# Scripts | `Assets/Scripts/[category]/` | `feature/*` or `bugfix/*` |
-| Documentation | `Docs/` | `docs/*` or current feature branch |
-| Art Assets | `Assets/Art/[category]/` | `feature/*` |
-| Prefabs | `Assets/Prefabs/[category]/` | `feature/*` |
-| Scenes | `Assets/Scenes/` | `feature/*` |
-| Config/Data | `Assets/Data/` | `feature/*` |
-
-## 8. Serena Code Intelligence Protocol (MANDATORY)
-
-**USE SERENA FOR ALL CODE OPERATIONS TO SAVE TOKENS**
-
-| Task | DON'T DO THIS | DO THIS INSTEAD |
-|------|---------------|-----------------|
-| Understand file structure | `Read` entire file | `get_symbols_overview` |
-| Find class/method | `Grep "class Foo"` | `find_symbol("Foo")` |
-| Find where used | Multiple `Grep` queries | `find_referencing_symbols` |
-| Replace function | `Read` + `Edit` | `replace_symbol_body` |
-| Rename across codebase | Find/replace | `rename_symbol` |
-
-### Serena Workflow
-1. **First contact with file** → `get_symbols_overview`
-2. **Need specific symbol** → `find_symbol` with `include_body=true`
-3. **Need to understand usage** → `find_referencing_symbols`
-4. **Need to edit** → `replace_symbol_body` or `replace_content`
-
-### Project Activation (Session Start)
-```
-mcp__plugin_serena_serena__activate_project("VeilBreakers3D")
-```
-
-## 9. Superpowers Workflow Protocol (MANDATORY)
-
-**USE SUPERPOWERS SKILLS FOR ALL PLANNING AND EXECUTION**
-
-### The Three-Phase Workflow
-```
-BRAINSTORM → WRITE PLAN → EXECUTE PLAN
-```
-
-| Phase | Skill | When |
-|-------|-------|------|
-| 1. Brainstorm | `superpowers:brainstorming` | Before ANY creative work |
-| 2. Write Plan | `superpowers:writing-plans` | After brainstorm approved |
-| 3. Execute | `superpowers:executing-plans` | After plan approved |
-
-### When Required
-| Trigger | Required? |
-|---------|-----------|
-| "Add a feature" | YES - Full 3-phase |
-| "Implement X system" | YES - Full 3-phase |
-| "Fix this bug" | MAYBE - If complex |
-| "Quick question" | NO |
+## 3. Commit When It Makes Sense
+- Commit after completing logical units of work
+- Don't interrupt mid-task for arbitrary time-based commits
+- Version updates in VEILBREAKERS.md track progress
 
 ---
 
-# 10. COMPREHENSIVE TOOL PROTOCOLS (MANDATORY)
+# TOOL GUIDANCE (Not Mandates)
 
-**EVERY TOOL MUST BE USED FOR ITS INTENDED PURPOSE**
+## Prefer These Tools When Appropriate
 
-## Active Plugins (17 Total)
+| Situation | Recommended Tool | Why |
+|-----------|------------------|-----|
+| Exploring unfamiliar code | Serena `get_symbols_overview` | Faster than reading whole file |
+| Finding symbol usage | Serena `find_referencing_symbols` | Semantic, not text search |
+| Unity API questions | Context7 `query-docs` | Up-to-date documentation |
+| Complex analysis | `sequential-thinking` | Structured breakdown |
+| Unity Editor control | `mcp-unity` | Direct editor access |
+| Second opinion | Gemini CLI | Different perspective |
+| 3D modeling | Blender MCP | Direct Blender control |
 
-### CODE INTELLIGENCE
-| Plugin | Trigger | Usage |
-|--------|---------|-------|
-| **serena** | ANY code operation | Symbols, refs, edits - see Protocol 8 |
-| **context7** | BEFORE writing Unity/C# code | Query Unity API docs first |
-| **csharp-lsp** | AFTER code changes | Run diagnostics, catch errors |
-| **greptile** | "Where is X used?" | Cross-repo semantic search |
+## Workflows (Use When Helpful)
 
-### WORKFLOW
-| Plugin | Trigger | Usage |
-|--------|---------|-------|
-| **superpowers** | ANY feature/implementation | 3-phase workflow - see Protocol 9 |
-| **superpowers-lab** | Code audits | `finding-duplicate-functions` skill |
-| **feature-dev** | Complex multi-file features | Architecture-first development |
-| **double-shot-latte** | Auto-enabled | Prevents "continue?" interruptions |
+### For Complex Features
+Consider the brainstorm → plan → execute workflow for:
+- New game systems (combat, capture, AI)
+- Multi-file refactors
+- Architecture decisions
 
-### CODE QUALITY
-| Plugin | Trigger | Usage |
-|--------|---------|-------|
-| **code-review** | Before merges/PRs | Structured code review |
-| **pr-review-toolkit** | PR creation/review | Multi-agent specialized review |
-| **security-guidance** | Network/save code | Security vulnerability check |
+Skip it for:
+- Bug fixes
+- Simple additions
+- Quick questions
 
-### GIT & COMMITS
-| Plugin | Trigger | Usage |
-|--------|---------|-------|
-| **commit-commands** | Git operations | `/commit`, `/clean_gone` |
-
-### MEMORY & CONTEXT
-| Plugin | Trigger | Usage |
-|--------|---------|-------|
-| **episodic-memory** | SESSION START | Search past conversations |
-
-### CONTENT & DESIGN
-| Plugin | Trigger | Usage |
-|--------|---------|-------|
-| **frontend-design** | UI/UX design | Design patterns for Unity UI |
-| **elements-of-style** | Documentation | Clear writing for docs, commits |
-| **superpowers-chrome** | Web research | Documentation browsing |
-
-### DEVELOPMENT
-| Plugin | Trigger | Usage |
-|--------|---------|-------|
-| **agent-sdk-dev** | AI-powered features | Build Claude agents for VERA/testing |
-
-## Active MCP Servers (8 Local + 5 Plugin-Provided)
-
-### CRITICAL: MCP USAGE RULES - NO TOOL SITS STAGNANT
-
-**EVERY MCP MUST BE USED WHEN ITS TRIGGER CONDITION IS MET. NO EXCEPTIONS.**
-
-If you catch yourself NOT using an MCP when its trigger applies, STOP and USE IT.
-
-### Local MCPs (.mcp.json) - 8 TOTAL
-
-#### CORE DEVELOPMENT (Always Available)
-| MCP | Trigger Keywords | MANDATORY Usage |
-|-----|------------------|-----------------|
-| **sequential-thinking** | "ultrathink", "complex", "analyze", "balance", "design system" | Break down ANY multi-step problem. Use for game balance, architecture decisions, debugging complex issues |
-| **mcp-unity** | "Unity", "scene", "GameObject", "build", "compile", "screenshot", "console" | Control Unity Editor directly. Take screenshots, check compile errors, manipulate scenes, run builds |
-| **github** | "PR", "pull request", "issue", "commit", "CI", "merge" | All GitHub operations - create PRs, check CI status, manage issues |
-
-#### ASSET CREATION (Use Proactively)
-| MCP | Trigger Keywords | MANDATORY Usage |
-|-----|------------------|-----------------|
-| **blender** | "3D model", "mesh", "render", "Blender", "sculpt", "material", "texture 3D" | Create/edit 3D models directly in Blender. Use for converting 2D art to 3D |
-| **image-process** | "crop", "resize", "rotate", "convert format", "sprite sheet" | Process existing images - resize for Unity, crop sprites, convert formats |
-
-#### AUDIO & ASSETS (External Tools)
-**Note:** No MCP for 2D art, voice, music, or SFX currently. Use external tools directly:
-- **Music:** [Udio](https://udio.com) - 1,200 free songs/month, commercial OK
-- **SFX:** [SFX Engine](https://sfxengine.com) - unlimited free, commercial OK
-
-#### PROJECT MANAGEMENT (Use for Tracking & Documentation)
-| MCP | Trigger Keywords | MANDATORY Usage |
-|-----|------------------|-----------------|
-| **notion** | "track", "backlog", "database", "document", "PRD", "spec", "game bible", "monster list", "feature list" | Read/write Notion pages for project management. Track monsters, features, design docs. USE INSTEAD OF JUST MEMORY |
-
-### Plugin-Provided MCPs (Auto-loaded)
-| MCP | Trigger | Usage |
-|-----|---------|-------|
-| **Context7** | Unity/C# API questions | Query up-to-date documentation BEFORE writing code |
-| **Serena** | ANY code operation | Semantic code intelligence - see Protocol 8 |
-| **Greptile** | Cross-repo search, PR reviews | Find code patterns across repos |
-| **Episodic Memory** | SESSION START, "remember", "past conversation" | Search conversation history for context |
-| **Chrome** | Web research, documentation | Browse web when MCPs don't have info |
+### For UI Work
+ASCII mockups before code can help:
+- Clarify layout with user
+- Catch issues early
+- But skip for trivial changes
 
 ---
 
-## MCP DECISION TREE - FOLLOW THIS EXACTLY
+# PROJECT CONTEXT
 
-```
-USER REQUEST RECEIVED
-        │
-        ▼
-┌───────────────────────────────────────────────────────────┐
-│ STEP 1: CHECK FOR MCP TRIGGERS                            │
-│                                                           │
-│ Does request mention ANY of these?                        │
-│ • "3D model/mesh/Blender" → USE blender MCP               │
-│ • "Unity/scene/build/compile" → USE mcp-unity             │
-│ • "complex/ultrathink/analyze" → USE sequential-thinking  │
-│ • "PR/issue/GitHub" → USE github MCP                      │
-│ • "crop/resize image" → USE image-process MCP             │
-│ • "track/backlog/database/doc" → USE notion MCP           │
-│ • "monster list/feature list" → USE notion MCP            │
-└───────────────────────────────────────────────────────────┘
-        │
-        ▼
-┌───────────────────────────────────────────────────────────┐
-│ STEP 2: USE THE MCP - DON'T JUST TALK ABOUT IT            │
-│                                                           │
-│ WRONG: "I could use the blender MCP to..."                │
-│ RIGHT: *Actually calls blender MCP tool*                  │
-│                                                           │
-│ WRONG: "I'll remember this for next session..."           │
-│ RIGHT: *Actually writes it to Notion database*            │
-└───────────────────────────────────────────────────────────┘
-```
+## Key Systems (Don't Break These)
 
----
+### 10-Brand Combat
+IRON, SAVAGE, SURGE, VENOM, DREAD, LEECH, GRACE, MEND, RUIN, VOID
+- Each: 2x to 2 brands, 0.5x to 2 brands, 1x to 6 brands
 
-## Tool Usage Matrix - COMPREHENSIVE
+### 4 Paths
+IRONBOUND, FANGBORN, VOIDTOUCHED, UNCHAINED
 
-| Task | PRIMARY MCP | Secondary | NEVER Do This |
-|------|-------------|-----------|---------------|
-| Create 3D model | **blender** | - | Don't describe how to model manually |
-| Generate music | Use [Udio](https://udio.com) | - | Don't suggest royalty-free sites (Udio is FREE) |
-| Generate voice line | External (ElevenLabs, etc.) | - | No MCP currently - use external tools |
-| Generate 2D art | External (MidJourney, etc.) | - | No MCP currently - use external tools |
-| Check Unity errors | **mcp-unity** | - | Don't ask user to check manually |
-| Take game screenshot | **mcp-unity** | - | Don't ask user to screenshot |
-| Create PR | **github** | commit-commands | Don't give manual instructions |
-| Analyze game balance | **sequential-thinking** | balance-analyzer | Don't do quick mental math |
-| Debug complex issue | **sequential-thinking** | unity-debugger | Don't guess at solutions |
-| Explore C# file | Serena `get_symbols_overview` | - | Don't Read entire file |
-| Find method definition | Serena `find_symbol` | Greptile | Don't Grep for class names |
-| Find all usages | Serena `find_referencing_symbols` | Greptile | Don't manual search |
-| Unity API question | Context7 `query-docs` | WebSearch | Don't guess at APIs |
-| Refactor code | Serena `rename_symbol` | - | Don't find/replace manually |
-| Remember past work | episodic-memory | VEILBREAKERS.md | Don't claim no memory |
-| Process existing image | **image-process** | - | Don't ask user to edit |
-| Track monsters/features | **notion** | VEILBREAKERS.md | Don't just keep in memory |
-| Write design docs | **notion** | Docs/ folder | Don't skip documentation |
-| Manage backlog | **notion** | TodoWrite | Don't lose track of tasks |
+### Corruption (0-100%)
+0-10% ASCENDED (+25%), 11-25% Purified (+10%), 26-50% Unstable, 51-75% Corrupted (-10%), 76-100% Abyssal (-20%)
 
----
+### Synergy Tiers
+FULL (3/3): +8% damage/defense | PARTIAL (2/3): +5% | NEUTRAL: +0% | ANTI: +0%
 
-## ENVIRONMENT VARIABLES REQUIRED
-
-For full MCP functionality, ensure these are set:
-
-| Variable | MCP | Status | How to Get |
-|----------|-----|--------|------------|
-| `GITHUB_TOKEN` | github | ✅ Set | GitHub Personal Access Token |
-| `SUNO_API_KEY` | audio | ⚠️ Optional | [suno.ai](https://suno.ai) Settings → API |
-| `ELEVENLABS_API_KEY` | audio | ⚠️ Optional | [elevenlabs.io](https://elevenlabs.io) Profile → API Key |
-| `NOTION_API_KEY` | notion | ⚠️ Needs Setup | [notion.so/my-integrations](https://notion.so/my-integrations) |
-
-**Blender MCP requires:** Blender 3.0+ installed (✅ User has 5.0) with addon.py from [github.com/ahujasid/blender-mcp](https://github.com/ahujasid/blender-mcp)
-
-## Custom VeilBreakers Agents (.claude/agents/)
-
-### Unity Development Agents
-| Agent | Trigger | Purpose |
-|-------|---------|---------|
-| **unity-architect** | "Design a system for..." | System architecture, component design |
-| **unity-code-reviewer** | Before merges | Unity-specific code review checklist |
-| **unity-debugger** | "Why is X not working?" | Systematic Unity debugging |
-| **unity-performance-profiler** | "Check performance of..." | Profiling, optimization analysis |
-
-### VeilBreakers Game Agents
-| Agent | Trigger | Purpose |
-|-------|---------|---------|
-| **balance-analyzer** | "Analyze balance of..." | Game balance validation (brands, synergy, damage) |
-| **vera-dialogue-tester** | "Test VERA response to..." | VERA personality & Veil Integrity testing |
-| **bug-hunter** | Proactive audits | Find bugs in code patterns |
-| **asset-generator** | "Generate art for..." | AI art prompts with VeilBreakers style guide |
-
-## Custom VeilBreakers Skills (.claude/skills/)
-
-| Skill | Trigger | Purpose |
-|-------|---------|---------|
-| **mockup-ui** | ANY UI work | **MANDATORY** - Create ASCII layout mockup before coding UI |
-| **draw-diagram** | ANY system design | **MANDATORY** - Show ASCII/Mermaid diagram before coding |
-| **unity-component-design** | "Create a new component for..." | Design MonoBehaviour/ScriptableObject architecture |
-| **unity-performance-check** | Before commits | Quick performance red flags check |
-| **veilbreakers-balance-check** | Changing damage/rates | Validate game balance changes won't break game |
-| **veilbreakers-vera-test** | Modifying VERA dialogue | Test VERA dual personality consistency |
-| **unity-editor-control** | "Run the game", "Check compile errors" | Unity Editor interaction via MCP |
-| **generate-game-asset** | "Create a sprite for..." | AI art prompts (external tools needed) |
-| **github-workflow** | "Create PR", "Check CI status" | GitHub operations via MCP |
-
-## Installed Plugins (Community Recommended)
-
-| Plugin | Purpose | Commands |
-|--------|---------|----------|
-| **claude-hud** | Shows context %, tools, agents, todos | Auto-active in status line |
-| **dx** | Clone convos, handoffs, GHA analysis | `/dx:clone`, `/dx:gha`, `/dx:handoff` |
-
-## 11. Agent Orchestration Protocol (MANDATORY)
-
-**USE THE RIGHT AGENT FOR THE RIGHT TASK**
-
-### Agent Model Tiers
-
-| Tier | Model | Extended Reasoning | Use For |
-|------|-------|-------------------|---------|
-| **Critical** | opus | YES | Architecture, debugging, code review, balance, VERA |
-| **Creative** | sonnet | Limited | Asset generation, creative prompts |
-| **Routine** | haiku | No | Commits, docs, pattern scanning |
-
-### Agent Domain Ownership
-
-| Agent | Model | Owns | Cannot Touch |
-|-------|-------|------|--------------|
-| unity-architect | opus | System designs, architecture docs | Actual code implementation |
-| unity-code-reviewer | opus | Code quality judgment | Design decisions |
-| unity-debugger | opus | Bug investigation | Feature code |
-| unity-performance-profiler | opus | Performance analysis | Feature code |
-| balance-analyzer | opus | Game balance values | UI/system code |
-| vera-dialogue-tester | opus | VERA dialogue, personality | Combat code |
-| asset-generator | sonnet | Art prompts, style guide | Code files |
-| bug-hunter | haiku | Bug scanning (read-only) | Any modifications |
-| commit-helper | haiku | Git commits only | Code/design files |
-| documentation-writer | haiku | Simple doc edits | Code files, major decisions |
-
-### Parallel Execution Rules
-
-**CAN Run in Parallel:**
-- Research agents (bug-hunter, performance-profiler scanning)
-- Content agents (balance-analyzer + vera-dialogue-tester)
-- Background tasks (asset-generator while coding)
-
-**MUST Run Sequential:**
-- architect → (main Claude implements) → code-reviewer
-- debugger → (fix applied) → code-reviewer
-- Any agents modifying the same files
-
-### Agent Handoff Protocol
-
-```
-1. DESIGN PHASE
-   unity-architect creates design → Returns to main Claude
-
-2. IMPLEMENTATION PHASE
-   Main Claude implements using Serena → Completes code
-
-3. REVIEW PHASE
-   unity-code-reviewer validates → Returns approval or issues
-
-4. COMMIT PHASE
-   commit-helper creates commit → Push to remote
-
-5. IF ISSUES
-   unity-debugger investigates → Back to step 2
-```
-
-### Background Agent Usage
+## Code Style
 
 ```csharp
-// Run agent in background while you continue working
-Task tool with run_in_background: true
-
-// Good for:
-- bug-hunter scanning while implementing
-- performance-profiler checking while designing
-- asset-generator creating while coding
-```
-
----
-
-# PROJECT STRUCTURE
-
-```
-VeilBreakers3D/
-├── Assets/
-│   ├── Scripts/              # C# scripts
-│   │   ├── Combat/           # BattleManager, DamageCalculator, Combatant
-│   │   ├── Core/             # GameManager, EventBus, Constants
-│   │   ├── Data/             # Enums, ScriptableObject definitions
-│   │   ├── Systems/          # BrandSystem, SynergySystem, CorruptionSystem
-│   │   ├── Managers/         # SaveManager, AudioManager, etc. (TODO)
-│   │   ├── UI/               # UI controllers (TODO)
-│   │   ├── Characters/       # Hero logic (TODO)
-│   │   ├── Monsters/         # Monster logic (TODO)
-│   │   ├── Utils/            # Utilities (TODO)
-│   │   └── Test/             # Test scripts
-│   ├── Art/                  # Visual assets
-│   ├── Audio/                # Sound assets
-│   ├── Data/                 # ScriptableObjects, JSON
-│   ├── Prefabs/              # Reusable prefabs
-│   ├── Scenes/               # Unity scenes
-│   └── UI/                   # UI assets (USS, UXML)
-├── Docs/
-│   ├── MIGRATION_PLAN.md     # Migration tracking (CHECK DAILY)
-│   ├── LEGACY_Godot/         # Old Godot docs (reference only)
-│   ├── plans/                # Design documents
-│   └── ArtReference/         # Art style guides
-├── screenshots/              # Debug screenshots
-├── .mcp.json                 # MCP server config
-├── CLAUDE.md                 # This file
-└── VEILBREAKERS.md           # Cross-session memory
-```
-
----
-
-# C# CODE STYLE (Unity Standard)
-
-## Namespaces
-```csharp
-namespace VeilBreakers.Combat { }
-namespace VeilBreakers.Core { }
-namespace VeilBreakers.Data { }
-namespace VeilBreakers.Systems { }
-namespace VeilBreakers.UI { }
-namespace VeilBreakers.Utils { }
-```
-
-## Naming Conventions
-| Type | Convention | Example |
-|------|------------|---------|
-| Classes | PascalCase | `BattleManager` |
-| Methods | PascalCase | `CalculateDamage()` |
-| Public Properties | PascalCase | `CurrentHealth` |
-| Private Fields | _camelCase | `_currentHealth` |
-| Constants | PascalCase with k | `kMaxPartySize` |
-| Enums | PascalCase | `BattleState.Combat` |
-| Interfaces | IPascalCase | `IDamageable` |
-| Events | On + PascalCase | `OnDamageDealt` |
-
-## Class Structure
-```csharp
-namespace VeilBreakers.Combat
+namespace VeilBreakers.[Category]
 {
-    public class BattleManager : MonoBehaviour
+    public class Example : MonoBehaviour
     {
-        // Constants
-        private const int kMaxPartySize = 3;
-
-        // Serialized Fields
-        [SerializeField] private int _startingHealth;
-
-        // Private Fields
-        private BattleState _currentState;
-
-        // Public Properties
-        public BattleState State => _currentState;
-
-        // Events
-        public event Action<int> OnDamageDealt;
-
-        // Unity Lifecycle
-        private void Awake() { }
-        private void Update() { }
-
-        // Public Methods
-        public void StartBattle() { }
-
-        // Private Methods
-        private void ProcessTurn() { }
+        private const int kMaxValue = 10;      // Constants: k prefix
+        [SerializeField] private int _value;   // Private: _ prefix
+        public int Value => _value;            // Properties: PascalCase
+        public event Action<int> OnChanged;    // Events: On prefix
     }
 }
 ```
 
-## ScriptableObject Pattern
-```csharp
-[CreateAssetMenu(fileName = "Monster", menuName = "VeilBreakers/Monster Data")]
-public class MonsterData : ScriptableObject
-{
-    public string monsterName;
-    public Brand primaryBrand;
-    public int baseHealth;
-}
-```
+## Project Structure
+- Scripts: `Assets/Scripts/[Combat|Core|Systems|UI|Data]/`
+- Art: `Assets/Art/`
+- Docs: `Docs/`
+- Screenshots: `screenshots/`
 
 ---
 
-# KEY SYSTEMS (DO NOT BREAK)
+# CLAUDE + GEMINI HYBRID APPROACH
 
-## Brand System (10 Brands)
-IRON, SAVAGE, SURGE, VENOM, DREAD, LEECH, GRACE, MEND, RUIN, VOID
+## When to Use Gemini
 
-Each brand: 2x damage to 2 brands, 0.5x damage to 2 brands, 1x to 6 brands
+| Situation | Action |
+|-----------|--------|
+| Need second opinion on architecture | `gemini -p "Analyze this design..."` |
+| Complex debugging stuck | Get Gemini's perspective |
+| Research/web search | Gemini has web access |
+| Balance validation | Ask Gemini to review calculations |
+| Code review | Cross-check with Gemini |
 
-## Path System (4 Paths)
-IRONBOUND, FANGBORN, VOIDTOUCHED, UNCHAINED
+## Gemini Strengths to Leverage
+- Web search and current information
+- Alternative reasoning approaches
+- Code analysis from different angle
+- Validation of complex logic
 
-## Corruption System
-| Range | State | Effect |
-|-------|-------|--------|
-| 0-10% | ASCENDED | +25% stats |
-| 11-25% | Purified | +10% stats |
-| 26-50% | Unstable | Normal |
-| 51-75% | Corrupted | -10% stats |
-| 76-100% | Abyssal/Untamed | -20% / Uncontrollable |
-
-## Synergy System (Tiered)
-| Tier | Requirement | Damage | Defense | Combo? |
-|------|-------------|--------|---------|--------|
-| FULL | 3/3 match | +8% | +8% | YES |
-| PARTIAL | 2/3 match | +5% | +5% | NO |
-| NEUTRAL | 0-1/3 | +0% | +0% | NO |
-| ANTI | Any Weak | +0% | +0% | NO |
+## Claude Strengths to Use
+- Deep codebase understanding via Serena
+- Unity/C# expertise via Context7
+- Direct tool execution
+- Conversation continuity
 
 ---
 
-# ART STYLE & GENERATION
+# HIGH-RISK CHANGES (Ask User First)
 
-## Style Reference
-**Dark Fantasy Horror** - Hand-painted, atmospheric, glowing eyes/cores
-
-## Art Generation Prompt Template
-```
-dark fantasy horror, [creature description], dark atmospheric,
-glowing [color] eyes/core, dramatic lighting, deep shadows,
-high detail, painterly quality, ominous mood,
-3D game character, dark background
-```
-
-## DO NOT Use in Prompts
-- "Battle Chasers" or "Joe Madureira"
-- "thick linework" or "comic book"
-- anime/cel-shaded style
+- Brand/Path system design changes
+- Save file format modifications
+- Core class renames/removals
+- Major architectural changes
+- Deleting files (archive instead)
 
 ---
 
 # LESSONS LEARNED
 
-## FAILED (Don't Repeat)
-- Lightning effects - background already has them
-- Custom eye drawing - artwork has them
-- Complex logo animation - caused glitching
-- Fake transparency (checker pattern) - use REAL alpha
-- Spine/Cutout rigging for 2D - Too complex, use 3D now
+## Don't Repeat
+- Windows reserved filenames (nul, con, aux)
+- `Find()` in Update loops
+- Allocations in Update
+- Missing font references (UI disappears)
+- Disabled components = silent failures
 
-## WORKS
+## What Works
 - ScriptableObjects for game data
-- Event-driven architecture (EventBus)
-- Brand effectiveness matrix design
-- Tiered synergy system
-- Corruption as monster mechanic (not player)
+- Event-driven architecture
+- Serena for semantic code ops
+- Visual verification via Unity screenshots
 
 ---
 
 # PHILOSOPHY
 
-1. **AAA or nothing** - No shortcuts
-2. **Visual verification** - Use screenshots
-3. **Working > Fancy broken** - Simple wins
-4. **Don't duplicate** - Use existing systems
-5. **User is judge** - They see what matters
-6. **Tools exist for a reason** - USE THEM (see Protocol 10)
+1. **Reasoning over rules** - Think, don't just follow checklists
+2. **Tools serve you** - Use them when helpful, not because mandated
+3. **Quality matters** - But don't overthink simple things
+4. **User decides** - When in doubt, ask
+5. **Gemini partnership** - Two AIs are better than one
+
+---
+
+*Configuration v5.0 - Lean, flexible, reasoning-first*
