@@ -105,13 +105,14 @@ namespace VeilBreakers.Core
         {
             try
             {
-                var jsonAsset = Resources.Load<TextAsset>("Data/monsters");
+                var dataAssets = GameDataAssets.Instance;
+                var jsonAsset = dataAssets != null ? dataAssets.MonstersJson : null;
                 if (jsonAsset == null)
                 {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                    throw new InvalidOperationException("[GameDatabase] monsters.json not found in Resources/Data/");
+                    throw new InvalidOperationException("[GameDatabase] MonstersJson not assigned in GameDataAssets!");
 #else
-                    Debug.LogError("[GameDatabase] monsters.json not found in Resources/Data/");
+                    Debug.LogError("[GameDatabase] MonstersJson not assigned in GameDataAssets!");
                     return;
 #endif
                 }
@@ -148,13 +149,14 @@ namespace VeilBreakers.Core
         {
             try
             {
-                var jsonAsset = Resources.Load<TextAsset>("Data/skills");
+                var dataAssets = GameDataAssets.Instance;
+                var jsonAsset = dataAssets != null ? dataAssets.SkillsJson : null;
                 if (jsonAsset == null)
                 {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                    throw new InvalidOperationException("[GameDatabase] skills.json not found in Resources/Data/");
+                    throw new InvalidOperationException("[GameDatabase] SkillsJson not assigned in GameDataAssets!");
 #else
-                    Debug.LogError("[GameDatabase] skills.json not found in Resources/Data/");
+                    Debug.LogError("[GameDatabase] SkillsJson not assigned in GameDataAssets!");
                     return;
 #endif
                 }
@@ -191,13 +193,14 @@ namespace VeilBreakers.Core
         {
             try
             {
-                var jsonAsset = Resources.Load<TextAsset>("Data/heroes");
+                var dataAssets = GameDataAssets.Instance;
+                var jsonAsset = dataAssets != null ? dataAssets.HeroesJson : null;
                 if (jsonAsset == null)
                 {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                    throw new InvalidOperationException("[GameDatabase] heroes.json not found in Resources/Data/");
+                    throw new InvalidOperationException("[GameDatabase] HeroesJson not assigned in GameDataAssets!");
 #else
-                    Debug.LogError("[GameDatabase] heroes.json not found in Resources/Data/");
+                    Debug.LogError("[GameDatabase] HeroesJson not assigned in GameDataAssets!");
                     return;
 #endif
                 }
@@ -234,13 +237,14 @@ namespace VeilBreakers.Core
         {
             try
             {
-                var jsonAsset = Resources.Load<TextAsset>("Data/items");
+                var dataAssets = GameDataAssets.Instance;
+                var jsonAsset = dataAssets != null ? dataAssets.ItemsJson : null;
                 if (jsonAsset == null)
                 {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                    throw new InvalidOperationException("[GameDatabase] items.json not found in Resources/Data/");
+                    throw new InvalidOperationException("[GameDatabase] ItemsJson not assigned in GameDataAssets!");
 #else
-                    Debug.LogError("[GameDatabase] items.json not found in Resources/Data/");
+                    Debug.LogError("[GameDatabase] ItemsJson not assigned in GameDataAssets!");
                     return;
 #endif
                 }

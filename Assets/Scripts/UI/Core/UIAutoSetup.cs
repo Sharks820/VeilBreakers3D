@@ -6,6 +6,7 @@ namespace VeilBreakers.UI.Core
     /// <summary>
     /// Auto-setup for UI scenes. Automatically loads and assigns UI assets at runtime.
     /// Add this to any scene and it will set up the UI system automatically.
+    /// Migrated to use UIAssets for centralized asset references (no more Resources.Load).
     /// </summary>
     public class UIAutoSetup : MonoBehaviour
     {
@@ -33,30 +34,33 @@ namespace VeilBreakers.UI.Core
                 _uiDocument = gameObject.AddComponent<UIDocument>();
             }
 
+            // Get UIAssets singleton
+            var uiAssets = UIAssets.Instance;
+
             // Load panel settings
             PanelSettings panelSettings = _manualPanelSettings;
+            if (panelSettings == null && uiAssets != null)
+            {
+                panelSettings = uiAssets.DefaultPanelSettings;
+            }
             if (panelSettings == null)
             {
-                panelSettings = Resources.Load<PanelSettings>("UI/VeilBreakersPanelSettings");
-                if (panelSettings == null)
-                {
-                    // Create default panel settings at runtime
-                    panelSettings = ScriptableObject.CreateInstance<PanelSettings>();
-                    panelSettings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
-                    panelSettings.referenceResolution = new Vector2Int(1920, 1080);
-                    Debug.LogWarning("[UIAutoSetup] Using runtime-created PanelSettings. For better performance, assign one in Inspector.");
-                }
+                // Create default panel settings at runtime
+                panelSettings = ScriptableObject.CreateInstance<PanelSettings>();
+                panelSettings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
+                panelSettings.referenceResolution = new Vector2Int(1920, 1080);
+                Debug.LogWarning("[UIAutoSetup] Using runtime-created PanelSettings. For better performance, assign one in Inspector or configure UIAssets.");
             }
             _uiDocument.panelSettings = panelSettings;
 
             // Load template
             VisualTreeAsset template = _manualTemplate;
-            if (template == null && _autoLoadAssets)
+            if (template == null && _autoLoadAssets && uiAssets != null)
             {
-                template = Resources.Load<VisualTreeAsset>($"UI/Templates/{_menuToLoad}");
+                template = uiAssets.GetTemplate(_menuToLoad);
                 if (template == null)
                 {
-                    Debug.LogError($"[UIAutoSetup] Could not load template: UI/Templates/{_menuToLoad}");
+                    Debug.LogError($"[UIAutoSetup] Template '{_menuToLoad}' not found in UIAssets");
                     CreateFallbackUI();
                     return;
                 }
@@ -67,16 +71,11 @@ namespace VeilBreakers.UI.Core
                 _uiDocument.visualTreeAsset = template;
             }
 
-            // Load stylesheets
-            var root = _uiDocument.rootVisualElement;
-
-            var themeStyle = Resources.Load<StyleSheet>("UI/Styles/VeilBreakersTheme");
-            if (themeStyle != null)
-                root.styleSheets.Add(themeStyle);
-
-            var componentStyle = Resources.Load<StyleSheet>("UI/Styles/VeilBreakers");
-            if (componentStyle != null)
-                root.styleSheets.Add(componentStyle);
+            // Apply styles from UIAssets
+            if (uiAssets != null)
+            {
+                uiAssets.ApplyStandardStyles(_uiDocument.rootVisualElement);
+            }
 
             Debug.Log($"[UIAutoSetup] UI initialized: {_menuToLoad}");
         }
@@ -104,7 +103,7 @@ namespace VeilBreakers.UI.Core
             error.style.marginTop = 20;
             container.Add(error);
 
-            var hint = new Label("Check that UI assets are in Resources/UI/ folder");
+            var hint = new Label("Check that template is assigned in UIAssets ScriptableObject");
             hint.style.fontSize = 14;
             hint.style.color = new Color(0.6f, 0.6f, 0.6f);
             hint.style.marginTop = 10;

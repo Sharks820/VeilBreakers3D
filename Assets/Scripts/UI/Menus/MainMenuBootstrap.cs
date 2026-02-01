@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VeilBreakers.UI.Core;
+// Migrated to use UIAssets for centralized asset references
 
 namespace VeilBreakers.UI.Menus
 {
@@ -60,10 +61,11 @@ namespace VeilBreakers.UI.Menus
 
             if (_uiDocument != null && _uiDocument.panelSettings == null)
             {
-                var panelSettings = Resources.Load<PanelSettings>("UI/VeilBreakersPanelSettings");
-                if (panelSettings != null)
+                // Use UIAssets for centralized asset loading
+                var uiAssets = UIAssets.Instance;
+                if (uiAssets != null && uiAssets.DefaultPanelSettings != null)
                 {
-                    _uiDocument.panelSettings = panelSettings;
+                    _uiDocument.panelSettings = uiAssets.DefaultPanelSettings;
                 }
             }
         }

@@ -722,20 +722,24 @@ namespace VeilBreakers.Managers
 
         private void LoadEffectDataCache()
         {
-            // Load all StatusEffectData from Resources/StatusEffects/
-            var allEffects = Resources.LoadAll<StatusEffectData>("StatusEffects");
+            // Load all StatusEffectData from GameDataAssets (no more Resources.LoadAll)
+            var dataAssets = GameDataAssets.Instance;
+            var allEffects = dataAssets != null ? dataAssets.StatusEffects : null;
 
-            foreach (var effect in allEffects)
+            if (allEffects != null)
             {
-                if (!_effectDataCache.ContainsKey(effect.effectType))
+                foreach (var effect in allEffects)
                 {
-                    _effectDataCache[effect.effectType] = effect;
+                    if (effect != null && !_effectDataCache.ContainsKey(effect.effectType))
+                    {
+                        _effectDataCache[effect.effectType] = effect;
+                    }
                 }
             }
 
             if (_effectDataCache.Count == 0)
             {
-                Debug.LogWarning("[StatusEffectManager] No status effect definitions found in Resources/StatusEffects/. Status effects will not function properly.");
+                Debug.LogWarning("[StatusEffectManager] No status effect definitions found in GameDataAssets. Status effects will not function properly.");
             }
             else
             {

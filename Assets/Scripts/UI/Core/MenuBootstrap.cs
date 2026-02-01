@@ -8,6 +8,7 @@ namespace VeilBreakers.UI.Core
     /// <summary>
     /// Auto-bootstraps the UI system when a menu scene loads.
     /// Uses RuntimeInitializeOnLoadMethod to work without scene references.
+    /// Migrated to use UIAssets for centralized asset references (no more Resources.Load).
     /// </summary>
     public static class MenuBootstrap
     {
@@ -54,47 +55,46 @@ namespace VeilBreakers.UI.Core
 
             Debug.Log("[MenuBootstrap] Setting up MainMenu UI...");
 
+            var uiAssets = UIAssets.Instance;
+            if (uiAssets == null)
+            {
+                Debug.LogError("[MenuBootstrap] UIAssets not found! Create via Assets > Create > VeilBreakers > UI > UIAssets");
+                return;
+            }
+
             // Create UI Manager object
             var uiManagerObj = new GameObject("UIManager");
 
             // Add UIDocument
             var uiDocument = uiManagerObj.AddComponent<UIDocument>();
 
-            // Load and assign panel settings
-            var panelSettings = Resources.Load<PanelSettings>("UI/VeilBreakersPanelSettings");
+            // Use centralized panel settings
+            var panelSettings = uiAssets.DefaultPanelSettings;
             if (panelSettings == null)
             {
-                // Create default panel settings
+                // Create default panel settings as fallback
                 panelSettings = ScriptableObject.CreateInstance<PanelSettings>();
                 panelSettings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
                 panelSettings.referenceResolution = new Vector2Int(1920, 1080);
-                Debug.LogWarning("[MenuBootstrap] Created runtime PanelSettings - place VeilBreakersPanelSettings in Resources/UI/");
+                Debug.LogWarning("[MenuBootstrap] Created runtime PanelSettings - assign DefaultPanelSettings in UIAssets");
             }
             uiDocument.panelSettings = panelSettings;
 
-            // Load and assign template
-            var template = Resources.Load<VisualTreeAsset>("UI/Templates/MainMenu");
+            // Use centralized template
+            var template = uiAssets.MainMenuTemplate;
             if (template != null)
             {
                 uiDocument.visualTreeAsset = template;
             }
             else
             {
-                Debug.LogError("[MenuBootstrap] Could not load MainMenu.uxml from Resources/UI/Templates/");
+                Debug.LogError("[MenuBootstrap] MainMenuTemplate not assigned in UIAssets!");
                 CreateFallbackMainMenu(uiDocument);
                 return;
             }
 
-            // Load and add stylesheets
-            var root = uiDocument.rootVisualElement;
-
-            var themeStyle = Resources.Load<StyleSheet>("UI/Styles/VeilBreakersTheme");
-            if (themeStyle != null)
-                root.styleSheets.Add(themeStyle);
-
-            var componentStyle = Resources.Load<StyleSheet>("UI/Styles/VeilBreakers");
-            if (componentStyle != null)
-                root.styleSheets.Add(componentStyle);
+            // Apply standard styles from UIAssets
+            uiAssets.ApplyStandardStyles(uiDocument.rootVisualElement);
 
             // Add controller
             uiManagerObj.AddComponent<MainMenuController>();
@@ -112,10 +112,17 @@ namespace VeilBreakers.UI.Core
 
             Debug.Log("[MenuBootstrap] Setting up CharacterSelect UI...");
 
+            var uiAssets = UIAssets.Instance;
+            if (uiAssets == null)
+            {
+                Debug.LogError("[MenuBootstrap] UIAssets not found!");
+                return;
+            }
+
             var uiManagerObj = new GameObject("UIManager");
             var uiDocument = uiManagerObj.AddComponent<UIDocument>();
 
-            var panelSettings = Resources.Load<PanelSettings>("UI/VeilBreakersPanelSettings");
+            var panelSettings = uiAssets.DefaultPanelSettings;
             if (panelSettings == null)
             {
                 panelSettings = ScriptableObject.CreateInstance<PanelSettings>();
@@ -124,26 +131,19 @@ namespace VeilBreakers.UI.Core
             }
             uiDocument.panelSettings = panelSettings;
 
-            var template = Resources.Load<VisualTreeAsset>("UI/Templates/CharacterSelect");
+            var template = uiAssets.CharacterSelectTemplate;
             if (template != null)
             {
                 uiDocument.visualTreeAsset = template;
             }
             else
             {
-                Debug.LogError("[MenuBootstrap] Could not load CharacterSelect.uxml from Resources/UI/Templates/");
+                Debug.LogError("[MenuBootstrap] CharacterSelectTemplate not assigned in UIAssets!");
                 return;
             }
 
-            var root = uiDocument.rootVisualElement;
-
-            var themeStyle = Resources.Load<StyleSheet>("UI/Styles/VeilBreakersTheme");
-            if (themeStyle != null)
-                root.styleSheets.Add(themeStyle);
-
-            var componentStyle = Resources.Load<StyleSheet>("UI/Styles/VeilBreakers");
-            if (componentStyle != null)
-                root.styleSheets.Add(componentStyle);
+            // Apply standard styles
+            uiAssets.ApplyStandardStyles(uiDocument.rootVisualElement);
 
             uiManagerObj.AddComponent<CharacterSelectController>();
 
