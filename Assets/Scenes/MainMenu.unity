@@ -672,7 +672,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2094854742
 Transform:
   m_ObjectHideFlags: 0
@@ -712,22 +712,22 @@ MonoBehaviour:
   _smokeRenderer: {fileID: 2108847938}
   _particlesRenderer: {fileID: 1844317504}
   _heatDistortionRenderer: {fileID: 1668293539}
-  _vignetteIntensity: 2.4
-  _vignettePulseSpeed: 0.3
-  _vignettePulseAmount: 0.05
+  _vignetteIntensity: 1.35
+  _vignettePulseSpeed: 0.2
+  _vignettePulseAmount: 0.035
   _vignetteColor: {r: 0.02, g: 0.01, b: 0.03, a: 1}
-  _smokeColor: {r: 1, g: 0.5, b: 0.2, a: 0.65}
-  _smokeScrollSpeed: {x: 0.04, y: 0.015}
-  _smokeIntensity: 2.2
-  _smokeFadeTop: 1
-  _smokeFadeBottom: 0
-  _particleColor: {r: 1, g: 0.6, b: 0.3, a: 0.75}
-  _particleScrollSpeed: {x: 0.015, y: -0.025, z: 0.01, w: -0.018}
-  _particleIntensity: 2.4
-  _particleGlowStrength: 2.6
-  _distortionStrength: 0.015
-  _distortionScrollSpeed: {x: 0.08, y: 0.12}
-  _fadeInDuration: 2
+  _smokeColor: {r: 1, g: 0.45, b: 0.16, a: 0.35}
+  _smokeScrollSpeed: {x: 0.035, y: 0.015}
+  _smokeIntensity: 0.9
+  _smokeFadeTop: 0.75
+  _smokeFadeBottom: 0.12
+  _particleColor: {r: 1, g: 0.6, b: 0.3, a: 0.45}
+  _particleScrollSpeed: {x: 0.012, y: -0.02, z: 0.008, w: -0.015}
+  _particleIntensity: 0.9
+  _particleGlowStrength: 1.2
+  _distortionStrength: 0.01
+  _distortionScrollSpeed: {x: 0.06, y: 0.09}
+  _fadeInDuration: 1.6
   _fadeInCurve:
     serializedVersion: 2
     m_Curve:
@@ -752,8 +752,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  _enableHeatDistortion: 1
-  _enableParticles: 1
+  _enableHeatDistortion: 0
+  _enableParticles: 0
 --- !u!1 &2108847936
 GameObject:
   m_ObjectHideFlags: 0

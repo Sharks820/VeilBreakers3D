@@ -28,6 +28,10 @@ namespace VeilBreakers.UI.Menus
         [SerializeField] private float _buttonStaggerDelay = 0.1f;
         [SerializeField] private float _fadeInDuration = 0.5f;
 
+        [Header("Backdrop")]
+        [SerializeField, Range(0f, 1f)] private float _rootBackdropAlpha = 0.2f;
+        [SerializeField] private Color _rootBackdropColor = new Color(0.03f, 0.02f, 0.05f, 1f);
+
         [Header("Audio (Optional)")]
         [SerializeField] private AudioClip _menuMusic;
         [SerializeField] private AudioClip _buttonHoverSound;
@@ -62,7 +66,6 @@ namespace VeilBreakers.UI.Menus
                     _uiDocument.panelSettings = panelSettings;
                 }
             }
-
         }
 
         private void Start()
@@ -113,7 +116,9 @@ namespace VeilBreakers.UI.Menus
             rootBackground.style.top = 0;
             rootBackground.style.right = 0;
             rootBackground.style.bottom = 0;
-            rootBackground.style.backgroundColor = new StyleColor(new Color(0.03f, 0.02f, 0.05f, 1f)); // Near-black
+            Color backdrop = _rootBackdropColor;
+            backdrop.a = Mathf.Clamp01(_rootBackdropAlpha);
+            rootBackground.style.backgroundColor = new StyleColor(backdrop); // Allow VFX to show through
             rootBackground.pickingMode = PickingMode.Ignore;
             _root.Add(rootBackground);
 
