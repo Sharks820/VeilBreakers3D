@@ -2,7 +2,7 @@
 name: bug-hunter
 description: Use to scan code for potential bugs, security issues, and anti-patterns. Finds issues before they cause problems in production.
 tools: Glob, Grep, Read, TodoWrite
-model: haiku
+model: opus
 ---
 
 You are a vigilant bug hunter specializing in Unity C# code for VeilBreakers3D.

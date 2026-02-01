@@ -17,20 +17,32 @@ namespace VeilBreakers.UI.Menus
         [SerializeField] private float _pulseIntensity = 0.02f; // 2% scale variation
 
         private VisualElement _monsterImage;
+        private bool _initialized;
+
+        private void OnEnable()
+        {
+            // Cache UIDocument reference once
+            if (_uiDocument == null)
+                _uiDocument = GetComponent<UIDocument>();
+            _initialized = false; // Allow re-caching on enable
+        }
+
+        private void OnDisable()
+        {
+            _monsterImage = null;
+            _initialized = false;
+        }
 
         private void Update()
         {
-            // Auto-find UIDocument if not assigned
-            if (_uiDocument == null)
-                _uiDocument = GetComponent<UIDocument>();
-
             if (_uiDocument == null) return;
 
-            // Find monster image if not cached
-            if (_monsterImage == null)
+            // Find monster image if not cached (only try once per enable)
+            if (!_initialized && _monsterImage == null)
             {
                 var root = _uiDocument.rootVisualElement;
                 _monsterImage = root?.Q<VisualElement>("monster-image");
+                _initialized = true;
             }
 
             if (_monsterImage == null) return;

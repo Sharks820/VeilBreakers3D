@@ -25,16 +25,13 @@ namespace VeilBreakers.Tests.EditMode
         [Category("Phase.PreProd")]
         public void MainMenu_RequiredShadersExist()
         {
-            // If any of these are missing, title screen VFX will silently disable layers.
-            Assert.NotNull(Shader.Find("VeilBreakers/VFX/BackGlow"), "Missing shader: VeilBreakers/VFX/BackGlow");
-            Assert.NotNull(Shader.Find("VeilBreakers/VFX/LightRays"), "Missing shader: VeilBreakers/VFX/LightRays");
-            Assert.NotNull(Shader.Find("VeilBreakers/VFX/HeatShimmer"), "Missing shader: VeilBreakers/VFX/HeatShimmer");
-            Assert.NotNull(Shader.Find("VeilBreakers/VFX/EnergyPulse"), "Missing shader: VeilBreakers/VFX/EnergyPulse");
-            Assert.NotNull(Shader.Find("VeilBreakers/VFX/ScrollingSmoke"), "Missing shader: VeilBreakers/VFX/ScrollingSmoke");
-            Assert.NotNull(Shader.Find("VeilBreakers/VFX/FloatingParticles"), "Missing shader: VeilBreakers/VFX/FloatingParticles");
-            Assert.NotNull(Shader.Find("VeilBreakers/VFX/LogoShimmer"), "Missing shader: VeilBreakers/VFX/LogoShimmer");
-            Assert.NotNull(Shader.Find("VeilBreakers/VFX/VeilWisps"), "Missing shader: VeilBreakers/VFX/VeilWisps");
-            Assert.NotNull(Shader.Find("VeilBreakers/VFX/Vignette"), "Missing shader: VeilBreakers/VFX/Vignette");
+            // NOTE: VFX shaders removed in v4.45 (clean slate). Main menu now uses
+            // CSS-based UI Toolkit effects instead of custom shaders.
+            // When VFX shaders are recreated for URP, add assertions here.
+
+            // Verify Unity's built-in UI shaders are available (required for UI Toolkit)
+            Assert.NotNull(Shader.Find("UI/Default"), "Missing shader: UI/Default");
+            Assert.NotNull(Shader.Find("Hidden/Internal-Colored"), "Missing shader: Hidden/Internal-Colored");
         }
     }
 }

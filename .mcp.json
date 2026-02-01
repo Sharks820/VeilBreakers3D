@@ -23,7 +23,7 @@
     "gemini-cli": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "mcp-gemini-cli", "--allow-npx"],
+      "args": ["-y", "mcp-gemini-cli", "--allow-npx", "--gemini-path", "C:/nvm4w/nodejs/gemini.cmd"],
       "env": {
         "PATH": "C:\\nvm4w\\nodejs;${PATH}"
       },

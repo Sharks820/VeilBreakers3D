@@ -589,6 +589,7 @@ namespace VeilBreakers.AI
         // Threat tracking data
         private readonly Dictionary<Combatant, float> _threatScores = new Dictionary<Combatant, float>();
         private readonly Dictionary<Combatant, float> _damageDealtRecently = new Dictionary<Combatant, float>();
+        private readonly List<Combatant> _keysToRemove = new List<Combatant>(); // Reused to avoid allocations
         private float _lastThreatUpdate = 0f;
         private const float THREAT_DECAY_RATE = 0.9f; // 10% decay per update
 
@@ -618,12 +619,25 @@ namespace VeilBreakers.AI
             // Decay old threat scores
             if (currentTime - _lastThreatUpdate > 1f)
             {
-                var keys = new List<Combatant>(_threatScores.Keys);
-                foreach (var key in keys)
+                // First pass: identify keys to remove (reuse list to avoid allocation)
+                _keysToRemove.Clear();
+                foreach (var kvp in _threatScores)
+                {
+                    float decayed = kvp.Value * THREAT_DECAY_RATE;
+                    if (decayed < 1f)
+                        _keysToRemove.Add(kvp.Key);
+                }
+                // Remove expired entries
+                foreach (var key in _keysToRemove)
+                {
+                    _threatScores.Remove(key);
+                }
+                // Decay remaining entries (copy keys to list first to avoid iteration issues)
+                _keysToRemove.Clear();
+                _keysToRemove.AddRange(_threatScores.Keys);
+                foreach (var key in _keysToRemove)
                 {
                     _threatScores[key] *= THREAT_DECAY_RATE;
-                    if (_threatScores[key] < 1f)
-                        _threatScores.Remove(key);
                 }
                 _lastThreatUpdate = currentTime;
             }
