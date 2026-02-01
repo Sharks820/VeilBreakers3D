@@ -2,6 +2,7 @@ Shader "VeilBreakers/VFX/LightRays"
 {
     Properties
     {
+        _MainTex ("Main Texture", 2D) = "white" {}
         _Color ("Ray Color", Color) = (1, 0.6, 0.25, 0.5)
         _Intensity ("Intensity", Range(0, 5)) = 0.6
         _RayCount ("Ray Count", Range(5, 60)) = 24

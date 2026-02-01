@@ -2,6 +2,7 @@ Shader "VeilBreakers/VFX/BackGlow"
 {
     Properties
     {
+        _MainTex ("Main Texture", 2D) = "white" {}
         _Color ("Glow Color", Color) = (1, 0.5, 0.2, 0.6)
         _Intensity ("Intensity", Range(0, 5)) = 1.0
         _Radius ("Radius", Range(0, 1)) = 0.6

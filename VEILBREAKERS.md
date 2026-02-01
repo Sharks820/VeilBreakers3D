@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **SINGLE SOURCE OF TRUTH** | Version: **v4.36** | Last updated: 2026-01-31
+> **SINGLE SOURCE OF TRUTH** | Version: **v4.37** | Last updated: 2026-02-01
 
 ---
 
@@ -219,6 +219,7 @@ unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler
 - Set `overflow: visible` on particle containers (not hidden)
 - **C# inline styles override USS** - `VBDropdownField.cs` uses hardcoded colors; theme changes need BOTH USS + C# updates
 - Title screen VFX should use readability masks to protect logo + demon focal area
+- UI RawImage/Graphic materials must expose `_MainTex` to avoid runtime error logs during PlayMode tests
 
 ### Save System
 - Use `Path.ChangeExtension()` not `.Replace()` for file paths
