@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **SINGLE SOURCE OF TRUTH** | Version: **v4.41** | Last updated: 2026-02-01
+> **SINGLE SOURCE OF TRUTH** | Version: **v4.42** | Last updated: 2026-02-01
 
 ---
 
@@ -245,6 +245,7 @@ unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler
 - **Art Style:** Grimdark Painterly / Dark Fantasy Stylized Realism
 - Keep only the OneDrive canonical project + one local backup; archive older copies
 - Git hook runs `Tools/sync_backup.bat` on every commit (core.hooksPath = .githooks, uses cygpath)
+- Pre-commit hook blocks commit if backup sync fails
 
 ---
 

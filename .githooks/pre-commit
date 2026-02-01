@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+if command -v cygpath >/dev/null 2>&1; then
+  ROOT_DIR_WIN="$(cygpath -w "$ROOT_DIR")"
+else
+  ROOT_DIR_WIN="$ROOT_DIR"
+fi
+cmd.exe /c "\"$ROOT_DIR_WIN\\Tools\\sync_backup.bat\""
