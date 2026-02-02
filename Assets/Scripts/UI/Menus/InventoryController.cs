@@ -884,32 +884,10 @@ namespace VeilBreakers.UI.Menus
 
         private void OnKeyDown(KeyDownEvent evt)
         {
+            // Primary navigation handled by OnActionTriggered.
             if (evt.keyCode == KeyCode.Escape)
             {
                 OnBackClicked?.Invoke();
-            }
-            else if (evt.keyCode == KeyCode.LeftArrow || evt.keyCode == KeyCode.A)
-            {
-                SelectPreviousItem();
-            }
-            else if (evt.keyCode == KeyCode.RightArrow || evt.keyCode == KeyCode.D)
-            {
-                SelectNextItem();
-            }
-            else if (evt.keyCode == KeyCode.UpArrow || evt.keyCode == KeyCode.W)
-            {
-                SelectItemAbove();
-            }
-            else if (evt.keyCode == KeyCode.DownArrow || evt.keyCode == KeyCode.S)
-            {
-                SelectItemBelow();
-            }
-            else if (evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.KeypadEnter)
-            {
-                if (_selectedItem != null && _btnUse != null && _btnUse.enabledSelf)
-                {
-                    OnUseButtonClicked(null);
-                }
             }
         }
 

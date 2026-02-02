@@ -309,22 +309,11 @@ namespace VeilBreakers.UI.Menus
 
         private void OnKeyDown(KeyDownEvent evt)
         {
-            // ESC to exit
+            // Primary navigation handled by OnActionTriggered.
+            // Keeping KeyDown only for specific accessibility fallbacks if needed.
             if (evt.keyCode == KeyCode.Escape)
             {
-                QuitGame();
-            }
-            // Enter to start new game (if no save) or continue (if save exists)
-            else if (evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.KeypadEnter)
-            {
-                if (SaveFileExists())
-                {
-                    LoadGame();
-                }
-                else
-                {
-                    StartNewGame();
-                }
+                OnExitButtonClicked(null);
             }
         }
 
