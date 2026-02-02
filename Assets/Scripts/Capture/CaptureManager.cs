@@ -41,6 +41,9 @@ namespace VeilBreakers.Capture
         // Marked targets (can mark multiple)
         private readonly List<Combatant> _markedTargets = new List<Combatant>();
 
+        // Cached bind thresholds (target -> threshold)
+        private readonly Dictionary<Combatant, float> _cachedThresholds = new Dictionary<Combatant, float>();
+
         // Bound monsters awaiting capture
         private readonly List<BoundMonsterData> _boundMonsters = new List<BoundMonsterData>();
 
@@ -199,8 +202,13 @@ namespace VeilBreakers.Capture
             if (!_markedTargets.Contains(target))
             {
                 _markedTargets.Add(target);
+                
+                // Cache threshold immediately
+                var nearestAlly = GetNearestAlly(target);
+                _cachedThresholds[target] = BindThresholdCalculator.CalculateThreshold(target, nearestAlly);
+                
                 OnTargetMarked?.Invoke(target);
-                Debug.Log($"[CaptureManager] Marked {target.DisplayName} for capture");
+                Debug.Log($"[CaptureManager] Marked {target.DisplayName} for capture (Threshold: {_cachedThresholds[target]:P0})");
             }
         }
 
@@ -213,6 +221,7 @@ namespace VeilBreakers.Capture
 
             if (_markedTargets.Remove(target))
             {
+                _cachedThresholds.Remove(target);
                 OnTargetUnmarked?.Invoke(target);
                 Debug.Log($"[CaptureManager] Unmarked {target.DisplayName}");
             }
@@ -245,6 +254,8 @@ namespace VeilBreakers.Capture
             {
                 UnmarkForCapture(target);
             }
+            
+            _cachedThresholds.Clear();
         }
 
         /// <summary>
@@ -288,9 +299,13 @@ namespace VeilBreakers.Capture
             {
                 if (target == null || !target.IsAlive || IsBound(target)) continue;
 
-                // Get nearest ally for threshold calculation
-                var nearestAlly = GetNearestAlly(target);
-                float threshold = BindThresholdCalculator.CalculateThreshold(target, nearestAlly);
+                // Use cached threshold instead of recalculating every frame
+                if (!_cachedThresholds.TryGetValue(target, out float threshold))
+                {
+                    var nearestAlly = GetNearestAlly(target);
+                    threshold = BindThresholdCalculator.CalculateThreshold(target, nearestAlly);
+                    _cachedThresholds[target] = threshold;
+                }
 
                 float currentHP = target.MaxHP > 0 ? target.CurrentHP / (float)target.MaxHP : 0f;
 
@@ -299,7 +314,7 @@ namespace VeilBreakers.Capture
                 {
                     OnBindThresholdReached?.Invoke(target, threshold);
                     // Ally will pick up the bind attempt
-                    AssignBindAttempt(target, nearestAlly);
+                    AssignBindAttempt(target, GetNearestAlly(target));
                 }
             }
         }
@@ -422,21 +437,21 @@ namespace VeilBreakers.Capture
             if (_allies == null || _allies.Length == 0) return _player;
 
             Combatant nearest = _player;
-            float nearestDist = float.MaxValue;
+            float nearestSqrDist = float.MaxValue;
 
             if (_player != null && target != null)
             {
-                nearestDist = Vector3.Distance(_player.transform.position, target.transform.position);
+                nearestSqrDist = (target.transform.position - _player.transform.position).sqrMagnitude;
             }
 
             foreach (var ally in _allies)
             {
                 if (ally == null || !ally.IsAlive) continue;
 
-                float dist = Vector3.Distance(ally.transform.position, target.transform.position);
-                if (dist < nearestDist)
+                float sqrDist = (target.transform.position - ally.transform.position).sqrMagnitude;
+                if (sqrDist < nearestSqrDist)
                 {
-                    nearestDist = dist;
+                    nearestSqrDist = sqrDist;
                     nearest = ally;
                 }
             }

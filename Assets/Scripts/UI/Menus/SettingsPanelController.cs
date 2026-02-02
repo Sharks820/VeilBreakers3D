@@ -311,88 +311,113 @@ namespace VeilBreakers.UI.Menus
 
         private void BindEvents()
         {
-            // Close button
-            _btnClose?.RegisterCallback<ClickEvent>(evt => Close());
-            _btnReset?.RegisterCallback<ClickEvent>(evt => ResetToDefaults());
-            _btnApply?.RegisterCallback<ClickEvent>(evt => ApplySettings());
+            _btnClose?.RegisterCallback<ClickEvent>(OnCloseClicked);
+            _btnReset?.RegisterCallback<ClickEvent>(OnResetClicked);
+            _btnApply?.RegisterCallback<ClickEvent>(OnApplyClicked);
 
-            // Tab buttons
-            _tabAudio?.RegisterCallback<ClickEvent>(evt => ShowTab(0));
-            _tabGraphics?.RegisterCallback<ClickEvent>(evt => ShowTab(1));
-            _tabControls?.RegisterCallback<ClickEvent>(evt => ShowTab(2));
-            _tabGameplay?.RegisterCallback<ClickEvent>(evt => ShowTab(3));
+            _tabAudio?.RegisterCallback<ClickEvent>(OnTabAudioClicked);
+            _tabGraphics?.RegisterCallback<ClickEvent>(OnTabGraphicsClicked);
+            _tabControls?.RegisterCallback<ClickEvent>(OnTabControlsClicked);
+            _tabGameplay?.RegisterCallback<ClickEvent>(OnTabGameplayClicked);
 
-            // Audio sliders
-            _sliderMaster?.RegisterValueChangedCallback(evt =>
-            {
-                _pendingSettings.masterVolume = evt.newValue / 100f;
-                UpdateVolumeLabel(_labelMasterValue, evt.newValue);
-            });
-            _sliderMusic?.RegisterValueChangedCallback(evt =>
-            {
-                _pendingSettings.musicVolume = evt.newValue / 100f;
-                UpdateVolumeLabel(_labelMusicValue, evt.newValue);
-            });
-            _sliderSFX?.RegisterValueChangedCallback(evt =>
-            {
-                _pendingSettings.sfxVolume = evt.newValue / 100f;
-                UpdateVolumeLabel(_labelSFXValue, evt.newValue);
-            });
-            _sliderVoice?.RegisterValueChangedCallback(evt =>
-            {
-                _pendingSettings.voiceVolume = evt.newValue / 100f;
-                UpdateVolumeLabel(_labelVoiceValue, evt.newValue);
-            });
-            _toggleMute?.RegisterValueChangedCallback(evt =>
-            {
-                _pendingSettings.muteAll = evt.newValue;
-            });
+            _sliderMaster?.RegisterValueChangedCallback(OnMasterVolumeChanged);
+            _sliderMusic?.RegisterValueChangedCallback(OnMusicVolumeChanged);
+            _sliderSFX?.RegisterValueChangedCallback(OnSFXVolumeChanged);
+            _sliderVoice?.RegisterValueChangedCallback(OnVoiceVolumeChanged);
+            _toggleMute?.RegisterValueChangedCallback(OnMuteChanged);
 
-            // Graphics
-            _dropdownResolution?.RegisterValueChangedCallback(evt =>
-            {
-                _pendingSettings.resolutionIndex = _dropdownResolution.index;
-            });
-            _dropdownFullscreen?.RegisterValueChangedCallback(evt =>
-            {
-                _pendingSettings.fullscreenMode = _dropdownFullscreen.index;
-            });
-            _dropdownQuality?.RegisterValueChangedCallback(evt =>
-            {
-                _pendingSettings.qualityLevel = _dropdownQuality.index;
-            });
-            _toggleVSync?.RegisterValueChangedCallback(evt =>
-            {
-                _pendingSettings.vsync = evt.newValue;
-            });
-            _toggleFPS?.RegisterValueChangedCallback(evt =>
-            {
-                _pendingSettings.showFPS = evt.newValue;
-            });
+            _dropdownResolution?.RegisterValueChangedCallback(OnResolutionChanged);
+            _dropdownFullscreen?.RegisterValueChangedCallback(OnFullscreenChanged);
+            _dropdownQuality?.RegisterValueChangedCallback(OnQualityChanged);
+            _toggleVSync?.RegisterValueChangedCallback(OnVSyncChanged);
+            _toggleFPS?.RegisterValueChangedCallback(OnFPSChanged);
 
-            // Controls
-            _sliderSensitivity?.RegisterValueChangedCallback(evt =>
-            {
-                _pendingSettings.mouseSensitivity = evt.newValue;
-                if (_labelSensitivityValue != null)
-                    _labelSensitivityValue.text = $"{evt.newValue:F0}";
-            });
-            _toggleInvertY?.RegisterValueChangedCallback(evt =>
-            {
-                _pendingSettings.invertY = evt.newValue;
-            });
+            _sliderSensitivity?.RegisterValueChangedCallback(OnSensitivityChanged);
+            _toggleInvertY?.RegisterValueChangedCallback(OnInvertYChanged);
 
-            // Keyboard
-            _root?.RegisterCallback<KeyDownEvent>(evt =>
-            {
-                if (evt.keyCode == KeyCode.Escape)
-                    Close();
-            });
+            _root?.RegisterCallback<KeyDownEvent>(OnKeyDown);
         }
 
         private void UnbindEvents()
         {
-            // UI Toolkit handles most cleanup automatically
+            _btnClose?.UnregisterCallback<ClickEvent>(OnCloseClicked);
+            _btnReset?.UnregisterCallback<ClickEvent>(OnResetClicked);
+            _btnApply?.UnregisterCallback<ClickEvent>(OnApplyClicked);
+
+            _tabAudio?.UnregisterCallback<ClickEvent>(OnTabAudioClicked);
+            _tabGraphics?.UnregisterCallback<ClickEvent>(OnTabGraphicsClicked);
+            _tabControls?.UnregisterCallback<ClickEvent>(OnTabControlsClicked);
+            _tabGameplay?.UnregisterCallback<ClickEvent>(OnTabGameplayClicked);
+
+            _sliderMaster?.UnregisterValueChangedCallback(OnMasterVolumeChanged);
+            _sliderMusic?.UnregisterValueChangedCallback(OnMusicVolumeChanged);
+            _sliderSFX?.UnregisterValueChangedCallback(OnSFXVolumeChanged);
+            _sliderVoice?.UnregisterValueChangedCallback(OnVoiceVolumeChanged);
+            _toggleMute?.UnregisterValueChangedCallback(OnMuteChanged);
+
+            _dropdownResolution?.UnregisterValueChangedCallback(OnResolutionChanged);
+            _dropdownFullscreen?.UnregisterValueChangedCallback(OnFullscreenChanged);
+            _dropdownQuality?.UnregisterValueChangedCallback(OnQualityChanged);
+            _toggleVSync?.UnregisterValueChangedCallback(OnVSyncChanged);
+            _toggleFPS?.UnregisterValueChangedCallback(OnFPSChanged);
+
+            _sliderSensitivity?.UnregisterValueChangedCallback(OnSensitivityChanged);
+            _toggleInvertY?.UnregisterValueChangedCallback(OnInvertYChanged);
+
+            _root?.UnregisterCallback<KeyDownEvent>(OnKeyDown);
+        }
+
+        private void OnCloseClicked(ClickEvent evt) => Close();
+        private void OnResetClicked(ClickEvent evt) => ResetToDefaults();
+        private void OnApplyClicked(ClickEvent evt) => ApplySettings();
+        private void OnTabAudioClicked(ClickEvent evt) => ShowTab(0);
+        private void OnTabGraphicsClicked(ClickEvent evt) => ShowTab(1);
+        private void OnTabControlsClicked(ClickEvent evt) => ShowTab(2);
+        private void OnTabGameplayClicked(ClickEvent evt) => ShowTab(3);
+
+        private void OnMasterVolumeChanged(ChangeEvent<float> evt)
+        {
+            _pendingSettings.masterVolume = evt.newValue / 100f;
+            UpdateVolumeLabel(_labelMasterValue, evt.newValue);
+        }
+
+        private void OnMusicVolumeChanged(ChangeEvent<float> evt)
+        {
+            _pendingSettings.musicVolume = evt.newValue / 100f;
+            UpdateVolumeLabel(_labelMusicValue, evt.newValue);
+        }
+
+        private void OnSFXVolumeChanged(ChangeEvent<float> evt)
+        {
+            _pendingSettings.sfxVolume = evt.newValue / 100f;
+            UpdateVolumeLabel(_labelSFXValue, evt.newValue);
+        }
+
+        private void OnVoiceVolumeChanged(ChangeEvent<float> evt)
+        {
+            _pendingSettings.voiceVolume = evt.newValue / 100f;
+            UpdateVolumeLabel(_labelVoiceValue, evt.newValue);
+        }
+
+        private void OnMuteChanged(ChangeEvent<bool> evt) => _pendingSettings.muteAll = evt.newValue;
+
+        private void OnResolutionChanged(ChangeEvent<string> evt) => _pendingSettings.resolutionIndex = _dropdownResolution.index;
+        private void OnFullscreenChanged(ChangeEvent<string> evt) => _pendingSettings.fullscreenMode = _dropdownFullscreen.index;
+        private void OnQualityChanged(ChangeEvent<string> evt) => _pendingSettings.qualityLevel = _dropdownQuality.index;
+        private void OnVSyncChanged(ChangeEvent<bool> evt) => _pendingSettings.vsync = evt.newValue;
+        private void OnFPSChanged(ChangeEvent<bool> evt) => _pendingSettings.showFPS = evt.newValue;
+
+        private void OnSensitivityChanged(ChangeEvent<float> evt)
+        {
+            _pendingSettings.mouseSensitivity = evt.newValue;
+            if (_labelSensitivityValue != null) _labelSensitivityValue.text = $"{evt.newValue:F0}";
+        }
+
+        private void OnInvertYChanged(ChangeEvent<bool> evt) => _pendingSettings.invertY = evt.newValue;
+
+        private void OnKeyDown(KeyDownEvent evt)
+        {
+            if (evt.keyCode == KeyCode.Escape) Close();
         }
 
         // =============================================================================

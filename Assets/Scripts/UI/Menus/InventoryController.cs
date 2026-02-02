@@ -248,11 +248,11 @@ namespace VeilBreakers.UI.Menus
             _btnDrop?.RegisterCallback<ClickEvent>(OnDropButtonClicked);
 
             // Tab buttons
-            _tabAll?.RegisterCallback<ClickEvent>(e => SetCategory(null));
-            _tabConsumables?.RegisterCallback<ClickEvent>(e => SetCategory(ItemCategory.CONSUMABLE));
-            _tabEquipment?.RegisterCallback<ClickEvent>(e => SetCategory(ItemCategory.EQUIPMENT));
-            _tabKeyItems?.RegisterCallback<ClickEvent>(e => SetCategory(ItemCategory.KEY_ITEM));
-            _tabMaterials?.RegisterCallback<ClickEvent>(e => SetCategory(ItemCategory.MATERIAL));
+            _tabAll?.RegisterCallback<ClickEvent>(OnTabAllClicked);
+            _tabConsumables?.RegisterCallback<ClickEvent>(OnTabConsumablesClicked);
+            _tabEquipment?.RegisterCallback<ClickEvent>(OnTabEquipmentClicked);
+            _tabKeyItems?.RegisterCallback<ClickEvent>(OnTabKeyItemsClicked);
+            _tabMaterials?.RegisterCallback<ClickEvent>(OnTabMaterialsClicked);
 
             // Sort dropdown
             _sortDropdown?.RegisterValueChangedCallback(OnSortChanged);
@@ -266,8 +266,22 @@ namespace VeilBreakers.UI.Menus
             _btnBack?.UnregisterCallback<ClickEvent>(OnBackButtonClicked);
             _btnUse?.UnregisterCallback<ClickEvent>(OnUseButtonClicked);
             _btnDrop?.UnregisterCallback<ClickEvent>(OnDropButtonClicked);
+            
+            _tabAll?.UnregisterCallback<ClickEvent>(OnTabAllClicked);
+            _tabConsumables?.UnregisterCallback<ClickEvent>(OnTabConsumablesClicked);
+            _tabEquipment?.UnregisterCallback<ClickEvent>(OnTabEquipmentClicked);
+            _tabKeyItems?.UnregisterCallback<ClickEvent>(OnTabKeyItemsClicked);
+            _tabMaterials?.UnregisterCallback<ClickEvent>(OnTabMaterialsClicked);
+
+            _sortDropdown?.UnregisterValueChangedCallback(OnSortChanged);
             _root?.UnregisterCallback<KeyDownEvent>(OnKeyDown);
         }
+
+        private void OnTabAllClicked(ClickEvent e) => SetCategory(null);
+        private void OnTabConsumablesClicked(ClickEvent e) => SetCategory(ItemCategory.CONSUMABLE);
+        private void OnTabEquipmentClicked(ClickEvent e) => SetCategory(ItemCategory.EQUIPMENT);
+        private void OnTabKeyItemsClicked(ClickEvent e) => SetCategory(ItemCategory.KEY_ITEM);
+        private void OnTabMaterialsClicked(ClickEvent e) => SetCategory(ItemCategory.MATERIAL);
 
         // =============================================================================
         // DATA LOADING
