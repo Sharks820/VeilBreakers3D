@@ -126,12 +126,44 @@ namespace VeilBreakers.UI.Menus
         private void OnEnable()
         {
             InitializeUI();
-            LoadCollection();
+            
+            // Subscribe to InputManager for universal navigation
+            if (InputManager.Instance != null)
+            {
+                InputManager.Instance.OnActionTriggered += OnActionTriggered;
+            }
         }
 
         private void OnDisable()
         {
             UnbindEvents();
+            
+            // Unsubscribe from InputManager
+            if (InputManager.Instance != null)
+            {
+                InputManager.Instance.OnActionTriggered -= OnActionTriggered;
+            }
+        }
+
+        private void OnActionTriggered(InputManager.GameAction action)
+        {
+            if (!gameObject.activeInHierarchy || _root?.style.display == DisplayStyle.None) return;
+
+            switch (action)
+            {
+                case InputManager.GameAction.Cancel:
+                    OnBackButtonClicked(null);
+                    break;
+                case InputManager.GameAction.MoveLeft:
+                    SelectPreviousMonster();
+                    break;
+                case InputManager.GameAction.MoveRight:
+                    SelectNextMonster();
+                    break;
+                case InputManager.GameAction.Confirm:
+                    // Currently no primary action for selection, but could be 'Select for Party'
+                    break;
+            }
         }
 
         // =============================================================================

@@ -223,12 +223,50 @@ namespace VeilBreakers.UI.Menus
 
             PopulateHeroList();
             PlayEntranceAnimation();
+
+            // Subscribe to InputManager for universal navigation
+            if (InputManager.Instance != null)
+            {
+                InputManager.Instance.OnActionTriggered += OnActionTriggered;
+            }
         }
 
         private void OnDisable()
         {
             UnbindEvents();
             ClearPreviewModel();
+
+            // Unsubscribe from InputManager
+            if (InputManager.Instance != null)
+            {
+                InputManager.Instance.OnActionTriggered -= OnActionTriggered;
+            }
+        }
+
+        private void OnActionTriggered(InputManager.GameAction action)
+        {
+            if (!gameObject.activeInHierarchy || _root?.style.display == DisplayStyle.None) return;
+
+            switch (action)
+            {
+                case InputManager.GameAction.Cancel:
+                    OnBackButtonClicked(null);
+                    break;
+                case InputManager.GameAction.Confirm:
+                    if (_selectedHero != null)
+                    {
+                        OnSelectButtonClicked(null);
+                    }
+                    break;
+                case InputManager.GameAction.MoveUp:
+                case InputManager.GameAction.MoveLeft:
+                    SelectPreviousHero();
+                    break;
+                case InputManager.GameAction.MoveDown:
+                case InputManager.GameAction.MoveRight:
+                    SelectNextHero();
+                    break;
+            }
         }
 
         // =============================================================================

@@ -82,6 +82,38 @@ namespace VeilBreakers.UI.Menus
         {
             InitializeUI();
             StartCoroutine(RefreshContinueButton());
+
+            // Subscribe to InputManager for universal navigation
+            if (InputManager.Instance != null)
+            {
+                InputManager.Instance.OnActionTriggered += OnActionTriggered;
+            }
+        }
+
+        private void OnDisable()
+        {
+            UnbindEvents();
+
+            // Unsubscribe from InputManager
+            if (InputManager.Instance != null)
+            {
+                InputManager.Instance.OnActionTriggered -= OnActionTriggered;
+            }
+        }
+
+        private void OnActionTriggered(InputManager.GameAction action)
+        {
+            if (!gameObject.activeInHierarchy || _root?.style.display == DisplayStyle.None) return;
+
+            switch (action)
+            {
+                case InputManager.GameAction.Cancel:
+                    OnExitButtonClicked(null);
+                    break;
+                case InputManager.GameAction.Confirm:
+                    // Primary action trigger logic could be added here
+                    break;
+            }
         }
 
         // =============================================================================

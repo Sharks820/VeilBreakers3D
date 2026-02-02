@@ -120,11 +120,53 @@ namespace VeilBreakers.UI.Menus
         {
             InitializeUI();
             LoadInventory();
+            
+            // Subscribe to InputManager for universal navigation
+            if (InputManager.Instance != null)
+            {
+                InputManager.Instance.OnActionTriggered += OnActionTriggered;
+            }
         }
 
         private void OnDisable()
         {
             UnbindEvents();
+            
+            // Unsubscribe from InputManager
+            if (InputManager.Instance != null)
+            {
+                InputManager.Instance.OnActionTriggered -= OnActionTriggered;
+            }
+        }
+
+        private void OnActionTriggered(InputManager.GameAction action)
+        {
+            if (!gameObject.activeInHierarchy || _root?.style.display == DisplayStyle.None) return;
+
+            switch (action)
+            {
+                case InputManager.GameAction.Cancel:
+                    OnBackClicked?.Invoke();
+                    break;
+                case InputManager.GameAction.MoveLeft:
+                    SelectPreviousItem();
+                    break;
+                case InputManager.GameAction.MoveRight:
+                    SelectNextItem();
+                    break;
+                case InputManager.GameAction.MoveUp:
+                    SelectItemAbove();
+                    break;
+                case InputManager.GameAction.MoveDown:
+                    SelectItemBelow();
+                    break;
+                case InputManager.GameAction.Confirm:
+                    if (_selectedItem != null && _btnUse != null && _btnUse.enabledSelf)
+                    {
+                        OnUseButtonClicked(null);
+                    }
+                    break;
+            }
         }
 
         // =============================================================================
