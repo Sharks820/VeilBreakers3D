@@ -46,6 +46,16 @@
     --color-health-low: rgb(220, 40, 40);
     --color-mana: rgb(60, 100, 180);
     --color-stamina: rgb(60, 160, 80);
+    --color-guard: rgb(80, 140, 200);
+    --color-fury: rgb(200, 80, 40);
+    --color-damage-ghost: rgba(200, 60, 60, 0.5);
+    --color-heal-ghost: rgba(60, 200, 80, 0.5);
+
+    /* AAA Transition Timings */
+    --transition-fast: 0.1s;
+    --transition-normal: 0.2s;
+    --transition-slow: 0.35s;
+    --transition-emphasis: 0.5s;
 
     /* Corruption State Colors */
     --color-corruption-ascended: rgb(255, 215, 0);
@@ -178,20 +188,31 @@
     color: var(--color-text-primary);
     font-size: var(--font-size-md);
     -unity-font-style: bold;
-    transition-duration: 0.15s;
     cursor: link;
+
+    /* AAA Transition System - Multi-property with staggered timing */
+    transition-property: scale, background-color, border-color, translate, opacity;
+    transition-duration: 0.12s, 0.18s, 0.18s, 0.08s, 0.15s;
+    transition-timing-function: ease-out-cubic;
+
+    /* Base state */
+    scale: 1 1;
+    translate: 0 0;
+    opacity: 1;
 }
 
 .vb-button:hover {
     background-color: var(--color-background-medium);
     border-color: var(--color-accent-crimson);
     color: var(--color-text-highlight);
-    scale: 1.02;
+    scale: 1.03 1.03;
+    translate: 0 -2px;
 }
 
 .vb-button:active {
     background-color: var(--color-accent-crimson);
-    scale: 0.98;
+    scale: 0.97 0.97;
+    translate: 0 1px;
 }
 
 .vb-button:disabled {
@@ -2291,4 +2312,451 @@
     background-color: rgba(15, 10, 5, 0.98);
     border-color: rgb(100, 60, 25);
     scale: 0.97 0.97;
+}
+
+/* =============================================================================
+   ANIMATED BAR - AAA Health/Resource Bars with Ghost Effect
+   Unity 6.3 Optimized Transitions
+   ============================================================================= */
+
+.animated-bar {
+    height: 16px;
+    min-width: 100px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    flex-direction: row;
+    position: relative;
+}
+
+.animated-bar__background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(20, 15, 25, 0.8);
+}
+
+.animated-bar__fill {
+    position: absolute;
+    height: 100%;
+    border-radius: 7px;
+    /* Smooth fill animation */
+    transition-property: width, background-color;
+    transition-duration: 0.25s, 0.3s;
+    transition-timing-function: ease-out-cubic;
+}
+
+.animated-bar__ghost {
+    position: absolute;
+    height: 100%;
+    border-radius: 7px;
+    /* Ghost follows with delay for damage, leads for heal */
+    transition-property: width;
+    transition-duration: 0.4s;
+    transition-timing-function: ease-in-cubic;
+}
+
+/* Health Bar Type */
+.animated-bar--health .animated-bar__fill {
+    background-color: var(--color-health);
+}
+
+.animated-bar--health .animated-bar__ghost {
+    background-color: var(--color-damage-ghost);
+}
+
+/* Mana Bar Type */
+.animated-bar--mana .animated-bar__fill {
+    background-color: var(--color-mana);
+}
+
+.animated-bar--mana .animated-bar__ghost {
+    background-color: rgba(60, 100, 180, 0.4);
+}
+
+/* Guard Bar Type (Bastion) */
+.animated-bar--guard .animated-bar__fill {
+    background-color: var(--color-guard);
+}
+
+.animated-bar--guard .animated-bar__ghost {
+    background-color: rgba(80, 140, 200, 0.4);
+}
+
+/* Fury Bar Type (Rend) */
+.animated-bar--fury .animated-bar__fill {
+    background-color: var(--color-fury);
+}
+
+.animated-bar--fury .animated-bar__ghost {
+    background-color: rgba(200, 80, 40, 0.4);
+}
+
+/* Corruption Bar Type */
+.animated-bar--corruption .animated-bar__fill {
+    background-color: var(--color-corruption-corrupted);
+}
+
+.animated-bar--corruption .animated-bar__ghost {
+    background-color: rgba(160, 50, 80, 0.4);
+}
+
+/* Flash effect for critical state */
+.animated-bar--flash .animated-bar__fill {
+    background-color: rgb(255, 100, 100);
+}
+
+/* Low health pulsing effect */
+.animated-bar--critical {
+    animation: bar-pulse 0.8s infinite alternate;
+}
+
+/* =============================================================================
+   MENU ITEM TRANSITIONS - AAA Slide Effects
+   ============================================================================= */
+
+.menu-item {
+    transition-property: translate, opacity, background-color, border-color;
+    transition-duration: 0.18s, 0.15s, 0.2s, 0.2s;
+    transition-timing-function: ease-out-back, ease-out, ease-out, ease-out;
+    translate: 0 0;
+    opacity: 1;
+}
+
+.menu-item:hover {
+    translate: 8px 0;
+    background-color: rgba(80, 60, 100, 0.25);
+}
+
+.menu-item--entering {
+    translate: -40px 0;
+    opacity: 0;
+}
+
+.menu-item--exiting {
+    translate: 40px 0;
+    opacity: 0;
+}
+
+/* =============================================================================
+   FOCUS STATES - Gamepad Navigation
+   ============================================================================= */
+
+.vb-button:focus {
+    border-color: var(--color-accent-gold);
+    border-width: 3px;
+    scale: 1.02 1.02;
+}
+
+.menu-item:focus {
+    background-color: rgba(100, 80, 140, 0.3);
+    border-left-width: 4px;
+    border-left-color: var(--color-accent-gold);
+}
+
+/* =============================================================================
+   GLASSMORPHISM PANEL - Unity 6.3 Blur Effect Ready
+   ============================================================================= */
+
+.blur-panel {
+    background-color: rgba(20, 15, 30, 0.75);
+    border-radius: 12px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.12);
+    /* Subtle inner glow effect */
+    -unity-background-image-tint-color: rgba(255, 255, 255, 0.02);
+}
+
+.blur-panel--dark {
+    background-color: rgba(10, 8, 15, 0.85);
+}
+
+.blur-panel--accent {
+    border-color: rgba(160, 80, 200, 0.3);
+}
+
+/* =============================================================================
+   SCREEN TRANSITIONS
+   ============================================================================= */
+
+.screen-transition-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgb(5, 3, 8);
+    transition-property: opacity;
+    transition-duration: 0.35s;
+    transition-timing-function: ease-in-out;
+}
+
+/* =============================================================================
+   PARALLAX BACKGROUND LAYERS
+   ============================================================================= */
+
+/* Base parallax layer - apply to any element that should move */
+.parallax-layer {
+    transition-property: translate;
+    transition-duration: 0.1s;
+    transition-timing-function: ease-out;
+}
+
+/* Depth layers - furthest to closest */
+.parallax-layer-1 {
+    /* Subtle movement - far background elements */
+    transition-property: translate;
+    transition-duration: 0.15s;
+    transition-timing-function: ease-out;
+    opacity: 0.4;
+}
+
+.parallax-layer-2 {
+    /* Medium-far elements */
+    transition-property: translate;
+    transition-duration: 0.12s;
+    transition-timing-function: ease-out;
+    opacity: 0.6;
+}
+
+.parallax-layer-3 {
+    /* Medium-close elements */
+    transition-property: translate;
+    transition-duration: 0.1s;
+    transition-timing-function: ease-out;
+    opacity: 0.8;
+}
+
+.parallax-layer-4 {
+    /* Closest/foreground elements - most movement */
+    transition-property: translate;
+    transition-duration: 0.08s;
+    transition-timing-function: ease-out;
+}
+
+/* =============================================================================
+   AMBIENT VFX CONTAINERS
+   ============================================================================= */
+
+.vfx-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.vfx-particle-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+/* Corruption particle styling */
+.corruption-particle {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: rgba(160, 80, 200, 0.6);
+    opacity: 0;
+}
+
+/* Veil energy wisps */
+.veil-wisp {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: rgba(80, 200, 180, 0.4);
+    opacity: 0;
+}
+
+/* =============================================================================
+   MENU BACKGROUND ENHANCEMENTS
+   ============================================================================= */
+
+.menu-background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgb(10, 8, 15);
+}
+
+.menu-background__gradient {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(180deg, rgba(20, 15, 30, 0.9) 0%, rgba(10, 8, 15, 1) 100%);
+}
+
+.menu-background__vignette {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.7) 100%);
+}
+
+/* Animated glow pulse for accent elements */
+.glow-pulse {
+    transition-property: opacity, scale;
+    transition-duration: 1.5s;
+    transition-timing-function: ease-in-out;
+}
+
+.glow-pulse--active {
+    opacity: 1;
+    scale: 1.02 1.02;
+}
+
+/* =============================================================================
+   LOADING STATES
+   ============================================================================= */
+
+.loading-spinner {
+    width: 48px;
+    height: 48px;
+    border-width: 4px;
+    border-color: rgba(160, 80, 200, 0.2);
+    border-top-color: rgb(160, 80, 200);
+    border-radius: 50%;
+}
+
+.loading-text {
+    color: rgb(160, 150, 140);
+    font-size: 14px;
+    -unity-font-style: italic;
+}
+
+/* =============================================================================
+   TOOLTIP ENHANCEMENTS
+   ============================================================================= */
+
+.tooltip--aaa {
+    background-color: rgba(20, 15, 25, 0.95);
+    border-width: 1px;
+    border-color: rgba(160, 80, 200, 0.4);
+    border-radius: 6px;
+    padding: 12px 16px;
+    transition-property: opacity, translate;
+    transition-duration: 0.15s;
+    transition-timing-function: ease-out;
+    translate: 0 -4px;
+    opacity: 0;
+}
+
+.tooltip--aaa.tooltip--visible {
+    translate: 0 0;
+    opacity: 1;
+}
+
+.tooltip__arrow {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: rgba(20, 15, 25, 0.95);
+    border-width: 0 1px 1px 0;
+    border-color: rgba(160, 80, 200, 0.4);
+    rotate: 45deg;
+    bottom: -5px;
+    left: 50%;
+    translate: -50% 0;
+}
+
+/* =============================================================================
+   BUTTON VFX
+   ============================================================================= */
+
+.button-ripple {
+    transition-property: width, height, translate, opacity;
+    transition-duration: 0.35s;
+    transition-timing-function: ease-out;
+}
+
+.button-glow {
+    transition-property: opacity;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-out;
+}
+
+.button--pressed {
+    scale: 0.97 0.97;
+}
+
+.button--clicked {
+    /* Brief flash effect */
+}
+
+/* Primary button VFX (important actions) */
+.vb-button--primary .button-glow {
+    background-color: rgba(200, 120, 40, 0.15);
+}
+
+/* Danger button VFX */
+.vb-button--danger .button-glow {
+    background-color: rgba(200, 60, 60, 0.15);
+}
+
+/* Success button VFX */
+.vb-button--success .button-glow {
+    background-color: rgba(60, 180, 80, 0.15);
+}
+
+/* =============================================================================
+   NOTIFICATION BADGES
+   ============================================================================= */
+
+.notification-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background-color: rgb(200, 60, 60);
+    border-radius: 9px;
+    color: rgb(255, 255, 255);
+    font-size: 11px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.notification-badge--pulse {
+    transition-property: scale;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-in-out;
+}
+
+/* =============================================================================
+   MODAL OVERLAYS
+   ============================================================================= */
+
+.modal-backdrop {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    transition-property: opacity;
+    transition-duration: 0.25s;
+    opacity: 0;
+}
+
+.modal-backdrop--visible {
+    opacity: 1;
+}
+
+.modal-container {
+    position: absolute;
+    transition-property: scale, opacity, translate;
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out-back;
+    scale: 0.9 0.9;
+    opacity: 0;
+    translate: 0 20px;
+}
+
+.modal-container--visible {
+    scale: 1 1;
+    opacity: 1;
+    translate: 0 0;
 }
