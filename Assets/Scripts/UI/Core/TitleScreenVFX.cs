@@ -165,13 +165,19 @@ namespace VeilBreakers.UI.Core
             // Outer glow
             var glow = new VisualElement();
             glow.style.position = Position.Absolute;
-            glow.style.borderRadius = 50;
+            glow.style.borderTopLeftRadius = 50;
+            glow.style.borderTopRightRadius = 50;
+            glow.style.borderBottomLeftRadius = 50;
+            glow.style.borderBottomRightRadius = 50;
             glow.pickingMode = PickingMode.Ignore;
 
             // Inner core
             var core = new VisualElement();
             core.style.position = Position.Absolute;
-            core.style.borderRadius = 50;
+            core.style.borderTopLeftRadius = 50;
+            core.style.borderTopRightRadius = 50;
+            core.style.borderBottomLeftRadius = 50;
+            core.style.borderBottomRightRadius = 50;
             core.pickingMode = PickingMode.Ignore;
             glow.Add(core);
 
@@ -243,7 +249,11 @@ namespace VeilBreakers.UI.Core
 
             element.style.width = sizeX;
             element.style.height = sizeY;
-            element.style.borderRadius = sizeY * 0.3f;
+            var ashRadius = sizeY * 0.3f;
+            element.style.borderTopLeftRadius = ashRadius;
+            element.style.borderTopRightRadius = ashRadius;
+            element.style.borderBottomLeftRadius = ashRadius;
+            element.style.borderBottomRightRadius = ashRadius;
 
             _ashes.Add(ash);
         }
@@ -253,7 +263,10 @@ namespace VeilBreakers.UI.Core
             var element = new VisualElement();
             element.style.position = Position.Absolute;
             element.style.backgroundColor = new Color(1f, 0.9f, 0.5f, 0.9f);
-            element.style.borderRadius = 50;
+            element.style.borderTopLeftRadius = 50;
+            element.style.borderTopRightRadius = 50;
+            element.style.borderBottomLeftRadius = 50;
+            element.style.borderBottomRightRadius = 50;
             element.pickingMode = PickingMode.Ignore;
 
             _vfxContainer.Add(element);

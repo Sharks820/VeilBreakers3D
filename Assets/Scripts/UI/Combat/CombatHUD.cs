@@ -4,6 +4,7 @@ using UnityEngine;
 using VeilBreakers.Combat;
 using VeilBreakers.Capture;
 using VeilBreakers.Commands;
+using VeilBreakers.Core;
 
 namespace VeilBreakers.UI.Combat
 {

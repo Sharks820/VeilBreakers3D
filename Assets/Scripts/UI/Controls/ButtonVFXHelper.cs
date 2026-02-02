@@ -84,7 +84,10 @@ namespace VeilBreakers.UI.Controls
             ripple.style.top = localPosition.y;
             ripple.style.width = 10;
             ripple.style.height = 10;
-            ripple.style.borderRadius = new BorderRadius(50);
+            ripple.style.borderTopLeftRadius = 50;
+            ripple.style.borderTopRightRadius = 50;
+            ripple.style.borderBottomLeftRadius = 50;
+            ripple.style.borderBottomRightRadius = 50;
             ripple.style.backgroundColor = new Color(1f, 1f, 1f, 0.3f);
             ripple.style.translate = new Translate(-5, -5);
             ripple.style.opacity = 1f;
@@ -122,7 +125,11 @@ namespace VeilBreakers.UI.Controls
             glow.style.top = 0;
             glow.style.right = 0;
             glow.style.bottom = 0;
-            glow.style.borderRadius = button.resolvedStyle.borderTopLeftRadius;
+            var glowRadius = button.resolvedStyle.borderTopLeftRadius;
+            glow.style.borderTopLeftRadius = glowRadius;
+            glow.style.borderTopRightRadius = glowRadius;
+            glow.style.borderBottomLeftRadius = glowRadius;
+            glow.style.borderBottomRightRadius = glowRadius;
             glow.style.opacity = 0;
             glow.style.backgroundColor = new Color(0.6f, 0.3f, 0.8f, 0.1f);
             glow.pickingMode = PickingMode.Ignore;

@@ -436,10 +436,6 @@ namespace VeilBreakers.UI.Menus
 
         private VisualElement CreateHeroCard(HeroData hero, int index)
         {
-            var heroColor = GetHeroColor(hero);
-            var heroColorDark = GetHeroColorDark(hero);
-            var heroColorGlow = GetHeroColorGlow(hero);
-
             var primaryBrand = hero.GetPrimaryBrand();
             var brandColors = ThemeManager.Instance.GetBrandColors(primaryBrand);
             var heroColor = brandColors.primary;
@@ -530,8 +526,7 @@ namespace VeilBreakers.UI.Menus
             affinityRow.style.alignItems = Align.Center;
             affinityRow.style.marginBottom = 4;
 
-            // Brand name
-            var primaryBrand = hero.GetPrimaryBrand();
+            // Brand name (reuse primaryBrand from method scope)
             var brandLabel = new Label(primaryBrand.ToString());
             brandLabel.style.color = new Color(heroColor.r * 0.9f + 0.1f, heroColor.g * 0.9f + 0.1f, heroColor.b * 0.9f + 0.1f, 1f);
             brandLabel.style.fontSize = 9;
@@ -1263,6 +1258,26 @@ namespace VeilBreakers.UI.Menus
                     }
                 }
             }
+        }
+
+        private void UpdateStatBars(HeroData hero)
+        {
+            if (hero == null) return;
+
+            // Stop any existing animation
+            if (_statBarAnimationCoroutine != null)
+            {
+                StopCoroutine(_statBarAnimationCoroutine);
+            }
+
+            // Start animated stat bar update
+            _statBarAnimationCoroutine = StartCoroutine(AnimateStatBars(hero));
+        }
+
+        private void UpdateInateAbilityDisplay(HeroData hero)
+        {
+            // Delegate to the ability display method
+            UpdateAbilityDisplay(hero);
         }
 
         private void UpdateAbilityDisplay(HeroData hero)

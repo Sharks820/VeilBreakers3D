@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 using VeilBreakers.Combat;
 using VeilBreakers.Capture;
+using VeilBreakers.Core;
 
 namespace VeilBreakers.UI.Combat
 {

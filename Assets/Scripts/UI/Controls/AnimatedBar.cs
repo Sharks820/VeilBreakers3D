@@ -129,7 +129,8 @@ namespace VeilBreakers.UI.Controls
             if (isDamage)
             {
                 // Damage: Fill drops immediately, ghost follows with delay
-                _ghostSchedule = schedule.Execute(UpdateGhostToCurrent).ExecuteLater((long)GhostDelay);
+                _ghostSchedule = schedule.Execute(UpdateGhostToCurrent);
+                _ghostSchedule.ExecuteLater((long)GhostDelay);
             }
             else
             {

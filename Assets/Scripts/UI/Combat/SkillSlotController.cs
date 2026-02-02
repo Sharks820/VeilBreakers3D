@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using VeilBreakers.Core;
 
 namespace VeilBreakers.UI.Combat
 {
@@ -36,6 +37,8 @@ namespace VeilBreakers.UI.Combat
 
         [Header("Settings")]
         [SerializeField] private int _slotIndex;
+        [SerializeField] private KeyCode _keyCode = KeyCode.Alpha1;
+        [SerializeField] private string _keybindDisplay = "1";
 
         [Header("Colors")]
         [SerializeField] private Color _readyColor = Color.white;

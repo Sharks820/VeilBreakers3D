@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using VeilBreakers.Data;
+using VeilBreakers.UI.Core;
 
 namespace VeilBreakers.Systems
 {

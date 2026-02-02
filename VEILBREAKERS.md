@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **SINGLE SOURCE OF TRUTH** | Version: **v4.51** | Last updated: 2026-02-01
+> **SINGLE SOURCE OF TRUTH** | Version: **v4.54** | Last updated: 2026-02-02
 
 ---
 
@@ -229,6 +229,7 @@ To ensure maximum efficiency and prevent technical debt, development is divided 
   - MenuVFXController (ambient particles, corruption wisps)
   - ButtonVFXHelper (ripples, glow, press effects)
   - Unity6SetupWizard (auto-configure GPU Resident Drawer, Forward+)
+  - **TitleScreenVFX** (floating embers, ash particles, spark bursts)
 - **USS Enhancements:** 150+ new lines - button transitions, parallax layers, VFX containers.
 - **Next:** Open in Unity 6.3, run Quick Setup wizard, test visual features.
 
