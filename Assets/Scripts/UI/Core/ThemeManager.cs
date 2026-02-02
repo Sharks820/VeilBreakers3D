@@ -25,7 +25,7 @@ namespace VeilBreakers.UI.Core
                 if (_isQuitting) return null;
                 if (_instance == null)
                 {
-                    _instance = FindObjectOfType<ThemeManager>();
+                    _instance = FindFirstObjectByType<ThemeManager>();
                     if (_instance == null)
                     {
                         var go = new GameObject("ThemeManager");

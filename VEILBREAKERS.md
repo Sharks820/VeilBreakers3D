@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **SINGLE SOURCE OF TRUTH** | Version: **v4.48** | Last updated: 2026-02-01
+> **SINGLE SOURCE OF TRUTH** | Version: **v4.50** | Last updated: 2026-02-01
 
 ---
 
@@ -331,6 +331,7 @@ Scenario (2D concept) → Tripo (2D→3D + auto-rig) → Cascadeur (physics anim
 | Migration | Docs/MIGRATION_PLAN.md |
 | Character Select | Docs/plans/2026-01-27-character-select-design.md |
 | Unity 6 Prep | Docs/UNITY6_PREP.md |
+| Unity 6 Migration | Docs/plans/2026-02-01-unity6-migration.md |
 
 ---
 
@@ -340,8 +341,14 @@ Scenario (2D concept) → Tripo (2D→3D + auto-rig) → Cascadeur (physics anim
 - **Core Systems:** Implemented (Brand, Synergy, Corruption, EventBus, InputManager)
 - **Combat:** Framework ready, needs 3D integration
 - **Title Screen:** Monster art with transparent PNG, VFX effects
-- **Migration:** 100% complete per `Docs/MIGRATION_PLAN.md` (Unity 6 prep pending)
-- **Unity 6 Prep:** InputManager abstraction created, 8 files need migration to use it
+- **Migration:** 100% complete per `Docs/MIGRATION_PLAN.md`
+- **Unity 6 Prep:** ✅ COMPLETE - Ready for Unity 6 upgrade
+  - New Input System: VeilBreakersInputActions + InputManager wrapper
+  - URP 17.0.3 installed and configured
+  - Zero legacy Input.* calls remaining
+  - All deprecated APIs migrated (FindFirstObjectByType)
+  - Performance optimizations: cached WaitForSeconds, StyleColor tokens
+  - GameDatabase race condition fixed with async wait
 - **Next:** Migrate legacy Input.* calls to InputManager, then Unity 6 upgrade
 
 ---
