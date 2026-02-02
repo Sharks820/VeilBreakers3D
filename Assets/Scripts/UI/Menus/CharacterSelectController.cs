@@ -203,9 +203,24 @@ namespace VeilBreakers.UI.Menus
             }
         }
 
-        private void OnEnable()
+        private async void OnEnable()
         {
             InitializeUI();
+
+            // Wait for GameDatabase to finish loading - fixes race condition where
+            // PopulateHeroList() runs before heroes.json is parsed
+            int waitAttempts = 0;
+            while ((GameDatabase.Instance == null || !GameDatabase.Instance.IsLoaded) && waitAttempts < 100)
+            {
+                await System.Threading.Tasks.Task.Delay(50);
+                waitAttempts++;
+            }
+
+            if (GameDatabase.Instance == null || !GameDatabase.Instance.IsLoaded)
+            {
+                ErrorLogger.Error("CharacterSelectController: GameDatabase failed to load after 5 seconds");
+            }
+
             PopulateHeroList();
             PlayEntranceAnimation();
         }

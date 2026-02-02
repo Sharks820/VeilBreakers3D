@@ -678,16 +678,23 @@ namespace VeilBreakers.UI.Controls
         {
             if (!_isOpen || _popup == null || _panelRoot == null || _popupLayer == null) return;
 
-            // Wait for a valid layout before positioning
-            if (_popup.resolvedStyle.height <= 0 && _positionAttempts < 3)
+            var fieldBounds = _display.worldBound;
+
+            // If layout not ready, retry with actual delay (not 0) - fixes first-open positioning bug
+            if (fieldBounds.height <= 0 || fieldBounds.width <= 0 || _popupLayer.resolvedStyle.width <= 0)
             {
-                _positionAttempts++;
-                schedule.Execute(PositionPopupIfOpen).ExecuteLater(0);
+                if (_positionAttempts < 5)
+                {
+                    _positionAttempts++;
+                    schedule.Execute(PositionPopupIfOpen).ExecuteLater(16); // One frame at 60fps
+                    return;
+                }
+                // Fallback: position directly below the display element
+                _popup.style.translate = StyleKeyword.None;
+                _popup.style.left = 0;
+                _popup.style.top = resolvedStyle.height;
                 return;
             }
-
-            var fieldBounds = _display.worldBound;
-            if (fieldBounds.height <= 0 || fieldBounds.width <= 0) return;
 
             // Convert the display bounds into popup-layer local space for accurate positioning
             var localTopLeft = _popupLayer.WorldToLocal(fieldBounds.position);
@@ -705,13 +712,14 @@ namespace VeilBreakers.UI.Controls
                 targetY = localTopLeft.y - popupHeight;
             }
 
-            // Clamp horizontally inside the layer
-            float targetX = Mathf.Clamp(localTopLeft.x, 0, Mathf.Max(0, _popupLayer.resolvedStyle.width - fieldBounds.width));
+            // Clamp horizontally inside the layer - ensure X is never negative
+            float targetX = Mathf.Max(0, localTopLeft.x);
 
+            // Use left/top for reliable positioning instead of translate
             _popup.style.width = fieldBounds.width;
-            _popup.style.left = StyleKeyword.Auto; // avoid stale absolute positions
-            _popup.style.top = StyleKeyword.Auto;
-            _popup.style.translate = new Translate(targetX, targetY);
+            _popup.style.translate = StyleKeyword.None;
+            _popup.style.left = targetX;
+            _popup.style.top = targetY;
         }
 
         private void UpdateLabel()
