@@ -102,3 +102,6 @@ nul
 nul
 nul.meta
 TempCompileCheck/
+
+# Gemini CLI
+.gemini/

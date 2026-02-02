@@ -87,9 +87,16 @@ namespace VeilBreakers.UI.Combat
 
         private void Update()
         {
-            // F1-F3 triggers ally ultimates
-            KeyCode ultimateKey = GetUltimateKey();
-            if (Input.GetKeyDown(ultimateKey) && _isUltimateReady)
+            // Ally1-Ally3 triggers ally ultimates
+            InputManager.GameAction action = _allyIndex switch
+            {
+                0 => InputManager.GameAction.Ally1,
+                1 => InputManager.GameAction.Ally2,
+                2 => InputManager.GameAction.Ally3,
+                _ => (InputManager.GameAction)(-1)
+            };
+
+            if (action != (InputManager.GameAction)(-1) && InputManager.Instance.GetActionDown(action) && _isUltimateReady)
             {
                 TriggerUltimate();
             }
@@ -282,143 +289,260 @@ namespace VeilBreakers.UI.Combat
                     bool isUltimate = (i == _skillCount - 1);
                     string display = isUltimate ? "\u2605" : (i + 1).ToString(); // Star for ultimate
 
-                    slot.Initialize(i, KeyCode.None, display, isUltimate);
-                    _skillSlots.Add(slot);
-                }
-            }
-        }
+                                        slot.Initialize(i, isUltimate);
 
-        private void ClearSkillSlots()
-        {
-            foreach (var slot in _skillSlots)
-            {
-                if (slot != null)
-                {
-                    Destroy(slot.gameObject);
-                }
-            }
-            _skillSlots.Clear();
-        }
+                                        _skillSlots.Add(slot);
 
-        // =============================================================================
-        // STATUS ICONS
-        // =============================================================================
+                                    }
 
-        private void AddStatusIcon(StatusEffectType effectType)
-        {
-            if (_statusIconPrefab == null || _statusIconContainer == null) return;
+                                }
 
-            var iconObj = Instantiate(_statusIconPrefab, _statusIconContainer);
-            _statusIcons.Add(iconObj);
+                            }
 
-            var iconImage = iconObj.GetComponent<Image>();
-            if (iconImage != null)
-            {
-                bool isBuff = IsBuff(effectType);
-                iconImage.color = isBuff
-                    ? new Color(0.2f, 0.8f, 0.2f, 1f)
-                    : new Color(0.8f, 0.2f, 0.2f, 1f);
-            }
-        }
+                    
 
-        private void ClearStatusIcons()
-        {
-            foreach (var icon in _statusIcons)
-            {
-                if (icon != null)
-                {
-                    Destroy(icon);
-                }
-            }
-            _statusIcons.Clear();
-        }
+                            private void ClearSkillSlots()
 
-        // =============================================================================
-        // ULTIMATE GLOW
-        // =============================================================================
+                            {
 
-        private void StartUltimateGlow()
-        {
-            if (_glowCoroutine != null)
-            {
-                StopCoroutine(_glowCoroutine);
-            }
-            _glowCoroutine = StartCoroutine(UltimateGlowCoroutine());
-        }
+                                foreach (var slot in _skillSlots)
 
-        private void StopUltimateGlow()
-        {
-            if (_glowCoroutine != null)
-            {
-                StopCoroutine(_glowCoroutine);
-                _glowCoroutine = null;
-            }
+                                {
 
-            if (_portraitBorder != null)
-            {
-                _portraitBorder.color = _normalBorderColor;
-            }
-        }
+                                    if (slot != null)
 
-        private IEnumerator UltimateGlowCoroutine()
-        {
-            while (_isUltimateReady)
-            {
-                float t = (Mathf.Sin(Time.time * Mathf.PI * 2f / _glowPulseDuration) + 1f) / 2f;
-                Color glowColor = Color.Lerp(_normalBorderColor, _ultimateReadyColor, t);
+                                    {
 
-                if (_portraitBorder != null)
-                {
-                    _portraitBorder.color = glowColor;
-                }
+                                        Destroy(slot.gameObject);
 
-                yield return null;
-            }
-        }
+                                    }
 
-        // =============================================================================
-        // EVENT HANDLERS
-        // =============================================================================
+                                }
 
-        private void HandleHPChanged(int current, int max)
-        {
-            UpdateHP(current, max, true);
-        }
+                                _skillSlots.Clear();
 
-        private void HandleDeath()
-        {
-            OnAllyDeath?.Invoke(_allyIndex);
-        }
+                            }
 
-        // =============================================================================
-        // HELPERS
-        // =============================================================================
+                    
 
-        private void UnbindAlly()
-        {
-            if (_ally != null)
-            {
-                _ally.OnHpChanged -= HandleHPChanged;
-                _ally.OnDeath -= HandleDeath;
-            }
-            _ally = null;
-        }
+                            // =============================================================================
 
-        private bool IsBuff(StatusEffectType effectType)
-        {
-            int value = (int)effectType;
-            return value >= 30 && value < 80;
-        }
+                            // STATUS ICONS
 
-        private KeyCode GetUltimateKey()
-        {
-            return _allyIndex switch
-            {
-                0 => KeyCode.F1,
-                1 => KeyCode.F2,
-                2 => KeyCode.F3,
-                _ => KeyCode.None
-            };
-        }
-    }
-}
+                            // =============================================================================
+
+                    
+
+                            private void AddStatusIcon(StatusEffectType effectType)
+
+                            {
+
+                                if (_statusIconPrefab == null || _statusIconContainer == null) return;
+
+                    
+
+                                var iconObj = Instantiate(_statusIconPrefab, _statusIconContainer);
+
+                                _statusIcons.Add(iconObj);
+
+                    
+
+                                var iconImage = iconObj.GetComponent<Image>();
+
+                                if (iconImage != null)
+
+                                {
+
+                                    bool isBuff = IsBuff(effectType);
+
+                                    iconImage.color = isBuff
+
+                                        ? new Color(0.2f, 0.8f, 0.2f, 1f)
+
+                                        : new Color(0.8f, 0.2f, 0.2f, 1f);
+
+                                }
+
+                            }
+
+                    
+
+                            private void ClearStatusIcons()
+
+                            {
+
+                                foreach (var icon in _statusIcons)
+
+                                {
+
+                                    if (icon != null)
+
+                                    {
+
+                                        Destroy(icon);
+
+                                    }
+
+                                }
+
+                                _statusIcons.Clear();
+
+                            }
+
+                    
+
+                            // =============================================================================
+
+                            // ULTIMATE GLOW
+
+                            // =============================================================================
+
+                    
+
+                            private void StartUltimateGlow()
+
+                            {
+
+                                if (_glowCoroutine != null)
+
+                                {
+
+                                    StopCoroutine(_glowCoroutine);
+
+                                }
+
+                                _glowCoroutine = StartCoroutine(UltimateGlowCoroutine());
+
+                            }
+
+                    
+
+                            private void StopUltimateGlow()
+
+                            {
+
+                                if (_glowCoroutine != null)
+
+                                {
+
+                                    StopCoroutine(_glowCoroutine);
+
+                                    _glowCoroutine = null;
+
+                                }
+
+                    
+
+                                if (_portraitBorder != null)
+
+                                {
+
+                                    _portraitBorder.color = _normalBorderColor;
+
+                                }
+
+                            }
+
+                    
+
+                            private IEnumerator UltimateGlowCoroutine()
+
+                            {
+
+                                while (_isUltimateReady)
+
+                                {
+
+                                    float t = (Mathf.Sin(Time.time * Mathf.PI * 2f / _glowPulseDuration) + 1f) / 2f;
+
+                                    Color glowColor = Color.Lerp(_normalBorderColor, _ultimateReadyColor, t);
+
+                    
+
+                                    if (_portraitBorder != null)
+
+                                    {
+
+                                        _portraitBorder.color = glowColor;
+
+                                    }
+
+                    
+
+                                    yield return null;
+
+                                }
+
+                            }
+
+                    
+
+                            // =============================================================================
+
+                            // EVENT HANDLERS
+
+                            // =============================================================================
+
+                    
+
+                            private void HandleHPChanged(int current, int max)
+
+                            {
+
+                                UpdateHP(current, max, true);
+
+                            }
+
+                    
+
+                            private void HandleDeath()
+
+                            {
+
+                                OnAllyDeath?.Invoke(_allyIndex);
+
+                            }
+
+                    
+
+                            // =============================================================================
+
+                            // HELPERS
+
+                            // =============================================================================
+
+                    
+
+                            private void UnbindAlly()
+
+                            {
+
+                                if (_ally != null)
+
+                                {
+
+                                    _ally.OnHpChanged -= HandleHPChanged;
+
+                                    _ally.OnDeath -= HandleDeath;
+
+                                }
+
+                                _ally = null;
+
+                            }
+
+                    
+
+                            private bool IsBuff(StatusEffectType effectType)
+
+                            {
+
+                                int value = (int)effectType;
+
+                                return value >= 30 && value < 80;
+
+                            }
+
+                        }
+
+                    }

@@ -59,10 +59,6 @@ namespace VeilBreakers.Capture
         [Range(0.1f, 0.4f)]
         [SerializeField] private float _okayZoneWidth = 0.20f;
 
-        [Header("Input")]
-        [SerializeField] private KeyCode _actionKey = KeyCode.Space;
-        [SerializeField] private KeyCode _altActionKey = KeyCode.Return;
-
         [Header("Countdown")]
         [SerializeField] private float _countdownDuration = 3f;
 
@@ -276,7 +272,7 @@ namespace VeilBreakers.Capture
 
         private void CheckInput()
         {
-            if (Input.GetKeyDown(_actionKey) || Input.GetKeyDown(_altActionKey))
+            if (InputManager.Instance.GetActionDown(InputManager.GameAction.Confirm) || InputManager.Instance.GetActionDown(InputManager.GameAction.Capture))
             {
                 EvaluateTimingBar();
             }

@@ -16,15 +16,22 @@ namespace VeilBreakers.UI.Core
         // =============================================================================
 
         private static ThemeManager _instance;
+        private static bool _isQuitting = false;
+
         public static ThemeManager Instance
         {
             get
             {
+                if (_isQuitting) return null;
                 if (_instance == null)
                 {
-                    var go = new GameObject("ThemeManager");
-                    _instance = go.AddComponent<ThemeManager>();
-                    DontDestroyOnLoad(go);
+                    _instance = FindObjectOfType<ThemeManager>();
+                    if (_instance == null)
+                    {
+                        var go = new GameObject("ThemeManager");
+                        _instance = go.AddComponent<ThemeManager>();
+                        DontDestroyOnLoad(go);
+                    }
                 }
                 return _instance;
             }
@@ -39,6 +46,11 @@ namespace VeilBreakers.UI.Core
             }
             _instance = this;
             InitializeColors();
+        }
+
+        private void OnApplicationQuit()
+        {
+            _isQuitting = true;
         }
 
         // =============================================================================
@@ -60,63 +72,28 @@ namespace VeilBreakers.UI.Core
             }
         }
 
-        private Dictionary<Brand, BrandColorSet> _brandColors;
+        private BrandColorSet[] _brandColorLookup;
 
         private void InitializeColors()
         {
-            _brandColors = new Dictionary<Brand, BrandColorSet>
-            {
-                { Brand.IRON, new BrandColorSet(
-                    new Color(140/255f, 150/255f, 165/255f),
-                    new Color(180/255f, 190/255f, 205/255f),
-                    new Color(80/255f, 90/255f, 100/255f))
-                },
-                { Brand.SAVAGE, new BrandColorSet(
-                    new Color(180/255f, 45/255f, 45/255f),
-                    new Color(220/255f, 70/255f, 70/255f),
-                    new Color(120/255f, 25/255f, 25/255f))
-                },
-                { Brand.SURGE, new BrandColorSet(
-                    new Color(60/255f, 140/255f, 220/255f),
-                    new Color(100/255f, 180/255f, 255/255f),
-                    new Color(30/255f, 80/255f, 140/255f))
-                },
-                { Brand.VENOM, new BrandColorSet(
-                    new Color(80/255f, 180/255f, 60/255f),
-                    new Color(120/255f, 220/255f, 100/255f),
-                    new Color(40/255f, 100/255f, 30/255f))
-                },
-                { Brand.DREAD, new BrandColorSet(
-                    new Color(120/255f, 60/255f, 160/255f),
-                    new Color(160/255f, 100/255f, 200/255f),
-                    new Color(70/255f, 30/255f, 100/255f))
-                },
-                { Brand.LEECH, new BrandColorSet(
-                    new Color(140/255f, 40/255f, 80/255f),
-                    new Color(180/255f, 60/255f, 110/255f),
-                    new Color(90/255f, 20/255f, 50/255f))
-                },
-                { Brand.GRACE, new BrandColorSet(
-                    new Color(220/255f, 220/255f, 240/255f),
-                    new Color(255/255f, 255/255f, 255/255f),
-                    new Color(160/255f, 160/255f, 180/255f))
-                },
-                { Brand.MEND, new BrandColorSet(
-                    new Color(200/255f, 170/255f, 80/255f),
-                    new Color(240/255f, 210/255f, 120/255f),
-                    new Color(140/255f, 110/255f, 40/255f))
-                },
-                { Brand.RUIN, new BrandColorSet(
-                    new Color(220/255f, 120/255f, 40/255f),
-                    new Color(255/255f, 160/255f, 80/255f),
-                    new Color(160/255f, 70/255f, 20/255f))
-                },
-                { Brand.VOID, new BrandColorSet(
-                    new Color(40/255f, 20/255f, 60/255f),
-                    new Color(100/255f, 60/255f, 140/255f),
-                    new Color(15/255f, 5/255f, 25/255f))
-                }
-            };
+            // Use array for O(1) lookup performance
+            _brandColorLookup = new BrandColorSet[Enum.GetNames(typeof(Brand)).Length];
+            
+            SetBrandColors(Brand.IRON, new Color(0.55f, 0.59f, 0.65f), new Color(0.71f, 0.75f, 0.80f), new Color(0.31f, 0.35f, 0.39f));
+            SetBrandColors(Brand.SAVAGE, new Color(0.71f, 0.18f, 0.18f), new Color(0.86f, 0.27f, 0.27f), new Color(0.47f, 0.10f, 0.10f));
+            SetBrandColors(Brand.SURGE, new Color(0.24f, 0.55f, 0.86f), new Color(0.39f, 0.71f, 1.00f), new Color(0.12f, 0.31f, 0.55f));
+            SetBrandColors(Brand.VENOM, new Color(0.31f, 0.71f, 0.24f), new Color(0.47f, 0.86f, 0.39f), new Color(0.16f, 0.39f, 0.12f));
+            SetBrandColors(Brand.DREAD, new Color(0.47f, 0.24f, 0.63f), new Color(0.63f, 0.39f, 0.78f), new Color(0.27f, 0.12f, 0.39f));
+            SetBrandColors(Brand.LEECH, new Color(0.55f, 0.16f, 0.31f), new Color(0.71f, 0.24f, 0.43f), new Color(0.35f, 0.08f, 0.20f));
+            SetBrandColors(Brand.GRACE, new Color(0.86f, 0.86f, 0.94f), new Color(1.00f, 1.00f, 1.00f), new Color(0.63f, 0.63f, 0.71f));
+            SetBrandColors(Brand.MEND, new Color(0.78f, 0.67f, 0.31f), new Color(0.94f, 0.82f, 0.47f), new Color(0.55f, 0.43f, 0.16f));
+            SetBrandColors(Brand.RUIN, new Color(0.86f, 0.47f, 0.16f), new Color(1.00f, 0.63f, 0.31f), new Color(0.63f, 0.27f, 0.08f));
+            SetBrandColors(Brand.VOID, new Color(0.16f, 0.08f, 0.24f), new Color(0.39f, 0.24f, 0.55f), new Color(0.06f, 0.02f, 0.10f));
+        }
+
+        private void SetBrandColors(Brand brand, Color primary, Color glow, Color dark)
+        {
+            _brandColorLookup[(int)brand] = new BrandColorSet(primary, glow, dark);
         }
 
         /// <summary>
@@ -124,11 +101,12 @@ namespace VeilBreakers.UI.Core
         /// </summary>
         public BrandColorSet GetBrandColors(Brand brand)
         {
-            if (_brandColors.TryGetValue(brand, out var colors))
+            int index = (int)brand;
+            if (index >= 0 && index < _brandColorLookup.Length)
             {
-                return colors;
+                return _brandColorLookup[index];
             }
-            return _brandColors[Brand.DREAD]; // Default fallback
+            return _brandColorLookup[(int)Brand.DREAD]; // Default fallback
         }
 
         /// <summary>
@@ -165,6 +143,12 @@ namespace VeilBreakers.UI.Core
             }
         }
 
+        private CorruptionColorSet _ascendedColors = new CorruptionColorSet(new Color(1.00f, 0.84f, 0.00f), new Color(1.00f, 0.94f, 0.39f), new Color(1.00f, 0.84f, 0.00f, 0.15f));
+        private CorruptionColorSet _purifiedColors = new CorruptionColorSet(new Color(0.71f, 0.82f, 1.00f), new Color(0.86f, 0.94f, 1.00f), new Color(0.71f, 0.82f, 1.00f, 0.15f));
+        private CorruptionColorSet _unstableColors = new CorruptionColorSet(new Color(0.63f, 0.63f, 0.67f), new Color(0.78f, 0.78f, 0.82f), new Color(0.63f, 0.63f, 0.67f, 0.15f));
+        private CorruptionColorSet _corruptedColors = new CorruptionColorSet(new Color(0.55f, 0.24f, 0.71f), new Color(0.71f, 0.39f, 0.86f), new Color(0.55f, 0.24f, 0.71f, 0.20f));
+        private CorruptionColorSet _abyssalColors = new CorruptionColorSet(new Color(0.24f, 0.00f, 0.39f), new Color(0.39f, 0.16f, 0.63f), new Color(0.24f, 0.00f, 0.39f, 0.30f));
+
         /// <summary>
         /// Get colors for a corruption state.
         /// </summary>
@@ -172,35 +156,12 @@ namespace VeilBreakers.UI.Core
         {
             return state switch
             {
-                CorruptionState.ASCENDED => new CorruptionColorSet(
-                    new Color(255/255f, 215/255f, 0),
-                    new Color(255/255f, 240/255f, 100/255f),
-                    new Color(255/255f, 215/255f, 0, 0.15f)),
-
-                CorruptionState.PURIFIED => new CorruptionColorSet(
-                    new Color(180/255f, 210/255f, 255/255f),
-                    new Color(220/255f, 240/255f, 255/255f),
-                    new Color(180/255f, 210/255f, 255/255f, 0.15f)),
-
-                CorruptionState.UNSTABLE => new CorruptionColorSet(
-                    new Color(160/255f, 160/255f, 170/255f),
-                    new Color(200/255f, 200/255f, 210/255f),
-                    new Color(160/255f, 160/255f, 170/255f, 0.15f)),
-
-                CorruptionState.CORRUPTED => new CorruptionColorSet(
-                    new Color(140/255f, 60/255f, 180/255f),
-                    new Color(180/255f, 100/255f, 220/255f),
-                    new Color(140/255f, 60/255f, 180/255f, 0.2f)),
-
-                CorruptionState.ABYSSAL => new CorruptionColorSet(
-                    new Color(60/255f, 0, 100/255f),
-                    new Color(100/255f, 40/255f, 160/255f),
-                    new Color(60/255f, 0, 100/255f, 0.3f)),
-
-                _ => new CorruptionColorSet(
-                    new Color(160/255f, 160/255f, 170/255f),
-                    new Color(200/255f, 200/255f, 210/255f),
-                    new Color(160/255f, 160/255f, 170/255f, 0.15f))
+                CorruptionState.ASCENDED => _ascendedColors,
+                CorruptionState.PURIFIED => _purifiedColors,
+                CorruptionState.UNSTABLE => _unstableColors,
+                CorruptionState.CORRUPTED => _corruptedColors,
+                CorruptionState.ABYSSAL => _abyssalColors,
+                _ => _unstableColors
             };
         }
 
@@ -209,20 +170,23 @@ namespace VeilBreakers.UI.Core
         /// </summary>
         public CorruptionColorSet GetCorruptionColorsFromPercent(float percent)
         {
-            CorruptionState state = percent switch
-            {
-                <= 10 => CorruptionState.ASCENDED,
-                <= 25 => CorruptionState.PURIFIED,
-                <= 50 => CorruptionState.UNSTABLE,
-                <= 75 => CorruptionState.CORRUPTED,
-                _ => CorruptionState.ABYSSAL
-            };
-            return GetCorruptionColors(state);
+            if (percent <= 10) return _ascendedColors;
+            if (percent <= 25) return _purifiedColors;
+            if (percent <= 50) return _unstableColors;
+            if (percent <= 75) return _corruptedColors;
+            return _abyssalColors;
         }
 
         // =============================================================================
         // RARITY COLORS
         // =============================================================================
+
+        private Color _rarityCommon = new Color(0.71f, 0.71f, 0.71f);
+        private Color _rarityUncommon = new Color(0.31f, 0.71f, 0.31f);
+        private Color _rarityRare = new Color(0.31f, 0.55f, 0.86f);
+        private Color _rarityEpic = new Color(0.63f, 0.31f, 0.78f);
+        private Color _rarityLegendary = new Color(1.00f, 0.71f, 0.00f);
+        private Color _rarityMythic = new Color(1.00f, 0.39f, 0.39f);
 
         /// <summary>
         /// Get color for item/monster rarity.
@@ -232,12 +196,12 @@ namespace VeilBreakers.UI.Core
         {
             return rarity switch
             {
-                Rarity.COMMON => new Color(180/255f, 180/255f, 180/255f),
-                Rarity.UNCOMMON => new Color(80/255f, 180/255f, 80/255f),
-                Rarity.RARE => new Color(80/255f, 140/255f, 220/255f),
-                Rarity.EPIC => new Color(160/255f, 80/255f, 200/255f),
-                Rarity.LEGENDARY => new Color(255/255f, 180/255f, 0),
-                Rarity.MYTHIC => new Color(255/255f, 100/255f, 100/255f),
+                Rarity.COMMON => _rarityCommon,
+                Rarity.UNCOMMON => _rarityUncommon,
+                Rarity.RARE => _rarityRare,
+                Rarity.EPIC => _rarityEpic,
+                Rarity.LEGENDARY => _rarityLegendary,
+                Rarity.MYTHIC => _rarityMythic,
                 _ => Color.white
             };
         }
@@ -246,20 +210,22 @@ namespace VeilBreakers.UI.Core
         // HEALTH COLORS
         // =============================================================================
 
+        private Color _healthFull = new Color(0.24f, 0.71f, 0.31f);
+        private Color _healthHigh = new Color(0.55f, 0.78f, 0.24f);
+        private Color _healthMedium = new Color(0.86f, 0.71f, 0.16f);
+        private Color _healthLow = new Color(0.86f, 0.39f, 0.16f);
+        private Color _healthCritical = new Color(0.78f, 0.16f, 0.16f);
+
         /// <summary>
         /// Get health bar color based on health percentage (0-1).
         /// </summary>
         public Color GetHealthColor(float healthPercent)
         {
-            if (healthPercent > 0.75f)
-                return new Color(60/255f, 180/255f, 80/255f); // Full - Green
-            if (healthPercent > 0.5f)
-                return new Color(140/255f, 200/255f, 60/255f); // High - Yellow-green
-            if (healthPercent > 0.25f)
-                return new Color(220/255f, 180/255f, 40/255f); // Medium - Yellow
-            if (healthPercent > 0.1f)
-                return new Color(220/255f, 100/255f, 40/255f); // Low - Orange
-            return new Color(200/255f, 40/255f, 40/255f); // Critical - Red
+            if (healthPercent > 0.75f) return _healthFull;
+            if (healthPercent > 0.5f) return _healthHigh;
+            if (healthPercent > 0.25f) return _healthMedium;
+            if (healthPercent > 0.1f) return _healthLow;
+            return _healthCritical;
         }
 
         // =============================================================================

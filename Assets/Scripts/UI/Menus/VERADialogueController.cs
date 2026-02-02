@@ -123,13 +123,13 @@ namespace VeilBreakers.UI.Menus
         private void Update()
         {
             // Check for input to advance dialogue
-            if (_isWaitingForInput && (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)))
+            if (_isWaitingForInput && (InputManager.Instance.GetMouseButtonDown(0) || InputManager.Instance.GetActionDown(InputManager.GameAction.DialogueAdvance)))
             {
                 AdvanceDialogue();
             }
 
             // Skip typewriter effect
-            if (_isDisplayingText && (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space)))
+            if (_isDisplayingText && (InputManager.Instance.GetMouseButtonDown(0) || InputManager.Instance.GetActionDown(InputManager.GameAction.DialogueAdvance)))
             {
                 CompleteCurrentLine();
             }

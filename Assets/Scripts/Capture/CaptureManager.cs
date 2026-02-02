@@ -19,10 +19,6 @@ namespace VeilBreakers.Capture
         // CONFIGURATION
         // =============================================================================
 
-        [Header("Input")]
-        [SerializeField] private KeyCode _markKey = KeyCode.C;
-        [SerializeField] private KeyCode _cancelMarkKey = KeyCode.Escape;
-
         [Header("Bind Settings")]
         [Tooltip("Range at which allies will attempt to bind a marked target")]
         [SerializeField] private float _bindRange = 5f;
@@ -146,8 +142,8 @@ namespace VeilBreakers.Capture
 
         private void HandleInput()
         {
-            // C key to mark/unmark current target
-            if (Input.GetKeyDown(_markKey))
+            // Mark action to mark/unmark current target
+            if (InputManager.Instance.GetActionDown(InputManager.GameAction.Mark))
             {
                 var target = GetCurrentTarget();
                 if (target != null && IsValidCaptureTarget(target))
@@ -156,8 +152,8 @@ namespace VeilBreakers.Capture
                 }
             }
 
-            // Escape to clear all marks
-            if (Input.GetKeyDown(_cancelMarkKey))
+            // Cancel action to clear all marks
+            if (InputManager.Instance.GetActionDown(InputManager.GameAction.Cancel))
             {
                 ClearAllMarks();
             }

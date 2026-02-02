@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using VeilBreakers.Data;
 
 namespace VeilBreakers.Core
 {
     /// <summary>
     /// Centralized input handling for VeilBreakers.
-    /// Abstracts legacy Input API to prepare for Unity Input System migration.
-    /// All game systems should use this instead of Input.* directly.
+    /// Manages the new Unity Input System and provides a bridge for legacy systems.
     /// </summary>
     public class InputManager : SingletonMonoBehaviour<InputManager>
     {
@@ -19,34 +19,35 @@ namespace VeilBreakers.Core
 
         public enum GameAction
         {
-            // Combat & UI
+            // System & UI
             Confirm,
             Cancel,
+            Pause,
             OpenMenu,
 
-            // Movement/Navigation
+            // Navigation
             MoveUp,
             MoveDown,
             MoveLeft,
             MoveRight,
 
-            // Combat specific
+            // Combat - Targeting
             TargetNext,
-            TargetPrevious,
-            CycleEnemy,
+            TargetPrev,
             CycleAlly,
 
-            // Quick commands
+            // Combat - Skills
+            BasicAttack,
+            Defend,
             Skill1,
             Skill2,
             Skill3,
             Skill4,
             Ultimate,
 
-            // Capture
-            MarkForCapture,
-            CancelMark,
-            CaptureAction,
+            // Combat - Capture
+            Mark,
+            Capture,
 
             // Ally hotkeys
             Ally1,
@@ -54,104 +55,72 @@ namespace VeilBreakers.Core
             Ally3,
 
             // Dialogue
-            AdvanceDialogue,
-            SkipDialogue,
-
-            // Modifier
-            ShiftModifier
+            DialogueAdvance,
+            DialogueSkip
         }
-
-        // =============================================================================
-        // DEFAULT BINDINGS
-        // =============================================================================
-
-        private readonly Dictionary<GameAction, KeyCode[]> _defaultBindings = new()
-        {
-            { GameAction.Confirm, new[] { KeyCode.Return, KeyCode.Space, KeyCode.E } },
-            { GameAction.Cancel, new[] { KeyCode.Escape, KeyCode.Backspace } },
-            { GameAction.OpenMenu, new[] { KeyCode.Tab, KeyCode.Q } },
-            { GameAction.MoveUp, new[] { KeyCode.W, KeyCode.UpArrow } },
-            { GameAction.MoveDown, new[] { KeyCode.S, KeyCode.DownArrow } },
-            { GameAction.MoveLeft, new[] { KeyCode.A, KeyCode.LeftArrow } },
-            { GameAction.MoveRight, new[] { KeyCode.D, KeyCode.RightArrow } },
-            { GameAction.TargetNext, new[] { KeyCode.Tab } },
-            { GameAction.TargetPrevious, new[] { KeyCode.Tab } },
-            { GameAction.CycleEnemy, new[] { KeyCode.E } },
-            { GameAction.CycleAlly, new[] { KeyCode.Q } },
-            { GameAction.Skill1, new[] { KeyCode.Alpha1 } },
-            { GameAction.Skill2, new[] { KeyCode.Alpha2 } },
-            { GameAction.Skill3, new[] { KeyCode.Alpha3 } },
-            { GameAction.Skill4, new[] { KeyCode.Alpha4 } },
-            { GameAction.Ultimate, new[] { KeyCode.R } },
-            { GameAction.MarkForCapture, new[] { KeyCode.C } },
-            { GameAction.CancelMark, new[] { KeyCode.X } },
-            { GameAction.CaptureAction, new[] { KeyCode.Space, KeyCode.Return } },
-            { GameAction.Ally1, new[] { KeyCode.F1 } },
-            { GameAction.Ally2, new[] { KeyCode.F2 } },
-            { GameAction.Ally3, new[] { KeyCode.F3 } },
-            { GameAction.AdvanceDialogue, new[] { KeyCode.Space, KeyCode.Return } },
-            { GameAction.SkipDialogue, new[] { KeyCode.Space } },
-            { GameAction.ShiftModifier, new[] { KeyCode.LeftShift, KeyCode.RightShift } }
-        };
 
         // =============================================================================
         // STATE
         // =============================================================================
 
-        private Dictionary<GameAction, KeyCode[]> _currentBindings;
+        private VeilBreakersInputActions _inputActions;
+        private bool _isGamepad = false;
         private bool _inputEnabled = true;
-
-        // Caches for input state per frame
-        private readonly Dictionary<GameAction, bool> _actionDownCache = new Dictionary<GameAction, bool>();
-        private readonly GameAction[] _allGameActions;
 
         // =============================================================================
         // PROPERTIES
         // =============================================================================
 
-        public Vector2 MousePosition => Input.mousePosition;
-        public bool InputEnabled { get => _inputEnabled; set => _inputEnabled = value; }
+        public bool IsGamepad => _isGamepad;
+        public bool InputEnabled { get => _inputEnabled; set => ToggleInput(value); }
+        public Vector2 MousePosition => _inputActions.UI.Point.ReadValue<Vector2>();
 
         // =============================================================================
         // EVENTS
         // =============================================================================
 
+        public event Action<bool> OnInputDeviceChanged;
         public event Action<GameAction> OnActionTriggered;
 
         // =============================================================================
         // UNITY LIFECYCLE
         // =============================================================================
-        
-        public InputManager()
-        {
-            _allGameActions = (GameAction[])Enum.GetValues(typeof(GameAction));
-        }
 
         protected override void OnSingletonAwake()
         {
-            _currentBindings = new Dictionary<GameAction, KeyCode[]>(_defaultBindings);
-            LoadBindings();
+            _inputActions = new VeilBreakersInputActions();
+            _inputActions.Enable();
+
+            // Track input device changes
+            InputSystem.onActionChange += OnActionChange;
         }
 
-        private void Update()
+        private void OnDestroy()
         {
-            if (!_inputEnabled)
-            {
-                _actionDownCache.Clear();
-                return;
-            }
+            InputSystem.onActionChange -= OnActionChange;
+            _inputActions?.Dispose();
+        }
 
-            _actionDownCache.Clear();
-            foreach (var action in _allGameActions)
+        private void OnActionChange(object obj, InputActionChange change)
+        {
+            if (change == InputActionChange.ActionPerformed && obj is InputAction action)
             {
-                if (!_currentBindings.TryGetValue(action, out var keys)) continue;
+                var device = action.activeControl?.device;
+                bool wasGamepad = _isGamepad;
+                _isGamepad = device is Gamepad;
 
-                if (keys.Any(key => Input.GetKeyDown(key)))
+                if (wasGamepad != _isGamepad)
                 {
-                    _actionDownCache[action] = true;
-                    OnActionTriggered?.Invoke(action);
+                    OnInputDeviceChanged?.Invoke(_isGamepad);
                 }
             }
+        }
+
+        private void ToggleInput(bool enabled)
+        {
+            _inputEnabled = enabled;
+            if (enabled) _inputActions.Enable();
+            else _inputActions.Disable();
         }
 
         // =============================================================================
@@ -160,19 +129,73 @@ namespace VeilBreakers.Core
 
         public bool GetActionDown(GameAction action)
         {
-            return _actionDownCache.TryGetValue(action, out bool isDown) && isDown;
+            if (!_inputEnabled) return false;
+
+            bool triggered = action switch
+            {
+                GameAction.Confirm => _inputActions.Gameplay.Confirm.WasPressedThisFrame(),
+                GameAction.Cancel => _inputActions.Gameplay.Cancel.WasPressedThisFrame(),
+                GameAction.Pause => _inputActions.Gameplay.Pause.WasPressedThisFrame(),
+                GameAction.OpenMenu => _inputActions.Gameplay.OpenMenu.WasPressedThisFrame(),
+                
+                GameAction.MoveUp => _inputActions.UI.Navigate.ReadValue<Vector2>().y > 0.5f && _inputActions.UI.Navigate.WasPerformedThisFrame(),
+                GameAction.MoveDown => _inputActions.UI.Navigate.ReadValue<Vector2>().y < -0.5f && _inputActions.UI.Navigate.WasPerformedThisFrame(),
+                GameAction.MoveLeft => _inputActions.UI.Navigate.ReadValue<Vector2>().x < -0.5f && _inputActions.UI.Navigate.WasPerformedThisFrame(),
+                GameAction.MoveRight => _inputActions.UI.Navigate.ReadValue<Vector2>().x > 0.5f && _inputActions.UI.Navigate.WasPerformedThisFrame(),
+
+                GameAction.TargetNext => _inputActions.Gameplay.TargetNext.WasPressedThisFrame(),
+                GameAction.TargetPrev => _inputActions.Gameplay.TargetPrev.WasPressedThisFrame(),
+                GameAction.CycleAlly => _inputActions.Gameplay.CycleAlly.WasPressedThisFrame(),
+
+                GameAction.BasicAttack => _inputActions.Gameplay.BasicAttack.WasPressedThisFrame(),
+                GameAction.Defend => _inputActions.Gameplay.Defend.WasPressedThisFrame(),
+                GameAction.Skill1 => _inputActions.Gameplay.Skill1.WasPressedThisFrame(),
+                GameAction.Skill2 => _inputActions.Gameplay.Skill2.WasPressedThisFrame(),
+                GameAction.Skill3 => _inputActions.Gameplay.Skill3.WasPressedThisFrame(),
+                GameAction.Skill4 => _inputActions.Gameplay.Skill4.WasPressedThisFrame(),
+                GameAction.Ultimate => _inputActions.Gameplay.Ultimate.WasPressedThisFrame(),
+
+                GameAction.Mark => _inputActions.Gameplay.Mark.WasPressedThisFrame(),
+                GameAction.Capture => _inputActions.Gameplay.Capture.WasPressedThisFrame(),
+
+                GameAction.Ally1 => _inputActions.Gameplay.Ally1.WasPressedThisFrame(),
+                GameAction.Ally2 => _inputActions.Gameplay.Ally2.WasPressedThisFrame(),
+                GameAction.Ally3 => _inputActions.Gameplay.Ally3.WasPressedThisFrame(),
+
+                GameAction.DialogueAdvance => _inputActions.Gameplay.DialogueAdvance.WasPressedThisFrame(),
+                GameAction.DialogueSkip => _inputActions.Gameplay.DialogueSkip.WasPressedThisFrame(),
+                
+                _ => false
+            };
+
+            if (triggered) OnActionTriggered?.Invoke(action);
+            return triggered;
         }
 
         public bool GetAction(GameAction action)
         {
-            if (!_inputEnabled || !_currentBindings.TryGetValue(action, out var keys)) return false;
-            return keys.Any(key => Input.GetKey(key));
+            if (!_inputEnabled) return false;
+
+            return action switch
+            {
+                GameAction.Confirm => _inputActions.Gameplay.Confirm.IsPressed(),
+                GameAction.Cancel => _inputActions.Gameplay.Cancel.IsPressed(),
+                GameAction.DialogueSkip => _inputActions.Gameplay.DialogueSkip.IsPressed(),
+                GameAction.DialogueAdvance => _inputActions.Gameplay.DialogueAdvance.IsPressed(),
+                _ => false
+            };
         }
 
         public bool GetActionUp(GameAction action)
         {
-            if (!_inputEnabled || !_currentBindings.TryGetValue(action, out var keys)) return false;
-            return keys.Any(key => Input.GetKeyUp(key));
+            if (!_inputEnabled) return false;
+
+            return action switch
+            {
+                GameAction.Confirm => _inputActions.Gameplay.Confirm.WasReleasedThisFrame(),
+                GameAction.Cancel => _inputActions.Gameplay.Cancel.WasReleasedThisFrame(),
+                _ => false
+            };
         }
 
         // =============================================================================
@@ -181,114 +204,40 @@ namespace VeilBreakers.Core
 
         public bool GetMouseButtonDown(int button)
         {
-            return _inputEnabled && Input.GetMouseButtonDown(button);
+            if (!_inputEnabled) return false;
+            return button switch
+            {
+                0 => _inputActions.UI.Click.WasPressedThisFrame(),
+                1 => _inputActions.UI.RightClick.WasPressedThisFrame(),
+                2 => _inputActions.UI.MiddleClick.WasPressedThisFrame(),
+                _ => false
+            };
         }
 
         public bool GetMouseButton(int button)
         {
-            return _inputEnabled && Input.GetMouseButton(button);
-        }
-
-        public bool GetMouseButtonUp(int button)
-        {
-            return _inputEnabled && Input.GetMouseButtonUp(button);
+            if (!_inputEnabled) return false;
+            return button switch
+            {
+                0 => _inputActions.UI.Click.IsPressed(),
+                1 => _inputActions.UI.RightClick.IsPressed(),
+                2 => _inputActions.UI.MiddleClick.IsPressed(),
+                _ => false
+            };
         }
 
         public Ray GetMouseRay(Camera camera)
         {
             return camera.ScreenPointToRay(MousePosition);
         }
-        
+
         // =============================================================================
-        // PUBLIC API - BINDING MANAGEMENT
-        // =============================================================================
-
-        public void SetBinding(GameAction action, params KeyCode[] keys)
-        {
-            _currentBindings[action] = keys;
-            SaveBindings();
-        }
-
-        public KeyCode[] GetBinding(GameAction action)
-        {
-            return _currentBindings.TryGetValue(action, out var keys) ? keys : Array.Empty<KeyCode>();
-        }
-
-        public void ResetBindingsToDefault()
-        {
-            _currentBindings = new Dictionary<GameAction, KeyCode[]>(_defaultBindings);
-            SaveBindings();
-        }
-
-        public string GetBindingDisplayName(GameAction action)
-        {
-            if (!_currentBindings.TryGetValue(action, out var keys) || keys.Length == 0)
-                return "???";
-            return GetKeyDisplayName(keys[0]);
-        }
-        
-        // =============================================================================
-        // SERIALIZATION & HELPERS
+        // ACTION MAP MANAGEMENT
         // =============================================================================
 
-        [Serializable] private class Binding { public GameAction action; public KeyCode[] keys; }
-        [Serializable] private class BindingsWrapper { public List<Binding> bindings = new List<Binding>(); }
-        private const string KEY_BINDINGS = "Input_Bindings_JSON";
-
-        private void SaveBindings()
-        {
-            var wrapper = new BindingsWrapper();
-            foreach (var pair in _currentBindings)
-            {
-                wrapper.bindings.Add(new Binding { action = pair.Key, keys = pair.Value });
-            }
-            string json = JsonUtility.ToJson(wrapper, true);
-            PlayerPrefs.SetString(KEY_BINDINGS, json);
-            PlayerPrefs.Save();
-            Debug.Log("[InputManager] Bindings saved.");
-        }
-
-        private void LoadBindings()
-        {
-            if (!PlayerPrefs.HasKey(KEY_BINDINGS))
-            {
-                Debug.Log("[InputManager] No saved bindings found, using defaults.");
-                return;
-            }
-
-            try
-            {
-                string json = PlayerPrefs.GetString(KEY_BINDINGS);
-                var wrapper = JsonUtility.FromJson<BindingsWrapper>(json);
-                _currentBindings.Clear();
-                foreach (var binding in wrapper.bindings)
-                {
-                    _currentBindings[binding.action] = binding.keys;
-                }
-                Debug.Log("[InputManager] Custom bindings loaded.");
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"[InputManager] Failed to load bindings: {ex.Message}. Using defaults.");
-                _currentBindings = new Dictionary<GameAction, KeyCode[]>(_defaultBindings);
-            }
-        }
-        
-        private string GetKeyDisplayName(KeyCode key)
-        {
-            return key switch {
-                KeyCode.Alpha0 => "0", KeyCode.Alpha1 => "1", KeyCode.Alpha2 => "2",
-                KeyCode.Alpha3 => "3", KeyCode.Alpha4 => "4", KeyCode.Alpha5 => "5",
-                KeyCode.Alpha6 => "6", KeyCode.Alpha7 => "7", KeyCode.Alpha8 => "8",
-                KeyCode.Alpha9 => "9", KeyCode.Return => "Enter", KeyCode.Escape => "Esc",
-                KeyCode.LeftShift => "Shift", KeyCode.RightShift => "Shift",
-                KeyCode.LeftControl => "Ctrl", KeyCode.RightControl => "Ctrl",
-                KeyCode.LeftAlt => "Alt", KeyCode.RightAlt => "Alt",
-                KeyCode.UpArrow => "Up", KeyCode.DownArrow => "Down",
-                KeyCode.LeftArrow => "Left", KeyCode.RightArrow => "Right",
-                KeyCode.Space => "Space", KeyCode.Tab => "Tab",
-                KeyCode.Backspace => "Back", _ => key.ToString()
-            };
-        }
+        public void EnableGameplay() => _inputActions.Gameplay.Enable();
+        public void DisableGameplay() => _inputActions.Gameplay.Disable();
+        public void EnableUI() => _inputActions.UI.Enable();
+        public void DisableUI() => _inputActions.UI.Disable();
     }
 }

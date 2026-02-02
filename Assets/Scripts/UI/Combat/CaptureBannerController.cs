@@ -106,8 +106,8 @@ namespace VeilBreakers.UI.Combat
 
         private void Update()
         {
-            // C key handles capture
-            if (Input.GetKeyDown(CombatUIDefaults.CaptureKey))
+            // Capture action handles capture
+            if (InputManager.Instance.GetActionDown(InputManager.GameAction.Capture))
             {
                 HandleCaptureInput();
             }

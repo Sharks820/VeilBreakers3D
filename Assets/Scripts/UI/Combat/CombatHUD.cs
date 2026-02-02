@@ -47,9 +47,6 @@ namespace VeilBreakers.UI.Combat
         [Header("Config")]
         [SerializeField] private CombatUIConfig _uiConfig;
 
-        [Header("Settings")]
-        [SerializeField] private KeyCode _targetNextKey = KeyCode.Tab;
-
         // =============================================================================
         // STATE
         // =============================================================================
@@ -328,17 +325,14 @@ namespace VeilBreakers.UI.Combat
         {
             if (!_isInitialized) return;
 
-            // TAB to cycle targets
-            if (Input.GetKeyDown(_targetNextKey))
+            // Cycle targets
+            if (InputManager.Instance.GetActionDown(InputManager.GameAction.TargetNext))
             {
-                if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-                {
-                    CycleTargetPrevious();
-                }
-                else
-                {
-                    CycleTargetNext();
-                }
+                CycleTargetNext();
+            }
+            else if (InputManager.Instance.GetActionDown(InputManager.GameAction.TargetPrev))
+            {
+                CycleTargetPrevious();
             }
         }
 

@@ -72,6 +72,12 @@ namespace VeilBreakers.UI.Core
         }
 
         // =============================================================================
+        // STATE
+        // =============================================================================
+
+        private readonly Dictionary<VisualElement, Coroutine> _activeAnimations = new();
+
+        // =============================================================================
         // FADE ANIMATIONS
         // =============================================================================
 
@@ -81,7 +87,7 @@ namespace VeilBreakers.UI.Core
         public void FadeIn(VisualElement element, float duration = -1, Action onComplete = null)
         {
             if (duration < 0) duration = _defaultDuration;
-            StartCoroutine(FadeCoroutine(element, 0, 1, duration, onComplete));
+            StartTrackedCoroutine(element, FadeCoroutine(element, 0, 1, duration, onComplete));
         }
 
         /// <summary>
@@ -90,7 +96,7 @@ namespace VeilBreakers.UI.Core
         public void FadeOut(VisualElement element, float duration = -1, Action onComplete = null)
         {
             if (duration < 0) duration = _defaultDuration;
-            StartCoroutine(FadeCoroutine(element, 1, 0, duration, onComplete));
+            StartTrackedCoroutine(element, FadeCoroutine(element, 1, 0, duration, onComplete));
         }
 
         /// <summary>
@@ -100,7 +106,7 @@ namespace VeilBreakers.UI.Core
         {
             if (duration < 0) duration = _defaultDuration;
             float startOpacity = element.resolvedStyle.opacity;
-            StartCoroutine(FadeCoroutine(element, startOpacity, targetOpacity, duration, onComplete));
+            StartTrackedCoroutine(element, FadeCoroutine(element, startOpacity, targetOpacity, duration, onComplete));
         }
 
         private IEnumerator FadeCoroutine(VisualElement element, float from, float to, float duration, Action onComplete)
@@ -114,6 +120,7 @@ namespace VeilBreakers.UI.Core
                 yield return null;
             }
             element.style.opacity = to;
+            _activeAnimations.Remove(element);
             onComplete?.Invoke();
         }
 
@@ -127,7 +134,7 @@ namespace VeilBreakers.UI.Core
         public void ScaleIn(VisualElement element, float fromScale = 0.9f, float duration = -1, Action onComplete = null)
         {
             if (duration < 0) duration = _defaultDuration;
-            StartCoroutine(ScaleCoroutine(element, fromScale, 1, duration, onComplete));
+            StartTrackedCoroutine(element, ScaleCoroutine(element, fromScale, 1, duration, onComplete));
         }
 
         /// <summary>
@@ -136,7 +143,7 @@ namespace VeilBreakers.UI.Core
         public void ScaleOut(VisualElement element, float toScale = 0.9f, float duration = -1, Action onComplete = null)
         {
             if (duration < 0) duration = _defaultDuration;
-            StartCoroutine(ScaleCoroutine(element, 1, toScale, duration, onComplete));
+            StartTrackedCoroutine(element, ScaleCoroutine(element, 1, toScale, duration, onComplete));
         }
 
         /// <summary>
@@ -145,7 +152,7 @@ namespace VeilBreakers.UI.Core
         public void PunchScale(VisualElement element, float punchScale = 1.1f, float duration = -1, Action onComplete = null)
         {
             if (duration < 0) duration = _defaultDuration;
-            StartCoroutine(PunchScaleCoroutine(element, punchScale, duration, onComplete));
+            StartTrackedCoroutine(element, PunchScaleCoroutine(element, punchScale, duration, onComplete));
         }
 
         private IEnumerator ScaleCoroutine(VisualElement element, float from, float to, float duration, Action onComplete)
@@ -160,6 +167,7 @@ namespace VeilBreakers.UI.Core
                 yield return null;
             }
             element.style.scale = new Scale(new Vector2(to, to));
+            _activeAnimations.Remove(element);
             onComplete?.Invoke();
         }
 
@@ -191,6 +199,7 @@ namespace VeilBreakers.UI.Core
             }
 
             element.style.scale = new Scale(Vector2.one);
+            _activeAnimations.Remove(element);
             onComplete?.Invoke();
         }
 
@@ -207,7 +216,7 @@ namespace VeilBreakers.UI.Core
         {
             if (duration < 0) duration = _defaultDuration;
             Vector2 offset = GetDirectionOffset(direction, distance);
-            StartCoroutine(SlideCoroutine(element, offset, Vector2.zero, duration, onComplete));
+            StartTrackedCoroutine(element, SlideCoroutine(element, offset, Vector2.zero, duration, onComplete));
         }
 
         /// <summary>
@@ -217,7 +226,7 @@ namespace VeilBreakers.UI.Core
         {
             if (duration < 0) duration = _defaultDuration;
             Vector2 offset = GetDirectionOffset(direction, distance);
-            StartCoroutine(SlideCoroutine(element, Vector2.zero, offset, duration, onComplete));
+            StartTrackedCoroutine(element, SlideCoroutine(element, Vector2.zero, offset, duration, onComplete));
         }
 
         private Vector2 GetDirectionOffset(SlideDirection direction, float distance)
@@ -244,6 +253,7 @@ namespace VeilBreakers.UI.Core
                 yield return null;
             }
             element.style.translate = new Translate(to.x, to.y);
+            _activeAnimations.Remove(element);
             onComplete?.Invoke();
         }
 
@@ -260,7 +270,7 @@ namespace VeilBreakers.UI.Core
             element.style.opacity = 0;
             element.style.scale = new Scale(new Vector2(fromScale, fromScale));
 
-            StartCoroutine(FadeScaleCoroutine(element, 0, 1, fromScale, 1, duration, onComplete));
+            StartTrackedCoroutine(element, FadeScaleCoroutine(element, 0, 1, fromScale, 1, duration, onComplete));
         }
 
         /// <summary>
@@ -269,7 +279,7 @@ namespace VeilBreakers.UI.Core
         public void FadeScaleOut(VisualElement element, float toScale = 1.05f, float duration = -1, Action onComplete = null)
         {
             if (duration < 0) duration = _defaultDuration * 0.7f;
-            StartCoroutine(FadeScaleCoroutine(element, 1, 0, 1, toScale, duration, onComplete));
+            StartTrackedCoroutine(element, FadeScaleCoroutine(element, 1, 0, 1, toScale, duration, onComplete));
         }
 
         /// <summary>
@@ -282,7 +292,7 @@ namespace VeilBreakers.UI.Core
             Vector2 offset = GetDirectionOffset(direction, distance);
             element.style.translate = new Translate(offset.x, offset.y);
 
-            StartCoroutine(FadeSlideCoroutine(element, 0, 1, offset, Vector2.zero, duration, onComplete));
+            StartTrackedCoroutine(element, FadeSlideCoroutine(element, 0, 1, offset, Vector2.zero, duration, onComplete));
         }
 
         private IEnumerator FadeScaleCoroutine(VisualElement element, float fromAlpha, float toAlpha, float fromScale, float toScale, float duration, Action onComplete)
@@ -302,6 +312,7 @@ namespace VeilBreakers.UI.Core
 
             element.style.opacity = toAlpha;
             element.style.scale = new Scale(new Vector2(toScale, toScale));
+            _activeAnimations.Remove(element);
             onComplete?.Invoke();
         }
 
@@ -322,7 +333,38 @@ namespace VeilBreakers.UI.Core
 
             element.style.opacity = toAlpha;
             element.style.translate = new Translate(toPos.x, toPos.y);
+            _activeAnimations.Remove(element);
             onComplete?.Invoke();
+        }
+
+        // =============================================================================
+        // TRACKING HELPERS
+        // =============================================================================
+
+        private void StartTrackedCoroutine(VisualElement element, IEnumerator routine)
+        {
+            StopAnimationForElement(element);
+            _activeAnimations[element] = StartCoroutine(routine);
+        }
+
+        /// <summary>
+        /// Stop any active animation on a specific element.
+        /// </summary>
+        public void StopAnimationForElement(VisualElement element)
+        {
+            if (_activeAnimations.TryGetValue(element, out var coroutine))
+            {
+                if (coroutine != null) StopCoroutine(coroutine);
+                _activeAnimations.Remove(element);
+            }
+        }
+
+        /// <summary>
+        /// Check if an element is currently being animated.
+        /// </summary>
+        public bool IsAnimating(VisualElement element)
+        {
+            return _activeAnimations.ContainsKey(element);
         }
 
         // =============================================================================

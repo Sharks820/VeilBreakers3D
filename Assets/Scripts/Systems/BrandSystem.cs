@@ -110,23 +110,8 @@ namespace VeilBreakers.Systems
         /// </summary>
         public static Color GetBrandColor(Brand brand)
         {
-            // Resolve to core brand for hybrid support
-            var coreBrand = GetCoreBrand(brand);
-            
-            return coreBrand switch
-            {
-                Brand.IRON =>   new Color(0.6f, 0.6f, 0.7f),    // Steel gray
-                Brand.SAVAGE => new Color(0.9f, 0.2f, 0.1f),    // Blood red
-                Brand.SURGE =>  new Color(0.2f, 0.6f, 0.95f),   // Electric blue
-                Brand.VENOM =>  new Color(0.3f, 0.8f, 0.2f),    // Toxic green
-                Brand.DREAD =>  new Color(0.5f, 0.2f, 0.6f),    // Dark purple
-                Brand.LEECH =>  new Color(0.6f, 0.1f, 0.3f),    // Crimson
-                Brand.GRACE =>  new Color(1f, 0.95f, 0.7f),     // Warm gold
-                Brand.MEND =>   new Color(0.4f, 0.9f, 0.9f),    // Cyan
-                Brand.RUIN =>   new Color(0.95f, 0.5f, 0.1f),   // Orange flame
-                Brand.VOID =>   new Color(0.2f, 0.1f, 0.3f),    // Deep void
-                _ => Color.white
-            };
+            // Delegate to ThemeManager for a single source of truth
+            return ThemeManager.Instance.GetBrandColor(brand);
         }
 
         /// <summary>

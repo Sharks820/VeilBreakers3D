@@ -36,8 +36,6 @@ namespace VeilBreakers.UI.Combat
 
         [Header("Settings")]
         [SerializeField] private int _slotIndex;
-        [SerializeField] private KeyCode _keyCode = KeyCode.Alpha1;
-        [SerializeField] private string _keybindDisplay = "1";
 
         [Header("Colors")]
         [SerializeField] private Color _readyColor = Color.white;
@@ -108,16 +106,15 @@ namespace VeilBreakers.UI.Combat
         /// <summary>
         /// Initialize the skill slot.
         /// </summary>
-        public void Initialize(int slotIndex, KeyCode keyCode, string keybindDisplay, bool isUltimate = false)
+        public void Initialize(int slotIndex, bool isUltimate = false)
         {
             _slotIndex = slotIndex;
-            _keyCode = keyCode;
-            _keybindDisplay = keybindDisplay;
             _isUltimate = isUltimate;
 
+            // Update keybind display based on slot index
             if (_keybindText != null)
             {
-                _keybindText.text = keybindDisplay;
+                _keybindText.text = slotIndex == 5 ? "R" : (slotIndex + 1).ToString();
             }
 
             // Ultimate slots get gold border
@@ -317,7 +314,27 @@ namespace VeilBreakers.UI.Combat
 
         private void CheckInput()
         {
-            if (_keyCode != KeyCode.None && Input.GetKeyDown(_keyCode))
+            // Map slot index to GameAction
+            // 0 -> Basic Attack (Q)
+            // 1 -> Defend (E)
+            // 2 -> Skill 1 (1)
+            // 3 -> Skill 2 (2)
+            // 4 -> Skill 3 (3)
+            // 5 -> Skill 4 (4)
+            // 6 -> Ultimate (R)
+            InputManager.GameAction action = _slotIndex switch
+            {
+                0 => InputManager.GameAction.BasicAttack,
+                1 => InputManager.GameAction.Defend,
+                2 => InputManager.GameAction.Skill1,
+                3 => InputManager.GameAction.Skill2,
+                4 => InputManager.GameAction.Skill3,
+                5 => InputManager.GameAction.Skill4,
+                6 => InputManager.GameAction.Ultimate,
+                _ => (InputManager.GameAction)(-1)
+            };
+
+            if (action != (InputManager.GameAction)(-1) && InputManager.Instance.GetActionDown(action))
             {
                 TriggerActivation();
             }

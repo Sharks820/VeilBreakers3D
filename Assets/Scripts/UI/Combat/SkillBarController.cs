@@ -176,20 +176,31 @@ namespace VeilBreakers.UI.Combat
         {
             if (_player?.Abilities == null) return;
 
-            // 6-slot ability bar layout:
-            // Slot 0 -> BASIC_ATTACK (0) - no cooldown
-            // Slot 1 -> DEFEND (1) - no cooldown
-            // Slot 2 -> SKILL_1 (2)
-            // Slot 3 -> SKILL_2 (3)
-            // Slot 4 -> SKILL_3 (4)
-            // Slot 5 -> ULTIMATE (5)
-            for (int i = 2; i < _slots.Count && i <= 5; i++)
+            // 7-slot UI ability bar mapping:
+            // UI 0 -> Ability 0 (BASIC_ATTACK)
+            // UI 1 -> Ability 1 (DEFEND)
+            // UI 2 -> Ability 2 (SKILL_1)
+            // UI 3 -> Ability 3 (SKILL_2)
+            // UI 4 -> Ability 4 (SKILL_3)
+            // UI 5 -> (Optional Skill 4, not in current enum)
+            // UI 6 -> Ability 5 (ULTIMATE)
+
+            // Update standard skills (2-4)
+            for (int i = 2; i <= 4 && i < _slots.Count; i++)
             {
-                // Direct mapping: UI slot index matches AbilitySlot enum value
                 int abilityIndex = i;
                 float remaining = _player.Abilities.GetCooldownRemaining(abilityIndex);
                 float total = _player.Abilities.GetCooldownDuration(abilityIndex);
                 _slots[i].SetCooldown(remaining, total);
+            }
+
+            // Update ultimate (6)
+            if (_slots.Count > 6)
+            {
+                int abilityIndex = 5; // ULTIMATE enum value
+                float remaining = _player.Abilities.GetCooldownRemaining(abilityIndex);
+                float total = _player.Abilities.GetCooldownDuration(abilityIndex);
+                _slots[6].SetCooldown(remaining, total);
             }
         }
 
@@ -220,7 +231,7 @@ namespace VeilBreakers.UI.Combat
                 if (slot != null)
                 {
                     bool isUltimate = (binding.slotIndex == 6); // R key = ultimate
-                    slot.Initialize(binding.slotIndex, binding.keyCode, binding.displayText, isUltimate);
+                    slot.Initialize(binding.slotIndex, isUltimate);
                     slot.OnActivated += HandleSlotActivated;
                     _slots.Add(slot);
                 }

@@ -398,6 +398,12 @@ namespace VeilBreakers.UI.Menus
             var heroColorDark = GetHeroColorDark(hero);
             var heroColorGlow = GetHeroColorGlow(hero);
 
+            var primaryBrand = hero.GetPrimaryBrand();
+            var brandColors = ThemeManager.Instance.GetBrandColors(primaryBrand);
+            var heroColor = brandColors.primary;
+            var heroColorDark = brandColors.dark;
+            var heroColorGlow = brandColors.glow;
+
             var card = new VisualElement();
             card.name = $"hero-card-{index}";
             card.AddToClassList("hero-card");
@@ -410,18 +416,20 @@ namespace VeilBreakers.UI.Menus
             card.style.paddingLeft = 12;
             card.style.paddingRight = 12;
             card.style.marginBottom = 8;
-            card.style.backgroundColor = new Color(25f/255f, 20f/255f, 28f/255f);
+            card.style.backgroundColor = new Color(0.1f, 0.08f, 0.11f, 1f); // vb-dark-surface
             card.style.borderTopWidth = 1;
             card.style.borderBottomWidth = 1;
             card.style.borderLeftWidth = 1;
             card.style.borderRightWidth = 1;
-            var baseBorder = new Color(heroColor.r * 0.35f + 0.15f, heroColor.g * 0.35f + 0.12f, heroColor.b * 0.35f + 0.15f, 1f);
-            card.style.borderTopColor = baseBorder;
-            card.style.borderBottomColor = baseBorder;
-            card.style.borderLeftColor = baseBorder;
-            card.style.borderRightColor = baseBorder;
-            // Persist color on the card for resets
-            card.userData = heroColor;
+            
+            // Use ThemeManager dark color for base border
+            card.style.borderTopColor = heroColorDark;
+            card.style.borderBottomColor = heroColorDark;
+            card.style.borderLeftColor = heroColorDark;
+            card.style.borderRightColor = heroColorDark;
+            
+            // Persist colors on the card for resets
+            card.userData = brandColors;
             card.style.borderTopLeftRadius = 6;
             card.style.borderTopRightRadius = 6;
             card.style.borderBottomLeftRadius = 6;
@@ -435,7 +443,7 @@ namespace VeilBreakers.UI.Menus
             portrait.style.height = 48;
             portrait.style.minHeight = 48;
             portrait.style.flexShrink = 0;
-            portrait.style.backgroundColor = new Color(35f/255f, 28f/255f, 35f/255f);
+            portrait.style.backgroundColor = new Color(0.14f, 0.11f, 0.14f, 1f);
             portrait.style.borderTopLeftRadius = 6;
             portrait.style.borderTopRightRadius = 6;
             portrait.style.borderBottomRightRadius = 6;
@@ -547,11 +555,13 @@ namespace VeilBreakers.UI.Menus
 
         private void ApplyHeroHover(VisualElement card, Color heroColor, Color heroGlow, float tintStrength)
         {
+            // Background tinted with primary color
             card.style.backgroundColor = new Color(
-                Mathf.Clamp01(heroColor.r * tintStrength + 0.10f),
-                Mathf.Clamp01(heroColor.g * tintStrength + 0.08f),
-                Mathf.Clamp01(heroColor.b * tintStrength + 0.10f),
+                Mathf.Clamp01(heroColor.r * 0.15f + 0.10f),
+                Mathf.Clamp01(heroColor.g * 0.15f + 0.08f),
+                Mathf.Clamp01(heroColor.b * 0.15f + 0.10f),
                 1f);
+            
             card.style.borderTopColor = heroGlow;
             card.style.borderRightColor = heroGlow;
             card.style.borderBottomColor = heroGlow;
@@ -567,12 +577,18 @@ namespace VeilBreakers.UI.Menus
 
         private void ResetHeroCardVisual(VisualElement card, Color heroColor)
         {
-            card.style.backgroundColor = new Color(25f/255f, 20f/255f, 28f/255f);
-            var borderColor = new Color(heroColor.r * 0.35f + 0.15f, heroColor.g * 0.35f + 0.12f, heroColor.b * 0.35f + 0.15f, 1f);
-            card.style.borderTopColor = borderColor;
-            card.style.borderRightColor = borderColor;
-            card.style.borderBottomColor = borderColor;
-            card.style.borderLeftColor = borderColor;
+            // Try to get cached colors from userData
+            Color border = heroColor;
+            if (card.userData is ThemeManager.BrandColorSet colors)
+            {
+                border = colors.dark;
+            }
+
+            card.style.backgroundColor = new Color(0.1f, 0.08f, 0.11f, 1f); // vb-dark-surface
+            card.style.borderTopColor = border;
+            card.style.borderRightColor = border;
+            card.style.borderBottomColor = border;
+            card.style.borderLeftColor = border;
 
             var indicator = card.Q("select-indicator");
             if (indicator != null && (_selectedHeroIndex == -1 || card.name != $"hero-card-{_selectedHeroIndex}"))
@@ -681,8 +697,8 @@ namespace VeilBreakers.UI.Menus
             if (_selectedHeroIndex >= 0 && _selectedHeroIndex < _heroCards.Count)
             {
                 var prevCard = _heroCards[_selectedHeroIndex];
-                var prevHeroColor = GetHeroColor(_availableHeroes[_selectedHeroIndex]);
-                ResetHeroCardVisual(prevCard, prevHeroColor);
+                var prevHero = _availableHeroes[_selectedHeroIndex];
+                ResetHeroCardVisual(prevCard, GetHeroColor(prevHero));
             }
 
             // Select new with hero-specific color
@@ -691,9 +707,10 @@ namespace VeilBreakers.UI.Menus
                 var newCard = _heroCards[newIndex];
                 // Background tinted with hero color
                 newCard.style.backgroundColor = new Color(
-                    heroColor.r * 0.2f + 0.08f,
-                    heroColor.g * 0.2f + 0.06f,
-                    heroColor.b * 0.2f + 0.08f
+                    heroColor.r * 0.15f + 0.08f,
+                    heroColor.g * 0.15f + 0.06f,
+                    heroColor.b * 0.15f + 0.08f,
+                    1f
                 );
                 // Border in hero color
                 newCard.style.borderTopColor = heroColor;
