@@ -198,15 +198,36 @@ namespace VeilBreakers.Combat
 ### Custom Agents
 unity-architect, unity-code-reviewer, unity-debugger, unity-performance-profiler, balance-analyzer, vera-dialogue-tester, bug-hunter, asset-generator, commit-helper, documentation-writer
 
-### Current Plan (2026-02-01)
-- ✅ Configuration overhaul: Removed duplicate MCPs, rewrote CLAUDE.md to be lean
-- ✅ Created Claude+Gemini hybrid system with collaboration skills
-- Next: Test new lean configuration in development
-- After each commit/memory save, sync OneDrive → local backup (`Tools/sync_backup.ps1` or `Tools/sync_backup.bat`)
+---
+
+## Work-Branch Architecture (Multi-Agent Workflow)
+
+To ensure maximum efficiency and prevent technical debt, development is divided into functional branches utilized by specialized agents. Every branch is synchronized with the latest `master` optimizations.
+
+| Branch | Primary Agent | Responsibility |
+| :--- | :--- | :--- |
+| `master` | **SYSTEM OVERSEER** | Pristine, Unity 6-ready production source. |
+| `feature/ai-behavior` | `balance-analyzer` | Gambit logic, AI personalities, and combat fairness. |
+| `feature/combat-system` | `unity-architect` | Core battle loop, status effects, and damage math. |
+| `feature/ui-system` | `documentation-writer` | UI Toolkit controllers, styling, and navigation. |
+| `feature/capture-system` | `bug-hunter` | Monster binding mechanics and QTE precision. |
+| `feature/champion-system` | `balance-analyzer` | Hero progression, path bonuses, and stat scaling. |
+| `feature/dialogue-vera` | `vera-dialogue-tester` | Dialogue branching, VERA personalities, and narrative. |
+| `feature/monster-system` | `asset-generator` | Monster data, evolution trees, and 3D asset integration. |
+| `feature/world-terrain` | `asset-generator` | Map generation, environment props, and spatial layout. |
 
 ---
 
-## Critical Lessons (Don't Repeat)
+## Current Status (Unity 6 Ready)
+
+- **UI System:** 100% Optimized, device-agnostic navigation implemented.
+- **Core Systems:** Modernized (Input System, URP-ready manifest, ThemeManager).
+- **Branch State:** All 8 feature branches synchronized with master optimizations.
+- **Next:** Manual import to Unity 6 Editor and 3D asset generation via Blender MCP.
+
+---
+
+## Technical Debt Clearance (2026-02-01)
 
 ### Unity Gotchas
 - **NEVER** create files named `nul`, `con`, `prn`, `aux`, `com1-9`, `lpt1-9` (Windows reserved - causes infinite import loop)

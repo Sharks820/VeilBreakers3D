@@ -60,6 +60,14 @@ namespace VeilBreakers.UI.Controls
         private List<string> _choices = new List<string>();
         private int _index = -1;
 
+        // Cached UI tokens for zero-allocation updates
+        private static readonly StyleColor ColorClear = new StyleColor(Color.clear);
+        private static readonly StyleColor ColorWhite = new StyleColor(Color.white);
+        private static readonly StyleColor ColorTextDefault = new StyleColor(new Color(0.73f, 0.82f, 0.78f, 1f));
+        private static readonly StyleColor ColorSelectedBg = new StyleColor(new Color(0.7f, 0.31f, 0.08f, 1f));
+        private static readonly StyleColor ColorHoverBg = new StyleColor(new Color(0.15f, 0.12f, 0.15f, 1f));
+        private static readonly StyleColor ColorPopupBg = new StyleColor(new Color(0.07f, 0.055f, 0.07f, 1f));
+
         [Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
         private void LogDebug(string message)
         {
@@ -421,7 +429,7 @@ namespace VeilBreakers.UI.Controls
             _popupLayer.style.bottom = 0;
             _popupLayer.style.overflow = Overflow.Visible;
             _popupLayer.style.display = DisplayStyle.None;
-            _popupLayer.style.backgroundColor = new StyleColor(Color.clear);
+            _popupLayer.style.backgroundColor = ColorClear;
             _popupLayer.pickingMode = PickingMode.Ignore;
             _popupLayer.BringToFront();
         }
@@ -444,13 +452,12 @@ namespace VeilBreakers.UI.Controls
             _popup.style.display = DisplayStyle.None;
             _popup.pickingMode = PickingMode.Position;
 
-            // CRITICAL: Force visibility with inline styles
-            // The popup layer is added to panel.visualTree directly and doesn't inherit USS from rootVisualElement!
-            _popup.style.backgroundColor = new StyleColor(new Color(0.07f, 0.055f, 0.07f, 1f));
-            _popup.style.borderTopColor = new StyleColor(new Color(0.7f, 0.31f, 0.08f, 1f));
-            _popup.style.borderBottomColor = new StyleColor(new Color(0.7f, 0.31f, 0.08f, 1f));
-            _popup.style.borderLeftColor = new StyleColor(new Color(0.7f, 0.31f, 0.08f, 1f));
-            _popup.style.borderRightColor = new StyleColor(new Color(0.7f, 0.31f, 0.08f, 1f));
+            // Use cached tokens
+            _popup.style.backgroundColor = ColorPopupBg;
+            _popup.style.borderTopColor = ColorSelectedBg;
+            _popup.style.borderBottomColor = ColorSelectedBg;
+            _popup.style.borderLeftColor = ColorSelectedBg;
+            _popup.style.borderRightColor = ColorSelectedBg;
             _popup.style.borderTopWidth = 2;
             _popup.style.borderBottomWidth = 2;
             _popup.style.borderLeftWidth = 2;
@@ -523,8 +530,6 @@ namespace VeilBreakers.UI.Controls
             }
 
             _popupScroll.Clear();
-            var textColor = new Color(0.73f, 0.82f, 0.78f, 1f);
-            var selectedBgColor = new Color(0.7f, 0.31f, 0.08f, 1f);
 
             for (int i = 0; i < _choices.Count; i++)
             {
@@ -537,8 +542,8 @@ namespace VeilBreakers.UI.Controls
                 item.focusable = true;
                 item.pickingMode = PickingMode.Position;
 
-                // Force item visibility with inline styles
-                item.style.backgroundColor = new StyleColor(Color.clear);
+                // Force item visibility with inline styles using cached tokens
+                item.style.backgroundColor = ColorClear;
                 item.style.paddingTop = 8;
                 item.style.paddingBottom = 8;
                 item.style.paddingLeft = 12;
@@ -564,8 +569,8 @@ namespace VeilBreakers.UI.Controls
                 if (index == _index)
                 {
                     item.AddToClassList("vb-dropdown-item--selected");
-                    item.style.backgroundColor = new StyleColor(selectedBgColor);
-                    label.style.color = new StyleColor(Color.white);
+                    item.style.backgroundColor = ColorSelectedBg;
+                    label.style.color = ColorWhite;
                     label.style.backgroundColor = StyleKeyword.None; // Remove debug bg for selected
                 }
 
@@ -585,14 +590,14 @@ namespace VeilBreakers.UI.Controls
                 {
                     if (!item.ClassListContains("vb-dropdown-item--selected"))
                     {
-                        item.style.backgroundColor = new StyleColor(new Color(0.15f, 0.12f, 0.15f, 1f));
+                        item.style.backgroundColor = ColorHoverBg;
                     }
                 });
                 item.RegisterCallback<PointerLeaveEvent>(evt =>
                 {
                     if (!item.ClassListContains("vb-dropdown-item--selected"))
                     {
-                        item.style.backgroundColor = new StyleColor(Color.clear);
+                        item.style.backgroundColor = ColorClear;
                     }
                 });
 
@@ -604,9 +609,6 @@ namespace VeilBreakers.UI.Controls
         {
             if (_popupScroll == null) return;
 
-            var textColor = new Color(0.73f, 0.82f, 0.78f, 1f);
-            var selectedBgColor = new Color(0.7f, 0.31f, 0.08f, 1f);
-
             int i = 0;
             foreach (var child in _popupScroll.Children())
             {
@@ -614,14 +616,14 @@ namespace VeilBreakers.UI.Controls
                 if (i == _index)
                 {
                     child.AddToClassList("vb-dropdown-item--selected");
-                    child.style.backgroundColor = new StyleColor(selectedBgColor);
-                    if (label != null) label.style.color = new StyleColor(Color.white);
+                    child.style.backgroundColor = ColorSelectedBg;
+                    if (label != null) label.style.color = ColorWhite;
                 }
                 else
                 {
                     child.RemoveFromClassList("vb-dropdown-item--selected");
-                    child.style.backgroundColor = new StyleColor(Color.clear);
-                    if (label != null) label.style.color = new StyleColor(textColor);
+                    child.style.backgroundColor = ColorClear;
+                    if (label != null) label.style.color = ColorTextDefault;
                 }
                 i++;
             }
