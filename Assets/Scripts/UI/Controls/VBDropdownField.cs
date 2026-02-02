@@ -7,44 +7,41 @@ using UnityEngine.UIElements;
 
 namespace VeilBreakers.UI.Controls
 {
-    public class VBDropdownField : VisualElement, INotifyValueChanged<string>
+    [UxmlElement]
+    public partial class VBDropdownField : VisualElement, INotifyValueChanged<string>
     {
-        public new class UxmlFactory : UxmlFactory<VBDropdownField, UxmlTraits> { }
+        // =============================================================================
+        // UXML ATTRIBUTES (Unity 6 style)
+        // =============================================================================
 
-        public new class UxmlTraits : VisualElement.UxmlTraits
+        [UxmlAttribute]
+        public string Choices
         {
-            private readonly UxmlStringAttributeDescription _choices = new UxmlStringAttributeDescription
+            get => string.Join(",", _choices);
+            set
             {
-                name = "choices",
-                defaultValue = string.Empty
-            };
-
-            private readonly UxmlIntAttributeDescription _index = new UxmlIntAttributeDescription
-            {
-                name = "index",
-                defaultValue = 0
-            };
-
-            public override void Init(VisualElement ve, IUxmlAttributes bag, CreationContext cc)
-            {
-                base.Init(ve, bag, cc);
-                if (ve is not VBDropdownField dropdown) return;
-
-                var rawChoices = _choices.GetValueFromBag(bag, cc);
-                if (!string.IsNullOrWhiteSpace(rawChoices))
+                if (!string.IsNullOrWhiteSpace(value))
                 {
-                    var parsed = rawChoices
+                    var parsed = value
                         .Split(',')
                         .Select(choice => choice.Trim())
                         .Where(choice => !string.IsNullOrWhiteSpace(choice))
                         .ToList();
-                    dropdown.SetChoices(parsed);
+                    SetChoices(parsed);
                 }
-
-                var index = _index.GetValueFromBag(bag, cc);
-                dropdown.SetIndex(index, sendEvent: false);
             }
         }
+
+        [UxmlAttribute]
+        public int Index
+        {
+            get => _index;
+            set => SetIndex(value, sendEvent: false);
+        }
+
+        // =============================================================================
+        // PRIVATE FIELDS
+        // =============================================================================
 
         private readonly VisualElement _display;
         private readonly Label _valueLabel;

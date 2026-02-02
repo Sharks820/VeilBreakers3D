@@ -95,10 +95,11 @@ namespace VeilBreakers.Core
             InputSystem.onActionChange += OnActionChange;
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
             InputSystem.onActionChange -= OnActionChange;
             _inputActions?.Dispose();
+            base.OnDestroy();
         }
 
         private void OnActionChange(object obj, InputActionChange change)

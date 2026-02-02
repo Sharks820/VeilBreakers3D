@@ -93,11 +93,18 @@ namespace VeilBreakers.UI.Menus
         private void OnDisable()
         {
             UnbindEvents();
+            UnbindHoverCallbacks();
 
             // Unsubscribe from InputManager
             if (InputManager.Instance != null)
             {
                 InputManager.Instance.OnActionTriggered -= OnActionTriggered;
+            }
+
+            if (_animationCoroutine != null)
+            {
+                StopCoroutine(_animationCoroutine);
+                _animationCoroutine = null;
             }
         }
 
@@ -713,19 +720,6 @@ namespace VeilBreakers.UI.Menus
             button.style.borderBottomColor = borderColor;
             button.style.borderLeftColor = borderColor;
             button.style.borderRightColor = borderColor;
-        }
-
-        private void OnDisable()
-        {
-            UnbindEvents();
-            UnbindHoverCallbacks();
-
-            if (_animationCoroutine != null)
-            {
-                StopCoroutine(_animationCoroutine);
-                _animationCoroutine = null;
-            }
-
         }
 
         /// <summary>
