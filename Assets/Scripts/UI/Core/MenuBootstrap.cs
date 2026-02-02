@@ -18,10 +18,20 @@ namespace VeilBreakers.UI.Core
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void OnSceneLoaded()
         {
+            // Subscribe to scene changes for the application lifetime
             SceneManager.sceneLoaded += HandleSceneLoaded;
+
+            // Clean up subscription when application quits (prevents editor warnings)
+            Application.quitting += OnApplicationQuitting;
 
             // Also handle the current scene if it's a menu
             SetupCurrentScene();
+        }
+
+        private static void OnApplicationQuitting()
+        {
+            SceneManager.sceneLoaded -= HandleSceneLoaded;
+            Application.quitting -= OnApplicationQuitting;
         }
 
         private static void HandleSceneLoaded(Scene scene, LoadSceneMode mode)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VeilBreakers.Audio;
@@ -44,7 +45,7 @@ namespace VeilBreakers.UI.Menus
         private bool _isDisplayingText = false;
         private bool _isWaitingForInput = false;
         private string _fullText = "";
-        private string _displayedText = "";
+        private readonly StringBuilder _displayedTextBuilder = new StringBuilder(256);
         private int _currentCharIndex = 0;
         private float _currentVeilIntegrity = 100f;
         private bool _isGlitched = false;
@@ -439,7 +440,7 @@ namespace VeilBreakers.UI.Menus
         private void DisplayLine(string text, bool hasChoices)
         {
             _fullText = text;
-            _displayedText = "";
+            _displayedTextBuilder.Clear();
             _currentCharIndex = 0;
             _isWaitingForInput = false;
 
@@ -483,20 +484,25 @@ namespace VeilBreakers.UI.Menus
                 {
                     // Show glitch char briefly
                     char glitchChar = GlitchChars[UnityEngine.Random.Range(0, GlitchChars.Length)];
-                    _displayedText += glitchChar;
+                    _displayedTextBuilder.Append(glitchChar);
                     UpdateDisplayedText();
 
                     yield return new WaitForSeconds(0.03f);
 
-                    // Replace with correct char (defensive check for empty string)
-                    if (_displayedText.Length > 0)
-                        _displayedText = _displayedText.Substring(0, _displayedText.Length - 1) + c;
+                    // Replace with correct char (defensive check for empty builder)
+                    if (_displayedTextBuilder.Length > 0)
+                    {
+                        _displayedTextBuilder.Length--;  // Remove last char
+                        _displayedTextBuilder.Append(c);
+                    }
                     else
-                        _displayedText = c.ToString();
+                    {
+                        _displayedTextBuilder.Append(c);
+                    }
                 }
                 else
                 {
-                    _displayedText += c;
+                    _displayedTextBuilder.Append(c);
                 }
 
                 _currentCharIndex++;
@@ -538,7 +544,7 @@ namespace VeilBreakers.UI.Menus
         {
             if (_dialogueText != null)
             {
-                _dialogueText.text = _displayedText;
+                _dialogueText.text = _displayedTextBuilder.ToString();
             }
         }
 
@@ -550,7 +556,8 @@ namespace VeilBreakers.UI.Menus
                 _typewriterCoroutine = null;
             }
 
-            _displayedText = _fullText;
+            _displayedTextBuilder.Clear();
+            _displayedTextBuilder.Append(_fullText);
             _currentCharIndex = _fullText.Length;
             _isDisplayingText = false;
 
