@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using VeilBreakers.Core;
 
 namespace VeilBreakers.Audio
 {
@@ -8,24 +9,8 @@ namespace VeilBreakers.Audio
     /// Manages adaptive music with horizontal and vertical layering.
     /// Handles music state transitions and parameter-based mixing.
     /// </summary>
-    public class MusicManager : MonoBehaviour
+    public class MusicManager : SingletonMonoBehaviour<MusicManager>
     {
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        private static MusicManager _instance;
-        private static bool _isQuitting = false;
-
-        public static MusicManager Instance
-        {
-            get
-            {
-                if (_isQuitting) return null;
-                return _instance;
-            }
-        }
-
         // =============================================================================
         // CONFIGURATION
         // =============================================================================
@@ -83,17 +68,7 @@ namespace VeilBreakers.Audio
         // UNITY LIFECYCLE
         // =============================================================================
 
-        private void Awake()
-        {
-            if (_instance != null && _instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            _instance = this;
-        }
-
-        private void Start()
+        protected override void OnSingletonAwake()
         {
             StartExplorationMusic();
         }
@@ -101,14 +76,6 @@ namespace VeilBreakers.Audio
         private void Update()
         {
             UpdateParameters();
-        }
-
-        private void OnDestroy()
-        {
-            if (_instance == this)
-            {
-                _instance = null;
-            }
         }
 
         private void OnDisable()
@@ -121,11 +88,6 @@ namespace VeilBreakers.Audio
                 StopCoroutine(_transitionCoroutine);
                 _transitionCoroutine = null;
             }
-        }
-
-        private void OnApplicationQuit()
-        {
-            _isQuitting = true;
         }
 
         // =============================================================================

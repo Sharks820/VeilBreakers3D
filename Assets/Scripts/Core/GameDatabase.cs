@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using UnityEngine;
 using VeilBreakers.Data;
 
@@ -11,35 +12,16 @@ namespace VeilBreakers.Core
     /// Loads all JSON data files and provides access to game data
     /// Singleton pattern for global access
     /// </summary>
-    public class GameDatabase : MonoBehaviour
+    public class GameDatabase : SingletonMonoBehaviour<GameDatabase>
     {
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        private static GameDatabase _instance;
-        public static GameDatabase Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    var go = new GameObject("GameDatabase");
-                    _instance = go.AddComponent<GameDatabase>();
-                    DontDestroyOnLoad(go);
-                }
-                return _instance;
-            }
-        }
-
         // =============================================================================
         // DATA CONTAINERS
         // =============================================================================
 
-        private Dictionary<string, MonsterData> _monsters = new Dictionary<string, MonsterData>();
-        private Dictionary<string, SkillData> _skills = new Dictionary<string, SkillData>();
-        private Dictionary<string, HeroData> _heroes = new Dictionary<string, HeroData>();
-        private Dictionary<string, ItemData> _items = new Dictionary<string, ItemData>();
+        private readonly Dictionary<string, MonsterData> _monsters = new Dictionary<string, MonsterData>();
+        private readonly Dictionary<string, SkillData> _skills = new Dictionary<string, SkillData>();
+        private readonly Dictionary<string, HeroData> _heroes = new Dictionary<string, HeroData>();
+        private readonly Dictionary<string, ItemData> _items = new Dictionary<string, ItemData>();
 
         public bool IsLoaded { get; private set; } = false;
 
@@ -62,31 +44,29 @@ namespace VeilBreakers.Core
         // INITIALIZATION
         // =============================================================================
 
-        private void Awake()
+        protected override void OnSingletonAwake()
         {
-            if (_instance != null && _instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
-
-            LoadAllData();
+            // Do not block the main thread here
+            _ = LoadAllDataAsync();
         }
 
         /// <summary>
-        /// Load all game data from JSON files
+        /// Load all game data from JSON files asynchronously.
         /// </summary>
-        public void LoadAllData()
+        public async Task LoadAllDataAsync()
         {
-            Debug.Log("[GameDatabase] Loading all game data...");
+            if (IsLoaded) return;
+            Debug.Log("[GameDatabase] Starting asynchronous data load...");
 
-            LoadMonsters();
-            LoadSkills();
-            LoadHeroes();
-            LoadItems();
+            var tasks = new List<Task>
+            {
+                LoadMonstersAsync(),
+                LoadSkillsAsync(),
+                LoadHeroesAsync(),
+                LoadItemsAsync()
+            };
+
+            await Task.WhenAll(tasks);
 
             IsLoaded = true;
 
@@ -137,7 +117,7 @@ namespace VeilBreakers.Core
         // DATA LOADERS
         // =============================================================================
 
-        private void LoadMonsters()
+        private async Task LoadMonstersAsync()
         {
             try
             {
@@ -145,27 +125,23 @@ namespace VeilBreakers.Core
                 var jsonAsset = dataAssets != null ? dataAssets.MonstersJson : null;
                 if (jsonAsset == null)
                 {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
                     throw new InvalidOperationException("[GameDatabase] MonstersJson not assigned in GameDataAssets!");
-#else
-                    Debug.LogError("[GameDatabase] MonstersJson not assigned in GameDataAssets!");
-                    return;
-#endif
                 }
 
-                var wrappedJson = WrapJsonArray(jsonAsset.text, "monsters");
-                var wrapper = JsonUtility.FromJson<MonsterDataWrapper>(wrappedJson);
-                if (wrapper?.monsters == null)
+                string jsonContent = jsonAsset.text;
+                MonsterData[] monsters = await Task.Run(() =>
                 {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-                    throw new InvalidOperationException("[GameDatabase] monsters.json invalid format");
-#else
-                    Debug.LogError("[GameDatabase] monsters.json invalid format");
-                    return;
-#endif
-                }
+                    var wrappedJson = WrapJsonArray(jsonContent, "monsters");
+                    var wrapper = JsonUtility.FromJson<MonsterDataWrapper>(wrappedJson);
+                    return wrapper?.monsters;
+                });
 
-                foreach (var monster in wrapper.monsters)
+                if (monsters == null)
+                {
+                    throw new InvalidDataException("[GameDatabase] monsters.json invalid format");
+                }
+                
+                foreach (var monster in monsters)
                 {
                     if (!string.IsNullOrEmpty(monster.monster_id))
                     {
@@ -182,7 +158,7 @@ namespace VeilBreakers.Core
             }
         }
 
-        private void LoadSkills()
+        private async Task LoadSkillsAsync()
         {
             try
             {
@@ -190,27 +166,23 @@ namespace VeilBreakers.Core
                 var jsonAsset = dataAssets != null ? dataAssets.SkillsJson : null;
                 if (jsonAsset == null)
                 {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
                     throw new InvalidOperationException("[GameDatabase] SkillsJson not assigned in GameDataAssets!");
-#else
-                    Debug.LogError("[GameDatabase] SkillsJson not assigned in GameDataAssets!");
-                    return;
-#endif
                 }
 
-                var wrappedJson = WrapJsonArray(jsonAsset.text, "skills");
-                var wrapper = JsonUtility.FromJson<SkillDataWrapper>(wrappedJson);
-                if (wrapper?.skills == null)
+                string jsonContent = jsonAsset.text;
+                SkillData[] skills = await Task.Run(() =>
                 {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-                    throw new InvalidOperationException("[GameDatabase] skills.json invalid format");
-#else
-                    Debug.LogError("[GameDatabase] skills.json invalid format");
-                    return;
-#endif
+                    var wrappedJson = WrapJsonArray(jsonContent, "skills");
+                    var wrapper = JsonUtility.FromJson<SkillDataWrapper>(wrappedJson);
+                    return wrapper?.skills;
+                });
+                
+                if (skills == null)
+                {
+                    throw new InvalidDataException("[GameDatabase] skills.json invalid format");
                 }
 
-                foreach (var skill in wrapper.skills)
+                foreach (var skill in skills)
                 {
                     if (!string.IsNullOrEmpty(skill.skill_id))
                     {
@@ -227,7 +199,7 @@ namespace VeilBreakers.Core
             }
         }
 
-        private void LoadHeroes()
+        private async Task LoadHeroesAsync()
         {
             try
             {
@@ -235,27 +207,23 @@ namespace VeilBreakers.Core
                 var jsonAsset = dataAssets != null ? dataAssets.HeroesJson : null;
                 if (jsonAsset == null)
                 {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
                     throw new InvalidOperationException("[GameDatabase] HeroesJson not assigned in GameDataAssets!");
-#else
-                    Debug.LogError("[GameDatabase] HeroesJson not assigned in GameDataAssets!");
-                    return;
-#endif
                 }
-
-                var wrappedJson = WrapJsonArray(jsonAsset.text, "heroes");
-                var wrapper = JsonUtility.FromJson<HeroDataWrapper>(wrappedJson);
-                if (wrapper?.heroes == null)
+                
+                string jsonContent = jsonAsset.text;
+                HeroData[] heroes = await Task.Run(() =>
                 {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-                    throw new InvalidOperationException("[GameDatabase] heroes.json invalid format");
-#else
-                    Debug.LogError("[GameDatabase] heroes.json invalid format");
-                    return;
-#endif
+                    var wrappedJson = WrapJsonArray(jsonContent, "heroes");
+                    var wrapper = JsonUtility.FromJson<HeroDataWrapper>(wrappedJson);
+                    return wrapper?.heroes;
+                });
+
+                if (heroes == null)
+                {
+                    throw new InvalidDataException("[GameDatabase] heroes.json invalid format");
                 }
 
-                foreach (var hero in wrapper.heroes)
+                foreach (var hero in heroes)
                 {
                     if (!string.IsNullOrEmpty(hero.hero_id))
                     {
@@ -272,7 +240,7 @@ namespace VeilBreakers.Core
             }
         }
 
-        private void LoadItems()
+        private async Task LoadItemsAsync()
         {
             try
             {
@@ -280,27 +248,23 @@ namespace VeilBreakers.Core
                 var jsonAsset = dataAssets != null ? dataAssets.ItemsJson : null;
                 if (jsonAsset == null)
                 {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
                     throw new InvalidOperationException("[GameDatabase] ItemsJson not assigned in GameDataAssets!");
-#else
-                    Debug.LogError("[GameDatabase] ItemsJson not assigned in GameDataAssets!");
-                    return;
-#endif
                 }
 
-                var wrappedJson = WrapJsonArray(jsonAsset.text, "items");
-                var wrapper = JsonUtility.FromJson<ItemDataWrapper>(wrappedJson);
-                if (wrapper?.items == null)
+                string jsonContent = jsonAsset.text;
+                ItemData[] items = await Task.Run(() =>
                 {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-                    throw new InvalidOperationException("[GameDatabase] items.json invalid format");
-#else
-                    Debug.LogError("[GameDatabase] items.json invalid format");
-                    return;
-#endif
+                    var wrappedJson = WrapJsonArray(jsonContent, "items");
+                    var wrapper = JsonUtility.FromJson<ItemDataWrapper>(wrappedJson);
+                    return wrapper?.items;
+                });
+
+                if (items == null)
+                {
+                    throw new InvalidDataException("[GameDatabase] items.json invalid format");
                 }
 
-                foreach (var item in wrapper.items)
+                foreach (var item in items)
                 {
                     if (!string.IsNullOrEmpty(item.item_id))
                     {

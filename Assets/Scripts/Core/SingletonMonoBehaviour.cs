@@ -33,6 +33,11 @@ namespace VeilBreakers.Core
         /// </summary>
         protected static bool IsQuitting => _isQuitting;
 
+        /// <summary>
+        /// Override to false if this singleton should not persist across scenes.
+        /// </summary>
+        protected virtual bool IsPersistent => true;
+
         protected virtual void Awake()
         {
             if (_instance != null && _instance != this)
@@ -43,7 +48,11 @@ namespace VeilBreakers.Core
             }
 
             _instance = (T)this;
-            DontDestroyOnLoad(gameObject);
+
+            if (IsPersistent)
+            {
+                DontDestroyOnLoad(gameObject);
+            }
 
             OnSingletonAwake();
         }

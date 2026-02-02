@@ -143,26 +143,6 @@ namespace VeilBreakers.Core
         }
 
         /// <summary>
-        /// Log an audio system message.
-        /// </summary>
-        [Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
-        public static void Audio(string message)
-        {
-            if (_minLevel <= LogLevel.Debug)
-                Debug.Log($"{kAudioPrefix} {message}");
-        }
-
-        /// <summary>
-        /// Log a save system message.
-        /// </summary>
-        [Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
-        public static void Save(string message)
-        {
-            if (_minLevel <= LogLevel.Debug)
-                Debug.Log($"{kSavePrefix} {message}");
-        }
-
-        /// <summary>
         /// Log settings-related messages (volume, graphics, controls, etc.)
         /// </summary>
         [Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]

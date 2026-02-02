@@ -322,6 +322,25 @@ namespace VeilBreakers.Core
         }
 
         // =============================================================================
+        // SERIALIZATION HELPERS
+        // =============================================================================
+
+        [Serializable]
+        private class Binding
+        {
+            public GameAction action;
+            public KeyCode[] keys;
+        }
+
+        [Serializable]
+        private class BindingsWrapper
+        {
+            public List<Binding> bindings = new List<Binding>();
+        }
+
+        private const string KEY_BINDINGS = "Input_Bindings_JSON";
+
+        // =============================================================================
         // PRIVATE HELPERS
         // =============================================================================
 
@@ -360,16 +379,44 @@ namespace VeilBreakers.Core
 
         private void SaveBindings()
         {
-            // TODO: Serialize bindings to PlayerPrefs or save file
-            // For now, bindings reset each session
-            Debug.Log("[InputManager] Bindings would be saved here");
+            var wrapper = new BindingsWrapper();
+            foreach (var pair in _currentBindings)
+            {
+                wrapper.bindings.Add(new Binding { action = pair.Key, keys = pair.Value });
+            }
+
+            string json = JsonUtility.ToJson(wrapper, true);
+            PlayerPrefs.SetString(KEY_BINDINGS, json);
+            PlayerPrefs.Save();
+            Debug.Log("[InputManager] Bindings saved to PlayerPrefs.");
         }
 
         private void LoadBindings()
         {
-            // TODO: Load bindings from PlayerPrefs or save file
-            // For now, use defaults
-            Debug.Log("[InputManager] Using default bindings");
+            if (!PlayerPrefs.HasKey(KEY_BINDINGS))
+            {
+                Debug.Log("[InputManager] No saved bindings found, using defaults.");
+                return;
+            }
+
+            try
+            {
+                string json = PlayerPrefs.GetString(KEY_BINDINGS);
+                var wrapper = JsonUtility.FromJson<BindingsWrapper>(json);
+
+                _currentBindings.Clear();
+                foreach (var binding in wrapper.bindings)
+                {
+                    _currentBindings[binding.action] = binding.keys;
+                }
+                Debug.Log("[InputManager] Custom bindings loaded from PlayerPrefs.");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[InputManager] Failed to load bindings: {ex.Message}. Using defaults.");
+                // Reset to defaults in case of corruption
+                _currentBindings = new Dictionary<GameAction, KeyCode[]>(_defaultBindings);
+            }
         }
     }
 }

@@ -31,23 +31,10 @@ namespace VeilBreakers.Capture
     /// <summary>
     /// Controls the Quick Time Event minigame for capture attempts.
     /// </summary>
-    public class QTEController : MonoBehaviour
+    public class QTEController : SingletonMonoBehaviour<QTEController>
     {
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        private static QTEController _instance;
-        private static bool _isQuitting = false;
-
-        public static QTEController Instance
-        {
-            get
-            {
-                if (_isQuitting) return null;
-                return _instance;
-            }
-        }
+        // This is a scene-specific singleton
+        protected override bool IsPersistent => false;
 
         // =============================================================================
         // CONFIGURATION
@@ -128,24 +115,6 @@ namespace VeilBreakers.Capture
         // UNITY LIFECYCLE
         // =============================================================================
 
-        private void Awake()
-        {
-            if (_instance != null && _instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            _instance = this;
-        }
-
-        private void OnDestroy()
-        {
-            if (_instance == this)
-            {
-                _instance = null;
-            }
-        }
-
         private void OnDisable()
         {
             // NOTE: Do NOT set events to null - that breaks the event pattern
@@ -160,11 +129,6 @@ namespace VeilBreakers.Capture
 
             // Reset state
             _state = QTEState.IDLE;
-        }
-
-        private void OnApplicationQuit()
-        {
-            _isQuitting = true;
         }
 
         private void Update()

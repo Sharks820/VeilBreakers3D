@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Audio;
+using VeilBreakers.Core;
 
 namespace VeilBreakers.Audio
 {
@@ -11,24 +12,8 @@ namespace VeilBreakers.Audio
     /// Main audio manager with smart bank loading and memory management.
     /// Handles FMOD integration for AAA audio experience.
     /// </summary>
-    public class AudioManager : MonoBehaviour
+    public class AudioManager : SingletonMonoBehaviour<AudioManager>
     {
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        private static AudioManager _instance;
-        private static bool _isQuitting = false;
-
-        public static AudioManager Instance
-        {
-            get
-            {
-                if (_isQuitting) return null;
-                return _instance;
-            }
-        }
-
         // =============================================================================
         // CONFIGURATION
         // =============================================================================
@@ -123,28 +108,9 @@ namespace VeilBreakers.Audio
         // UNITY LIFECYCLE
         // =============================================================================
 
-        private void Awake()
-        {
-            if (_instance != null && _instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-
-        private void Start()
+        protected override void OnSingletonAwake()
         {
             Initialize();
-        }
-
-        private void OnDestroy()
-        {
-            if (_instance == this)
-            {
-                _instance = null;
-            }
         }
 
         private void OnDisable()
@@ -153,11 +119,6 @@ namespace VeilBreakers.Audio
             // by clearing ALL subscribers globally. Subscribers clean up in their own OnDestroy.
 
             StopAllCoroutines();
-        }
-
-        private void OnApplicationQuit()
-        {
-            _isQuitting = true;
         }
 
         // =============================================================================

@@ -54,15 +54,15 @@ namespace VeilBreakers.UI.Combat
         // =============================================================================
         // STATE
         // =============================================================================
-
+        
         private SkillSlotState _currentState = SkillSlotState.READY;
         private float _cooldownTotal = 0f;
         private float _cooldownRemaining = 0f;
+        private int _cachedCooldownValue = -1;
         private bool _isUltimate = false;
         private bool _isGlowing = false;
         private Coroutine _glowCoroutine;
         private Coroutine _activationFlashCoroutine;
-
         // =============================================================================
         // PROPERTIES
         // =============================================================================
@@ -154,6 +154,7 @@ namespace VeilBreakers.UI.Combat
         {
             _cooldownTotal = duration;
             _cooldownRemaining = duration;
+            _cachedCooldownValue = -1; // Invalidate cache
             SetState(SkillSlotState.COOLDOWN);
         }
 
@@ -164,6 +165,7 @@ namespace VeilBreakers.UI.Combat
         {
             _cooldownTotal = total;
             _cooldownRemaining = remaining;
+            _cachedCooldownValue = -1; // Invalidate cache
 
             if (remaining > 0)
             {
@@ -286,9 +288,21 @@ namespace VeilBreakers.UI.Combat
                 if (_cooldownRemaining > 0)
                 {
                     _cooldownText.gameObject.SetActive(true);
-                    _cooldownText.text = _cooldownRemaining >= 1f
-                        ? Mathf.CeilToInt(_cooldownRemaining).ToString()
-                        : _cooldownRemaining.ToString("F1");
+                    if (_cooldownRemaining >= 1f)
+                    {
+                        int cooldownValue = Mathf.CeilToInt(_cooldownRemaining);
+                        if (_cachedCooldownValue != cooldownValue)
+                        {
+                            _cooldownText.text = cooldownValue.ToString();
+                            _cachedCooldownValue = cooldownValue;
+                        }
+                    }
+                    else
+                    {
+                        // This still causes allocation, but it's only for the final second of the cooldown.
+                        // A zero-allocation solution would require a more complex string building/caching strategy.
+                        _cooldownText.text = _cooldownRemaining.ToString("F1");
+                    }
                 }
                 else
                 {

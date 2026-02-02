@@ -102,6 +102,15 @@ namespace VeilBreakers.Combat
         public event Action OnDeath;
         public event Action OnRevive;
 
+        private void OnDestroy()
+        {
+            // Prevent memory leak by unregistering from the manager
+            if (Managers.StatusEffectManager.HasInstance)
+            {
+                Managers.StatusEffectManager.Instance.UnregisterTarget(gameObject);
+            }
+        }
+
         /// <summary>
         /// Initialize combatant with data
         /// </summary>

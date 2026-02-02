@@ -10,23 +10,10 @@ namespace VeilBreakers.Capture
     /// <summary>
     /// Manages the capture system including marking, binding, and capture attempts.
     /// </summary>
-    public class CaptureManager : MonoBehaviour
+    public class CaptureManager : SingletonMonoBehaviour<CaptureManager>
     {
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        private static CaptureManager _instance;
-        private static bool _isQuitting = false;
-
-        public static CaptureManager Instance
-        {
-            get
-            {
-                if (_isQuitting) return null;
-                return _instance;
-            }
-        }
+        // This is a scene-specific singleton
+        protected override bool IsPersistent => false;
 
         // =============================================================================
         // CONFIGURATION
@@ -109,24 +96,6 @@ namespace VeilBreakers.Capture
         // UNITY LIFECYCLE
         // =============================================================================
 
-        private void Awake()
-        {
-            if (_instance != null && _instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            _instance = this;
-        }
-
-        private void OnDestroy()
-        {
-            if (_instance == this)
-            {
-                _instance = null;
-            }
-        }
-
         private void OnDisable()
         {
             // NOTE: Do NOT set events to null here - that breaks the event pattern
@@ -135,11 +104,6 @@ namespace VeilBreakers.Capture
             // Only clear runtime state.
             _bindAttempts.Clear();
             _bindStartTimes.Clear();
-        }
-
-        private void OnApplicationQuit()
-        {
-            _isQuitting = true;
         }
 
         private void Update()

@@ -29,6 +29,11 @@ namespace VeilBreakers.UI.Menus
 
         private void OnDisable()
         {
+            if (_monsterImage != null)
+            {
+                // Reset scale to avoid carrying over the value if the element is reused.
+                _monsterImage.transform.scale = Vector3.one;
+            }
             _monsterImage = null;
             _initialized = false;
         }
@@ -54,7 +59,8 @@ namespace VeilBreakers.UI.Menus
             float time = Time.time;
 #endif
             float pulse = 1f + (Mathf.Sin(time * _pulseSpeed) * _pulseIntensity);
-            _monsterImage.style.scale = new Scale(new Vector2(pulse, pulse));
+            // Use transform.scale to avoid garbage allocation from 'new Scale()'
+            _monsterImage.transform.scale = new Vector3(pulse, pulse, 1f);
         }
     }
 }

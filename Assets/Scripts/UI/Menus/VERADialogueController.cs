@@ -75,6 +75,12 @@ namespace VeilBreakers.UI.Menus
         private VisualElement _choicesList;
         private VisualElement _integrityBarFill;
         private Label _integrityPercent;
+        
+        // Cached Colors for performance
+        private static readonly Color IntegrityColorNormal = new Color(0.47f, 0.78f, 0.59f);
+        private static readonly Color IntegrityColorWarning = new Color(0.86f, 0.71f, 0.24f);
+        private static readonly Color IntegrityColorCritical = new Color(0.78f, 0.24f, 0.31f);
+        private static readonly Color IntegrityColorCorrupted = new Color(0.63f, 0.24f, 0.47f);
 
         // =============================================================================
         // EVENTS
@@ -105,6 +111,10 @@ namespace VeilBreakers.UI.Menus
 
         private void OnDisable()
         {
+            if (_dialogueContainer != null)
+            {
+                _dialogueContainer.UnregisterCallback<ClickEvent>(OnDialogueBoxClicked);
+            }
             UnsubscribeFromVERA();
             StopAllCoroutines();
         }
@@ -234,19 +244,19 @@ namespace VeilBreakers.UI.Menus
                 // Update text color
                 if (_currentVeilIntegrity <= 25)
                 {
-                    _integrityPercent.style.color = new Color(0.63f, 0.24f, 0.47f);
+                    _integrityPercent.style.color = IntegrityColorCorrupted;
                 }
                 else if (_currentVeilIntegrity <= 50)
                 {
-                    _integrityPercent.style.color = new Color(0.78f, 0.24f, 0.31f);
+                    _integrityPercent.style.color = IntegrityColorCritical;
                 }
                 else if (_currentVeilIntegrity <= 75)
                 {
-                    _integrityPercent.style.color = new Color(0.86f, 0.71f, 0.24f);
+                    _integrityPercent.style.color = IntegrityColorWarning;
                 }
                 else
                 {
-                    _integrityPercent.style.color = new Color(0.47f, 0.78f, 0.59f);
+                    _integrityPercent.style.color = IntegrityColorNormal;
                 }
             }
 

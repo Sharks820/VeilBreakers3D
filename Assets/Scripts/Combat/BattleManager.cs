@@ -11,9 +11,10 @@ namespace VeilBreakers.Combat
     /// <summary>
     /// Manages real-time tactical combat
     /// </summary>
-    public class BattleManager : MonoBehaviour
+    public class BattleManager : SingletonMonoBehaviour<BattleManager>
     {
-        public static BattleManager Instance { get; private set; }
+        // This is a scene-specific singleton
+        protected override bool IsPersistent => false;
 
         [Header("Battle State")]
         [SerializeField] private BattleState _state = BattleState.INITIALIZING;
@@ -54,17 +55,7 @@ namespace VeilBreakers.Combat
         private const int kMaxPartySize = 6;
         private Brand[] _brandBuffer = new Brand[kMaxPartySize];
 
-        private void Awake()
-        {
-            if (Instance != null && Instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            Instance = this;
-        }
-
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
             // Clean up event subscriptions if destroyed mid-battle
             foreach (var kvp in _deathHandlers)
@@ -75,11 +66,8 @@ namespace VeilBreakers.Combat
                 }
             }
             _deathHandlers.Clear();
-
-            if (Instance == this)
-            {
-                Instance = null;
-            }
+            
+            base.OnDestroy();
         }
 
         /// <summary>

@@ -8,15 +8,8 @@ namespace VeilBreakers.Managers
     /// Manages persistent game settings using PlayerPrefs.
     /// Handles audio, graphics, controls, and accessibility settings.
     /// </summary>
-    public class SettingsManager : MonoBehaviour
+    public class SettingsManager : SingletonMonoBehaviour<SettingsManager>
     {
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        private static SettingsManager _instance;
-        public static SettingsManager Instance => _instance;
-
         // =============================================================================
         // SETTINGS DATA
         // =============================================================================
@@ -36,62 +29,22 @@ namespace VeilBreakers.Managers
         // PLAYERPREFS KEYS
         // =============================================================================
 
-        private const string KEY_MASTER_VOLUME = "Settings_MasterVolume";
-        private const string KEY_MUSIC_VOLUME = "Settings_MusicVolume";
-        private const string KEY_SFX_VOLUME = "Settings_SFXVolume";
-        private const string KEY_VOICE_VOLUME = "Settings_VoiceVolume";
-        private const string KEY_MUTE_ALL = "Settings_MuteAll";
-
-        private const string KEY_RESOLUTION_WIDTH = "Settings_ResolutionWidth";
-        private const string KEY_RESOLUTION_HEIGHT = "Settings_ResolutionHeight";
-        private const string KEY_FULLSCREEN_MODE = "Settings_FullscreenMode";
-        private const string KEY_VSYNC = "Settings_VSync";
-        private const string KEY_TARGET_FRAMERATE = "Settings_TargetFramerate";
-        private const string KEY_QUALITY_LEVEL = "Settings_QualityLevel";
-        private const string KEY_BRIGHTNESS = "Settings_Brightness";
-
-        private const string KEY_CAMERA_SENSITIVITY = "Settings_CameraSensitivity";
-        private const string KEY_INVERT_Y = "Settings_InvertY";
-        private const string KEY_VIBRATION = "Settings_Vibration";
-        private const string KEY_AUTO_AIM = "Settings_AutoAim";
-
-        private const string KEY_SCREEN_SHAKE = "Settings_ScreenShake";
-        private const string KEY_SUBTITLES = "Settings_Subtitles";
-        private const string KEY_COLORBLIND_MODE = "Settings_ColorblindMode";
-        private const string KEY_UI_SCALE = "Settings_UIScale";
-        private const string KEY_TEXT_SIZE = "Settings_TextSize";
-        private const string KEY_DAMAGE_NUMBERS = "Settings_DamageNumbers";
-
-        private const string KEY_LANGUAGE = "Settings_Language";
-        private const string KEY_FIRST_RUN = "Settings_FirstRun";
+        private const string KEY_GAME_SETTINGS = "GameSettings_JSON";
 
         // =============================================================================
         // UNITY LIFECYCLE
         // =============================================================================
 
-        private void Awake()
+        protected override void OnSingletonAwake()
         {
-            if (_instance != null && _instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
-
             _settings = new GameSettings();
             LoadSettings();
         }
-
-        private void OnDestroy()
-        {
-            if (_instance == this)
-                _instance = null;
-        }
-
-        private void OnApplicationQuit()
+        
+        protected override void OnApplicationQuit()
         {
             SaveSettings();
+            base.OnApplicationQuit();
         }
 
         // =============================================================================
@@ -100,39 +53,30 @@ namespace VeilBreakers.Managers
 
         public void LoadSettings()
         {
-            // Audio
-            _settings.MasterVolume = PlayerPrefs.GetFloat(KEY_MASTER_VOLUME, 1f);
-            _settings.MusicVolume = PlayerPrefs.GetFloat(KEY_MUSIC_VOLUME, 0.8f);
-            _settings.SFXVolume = PlayerPrefs.GetFloat(KEY_SFX_VOLUME, 1f);
-            _settings.VoiceVolume = PlayerPrefs.GetFloat(KEY_VOICE_VOLUME, 1f);
-            _settings.MuteAll = PlayerPrefs.GetInt(KEY_MUTE_ALL, 0) == 1;
-
-            // Graphics
-            _settings.ResolutionWidth = PlayerPrefs.GetInt(KEY_RESOLUTION_WIDTH, Screen.currentResolution.width);
-            _settings.ResolutionHeight = PlayerPrefs.GetInt(KEY_RESOLUTION_HEIGHT, Screen.currentResolution.height);
-            _settings.FullscreenMode = (FullScreenMode)PlayerPrefs.GetInt(KEY_FULLSCREEN_MODE, (int)FullScreenMode.FullScreenWindow);
-            _settings.VSync = PlayerPrefs.GetInt(KEY_VSYNC, 1) == 1;
-            _settings.TargetFramerate = PlayerPrefs.GetInt(KEY_TARGET_FRAMERATE, 60);
-            _settings.QualityLevel = PlayerPrefs.GetInt(KEY_QUALITY_LEVEL, QualitySettings.GetQualityLevel());
-            _settings.Brightness = PlayerPrefs.GetFloat(KEY_BRIGHTNESS, 1f);
-
-            // Controls
-            _settings.CameraSensitivity = PlayerPrefs.GetFloat(KEY_CAMERA_SENSITIVITY, 1f);
-            _settings.InvertY = PlayerPrefs.GetInt(KEY_INVERT_Y, 0) == 1;
-            _settings.Vibration = PlayerPrefs.GetInt(KEY_VIBRATION, 1) == 1;
-            _settings.AutoAim = PlayerPrefs.GetInt(KEY_AUTO_AIM, 1) == 1;
-
-            // Accessibility
-            _settings.ScreenShake = PlayerPrefs.GetFloat(KEY_SCREEN_SHAKE, 1f);
-            _settings.Subtitles = PlayerPrefs.GetInt(KEY_SUBTITLES, 1) == 1;
-            _settings.ColorblindMode = (ColorblindMode)PlayerPrefs.GetInt(KEY_COLORBLIND_MODE, 0);
-            _settings.UIScale = PlayerPrefs.GetFloat(KEY_UI_SCALE, 1f);
-            _settings.TextSize = PlayerPrefs.GetFloat(KEY_TEXT_SIZE, 1f);
-            _settings.DamageNumbers = PlayerPrefs.GetInt(KEY_DAMAGE_NUMBERS, 1) == 1;
-
-            // General
-            _settings.Language = PlayerPrefs.GetString(KEY_LANGUAGE, "en");
-            _settings.FirstRun = PlayerPrefs.GetInt(KEY_FIRST_RUN, 1) == 1;
+            if (PlayerPrefs.HasKey(KEY_GAME_SETTINGS))
+            {
+                string json = PlayerPrefs.GetString(KEY_GAME_SETTINGS);
+                try
+                {
+                    _settings = JsonUtility.FromJson<GameSettings>(json);
+                    // Handle case where new settings were added and aren't in the saved JSON
+                    if (_settings == null)
+                    {
+                        _settings = new GameSettings();
+                        Debug.LogWarning("[SettingsManager] Failed to parse settings JSON, resetting to default.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[SettingsManager] Error loading settings: {ex.Message}. Resetting to default.");
+                    _settings = new GameSettings();
+                }
+            }
+            else
+            {
+                _settings = new GameSettings();
+                Debug.Log("[SettingsManager] No saved settings found, using defaults.");
+            }
 
             ApplySettings();
             OnSettingsLoaded?.Invoke();
@@ -145,43 +89,19 @@ namespace VeilBreakers.Managers
 
         public void SaveSettings()
         {
-            // Audio
-            PlayerPrefs.SetFloat(KEY_MASTER_VOLUME, _settings.MasterVolume);
-            PlayerPrefs.SetFloat(KEY_MUSIC_VOLUME, _settings.MusicVolume);
-            PlayerPrefs.SetFloat(KEY_SFX_VOLUME, _settings.SFXVolume);
-            PlayerPrefs.SetFloat(KEY_VOICE_VOLUME, _settings.VoiceVolume);
-            PlayerPrefs.SetInt(KEY_MUTE_ALL, _settings.MuteAll ? 1 : 0);
+            try
+            {
+                string json = JsonUtility.ToJson(_settings, true);
+                PlayerPrefs.SetString(KEY_GAME_SETTINGS, json);
+                PlayerPrefs.Save();
 
-            // Graphics
-            PlayerPrefs.SetInt(KEY_RESOLUTION_WIDTH, _settings.ResolutionWidth);
-            PlayerPrefs.SetInt(KEY_RESOLUTION_HEIGHT, _settings.ResolutionHeight);
-            PlayerPrefs.SetInt(KEY_FULLSCREEN_MODE, (int)_settings.FullscreenMode);
-            PlayerPrefs.SetInt(KEY_VSYNC, _settings.VSync ? 1 : 0);
-            PlayerPrefs.SetInt(KEY_TARGET_FRAMERATE, _settings.TargetFramerate);
-            PlayerPrefs.SetInt(KEY_QUALITY_LEVEL, _settings.QualityLevel);
-            PlayerPrefs.SetFloat(KEY_BRIGHTNESS, _settings.Brightness);
-
-            // Controls
-            PlayerPrefs.SetFloat(KEY_CAMERA_SENSITIVITY, _settings.CameraSensitivity);
-            PlayerPrefs.SetInt(KEY_INVERT_Y, _settings.InvertY ? 1 : 0);
-            PlayerPrefs.SetInt(KEY_VIBRATION, _settings.Vibration ? 1 : 0);
-            PlayerPrefs.SetInt(KEY_AUTO_AIM, _settings.AutoAim ? 1 : 0);
-
-            // Accessibility
-            PlayerPrefs.SetFloat(KEY_SCREEN_SHAKE, _settings.ScreenShake);
-            PlayerPrefs.SetInt(KEY_SUBTITLES, _settings.Subtitles ? 1 : 0);
-            PlayerPrefs.SetInt(KEY_COLORBLIND_MODE, (int)_settings.ColorblindMode);
-            PlayerPrefs.SetFloat(KEY_UI_SCALE, _settings.UIScale);
-            PlayerPrefs.SetFloat(KEY_TEXT_SIZE, _settings.TextSize);
-            PlayerPrefs.SetInt(KEY_DAMAGE_NUMBERS, _settings.DamageNumbers ? 1 : 0);
-
-            // General
-            PlayerPrefs.SetString(KEY_LANGUAGE, _settings.Language);
-            PlayerPrefs.SetInt(KEY_FIRST_RUN, _settings.FirstRun ? 1 : 0);
-
-            PlayerPrefs.Save();
-            OnSettingsSaved?.Invoke();
-            ErrorLogger.Settings("Settings saved to PlayerPrefs");
+                OnSettingsSaved?.Invoke();
+                ErrorLogger.Settings("Settings saved to PlayerPrefs");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SettingsManager] Failed to save settings: {ex.Message}");
+            }
         }
 
         // =============================================================================
@@ -198,6 +118,22 @@ namespace VeilBreakers.Managers
         private void ApplyGraphicsSettings()
         {
             // Resolution and fullscreen
+            // Check if resolution is supported before applying
+            bool resolutionSupported = false;
+            foreach (var res in Screen.resolutions)
+            {
+                if (res.width == _settings.ResolutionWidth && res.height == _settings.ResolutionHeight)
+                {
+                    resolutionSupported = true;
+                    break;
+                }
+            }
+            if (!resolutionSupported)
+            {
+                _settings.ResolutionWidth = Screen.currentResolution.width;
+                _settings.ResolutionHeight = Screen.currentResolution.height;
+            }
+            
             Screen.SetResolution(
                 _settings.ResolutionWidth,
                 _settings.ResolutionHeight,
@@ -211,16 +147,29 @@ namespace VeilBreakers.Managers
             Application.targetFrameRate = _settings.VSync ? -1 : _settings.TargetFramerate;
 
             // Quality level
-            QualitySettings.SetQualityLevel(_settings.QualityLevel, true);
+            if (_settings.QualityLevel >= 0 && _settings.QualityLevel < QualitySettings.names.Length)
+            {
+                QualitySettings.SetQualityLevel(_settings.QualityLevel, true);
+            }
 
             ErrorLogger.Settings($"Graphics applied: {_settings.ResolutionWidth}x{_settings.ResolutionHeight} {_settings.FullscreenMode}");
         }
 
         private void ApplyAudioSettings()
         {
-            // Audio will be applied through AudioManager when it's available
-            // For now, just log
-            ErrorLogger.Settings($"Audio settings ready: Master={_settings.MasterVolume}, Music={_settings.MusicVolume}");
+            if (Audio.AudioManager.HasInstance)
+            {
+                var audioManager = Audio.AudioManager.Instance;
+                audioManager.SetMasterVolume(_settings.MuteAll ? 0f : _settings.MasterVolume);
+                audioManager.SetMusicVolume(_settings.MusicVolume);
+                audioManager.SetSFXVolume(_settings.SFXVolume);
+                audioManager.SetVoiceVolume(_settings.VoiceVolume);
+                ErrorLogger.Settings($"Audio settings applied: Master={_settings.MasterVolume}, Music={_settings.MusicVolume}");
+            }
+            else
+            {
+                ErrorLogger.Settings($"Audio settings ready, waiting for AudioManager.");
+            }
         }
 
         // =============================================================================

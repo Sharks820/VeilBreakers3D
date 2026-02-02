@@ -9,25 +9,8 @@ namespace VeilBreakers.Core
     /// GameManager - Central game state manager
     /// Handles game flow, party management, and core game state
     /// </summary>
-    public class GameManager : MonoBehaviour
+    public class GameManager : SingletonMonoBehaviour<GameManager>
     {
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        private static GameManager _instance;
-        private static bool _isQuitting = false;
-        
-        public static GameManager Instance
-        {
-            get
-            {
-                // Don't return instance during application quit
-                if (_isQuitting) return null;
-                return _instance;
-            }
-        }
-
         // =============================================================================
         // GAME STATE
         // =============================================================================
@@ -111,23 +94,9 @@ namespace VeilBreakers.Core
         // INITIALIZATION
         // =============================================================================
 
-        private void Awake()
+        protected override void OnSingletonAwake()
         {
-            if (_instance != null && _instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
-
             Debug.Log("[GameManager] Initialized");
-        }
-
-        private void OnApplicationQuit()
-        {
-            _isQuitting = true;
         }
 
         // =============================================================================

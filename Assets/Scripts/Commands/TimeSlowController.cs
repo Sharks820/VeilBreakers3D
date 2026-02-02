@@ -8,24 +8,8 @@ namespace VeilBreakers.Commands
     /// Controls time slow effect when quick command menu is open.
     /// Time slows to 25% speed during tactical command selection.
     /// </summary>
-    public class TimeSlowController : MonoBehaviour
+    public class TimeSlowController : SingletonMonoBehaviour<TimeSlowController>
     {
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        private static TimeSlowController _instance;
-        private static bool _isQuitting = false;
-
-        public static TimeSlowController Instance
-        {
-            get
-            {
-                if (_isQuitting) return null;
-                return _instance;
-            }
-        }
-
         // =============================================================================
         // CONFIGURATION
         // =============================================================================
@@ -79,20 +63,13 @@ namespace VeilBreakers.Commands
         // UNITY LIFECYCLE
         // =============================================================================
 
-        private void Awake()
+        protected override void OnSingletonAwake()
         {
-            if (_instance != null && _instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            _instance = this;
-
             // Cache original fixed delta time to avoid hardcoding
             _originalFixedDeltaTime = Time.fixedDeltaTime;
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
             // Ensure time scale and fixed delta time are reset
             Time.timeScale = 1f;
@@ -100,16 +77,8 @@ namespace VeilBreakers.Commands
             {
                 Time.fixedDeltaTime = _originalFixedDeltaTime;
             }
-
-            if (_instance == this)
-            {
-                _instance = null;
-            }
-        }
-
-        private void OnApplicationQuit()
-        {
-            _isQuitting = true;
+            
+            base.OnDestroy();
         }
 
         private void Update()

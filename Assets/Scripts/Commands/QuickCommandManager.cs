@@ -11,24 +11,11 @@ namespace VeilBreakers.Commands
     /// Manages quick command execution for all party allies.
     /// Handles cooldowns, command queue, and command state machine.
     /// </summary>
-    public class QuickCommandManager : MonoBehaviour
+    public class QuickCommandManager : SingletonMonoBehaviour<QuickCommandManager>
     {
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        private static QuickCommandManager _instance;
-        private static bool _isQuitting = false;
-
-        public static QuickCommandManager Instance
-        {
-            get
-            {
-                if (_isQuitting) return null;
-                return _instance;
-            }
-        }
-
+        // This is a scene-specific singleton
+        protected override bool IsPersistent => false;
+        
         // =============================================================================
         // CONFIGURATION
         // =============================================================================
@@ -78,31 +65,11 @@ namespace VeilBreakers.Commands
         // UNITY LIFECYCLE
         // =============================================================================
 
-        private void Awake()
+        protected override void OnSingletonAwake()
         {
-            if (_instance != null && _instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            _instance = this;
-
             _activeCommands = new Dictionary<Combatant, QuickCommandInstance>();
             _cooldowns = new Dictionary<Combatant, float>();
             _formationPositions = new Dictionary<Combatant, Vector3>();
-        }
-
-        private void OnDestroy()
-        {
-            if (_instance == this)
-            {
-                _instance = null;
-            }
-        }
-
-        private void OnApplicationQuit()
-        {
-            _isQuitting = true;
         }
 
         private void Update()
