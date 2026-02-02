@@ -11,15 +11,8 @@ namespace VeilBreakers.Core
     /// Bootstrap script that initializes all game systems in the correct order.
     /// Attach this to a single GameObject in your initial scene.
     /// </summary>
-    public class GameBootstrap : MonoBehaviour
+    public class GameBootstrap : SingletonMonoBehaviour<GameBootstrap>
     {
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        private static GameBootstrap _instance;
-        public static GameBootstrap Instance => _instance;
-
         // =============================================================================
         // CONFIGURATION
         // =============================================================================
@@ -27,7 +20,6 @@ namespace VeilBreakers.Core
         [Header("Configuration")]
         [SerializeField] private AudioConfig _audioConfig;
         [SerializeField] private bool _initializeOnAwake = true;
-        [SerializeField] private bool _dontDestroyOnLoad = true;
 
         [Header("Scene Loading")]
         [SerializeField] private string _firstSceneToLoad = "MainMenu";
@@ -49,23 +41,8 @@ namespace VeilBreakers.Core
         // UNITY LIFECYCLE
         // =============================================================================
 
-        private void Awake()
+        protected override void OnSingletonAwake()
         {
-            // Singleton setup
-            if (_instance != null && _instance != this)
-            {
-                Log("Duplicate GameBootstrap found, destroying...");
-                Destroy(gameObject);
-                return;
-            }
-
-            _instance = this;
-
-            if (_dontDestroyOnLoad)
-            {
-                DontDestroyOnLoad(gameObject);
-            }
-
             if (_initializeOnAwake)
             {
                 Initialize();
@@ -92,14 +69,14 @@ namespace VeilBreakers.Core
 
             // Wait for VBSceneManager to be ready (max 2 seconds)
             float waitTime = 0f;
-            while (VBSceneManager.Instance == null && waitTime < 2f)
+            while (!VBSceneManager.HasInstance && waitTime < 2f)
             {
                 yield return null;
                 waitTime += Time.deltaTime;
             }
 
             // Load the first scene
-            if (VBSceneManager.Instance != null)
+            if (VBSceneManager.HasInstance)
             {
                 Log($"Loading first scene: {_firstSceneToLoad}");
                 VBSceneManager.Instance.LoadSceneWithFade(_firstSceneToLoad);
@@ -117,7 +94,7 @@ namespace VeilBreakers.Core
         // =============================================================================
 
         /// <summary>
-        /// Initialize all game systems in the correct order.
+        /// Initialize all game systems in the correct order by accessing their singletons.
         /// </summary>
         public void Initialize()
         {
@@ -129,246 +106,44 @@ namespace VeilBreakers.Core
 
             Log("=== INITIALIZING VEILBREAKERS ===");
 
-            // Phase 1: Create core managers
-            InitializeCoreManagers();
+            // The act of accessing the .Instance property will cause the singleton's
+            // Awake method to run, creating the manager if it doesn't exist.
+            // This ensures a controlled, orderly initialization.
 
-            // Phase 2: Initialize persistence systems (before anything that might save)
-            InitializePersistenceSystems();
+            // Phase 1: Core Managers
+            Log("Phase 1: Core Managers");
+            _ = GameManager.Instance;
+            _ = GameDatabase.Instance;
+            _ = InputManager.Instance;
+            Log("  - Core managers initialized.");
 
-            // Phase 3: Initialize audio system
-            InitializeAudioSystem();
+            // Phase 2: Persistence & Settings
+            Log("Phase 2: Persistence & Settings");
+            _ = SettingsManager.Instance;
+            _ = VBSceneManager.Instance;
+            _ = SaveManager.Instance;
+            _ = AutoSaveManager.Instance;
+            Log("  - Persistence systems initialized.");
 
-            // Phase 4: Load game data
-            InitializeGameData();
-
-            // Phase 5: Initialize combat systems
-            InitializeCombatSystems();
-
-            // Phase 6: Initialize gameplay systems
-            InitializeGameplaySystems();
+            // Phase 3: Audio System
+            Log("Phase 3: Audio System");
+            if (AudioManager.HasInstance)
+            {
+                AudioManager.Instance.SetConfig(_audioConfig);
+            }
+            _ = MusicManager.Instance;
+            _ = VERAVoiceController.Instance;
+            _ = LowHealthAudio.Instance;
+            Log("  - Audio systems initialized.");
+            
+            // Phase 4: Gameplay Systems
+            Log("Phase 4: Gameplay Systems");
+            _ = StatusEffectManager.Instance;
+            _ = ShrineManager.Instance;
+            Log("  - Gameplay systems initialized.");
 
             _isInitialized = true;
             Log("=== INITIALIZATION COMPLETE ===");
-        }
-
-        private void InitializeCoreManagers()
-        {
-            Log("Phase 1: Core Managers");
-
-            // GameManager
-            if (GameManager.Instance == null)
-            {
-                var gmObj = new GameObject("[GameManager]");
-                gmObj.AddComponent<GameManager>();
-                if (_dontDestroyOnLoad) DontDestroyOnLoad(gmObj);
-                Log("  - Created GameManager");
-            }
-            else
-            {
-                Log("  - GameManager exists");
-            }
-
-            // EventBus is a static class, no instantiation needed
-            Log("  - EventBus (static class - always available)");
-
-            // GameDatabase
-            if (GameDatabase.Instance == null)
-            {
-                var dbObj = new GameObject("[GameDatabase]");
-                dbObj.AddComponent<GameDatabase>();
-                if (_dontDestroyOnLoad) DontDestroyOnLoad(dbObj);
-                Log("  - Created GameDatabase");
-            }
-            else
-            {
-                Log("  - GameDatabase exists");
-            }
-        }
-
-        private void InitializePersistenceSystems()
-        {
-            Log("Phase 2: Persistence Systems");
-
-            // VBSceneManager (needs to exist before any scene operations)
-            if (VBSceneManager.Instance == null)
-            {
-                var smObj = new GameObject("[VBSceneManager]");
-                smObj.AddComponent<VBSceneManager>();
-                if (_dontDestroyOnLoad) DontDestroyOnLoad(smObj);
-                Log("  - Created VBSceneManager");
-            }
-            else
-            {
-                Log("  - VBSceneManager exists");
-            }
-
-            // SaveManager
-            if (SaveManager.Instance == null)
-            {
-                var saveObj = new GameObject("[SaveManager]");
-                saveObj.AddComponent<SaveManager>();
-                if (_dontDestroyOnLoad) DontDestroyOnLoad(saveObj);
-                Log("  - Created SaveManager");
-            }
-            else
-            {
-                Log("  - SaveManager exists");
-            }
-
-            // AutoSaveManager
-            if (AutoSaveManager.Instance == null)
-            {
-                var autoSaveObj = new GameObject("[AutoSaveManager]");
-                autoSaveObj.AddComponent<AutoSaveManager>();
-                if (_dontDestroyOnLoad) DontDestroyOnLoad(autoSaveObj);
-                Log("  - Created AutoSaveManager");
-            }
-            else
-            {
-                Log("  - AutoSaveManager exists");
-            }
-        }
-
-        private void InitializeAudioSystem()
-        {
-            Log("Phase 2: Audio System");
-
-            // AudioManager
-            if (AudioManager.Instance == null)
-            {
-                var amObj = new GameObject("[AudioManager]");
-                var am = amObj.AddComponent<AudioManager>();
-                if (_audioConfig != null)
-                {
-                    am.SetConfig(_audioConfig);
-                }
-                if (_dontDestroyOnLoad) DontDestroyOnLoad(amObj);
-                Log("  - Created AudioManager");
-            }
-            else
-            {
-                Log("  - AudioManager exists");
-            }
-
-            // MusicManager
-            if (MusicManager.Instance == null)
-            {
-                var mmObj = new GameObject("[MusicManager]");
-                mmObj.AddComponent<MusicManager>();
-                if (_dontDestroyOnLoad) DontDestroyOnLoad(mmObj);
-                Log("  - Created MusicManager");
-            }
-            else
-            {
-                Log("  - MusicManager exists");
-            }
-
-            // VERAVoiceController
-            if (VERAVoiceController.Instance == null)
-            {
-                var vcObj = new GameObject("[VERAVoiceController]");
-                vcObj.AddComponent<VERAVoiceController>();
-                if (_dontDestroyOnLoad) DontDestroyOnLoad(vcObj);
-                Log("  - Created VERAVoiceController");
-            }
-            else
-            {
-                Log("  - VERAVoiceController exists");
-            }
-
-            // LowHealthAudio
-            if (LowHealthAudio.Instance == null)
-            {
-                var lhObj = new GameObject("[LowHealthAudio]");
-                lhObj.AddComponent<LowHealthAudio>();
-                if (_dontDestroyOnLoad) DontDestroyOnLoad(lhObj);
-                Log("  - Created LowHealthAudio");
-            }
-            else
-            {
-                Log("  - LowHealthAudio exists");
-            }
-        }
-
-        private void InitializeGameData()
-        {
-            Log("Phase 3: Game Data");
-
-            // Load data from GameDatabase
-            if (GameDatabase.Instance != null)
-            {
-                Log($"  - Monsters loaded: {GameDatabase.Instance.MonsterCount}");
-                Log($"  - Skills loaded: {GameDatabase.Instance.SkillCount}");
-                Log($"  - Heroes loaded: {GameDatabase.Instance.HeroCount}");
-                Log($"  - Items loaded: {GameDatabase.Instance.ItemCount}");
-            }
-            else
-            {
-                LogWarning("  - GameDatabase not available");
-            }
-        }
-
-        private void InitializeCombatSystems()
-        {
-            Log("Phase 4: Combat Systems");
-
-            // BattleManager
-            if (BattleManager.Instance == null)
-            {
-                var bmObj = new GameObject("[BattleManager]");
-                bmObj.AddComponent<BattleManager>();
-                if (_dontDestroyOnLoad) DontDestroyOnLoad(bmObj);
-                Log("  - Created BattleManager");
-            }
-            else
-            {
-                Log("  - BattleManager exists");
-            }
-
-            // AudioBattleIntegration
-            var existingIntegration = FindFirstObjectByType<AudioBattleIntegration>();
-            if (existingIntegration == null)
-            {
-                var aiObj = new GameObject("[AudioBattleIntegration]");
-                aiObj.AddComponent<AudioBattleIntegration>();
-                if (_dontDestroyOnLoad) DontDestroyOnLoad(aiObj);
-                Log("  - Created AudioBattleIntegration");
-            }
-            else
-            {
-                Log("  - AudioBattleIntegration exists");
-            }
-        }
-
-        private void InitializeGameplaySystems()
-        {
-            Log("Phase 6: Gameplay Systems");
-
-            // StatusEffectManager
-            if (StatusEffectManager.Instance == null)
-            {
-                var seObj = new GameObject("[StatusEffectManager]");
-                seObj.AddComponent<StatusEffectManager>();
-                if (_dontDestroyOnLoad) DontDestroyOnLoad(seObj);
-                Log("  - Created StatusEffectManager");
-            }
-            else
-            {
-                Log("  - StatusEffectManager exists");
-            }
-
-            // ShrineManager
-            if (ShrineManager.Instance == null)
-            {
-                var shrineObj = new GameObject("[ShrineManager]");
-                shrineObj.AddComponent<ShrineManager>();
-                if (_dontDestroyOnLoad) DontDestroyOnLoad(shrineObj);
-                Log("  - Created ShrineManager");
-            }
-            else
-            {
-                Log("  - ShrineManager exists");
-            }
         }
 
         // =============================================================================
@@ -386,28 +161,19 @@ namespace VeilBreakers.Core
         {
             Log("\n=== SYSTEM HEALTH CHECK ===");
 
-            // Check core managers
-            CheckManager("GameManager", GameManager.Instance != null);
-            Log("  [OK] EventBus (static class)"); // EventBus is static, always available
-            CheckManager("GameDatabase", GameDatabase.Instance != null);
-
-            // Check persistence
-            CheckManager("VBSceneManager", VBSceneManager.Instance != null);
-            CheckManager("SaveManager", SaveManager.Instance != null);
-            CheckManager("AutoSaveManager", AutoSaveManager.Instance != null);
-
-            // Check audio
-            CheckManager("AudioManager", AudioManager.Instance != null);
-            CheckManager("MusicManager", MusicManager.Instance != null);
-            CheckManager("VERAVoiceController", VERAVoiceController.Instance != null);
-            CheckManager("LowHealthAudio", LowHealthAudio.Instance != null);
-
-            // Check combat
-            CheckManager("BattleManager", BattleManager.Instance != null);
-
-            // Check gameplay
-            CheckManager("StatusEffectManager", StatusEffectManager.Instance != null);
-            CheckManager("ShrineManager", ShrineManager.Instance != null);
+            CheckManager("GameManager", GameManager.HasInstance);
+            CheckManager("GameDatabase", GameDatabase.HasInstance);
+            CheckManager("InputManager", InputManager.HasInstance);
+            CheckManager("SettingsManager", SettingsManager.HasInstance);
+            CheckManager("VBSceneManager", VBSceneManager.HasInstance);
+            CheckManager("SaveManager", SaveManager.HasInstance);
+            CheckManager("AutoSaveManager", AutoSaveManager.HasInstance);
+            CheckManager("AudioManager", AudioManager.HasInstance);
+            CheckManager("MusicManager", MusicManager.HasInstance);
+            CheckManager("VERAVoiceController", VERAVoiceController.HasInstance);
+            CheckManager("LowHealthAudio", LowHealthAudio.HasInstance);
+            CheckManager("StatusEffectManager", StatusEffectManager.HasInstance);
+            CheckManager("ShrineManager", ShrineManager.HasInstance);
 
             Log("=== HEALTH CHECK COMPLETE ===\n");
         }

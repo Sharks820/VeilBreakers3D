@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using VeilBreakers.Data;
 
@@ -66,45 +67,30 @@ namespace VeilBreakers.Core
 
         private readonly Dictionary<GameAction, KeyCode[]> _defaultBindings = new()
         {
-            // Combat & UI
             { GameAction.Confirm, new[] { KeyCode.Return, KeyCode.Space, KeyCode.E } },
             { GameAction.Cancel, new[] { KeyCode.Escape, KeyCode.Backspace } },
             { GameAction.OpenMenu, new[] { KeyCode.Tab, KeyCode.Q } },
-
-            // Movement/Navigation
             { GameAction.MoveUp, new[] { KeyCode.W, KeyCode.UpArrow } },
             { GameAction.MoveDown, new[] { KeyCode.S, KeyCode.DownArrow } },
             { GameAction.MoveLeft, new[] { KeyCode.A, KeyCode.LeftArrow } },
             { GameAction.MoveRight, new[] { KeyCode.D, KeyCode.RightArrow } },
-
-            // Combat specific
             { GameAction.TargetNext, new[] { KeyCode.Tab } },
-            { GameAction.TargetPrevious, new[] { KeyCode.Tab } },  // + Shift
+            { GameAction.TargetPrevious, new[] { KeyCode.Tab } },
             { GameAction.CycleEnemy, new[] { KeyCode.E } },
             { GameAction.CycleAlly, new[] { KeyCode.Q } },
-
-            // Quick commands (number keys)
             { GameAction.Skill1, new[] { KeyCode.Alpha1 } },
             { GameAction.Skill2, new[] { KeyCode.Alpha2 } },
             { GameAction.Skill3, new[] { KeyCode.Alpha3 } },
             { GameAction.Skill4, new[] { KeyCode.Alpha4 } },
             { GameAction.Ultimate, new[] { KeyCode.R } },
-
-            // Capture
             { GameAction.MarkForCapture, new[] { KeyCode.C } },
             { GameAction.CancelMark, new[] { KeyCode.X } },
             { GameAction.CaptureAction, new[] { KeyCode.Space, KeyCode.Return } },
-
-            // Ally hotkeys
             { GameAction.Ally1, new[] { KeyCode.F1 } },
             { GameAction.Ally2, new[] { KeyCode.F2 } },
             { GameAction.Ally3, new[] { KeyCode.F3 } },
-
-            // Dialogue
             { GameAction.AdvanceDialogue, new[] { KeyCode.Space, KeyCode.Return } },
             { GameAction.SkipDialogue, new[] { KeyCode.Space } },
-
-            // Modifier
             { GameAction.ShiftModifier, new[] { KeyCode.LeftShift, KeyCode.RightShift } }
         };
 
@@ -115,30 +101,31 @@ namespace VeilBreakers.Core
         private Dictionary<GameAction, KeyCode[]> _currentBindings;
         private bool _inputEnabled = true;
 
+        // Caches for input state per frame
+        private readonly Dictionary<GameAction, bool> _actionDownCache = new Dictionary<GameAction, bool>();
+        private readonly GameAction[] _allGameActions;
+
         // =============================================================================
         // PROPERTIES
         // =============================================================================
 
-        /// <summary>Current mouse position in screen coordinates</summary>
         public Vector2 MousePosition => Input.mousePosition;
-
-        /// <summary>Whether input processing is enabled</summary>
-        public bool InputEnabled
-        {
-            get => _inputEnabled;
-            set => _inputEnabled = value;
-        }
+        public bool InputEnabled { get => _inputEnabled; set => _inputEnabled = value; }
 
         // =============================================================================
         // EVENTS
         // =============================================================================
 
-        /// <summary>Fired when any game action is triggered</summary>
         public event Action<GameAction> OnActionTriggered;
 
         // =============================================================================
         // UNITY LIFECYCLE
         // =============================================================================
+        
+        public InputManager()
+        {
+            _allGameActions = (GameAction[])Enum.GetValues(typeof(GameAction));
+        }
 
         protected override void OnSingletonAwake()
         {
@@ -146,236 +133,107 @@ namespace VeilBreakers.Core
             LoadBindings();
         }
 
+        private void Update()
+        {
+            if (!_inputEnabled)
+            {
+                _actionDownCache.Clear();
+                return;
+            }
+
+            _actionDownCache.Clear();
+            foreach (var action in _allGameActions)
+            {
+                if (!_currentBindings.TryGetValue(action, out var keys)) continue;
+
+                if (keys.Any(key => Input.GetKeyDown(key)))
+                {
+                    _actionDownCache[action] = true;
+                    OnActionTriggered?.Invoke(action);
+                }
+            }
+        }
+
         // =============================================================================
         // PUBLIC API - ACTION QUERIES
         // =============================================================================
 
-        /// <summary>
-        /// Returns true during the frame the action was pressed.
-        /// Equivalent to Input.GetKeyDown for the action's bound keys.
-        /// </summary>
         public bool GetActionDown(GameAction action)
         {
-            if (!_inputEnabled) return false;
-
-            if (!_currentBindings.TryGetValue(action, out var keys)) return false;
-
-            foreach (var key in keys)
-            {
-                if (Input.GetKeyDown(key))
-                {
-                    OnActionTriggered?.Invoke(action);
-                    return true;
-                }
-            }
-            return false;
+            return _actionDownCache.TryGetValue(action, out bool isDown) && isDown;
         }
 
-        /// <summary>
-        /// Returns true while the action's key is held down.
-        /// Equivalent to Input.GetKey for the action's bound keys.
-        /// </summary>
         public bool GetAction(GameAction action)
         {
-            if (!_inputEnabled) return false;
-
-            if (!_currentBindings.TryGetValue(action, out var keys)) return false;
-
-            foreach (var key in keys)
-            {
-                if (Input.GetKey(key)) return true;
-            }
-            return false;
+            if (!_inputEnabled || !_currentBindings.TryGetValue(action, out var keys)) return false;
+            return keys.Any(key => Input.GetKey(key));
         }
 
-        /// <summary>
-        /// Returns true during the frame the action was released.
-        /// Equivalent to Input.GetKeyUp for the action's bound keys.
-        /// </summary>
         public bool GetActionUp(GameAction action)
         {
-            if (!_inputEnabled) return false;
-
-            if (!_currentBindings.TryGetValue(action, out var keys)) return false;
-
-            foreach (var key in keys)
-            {
-                if (Input.GetKeyUp(key)) return true;
-            }
-            return false;
+            if (!_inputEnabled || !_currentBindings.TryGetValue(action, out var keys)) return false;
+            return keys.Any(key => Input.GetKeyUp(key));
         }
 
         // =============================================================================
         // PUBLIC API - MOUSE
         // =============================================================================
 
-        /// <summary>
-        /// Returns true during the frame the mouse button was pressed.
-        /// </summary>
-        /// <param name="button">0 = left, 1 = right, 2 = middle</param>
         public bool GetMouseButtonDown(int button)
         {
-            if (!_inputEnabled) return false;
-            return Input.GetMouseButtonDown(button);
+            return _inputEnabled && Input.GetMouseButtonDown(button);
         }
 
-        /// <summary>
-        /// Returns true while the mouse button is held down.
-        /// </summary>
         public bool GetMouseButton(int button)
         {
-            if (!_inputEnabled) return false;
-            return Input.GetMouseButton(button);
+            return _inputEnabled && Input.GetMouseButton(button);
         }
 
-        /// <summary>
-        /// Returns true during the frame the mouse button was released.
-        /// </summary>
         public bool GetMouseButtonUp(int button)
         {
-            if (!_inputEnabled) return false;
-            return Input.GetMouseButtonUp(button);
+            return _inputEnabled && Input.GetMouseButtonUp(button);
         }
 
-        /// <summary>
-        /// Returns a ray from the camera through the mouse position.
-        /// </summary>
         public Ray GetMouseRay(Camera camera)
         {
             return camera.ScreenPointToRay(MousePosition);
         }
-
-        // =============================================================================
-        // PUBLIC API - RAW KEY ACCESS (for specific KeyCode checks)
-        // =============================================================================
-
-        /// <summary>
-        /// Direct KeyCode check - use sparingly, prefer GameAction queries.
-        /// </summary>
-        public bool GetKeyDown(KeyCode key)
-        {
-            if (!_inputEnabled) return false;
-            return Input.GetKeyDown(key);
-        }
-
-        /// <summary>
-        /// Direct KeyCode check - use sparingly, prefer GameAction queries.
-        /// </summary>
-        public bool GetKey(KeyCode key)
-        {
-            if (!_inputEnabled) return false;
-            return Input.GetKey(key);
-        }
-
-        // =============================================================================
-        // PUBLIC API - MODIFIERS
-        // =============================================================================
-
-        /// <summary>Returns true if shift is held</summary>
-        public bool IsShiftHeld => GetAction(GameAction.ShiftModifier);
-
-        /// <summary>Returns true if control is held</summary>
-        public bool IsControlHeld => Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
-
-        /// <summary>Returns true if alt is held</summary>
-        public bool IsAltHeld => Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
-
+        
         // =============================================================================
         // PUBLIC API - BINDING MANAGEMENT
         // =============================================================================
 
-        /// <summary>
-        /// Rebinds an action to new keys.
-        /// </summary>
         public void SetBinding(GameAction action, params KeyCode[] keys)
         {
             _currentBindings[action] = keys;
             SaveBindings();
         }
 
-        /// <summary>
-        /// Gets the current keys bound to an action.
-        /// </summary>
         public KeyCode[] GetBinding(GameAction action)
         {
             return _currentBindings.TryGetValue(action, out var keys) ? keys : Array.Empty<KeyCode>();
         }
 
-        /// <summary>
-        /// Resets all bindings to defaults.
-        /// </summary>
         public void ResetBindingsToDefault()
         {
             _currentBindings = new Dictionary<GameAction, KeyCode[]>(_defaultBindings);
             SaveBindings();
         }
 
-        /// <summary>
-        /// Gets a display string for the primary key of an action.
-        /// </summary>
         public string GetBindingDisplayName(GameAction action)
         {
             if (!_currentBindings.TryGetValue(action, out var keys) || keys.Length == 0)
                 return "???";
-
             return GetKeyDisplayName(keys[0]);
         }
-
+        
         // =============================================================================
-        // SERIALIZATION HELPERS
+        // SERIALIZATION & HELPERS
         // =============================================================================
 
-        [Serializable]
-        private class Binding
-        {
-            public GameAction action;
-            public KeyCode[] keys;
-        }
-
-        [Serializable]
-        private class BindingsWrapper
-        {
-            public List<Binding> bindings = new List<Binding>();
-        }
-
+        [Serializable] private class Binding { public GameAction action; public KeyCode[] keys; }
+        [Serializable] private class BindingsWrapper { public List<Binding> bindings = new List<Binding>(); }
         private const string KEY_BINDINGS = "Input_Bindings_JSON";
-
-        // =============================================================================
-        // PRIVATE HELPERS
-        // =============================================================================
-
-        private string GetKeyDisplayName(KeyCode key)
-        {
-            return key switch
-            {
-                KeyCode.Alpha0 => "0",
-                KeyCode.Alpha1 => "1",
-                KeyCode.Alpha2 => "2",
-                KeyCode.Alpha3 => "3",
-                KeyCode.Alpha4 => "4",
-                KeyCode.Alpha5 => "5",
-                KeyCode.Alpha6 => "6",
-                KeyCode.Alpha7 => "7",
-                KeyCode.Alpha8 => "8",
-                KeyCode.Alpha9 => "9",
-                KeyCode.Return => "Enter",
-                KeyCode.Escape => "Esc",
-                KeyCode.LeftShift => "Shift",
-                KeyCode.RightShift => "Shift",
-                KeyCode.LeftControl => "Ctrl",
-                KeyCode.RightControl => "Ctrl",
-                KeyCode.LeftAlt => "Alt",
-                KeyCode.RightAlt => "Alt",
-                KeyCode.UpArrow => "Up",
-                KeyCode.DownArrow => "Down",
-                KeyCode.LeftArrow => "Left",
-                KeyCode.RightArrow => "Right",
-                KeyCode.Space => "Space",
-                KeyCode.Tab => "Tab",
-                KeyCode.Backspace => "Back",
-                _ => key.ToString()
-            };
-        }
 
         private void SaveBindings()
         {
@@ -384,11 +242,10 @@ namespace VeilBreakers.Core
             {
                 wrapper.bindings.Add(new Binding { action = pair.Key, keys = pair.Value });
             }
-
             string json = JsonUtility.ToJson(wrapper, true);
             PlayerPrefs.SetString(KEY_BINDINGS, json);
             PlayerPrefs.Save();
-            Debug.Log("[InputManager] Bindings saved to PlayerPrefs.");
+            Debug.Log("[InputManager] Bindings saved.");
         }
 
         private void LoadBindings()
@@ -403,20 +260,35 @@ namespace VeilBreakers.Core
             {
                 string json = PlayerPrefs.GetString(KEY_BINDINGS);
                 var wrapper = JsonUtility.FromJson<BindingsWrapper>(json);
-
                 _currentBindings.Clear();
                 foreach (var binding in wrapper.bindings)
                 {
                     _currentBindings[binding.action] = binding.keys;
                 }
-                Debug.Log("[InputManager] Custom bindings loaded from PlayerPrefs.");
+                Debug.Log("[InputManager] Custom bindings loaded.");
             }
             catch (Exception ex)
             {
                 Debug.LogError($"[InputManager] Failed to load bindings: {ex.Message}. Using defaults.");
-                // Reset to defaults in case of corruption
                 _currentBindings = new Dictionary<GameAction, KeyCode[]>(_defaultBindings);
             }
+        }
+        
+        private string GetKeyDisplayName(KeyCode key)
+        {
+            return key switch {
+                KeyCode.Alpha0 => "0", KeyCode.Alpha1 => "1", KeyCode.Alpha2 => "2",
+                KeyCode.Alpha3 => "3", KeyCode.Alpha4 => "4", KeyCode.Alpha5 => "5",
+                KeyCode.Alpha6 => "6", KeyCode.Alpha7 => "7", KeyCode.Alpha8 => "8",
+                KeyCode.Alpha9 => "9", KeyCode.Return => "Enter", KeyCode.Escape => "Esc",
+                KeyCode.LeftShift => "Shift", KeyCode.RightShift => "Shift",
+                KeyCode.LeftControl => "Ctrl", KeyCode.RightControl => "Ctrl",
+                KeyCode.LeftAlt => "Alt", KeyCode.RightAlt => "Alt",
+                KeyCode.UpArrow => "Up", KeyCode.DownArrow => "Down",
+                KeyCode.LeftArrow => "Left", KeyCode.RightArrow => "Right",
+                KeyCode.Space => "Space", KeyCode.Tab => "Tab",
+                KeyCode.Backspace => "Back", _ => key.ToString()
+            };
         }
     }
 }

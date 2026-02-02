@@ -8,24 +8,8 @@ namespace VeilBreakers.Audio
     /// Controls VERA's dynamic voice system based on Veil Integrity.
     /// Handles voice processing, glitches, and dual-voice effects.
     /// </summary>
-    public class VERAVoiceController : MonoBehaviour
+    public class VERAVoiceController : Core.SingletonMonoBehaviour<VERAVoiceController>
     {
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        private static VERAVoiceController _instance;
-        private static bool _isQuitting = false;
-
-        public static VERAVoiceController Instance
-        {
-            get
-            {
-                if (_isQuitting) return null;
-                return _instance;
-            }
-        }
-
         // =============================================================================
         // CONFIGURATION
         // =============================================================================
@@ -81,28 +65,10 @@ namespace VeilBreakers.Audio
         // UNITY LIFECYCLE
         // =============================================================================
 
-        private void Awake()
-        {
-            if (_instance != null && _instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            _instance = this;
-        }
-
         private void Update()
         {
             UpdateVeilIntegrity();
             UpdateGlitches();
-        }
-
-        private void OnDestroy()
-        {
-            if (_instance == this)
-            {
-                _instance = null;
-            }
         }
 
         private void OnDisable()
@@ -111,11 +77,6 @@ namespace VeilBreakers.Audio
             // by clearing ALL subscribers globally. Subscribers clean up in their own OnDestroy.
 
             StopAllCoroutines();
-        }
-
-        private void OnApplicationQuit()
-        {
-            _isQuitting = true;
         }
 
         // =============================================================================

@@ -47,6 +47,13 @@ namespace VeilBreakers.Test
         private List<Combatant> _playerParty = new List<Combatant>();
         private List<Combatant> _enemyParty = new List<Combatant>();
 
+        // Event handlers (stored for proper unsubscription)
+        private System.Action _onBattleStart;
+        private System.Action _onBattleEnd;
+        private System.Action<Combatant, Combatant, DamageResult> _onDamageDealt;
+        private System.Action<Combatant, int> _onHealApplied;
+        private System.Action<Combatant> _onCombatantDeath;
+
         // =============================================================================
         // UNITY LIFECYCLE
         // =============================================================================
@@ -78,6 +85,9 @@ namespace VeilBreakers.Test
 
         private void OnDestroy()
         {
+            // Unsubscribe from battle events to prevent memory leaks
+            UnsubscribeFromBattleEvents();
+
             // Cleanup spawned combatants
             foreach (var c in _playerParty)
             {
@@ -353,14 +363,32 @@ namespace VeilBreakers.Test
         {
             if (BattleManager.Instance == null) return;
 
-            BattleManager.Instance.OnBattleStart += () => Debug.Log("[Battle] BATTLE STARTED!");
-            BattleManager.Instance.OnBattleEnd += () => Debug.Log($"[Battle] BATTLE ENDED - State: {BattleManager.Instance.State}");
-            BattleManager.Instance.OnDamageDealt += (atk, def, result) =>
+            // Store delegates for proper cleanup
+            _onBattleStart = () => Debug.Log("[Battle] BATTLE STARTED!");
+            _onBattleEnd = () => Debug.Log($"[Battle] BATTLE ENDED - State: {BattleManager.Instance?.State}");
+            _onDamageDealt = (atk, def, result) =>
                 Debug.Log($"[Battle] {atk.DisplayName} dealt {result.finalDamage} damage to {def.DisplayName} (Brand: {result.brandMultiplier}x, Crit: {result.isCritical})");
-            BattleManager.Instance.OnHealApplied += (target, amount) =>
+            _onHealApplied = (target, amount) =>
                 Debug.Log($"[Battle] {target.DisplayName} healed for {amount}");
-            BattleManager.Instance.OnCombatantDeath += (c) =>
+            _onCombatantDeath = (c) =>
                 Debug.Log($"[Battle] {c.DisplayName} has been defeated!");
+
+            BattleManager.Instance.OnBattleStart += _onBattleStart;
+            BattleManager.Instance.OnBattleEnd += _onBattleEnd;
+            BattleManager.Instance.OnDamageDealt += _onDamageDealt;
+            BattleManager.Instance.OnHealApplied += _onHealApplied;
+            BattleManager.Instance.OnCombatantDeath += _onCombatantDeath;
+        }
+
+        private void UnsubscribeFromBattleEvents()
+        {
+            if (BattleManager.Instance == null) return;
+
+            if (_onBattleStart != null) BattleManager.Instance.OnBattleStart -= _onBattleStart;
+            if (_onBattleEnd != null) BattleManager.Instance.OnBattleEnd -= _onBattleEnd;
+            if (_onDamageDealt != null) BattleManager.Instance.OnDamageDealt -= _onDamageDealt;
+            if (_onHealApplied != null) BattleManager.Instance.OnHealApplied -= _onHealApplied;
+            if (_onCombatantDeath != null) BattleManager.Instance.OnCombatantDeath -= _onCombatantDeath;
         }
 
         // =============================================================================

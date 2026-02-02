@@ -18,6 +18,7 @@ namespace VeilBreakers.UI.Menus
 
         private VisualElement _monsterImage;
         private bool _initialized;
+        private Vector3 _cachedScale = Vector3.one;
 
         private void OnEnable()
         {
@@ -59,8 +60,10 @@ namespace VeilBreakers.UI.Menus
             float time = Time.time;
 #endif
             float pulse = 1f + (Mathf.Sin(time * _pulseSpeed) * _pulseIntensity);
-            // Use transform.scale to avoid garbage allocation from 'new Scale()'
-            _monsterImage.transform.scale = new Vector3(pulse, pulse, 1f);
+            // Use cached Vector3 to avoid garbage allocation
+            _cachedScale.x = pulse;
+            _cachedScale.y = pulse;
+            _monsterImage.transform.scale = _cachedScale;
         }
     }
 }

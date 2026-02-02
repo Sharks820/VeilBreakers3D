@@ -25,6 +25,8 @@ namespace VeilBreakers.Audio
             }
         }
 
+        public static bool HasInstance => _instance != null && !_isQuitting;
+
         // =============================================================================
         // CONFIGURATION
         // =============================================================================
