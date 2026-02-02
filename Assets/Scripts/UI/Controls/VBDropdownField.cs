@@ -305,7 +305,8 @@ namespace VeilBreakers.UI.Controls
             LogDebug($"[VBDropdownField] Popup layer set to Flex, parent={_popupLayer.parent?.name}");
 #endif
 
-            // Show and position this dropdown's popup
+            // CRITICAL: Hide popup with opacity until positioned to prevent flash
+            _popup.style.opacity = 0;
             _popup.style.display = DisplayStyle.Flex;
             _popup.BringToFront();
             AddToClassList("vb-dropdown--open");
@@ -693,6 +694,7 @@ namespace VeilBreakers.UI.Controls
                 _popup.style.translate = StyleKeyword.None;
                 _popup.style.left = 0;
                 _popup.style.top = resolvedStyle.height;
+                _popup.style.opacity = 1; // Show after fallback positioning
                 return;
             }
 
@@ -720,6 +722,9 @@ namespace VeilBreakers.UI.Controls
             _popup.style.translate = StyleKeyword.None;
             _popup.style.left = targetX;
             _popup.style.top = targetY;
+
+            // Now that positioning is complete, show the popup
+            _popup.style.opacity = 1;
         }
 
         private void UpdateLabel()
