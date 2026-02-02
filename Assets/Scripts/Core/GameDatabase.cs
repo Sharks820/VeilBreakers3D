@@ -98,6 +98,42 @@ namespace VeilBreakers.Core
         }
 
         // =============================================================================
+        // JSON PARSING HELPER
+        // =============================================================================
+
+        /// <summary>
+        /// Safely wraps a JSON array in an object wrapper for JsonUtility parsing.
+        /// Validates input format to prevent parsing errors.
+        /// </summary>
+        private static string WrapJsonArray(string jsonArrayText, string wrapperKey)
+        {
+            if (string.IsNullOrEmpty(jsonArrayText))
+                return null;
+
+            // Trim whitespace
+            string trimmed = jsonArrayText.Trim();
+
+            // Validate it's an array (starts with [ and ends with ])
+            if (!trimmed.StartsWith("[") || !trimmed.EndsWith("]"))
+            {
+                Debug.LogWarning($"[GameDatabase] JSON text does not appear to be an array. Expected [...], got: {trimmed.Substring(0, System.Math.Min(50, trimmed.Length))}...");
+                // Try to parse anyway in case it's already wrapped
+                if (trimmed.StartsWith("{"))
+                    return trimmed;
+            }
+
+            // Use StringBuilder for efficiency and safety
+            var sb = new System.Text.StringBuilder(trimmed.Length + wrapperKey.Length + 6);
+            sb.Append("{\"");
+            sb.Append(wrapperKey);
+            sb.Append("\":");
+            sb.Append(trimmed);
+            sb.Append("}");
+
+            return sb.ToString();
+        }
+
+        // =============================================================================
         // DATA LOADERS
         // =============================================================================
 
@@ -117,7 +153,8 @@ namespace VeilBreakers.Core
 #endif
                 }
 
-                var wrapper = JsonUtility.FromJson<MonsterDataWrapper>("{\"monsters\":" + jsonAsset.text + "}");
+                var wrappedJson = WrapJsonArray(jsonAsset.text, "monsters");
+                var wrapper = JsonUtility.FromJson<MonsterDataWrapper>(wrappedJson);
                 if (wrapper?.monsters == null)
                 {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -161,7 +198,8 @@ namespace VeilBreakers.Core
 #endif
                 }
 
-                var wrapper = JsonUtility.FromJson<SkillDataWrapper>("{\"skills\":" + jsonAsset.text + "}");
+                var wrappedJson = WrapJsonArray(jsonAsset.text, "skills");
+                var wrapper = JsonUtility.FromJson<SkillDataWrapper>(wrappedJson);
                 if (wrapper?.skills == null)
                 {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -205,7 +243,8 @@ namespace VeilBreakers.Core
 #endif
                 }
 
-                var wrapper = JsonUtility.FromJson<HeroDataWrapper>("{\"heroes\":" + jsonAsset.text + "}");
+                var wrappedJson = WrapJsonArray(jsonAsset.text, "heroes");
+                var wrapper = JsonUtility.FromJson<HeroDataWrapper>(wrappedJson);
                 if (wrapper?.heroes == null)
                 {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -249,7 +288,8 @@ namespace VeilBreakers.Core
 #endif
                 }
 
-                var wrapper = JsonUtility.FromJson<ItemDataWrapper>("{\"items\":" + jsonAsset.text + "}");
+                var wrappedJson = WrapJsonArray(jsonAsset.text, "items");
+                var wrapper = JsonUtility.FromJson<ItemDataWrapper>(wrappedJson);
                 if (wrapper?.items == null)
                 {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
