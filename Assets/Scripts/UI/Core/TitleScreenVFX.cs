@@ -80,6 +80,16 @@ namespace VeilBreakers.UI.Core
         [SerializeField] private float _spawnMarginBottom = 0.15f;
         [SerializeField] private float _spawnMarginSides = 0.1f;
 
+        [Header("Particle Textures (Assign in Inspector)")]
+        [Tooltip("Smoke texture for smoke wisps - use smoke.png or smoke 2.png")]
+        [SerializeField] private Texture2D _smokeTexture;
+        [Tooltip("Dust/ash texture for ash particles - use dust.png")]
+        [SerializeField] private Texture2D _ashTexture;
+        [Tooltip("Ember/spark texture - use dirt 2.png for gritty embers")]
+        [SerializeField] private Texture2D _emberTexture;
+        [Tooltip("Grunge overlay texture - use grunge crack.png")]
+        [SerializeField] private Texture2D _grungeTexture;
+
         // =============================================================================
         // STATE
         // =============================================================================
@@ -224,8 +234,14 @@ namespace VeilBreakers.UI.Core
                 CreateVignetteLayer();
             }
 
+            // 8. Grunge overlay (film grain / grit effect)
+            if (_grungeTexture != null)
+            {
+                CreateGrungeOverlay();
+            }
+
             StartVFX();
-            Debug.Log($"[TitleScreenVFX] AAA VFX Initialized: {_emberCount} embers, {_microSparkCount} micro-sparks, {_ashCount} ash, {_smokeCount} smoke, {_sparkCount} sparks");
+            Debug.Log($"[TitleScreenVFX] AAA VFX Initialized: {_emberCount} embers, {_microSparkCount} micro-sparks, {_ashCount} ash, {_smokeCount} smoke, {_sparkCount} sparks (Textures: {(_smokeTexture != null ? "smoke " : "")}{(_ashTexture != null ? "ash " : "")}{(_emberTexture != null ? "ember " : "")}{(_grungeTexture != null ? "grunge" : "")})");
         }
 
         private void CreateAtmosphereLayer()
@@ -325,6 +341,24 @@ namespace VeilBreakers.UI.Core
             parent.Add(corner);
         }
 
+        private void CreateGrungeOverlay()
+        {
+            var grungeLayer = new VisualElement();
+            grungeLayer.name = "grunge-overlay";
+            grungeLayer.style.position = Position.Absolute;
+            grungeLayer.style.left = 0;
+            grungeLayer.style.top = 0;
+            grungeLayer.style.right = 0;
+            grungeLayer.style.bottom = 0;
+            grungeLayer.style.backgroundImage = new StyleBackground(_grungeTexture);
+            grungeLayer.style.unityBackgroundScaleMode = ScaleMode.ScaleAndCrop;
+            grungeLayer.style.unityBackgroundImageTintColor = new Color(1f, 1f, 1f, 0.08f);  // Very subtle
+            grungeLayer.style.opacity = 0.15f;  // Film grain level
+            grungeLayer.pickingMode = PickingMode.Ignore;
+
+            _vfxContainer.Add(grungeLayer);
+        }
+
         // =============================================================================
         // PARTICLE CREATION
         // =============================================================================
@@ -391,17 +425,35 @@ namespace VeilBreakers.UI.Core
             core.style.left = (bodySize - size) / 2f;
             core.style.top = (bodySize - size) / 2f;
 
-            // AAA Style: Body (orange/red)
+            // AAA Style: Body (orange/red) - USE TEXTURE if assigned
             body.style.width = bodySize;
             body.style.height = bodySize;
-            body.style.backgroundColor = _emberColorBody;
+            if (_emberTexture != null)
+            {
+                body.style.backgroundImage = new StyleBackground(_emberTexture);
+                body.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                body.style.unityBackgroundImageTintColor = _emberColorBody;
+            }
+            else
+            {
+                body.style.backgroundColor = _emberColorBody;
+            }
             body.style.left = (glowSize - bodySize) / 2f;
             body.style.top = (glowSize - bodySize) / 2f;
 
-            // AAA Style: Outer glow (deep blood red)
+            // AAA Style: Outer glow (deep blood red) - USE TEXTURE if assigned
             glow.style.width = glowSize;
             glow.style.height = glowSize;
-            glow.style.backgroundColor = _emberColorGlow;
+            if (_emberTexture != null)
+            {
+                glow.style.backgroundImage = new StyleBackground(_emberTexture);
+                glow.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                glow.style.unityBackgroundImageTintColor = _emberColorGlow;
+            }
+            else
+            {
+                glow.style.backgroundColor = _emberColorGlow;
+            }
 
             _embers.Add(ember);
         }
@@ -410,16 +462,29 @@ namespace VeilBreakers.UI.Core
         {
             var element = new VisualElement();
             element.style.position = Position.Absolute;
-
-            // AAA: Randomize between light and dark ash colors
-            Color ashColor = Color.Lerp(_ashColorDark, _ashColorLight, UnityEngine.Random.Range(0f, 1f));
-            element.style.backgroundColor = ashColor;
             element.pickingMode = PickingMode.Ignore;
+
+            // USE ACTUAL TEXTURE if assigned
+            if (_ashTexture != null)
+            {
+                element.style.backgroundImage = new StyleBackground(_ashTexture);
+                element.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                // Tint with ash color
+                Color ashTint = Color.Lerp(_ashColorDark, _ashColorLight, UnityEngine.Random.Range(0f, 1f));
+                element.style.unityBackgroundImageTintColor = ashTint;
+            }
+            else
+            {
+                // Fallback to solid color if no texture
+                Color ashColor = Color.Lerp(_ashColorDark, _ashColorLight, UnityEngine.Random.Range(0f, 1f));
+                element.style.backgroundColor = ashColor;
+            }
 
             _vfxContainer.Add(element);
 
-            var sizeX = UnityEngine.Random.Range(_ashSizeMin, _ashSizeMax);
-            var sizeY = UnityEngine.Random.Range(_ashSizeMin * 0.2f, _ashSizeMax * 0.4f);
+            // Larger size when using textures for better visibility
+            var sizeX = UnityEngine.Random.Range(_ashSizeMin * 2f, _ashSizeMax * 2.5f);
+            var sizeY = UnityEngine.Random.Range(_ashSizeMin * 1.5f, _ashSizeMax * 2f);
 
             var ash = new AshParticle
             {
@@ -427,7 +492,7 @@ namespace VeilBreakers.UI.Core
                 SizeX = sizeX,
                 SizeY = sizeY,
                 Speed = UnityEngine.Random.Range(_ashSpeedMin, _ashSpeedMax),
-                Lifetime = UnityEngine.Random.Range(8f, 16f),  // Longer life
+                Lifetime = UnityEngine.Random.Range(8f, 16f),
                 Age = UnityEngine.Random.Range(0f, 8f),
                 RotationSpeed = UnityEngine.Random.Range(-120f, 120f),
                 Rotation = UnityEngine.Random.Range(0f, 360f),
@@ -441,11 +506,6 @@ namespace VeilBreakers.UI.Core
 
             element.style.width = sizeX;
             element.style.height = sizeY;
-            // More irregular shape for ash flakes
-            element.style.borderTopLeftRadius = UnityEngine.Random.Range(0f, sizeY * 0.5f);
-            element.style.borderTopRightRadius = UnityEngine.Random.Range(0f, sizeY * 0.5f);
-            element.style.borderBottomLeftRadius = UnityEngine.Random.Range(0f, sizeY * 0.5f);
-            element.style.borderBottomRightRadius = UnityEngine.Random.Range(0f, sizeY * 0.5f);
 
             _ashes.Add(ash);
         }
@@ -490,17 +550,30 @@ namespace VeilBreakers.UI.Core
         {
             var element = new VisualElement();
             element.style.position = Position.Absolute;
-            // Micro-sparks: tiny bright points
-            element.style.backgroundColor = new Color(1f, 0.85f, 0.4f, 0.9f);
-            element.style.borderTopLeftRadius = 50;
-            element.style.borderTopRightRadius = 50;
-            element.style.borderBottomLeftRadius = 50;
-            element.style.borderBottomRightRadius = 50;
             element.pickingMode = PickingMode.Ignore;
+
+            // Use ember texture for micro-sparks if available
+            if (_emberTexture != null)
+            {
+                element.style.backgroundImage = new StyleBackground(_emberTexture);
+                element.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                element.style.unityBackgroundImageTintColor = new Color(1f, 0.85f, 0.4f, 0.9f);
+            }
+            else
+            {
+                element.style.backgroundColor = new Color(1f, 0.85f, 0.4f, 0.9f);
+                element.style.borderTopLeftRadius = 50;
+                element.style.borderTopRightRadius = 50;
+                element.style.borderBottomLeftRadius = 50;
+                element.style.borderBottomRightRadius = 50;
+            }
 
             _vfxContainer.Add(element);
 
-            var size = UnityEngine.Random.Range(_microSparkSizeMin, _microSparkSizeMax);
+            // Slightly larger when using textures
+            var size = _emberTexture != null
+                ? UnityEngine.Random.Range(_microSparkSizeMin * 2f, _microSparkSizeMax * 3f)
+                : UnityEngine.Random.Range(_microSparkSizeMin, _microSparkSizeMax);
 
             var microSpark = new MicroSparkParticle
             {
@@ -525,27 +598,40 @@ namespace VeilBreakers.UI.Core
         {
             var element = new VisualElement();
             element.style.position = Position.Absolute;
-            element.style.backgroundColor = _smokeColor;
-            element.style.borderTopLeftRadius = Length.Percent(50);
-            element.style.borderTopRightRadius = Length.Percent(50);
-            element.style.borderBottomLeftRadius = Length.Percent(50);
-            element.style.borderBottomRightRadius = Length.Percent(50);
             element.pickingMode = PickingMode.Ignore;
+
+            // USE ACTUAL SMOKE TEXTURE if assigned
+            if (_smokeTexture != null)
+            {
+                element.style.backgroundImage = new StyleBackground(_smokeTexture);
+                element.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                element.style.unityBackgroundImageTintColor = _smokeColor;
+            }
+            else
+            {
+                // Fallback to solid color
+                element.style.backgroundColor = _smokeColor;
+                element.style.borderTopLeftRadius = Length.Percent(50);
+                element.style.borderTopRightRadius = Length.Percent(50);
+                element.style.borderBottomLeftRadius = Length.Percent(50);
+                element.style.borderBottomRightRadius = Length.Percent(50);
+            }
 
             _smokeLayer.Add(element);
 
-            var size = UnityEngine.Random.Range(_smokeSizeMin, _smokeSizeMax);
+            // Larger smoke puffs when using textures
+            var size = UnityEngine.Random.Range(_smokeSizeMin * 1.5f, _smokeSizeMax * 2f);
 
             var smoke = new SmokeParticle
             {
                 Element = element,
                 Size = size,
                 Speed = UnityEngine.Random.Range(_smokeSpeedMin, _smokeSpeedMax),
-                Lifetime = UnityEngine.Random.Range(15f, 25f),  // Slow, long-lived
+                Lifetime = UnityEngine.Random.Range(15f, 25f),
                 Age = UnityEngine.Random.Range(0f, 15f),
                 DriftPhase = UnityEngine.Random.Range(0f, Mathf.PI * 2f),
                 DriftAmplitude = UnityEngine.Random.Range(30f, 60f),
-                ExpansionRate = UnityEngine.Random.Range(0.02f, 0.05f)  // Slow expansion
+                ExpansionRate = UnityEngine.Random.Range(0.02f, 0.05f)
             };
 
             ResetSmokePosition(smoke);
