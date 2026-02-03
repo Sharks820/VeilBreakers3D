@@ -114,6 +114,12 @@ namespace VeilBreakers.UI.Core
         // UNITY LIFECYCLE
         // =============================================================================
 
+        private void Awake()
+        {
+            // AUTO-LOAD textures from Resources if not assigned in Inspector
+            LoadTexturesFromResources();
+        }
+
         private void Start()
         {
             if (_uiDocument == null)
@@ -125,6 +131,34 @@ namespace VeilBreakers.UI.Core
             {
                 _uiDocument.rootVisualElement.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
             }
+        }
+
+        private void LoadTexturesFromResources()
+        {
+            // Auto-load from Resources/VFX/ParticleTextures/ if not assigned
+            if (_smokeTexture == null)
+            {
+                _smokeTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/smoke");
+                if (_smokeTexture == null)
+                    _smokeTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/smoke 2");
+            }
+
+            if (_ashTexture == null)
+            {
+                _ashTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/dust");
+            }
+
+            if (_emberTexture == null)
+            {
+                _emberTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/dirt 2");
+            }
+
+            if (_grungeTexture == null)
+            {
+                _grungeTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/grunge crack");
+            }
+
+            Debug.Log($"[TitleScreenVFX] Textures loaded - Smoke: {_smokeTexture != null}, Ash: {_ashTexture != null}, Ember: {_emberTexture != null}, Grunge: {_grungeTexture != null}");
         }
 
         private void OnGeometryChanged(GeometryChangedEvent evt)
