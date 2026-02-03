@@ -277,9 +277,9 @@ namespace VeilBreakers.Test
         {
             return _playerConfig ?? new TestCombatantConfig
             {
-                id = "player_bastion",
-                displayName = "Bastion",
-                monsterId = "hero_bastion",
+                id = "player_vex",
+                displayName = "Vex",
+                monsterId = "vex",
                 brand = Brand.NONE, // Heroes have no brand
                 level = _playerLevel,
                 maxHp = 150,
@@ -294,7 +294,7 @@ namespace VeilBreakers.Test
                 skill1Id = "skill_aegis_dome",
                 skill2Id = "skill_guardian_mark",
                 skill3Id = "skill_fortress_stance",
-                ultimateId = "ultimate_iron_bastion"
+                ultimateId = "ultimate_iron_vex"
             };
         }
 

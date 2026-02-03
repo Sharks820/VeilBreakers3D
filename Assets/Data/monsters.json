@@ -36,18 +36,7 @@
       "life_siphon",
       "shadow_embrace"
     ],
-    "learnable_skills": {
-      "11": "choir_of_the_dying",
-      "19": "soulthirst",
-      "29": "stolen_vitality",
-      "40": "the_final_drink"
-    },
     "ai_pattern": "support",
-    "skill_weights": {
-      "life_siphon": 40,
-      "shadow_embrace": 35,
-      "choir_of_the_dying": 25
-    },
     "base_corruption": 90,
     "corruption_resistance": 10,
     "base_experience": 50,
@@ -71,7 +60,39 @@
     ],
     "habitat": "Battlefields, hospitals, anywhere death is common - pools in shadowed corners",
     "behavior_notes": "Drains HP from enemies and distributes it to allies. The voices speak truths the dying knew. Stronger in darkness. Weak to light-based attacks. Never fully solid.",
-    "purification_hint": "It returns the stolen life-force to the world. The voices find peace and fade to silence. It becomes a gentle psychopomp, guiding souls peacefully to their rest instead of consuming them."
+    "purification_hint": "It returns the stolen life-force to the world. The voices find peace and fade to silence. It becomes a gentle psychopomp, guiding souls peacefully to their rest instead of consuming them.",
+    "learnable_skills_list": [
+      {
+        "level": "11",
+        "skill_id": "choir_of_the_dying"
+      },
+      {
+        "level": "19",
+        "skill_id": "soulthirst"
+      },
+      {
+        "level": "29",
+        "skill_id": "stolen_vitality"
+      },
+      {
+        "level": "40",
+        "skill_id": "the_final_drink"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "life_siphon",
+        "weight": 40
+      },
+      {
+        "skill_id": "shadow_embrace",
+        "weight": 35
+      },
+      {
+        "skill_id": "choir_of_the_dying",
+        "weight": 25
+      }
+    ]
   },
   {
     "monster_id": "chainbound",
@@ -110,18 +131,7 @@
       "iron_bind",
       "rusted_embrace"
     ],
-    "learnable_skills": {
-      "6": "shackle_slam",
-      "12": "chain_wall",
-      "20": "the_wardens_grip",
-      "28": "eternal_imprisonment"
-    },
     "ai_pattern": "defensive",
-    "skill_weights": {
-      "iron_bind": 45,
-      "rusted_embrace": 30,
-      "shackle_slam": 25
-    },
     "base_corruption": 75,
     "corruption_resistance": 8,
     "base_experience": 12,
@@ -140,7 +150,39 @@
     ],
     "habitat": "Abandoned prisons, old dungeons, places where things were meant to be kept",
     "behavior_notes": "Moves slowly but relentlessly. Prioritizes binding the most mobile enemy. The chains rattle constantly - you always hear it coming.",
-    "purification_hint": "The padlock opens. The chains become a protective barrier rather than a prison. It guards the innocent instead of trapping them."
+    "purification_hint": "The padlock opens. The chains become a protective barrier rather than a prison. It guards the innocent instead of trapping them.",
+    "learnable_skills_list": [
+      {
+        "level": "6",
+        "skill_id": "shackle_slam"
+      },
+      {
+        "level": "12",
+        "skill_id": "chain_wall"
+      },
+      {
+        "level": "20",
+        "skill_id": "the_wardens_grip"
+      },
+      {
+        "level": "28",
+        "skill_id": "eternal_imprisonment"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "iron_bind",
+        "weight": 45
+      },
+      {
+        "skill_id": "rusted_embrace",
+        "weight": 30
+      },
+      {
+        "skill_id": "shackle_slam",
+        "weight": 25
+      }
+    ]
   },
   {
     "monster_id": "corrodex",
@@ -181,18 +223,7 @@
       "acid_spit",
       "iron_guard"
     ],
-    "learnable_skills": {
-      "10": "dissolving_embrace",
-      "17": "noble_sacrifice",
-      "26": "acid_flood",
-      "38": "the_dissolved_knights_oath"
-    },
     "ai_pattern": "tank",
-    "skill_weights": {
-      "acid_leak": 35,
-      "corroding_guard": 40,
-      "dissolving_embrace": 25
-    },
     "base_corruption": 80,
     "corruption_resistance": 12,
     "base_experience": 26,
@@ -216,7 +247,39 @@
     ],
     "habitat": "Ruined castles, poisoned battlefields, places where honor died",
     "behavior_notes": "Tries to protect allies despite the acid hurting them. Attackers that hit it take acid damage. Periodically says fragments of knightly oaths in bubbling tones.",
-    "purification_hint": "The acid becomes healing waters that flow through pristine armor. The knight's voice returns, clear and noble. It finally speaks the oath it could never finish."
+    "purification_hint": "The acid becomes healing waters that flow through pristine armor. The knight's voice returns, clear and noble. It finally speaks the oath it could never finish.",
+    "learnable_skills_list": [
+      {
+        "level": "10",
+        "skill_id": "dissolving_embrace"
+      },
+      {
+        "level": "17",
+        "skill_id": "noble_sacrifice"
+      },
+      {
+        "level": "26",
+        "skill_id": "acid_flood"
+      },
+      {
+        "level": "38",
+        "skill_id": "the_dissolved_knights_oath"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "acid_leak",
+        "weight": 35
+      },
+      {
+        "skill_id": "corroding_guard",
+        "weight": 40
+      },
+      {
+        "skill_id": "dissolving_embrace",
+        "weight": 25
+      }
+    ]
   },
   {
     "monster_id": "crackling",
@@ -257,18 +320,7 @@
       "surge_strike",
       "warp"
     ],
-    "learnable_skills": {
-      "8": "chain_lightning",
-      "14": "surge_dash",
-      "20": "stormkin_call",
-      "28": "tempest_incarnate"
-    },
     "ai_pattern": "aggressive",
-    "skill_weights": {
-      "static_touch": 35,
-      "flicker_strike": 45,
-      "chain_lightning": 20
-    },
     "base_corruption": 65,
     "corruption_resistance": 2,
     "base_experience": 14,
@@ -287,7 +339,39 @@
     ],
     "habitat": "Storm-touched areas, places struck by lightning, near electrical phenomena",
     "behavior_notes": "Erratic movement patterns, almost playful. Attacks the closest target repeatedly. Leaves scorch marks everywhere it goes. Sometimes just watches curiously.",
-    "purification_hint": "The chaotic energy stabilizes into warm, guiding light. It becomes a beacon that leads travelers safely through storms, finally understanding that touch can be gentle."
+    "purification_hint": "The chaotic energy stabilizes into warm, guiding light. It becomes a beacon that leads travelers safely through storms, finally understanding that touch can be gentle.",
+    "learnable_skills_list": [
+      {
+        "level": "8",
+        "skill_id": "chain_lightning"
+      },
+      {
+        "level": "14",
+        "skill_id": "surge_dash"
+      },
+      {
+        "level": "20",
+        "skill_id": "stormkin_call"
+      },
+      {
+        "level": "28",
+        "skill_id": "tempest_incarnate"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "static_touch",
+        "weight": 35
+      },
+      {
+        "skill_id": "flicker_strike",
+        "weight": 45
+      },
+      {
+        "skill_id": "chain_lightning",
+        "weight": 20
+      }
+    ]
   },
   {
     "monster_id": "flicker",
@@ -347,18 +431,7 @@
       "phase_shift",
       "scatter"
     ],
-    "learnable_skills": {
-      "7": "between_seconds",
-      "12": "interrupt",
-      "18": "hit_and_run",
-      "25": "quicksilver_blitz"
-    },
     "ai_pattern": "speed",
-    "skill_weights": {
-      "blur_strike": 50,
-      "between_seconds": 30,
-      "interrupt": 20
-    },
     "base_corruption": 80,
     "corruption_resistance": 4,
     "base_experience": 22,
@@ -382,7 +455,39 @@
     ],
     "habitat": "Open skies, windy passes, near Veil cracks where air tears",
     "behavior_notes": "Cannot stop - stillness is death. Exists between moments. Doesn't think - thinking is too slow.",
-    "purification_hint": "Learns to be still. Discovers the space between movements contains thought, peace."
+    "purification_hint": "Learns to be still. Discovers the space between movements contains thought, peace.",
+    "learnable_skills_list": [
+      {
+        "level": "7",
+        "skill_id": "between_seconds"
+      },
+      {
+        "level": "12",
+        "skill_id": "interrupt"
+      },
+      {
+        "level": "18",
+        "skill_id": "hit_and_run"
+      },
+      {
+        "level": "25",
+        "skill_id": "quicksilver_blitz"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "blur_strike",
+        "weight": 50
+      },
+      {
+        "skill_id": "between_seconds",
+        "weight": 30
+      },
+      {
+        "skill_id": "interrupt",
+        "weight": 20
+      }
+    ]
   },
   {
     "monster_id": "gluttony_polyp",
@@ -439,18 +544,7 @@
       "absorb_pain",
       "healing_pulse"
     ],
-    "learnable_skills": {
-      "8": "bloat",
-      "15": "nurturing_light",
-      "22": "life_returned",
-      "30": "regenerating_mass"
-    },
     "ai_pattern": "healer",
-    "skill_weights": {
-      "soothing_pulse": 50,
-      "acid_splash": 20,
-      "absorb_pain": 30
-    },
     "base_corruption": 80,
     "corruption_resistance": 2,
     "base_experience": 15,
@@ -474,7 +568,39 @@
     ],
     "habitat": "Fertile areas, forests, meadows",
     "behavior_notes": "Disturbingly passive. Has no brain, just a network of consumption.",
-    "purification_hint": "Releases everything it held. Reshapes into something that GIVES rather than takes."
+    "purification_hint": "Releases everything it held. Reshapes into something that GIVES rather than takes.",
+    "learnable_skills_list": [
+      {
+        "level": "8",
+        "skill_id": "bloat"
+      },
+      {
+        "level": "15",
+        "skill_id": "nurturing_light"
+      },
+      {
+        "level": "22",
+        "skill_id": "life_returned"
+      },
+      {
+        "level": "30",
+        "skill_id": "regenerating_mass"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "soothing_pulse",
+        "weight": 50
+      },
+      {
+        "skill_id": "acid_splash",
+        "weight": 20
+      },
+      {
+        "skill_id": "absorb_pain",
+        "weight": 30
+      }
+    ]
   },
   {
     "monster_id": "grimthorn",
@@ -514,18 +640,7 @@
       "poison_sting",
       "vine_whip"
     ],
-    "learnable_skills": {
-      "8": "toxic_spores",
-      "14": "thorn_barrier",
-      "22": "venomous_bloom",
-      "32": "natures_wrath"
-    },
     "ai_pattern": "aggressive",
-    "skill_weights": {
-      "basic_attack": 20,
-      "poison_sting": 45,
-      "vine_whip": 35
-    },
     "base_corruption": 70,
     "corruption_resistance": 6,
     "base_experience": 22,
@@ -549,7 +664,39 @@
     ],
     "habitat": "Corrupted forests, poisoned swamps, places where nature has turned hostile",
     "behavior_notes": "Aggressive when threatened, prefers to poison enemies and let the toxin do its work. Uses vine whip to keep foes at distance while poison takes effect. The thorns rattle when it moves, creating an eerie warning sound.",
-    "purification_hint": "The thorns soften into protective bark, the poison becomes healing nectar. It becomes a guardian of growth rather than decay, helping restore life to barren lands."
+    "purification_hint": "The thorns soften into protective bark, the poison becomes healing nectar. It becomes a guardian of growth rather than decay, helping restore life to barren lands.",
+    "learnable_skills_list": [
+      {
+        "level": "8",
+        "skill_id": "toxic_spores"
+      },
+      {
+        "level": "14",
+        "skill_id": "thorn_barrier"
+      },
+      {
+        "level": "22",
+        "skill_id": "venomous_bloom"
+      },
+      {
+        "level": "32",
+        "skill_id": "natures_wrath"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "basic_attack",
+        "weight": 20
+      },
+      {
+        "skill_id": "poison_sting",
+        "weight": 45
+      },
+      {
+        "skill_id": "vine_whip",
+        "weight": 35
+      }
+    ]
   },
   {
     "monster_id": "hollow",
@@ -607,26 +754,7 @@
       "void_blast",
       "dread_gaze"
     ],
-    "learnable_skills": {
-      "5": "void_orb",
-      "8": "tendril_lash",
-      "10": "tendril_sweep",
-      "12": "dread_surge",
-      "15": "consuming_vortex",
-      "18": "void_touch",
-      "20": "abyssal_rage",
-      "25": "hollow_wail",
-      "30": "empty_husk",
-      "35": "defined_purpose"
-    },
     "ai_pattern": "support",
-    "skill_weights": {
-      "shadow_rend": 25,
-      "empty_grasp": 20,
-      "void_blast": 25,
-      "dread_gaze": 15,
-      "tendril_lash": 15
-    },
     "base_corruption": 80,
     "corruption_resistance": 3,
     "base_experience": 14,
@@ -645,7 +773,71 @@
     ],
     "habitat": "Near recent death or great grief, abandoned places",
     "behavior_notes": "Wandering, reaching toward living beings. Lonely in a way it can't comprehend.",
-    "purification_hint": "Finally gains definition. The first thing it does is look at its hands in wonder."
+    "purification_hint": "Finally gains definition. The first thing it does is look at its hands in wonder.",
+    "learnable_skills_list": [
+      {
+        "level": "5",
+        "skill_id": "void_orb"
+      },
+      {
+        "level": "8",
+        "skill_id": "tendril_lash"
+      },
+      {
+        "level": "10",
+        "skill_id": "tendril_sweep"
+      },
+      {
+        "level": "12",
+        "skill_id": "dread_surge"
+      },
+      {
+        "level": "15",
+        "skill_id": "consuming_vortex"
+      },
+      {
+        "level": "18",
+        "skill_id": "void_touch"
+      },
+      {
+        "level": "20",
+        "skill_id": "abyssal_rage"
+      },
+      {
+        "level": "25",
+        "skill_id": "hollow_wail"
+      },
+      {
+        "level": "30",
+        "skill_id": "empty_husk"
+      },
+      {
+        "level": "35",
+        "skill_id": "defined_purpose"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "shadow_rend",
+        "weight": 25
+      },
+      {
+        "skill_id": "empty_grasp",
+        "weight": 20
+      },
+      {
+        "skill_id": "void_blast",
+        "weight": 25
+      },
+      {
+        "skill_id": "dread_gaze",
+        "weight": 15
+      },
+      {
+        "skill_id": "tendril_lash",
+        "weight": 15
+      }
+    ]
   },
   {
     "monster_id": "ironjaw",
@@ -686,18 +878,7 @@
       "iron_guard",
       "rend"
     ],
-    "learnable_skills": {
-      "9": "berserker_plate",
-      "16": "steelrend",
-      "25": "siege_breaker",
-      "36": "unstoppable_maw"
-    },
     "ai_pattern": "aggressive",
-    "skill_weights": {
-      "trap_bite": 50,
-      "iron_charge": 35,
-      "berserker_plate": 15
-    },
     "base_corruption": 82,
     "corruption_resistance": 10,
     "base_experience": 28,
@@ -721,7 +902,39 @@
     ],
     "habitat": "Mountain passes, ruined forges, places where metal was worked",
     "behavior_notes": "Charges the strongest-looking enemy. The trap-jaw deals bonus damage and can inflict Bleed. Once it bites, it doesn't let go. Roars cause Intimidation.",
-    "purification_hint": "The metal becomes decorative armor, gleaming instead of rusted. The trap-jaw softens into a protective muzzle. It becomes a noble guardian beast, fiercely loyal."
+    "purification_hint": "The metal becomes decorative armor, gleaming instead of rusted. The trap-jaw softens into a protective muzzle. It becomes a noble guardian beast, fiercely loyal.",
+    "learnable_skills_list": [
+      {
+        "level": "9",
+        "skill_id": "berserker_plate"
+      },
+      {
+        "level": "16",
+        "skill_id": "steelrend"
+      },
+      {
+        "level": "25",
+        "skill_id": "siege_breaker"
+      },
+      {
+        "level": "36",
+        "skill_id": "unstoppable_maw"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "trap_bite",
+        "weight": 50
+      },
+      {
+        "skill_id": "iron_charge",
+        "weight": 35
+      },
+      {
+        "skill_id": "berserker_plate",
+        "weight": 15
+      }
+    ]
   },
   {
     "monster_id": "mawling",
@@ -777,18 +990,7 @@
       "frenzy_bite",
       "pounce"
     ],
-    "learnable_skills": {
-      "8": "devour_scraps",
-      "15": "loyal_bite",
-      "22": "feeding_frenzy",
-      "30": "pack_feast"
-    },
     "ai_pattern": "aggressive",
-    "skill_weights": {
-      "gnaw": 60,
-      "desperate_lunge": 30,
-      "devour_scraps": 10
-    },
     "base_corruption": 85,
     "corruption_resistance": 5,
     "base_experience": 12,
@@ -807,7 +1009,39 @@
     ],
     "habitat": "Near Veil cracks, dark areas",
     "behavior_notes": "Targets weakest enemy, never retreats. Intensely loyal when purified.",
-    "purification_hint": "Becomes loyal - the first creature to show it anything other than fear."
+    "purification_hint": "Becomes loyal - the first creature to show it anything other than fear.",
+    "learnable_skills_list": [
+      {
+        "level": "8",
+        "skill_id": "devour_scraps"
+      },
+      {
+        "level": "15",
+        "skill_id": "loyal_bite"
+      },
+      {
+        "level": "22",
+        "skill_id": "feeding_frenzy"
+      },
+      {
+        "level": "30",
+        "skill_id": "pack_feast"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "gnaw",
+        "weight": 60
+      },
+      {
+        "skill_id": "desperate_lunge",
+        "weight": 30
+      },
+      {
+        "skill_id": "devour_scraps",
+        "weight": 10
+      }
+    ]
   },
   {
     "monster_id": "needlefang",
@@ -848,18 +1082,7 @@
       "venom_spray",
       "razor_swarm"
     ],
-    "learnable_skills": {
-      "8": "spine_flurry",
-      "14": "toxin_overdrive",
-      "22": "thousand_stings",
-      "32": "death_of_a_thousand_cuts"
-    },
     "ai_pattern": "assassin",
-    "skill_weights": {
-      "needle_storm": 45,
-      "venomous_acceleration": 30,
-      "spine_flurry": 25
-    },
     "base_corruption": 78,
     "corruption_resistance": 6,
     "base_experience": 32,
@@ -883,7 +1106,39 @@
     ],
     "habitat": "Dense undergrowth, canyon walls, anywhere it can ambush from",
     "behavior_notes": "Strikes first, strikes often. High crit chance. Applies stacking poison. Retreats when HP is low to strike again. The vibrating spines make a distinctive hum before it attacks.",
-    "purification_hint": "The needles become iridescent scales that shimmer with healing properties. Its venom transforms into antivenom. It becomes a protector that neutralizes poisons instead of spreading them."
+    "purification_hint": "The needles become iridescent scales that shimmer with healing properties. Its venom transforms into antivenom. It becomes a protector that neutralizes poisons instead of spreading them.",
+    "learnable_skills_list": [
+      {
+        "level": "8",
+        "skill_id": "spine_flurry"
+      },
+      {
+        "level": "14",
+        "skill_id": "toxin_overdrive"
+      },
+      {
+        "level": "22",
+        "skill_id": "thousand_stings"
+      },
+      {
+        "level": "32",
+        "skill_id": "death_of_a_thousand_cuts"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "needle_storm",
+        "weight": 45
+      },
+      {
+        "skill_id": "venomous_acceleration",
+        "weight": 30
+      },
+      {
+        "skill_id": "spine_flurry",
+        "weight": 25
+      }
+    ]
   },
   {
     "monster_id": "ravener",
@@ -943,19 +1198,7 @@
       "pounce",
       "eviscerate"
     ],
-    "learnable_skills": {
-      "8": "prey_on_weak",
-      "15": "feeding_frenzy",
-      "22": "pack_tactics",
-      "30": "apex_strike"
-    },
     "ai_pattern": "aggressive",
-    "skill_weights": {
-      "rend": 50,
-      "bloodscent": 0,
-      "prey_on_weak": 35,
-      "feeding_frenzy": 15
-    },
     "base_corruption": 90,
     "corruption_resistance": 10,
     "base_experience": 25,
@@ -979,7 +1222,43 @@
     ],
     "habitat": "Hunting grounds near apex predators",
     "behavior_notes": "Targets weakest enemy, never retreats. Every predator consumed added another layer of hunting instinct.",
-    "purification_hint": "The many predators settle into one. Becomes hunter with PURPOSE. Fiercely protective of trainer."
+    "purification_hint": "The many predators settle into one. Becomes hunter with PURPOSE. Fiercely protective of trainer.",
+    "learnable_skills_list": [
+      {
+        "level": "8",
+        "skill_id": "prey_on_weak"
+      },
+      {
+        "level": "15",
+        "skill_id": "feeding_frenzy"
+      },
+      {
+        "level": "22",
+        "skill_id": "pack_tactics"
+      },
+      {
+        "level": "30",
+        "skill_id": "apex_strike"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "rend",
+        "weight": 50
+      },
+      {
+        "skill_id": "bloodscent",
+        "weight": 0
+      },
+      {
+        "skill_id": "prey_on_weak",
+        "weight": 35
+      },
+      {
+        "skill_id": "feeding_frenzy",
+        "weight": 15
+      }
+    ]
   },
   {
     "monster_id": "skitter_teeth",
@@ -1037,18 +1316,7 @@
       "iron_guard",
       "leg_trap"
     ],
-    "learnable_skills": {
-      "8": "reassemble",
-      "15": "bone_wall",
-      "22": "wardens_stand",
-      "30": "final_form"
-    },
     "ai_pattern": "tank",
-    "skill_weights": {
-      "bone_snap": 40,
-      "harvest": 20,
-      "bone_wall": 40
-    },
     "base_corruption": 85,
     "corruption_resistance": 8,
     "base_experience": 14,
@@ -1072,7 +1340,39 @@
     ],
     "habitat": "Battlefields, graveyards, predator feeding grounds",
     "behavior_notes": "Collects bones constantly. Builds itself from remains.",
-    "purification_hint": "Becomes guardian of the dead. Understands bones are sacred, not material."
+    "purification_hint": "Becomes guardian of the dead. Understands bones are sacred, not material.",
+    "learnable_skills_list": [
+      {
+        "level": "8",
+        "skill_id": "reassemble"
+      },
+      {
+        "level": "15",
+        "skill_id": "bone_wall"
+      },
+      {
+        "level": "22",
+        "skill_id": "wardens_stand"
+      },
+      {
+        "level": "30",
+        "skill_id": "final_form"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "bone_snap",
+        "weight": 40
+      },
+      {
+        "skill_id": "harvest",
+        "weight": 20
+      },
+      {
+        "skill_id": "bone_wall",
+        "weight": 40
+      }
+    ]
   },
   {
     "monster_id": "sporecaller",
@@ -1113,18 +1413,7 @@
       "toxic_cloud",
       "venom_spray"
     ],
-    "learnable_skills": {
-      "7": "decomposer",
-      "14": "bloom_of_rot",
-      "21": "mycelium_network",
-      "30": "the_rot_sovereign"
-    },
     "ai_pattern": "debuffer",
-    "skill_weights": {
-      "spore_cloud": 50,
-      "fungal_touch": 30,
-      "decomposer": 20
-    },
     "base_corruption": 70,
     "corruption_resistance": 5,
     "base_experience": 11,
@@ -1148,7 +1437,39 @@
     ],
     "habitat": "Corrupted forests, swamps, anywhere decay has taken hold",
     "behavior_notes": "Wanders aimlessly until it senses the living. Spreads spores constantly. Multiple Sporecallers in an area create toxic clouds that persist.",
-    "purification_hint": "The fungus retreats, revealing the peaceful spirit of the deer beneath. It becomes a nature spirit that spreads healing growth instead of decay."
+    "purification_hint": "The fungus retreats, revealing the peaceful spirit of the deer beneath. It becomes a nature spirit that spreads healing growth instead of decay.",
+    "learnable_skills_list": [
+      {
+        "level": "7",
+        "skill_id": "decomposer"
+      },
+      {
+        "level": "14",
+        "skill_id": "bloom_of_rot"
+      },
+      {
+        "level": "21",
+        "skill_id": "mycelium_network"
+      },
+      {
+        "level": "30",
+        "skill_id": "the_rot_sovereign"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "spore_cloud",
+        "weight": 50
+      },
+      {
+        "skill_id": "fungal_touch",
+        "weight": 30
+      },
+      {
+        "skill_id": "decomposer",
+        "weight": 20
+      }
+    ]
   },
   {
     "monster_id": "the_broodmother",
@@ -1189,18 +1510,7 @@
       "venom_spray",
       "multiply"
     ],
-    "learnable_skills": {
-      "10": "venomous_nursery",
-      "18": "infestation_wave",
-      "28": "the_hatching",
-      "40": "hive_queen_ascension"
-    },
     "ai_pattern": "summoner",
-    "skill_weights": {
-      "parasitic_injection": 30,
-      "spawn_broodling": 45,
-      "venomous_nursery": 25
-    },
     "base_corruption": 88,
     "corruption_resistance": 12,
     "base_experience": 45,
@@ -1224,7 +1534,39 @@
     ],
     "habitat": "Dark caves, abandoned structures, anywhere eggs can incubate undisturbed",
     "behavior_notes": "Prioritizes spawning broodlings over direct attacks. Protects her young fiercely. The larvae she injects cause DOT and spawn additional enemies if not cleansed.",
-    "purification_hint": "Her children become healing spores instead of parasites. The maternal love remains, but now expressed as nurturing growth. She tends gardens instead of hosts."
+    "purification_hint": "Her children become healing spores instead of parasites. The maternal love remains, but now expressed as nurturing growth. She tends gardens instead of hosts.",
+    "learnable_skills_list": [
+      {
+        "level": "10",
+        "skill_id": "venomous_nursery"
+      },
+      {
+        "level": "18",
+        "skill_id": "infestation_wave"
+      },
+      {
+        "level": "28",
+        "skill_id": "the_hatching"
+      },
+      {
+        "level": "40",
+        "skill_id": "hive_queen_ascension"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "parasitic_injection",
+        "weight": 30
+      },
+      {
+        "skill_id": "spawn_broodling",
+        "weight": 45
+      },
+      {
+        "skill_id": "venomous_nursery",
+        "weight": 25
+      }
+    ]
   },
   {
     "monster_id": "the_bulwark",
@@ -1265,18 +1607,7 @@
       "iron_guard",
       "reflected_pain"
     ],
-    "learnable_skills": {
-      "8": "fortress_body",
-      "15": "immovable_will",
-      "24": "bastion_form",
-      "35": "citadel_eternal"
-    },
     "ai_pattern": "tank",
-    "skill_weights": {
-      "iron_stance": 40,
-      "guardian_chains": 35,
-      "fortress_body": 25
-    },
     "base_corruption": 85,
     "corruption_resistance": 15,
     "base_experience": 22,
@@ -1300,7 +1631,39 @@
     ],
     "habitat": "Ruined fortresses, fallen castles, battlefields where last stands occurred",
     "behavior_notes": "Positions itself between threats and allies. Never retreats. The screaming from inside gets louder when allies are hurt. Will sacrifice HP to protect others.",
-    "purification_hint": "The armor cracks and falls away, revealing a guardian spirit of pure protection. The first thing it does is breathe freely. It finally remembers WHO it was protecting."
+    "purification_hint": "The armor cracks and falls away, revealing a guardian spirit of pure protection. The first thing it does is breathe freely. It finally remembers WHO it was protecting.",
+    "learnable_skills_list": [
+      {
+        "level": "8",
+        "skill_id": "fortress_body"
+      },
+      {
+        "level": "15",
+        "skill_id": "immovable_will"
+      },
+      {
+        "level": "24",
+        "skill_id": "bastion_form"
+      },
+      {
+        "level": "35",
+        "skill_id": "citadel_eternal"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "iron_stance",
+        "weight": 40
+      },
+      {
+        "skill_id": "guardian_chains",
+        "weight": 35
+      },
+      {
+        "skill_id": "fortress_body",
+        "weight": 25
+      }
+    ]
   },
   {
     "monster_id": "the_congregation",
@@ -1357,14 +1720,7 @@
       "the_mothers_embrace",
       "chorus_of_names"
     ],
-    "learnable_skills": {},
     "ai_pattern": "boss_congregation",
-    "skill_weights": {
-      "the_smiths_hammer": 30,
-      "the_elders_wisdom": 20,
-      "the_mothers_embrace": 25,
-      "chorus_of_names": 25
-    },
     "base_corruption": 100,
     "corruption_resistance": 50,
     "base_experience": 500,
@@ -1393,7 +1749,26 @@
     ],
     "habitat": "Abandoned Village (Tutorial Area)",
     "behavior_notes": "Phase 1: 2 actions per turn. Phase 2 (60%): Opens torso mouth, uses Invitation. Phase 3 (30%): Villagers inside fight back, sometimes skips turns.",
-    "purification_hint": "Cannot be purified - releases souls instead. Dozens of ghostly figures pour out, finally free."
+    "purification_hint": "Cannot be purified - releases souls instead. Dozens of ghostly figures pour out, finally free.",
+    "learnable_skills_list": [],
+    "skill_weights_list": [
+      {
+        "skill_id": "the_smiths_hammer",
+        "weight": 30
+      },
+      {
+        "skill_id": "the_elders_wisdom",
+        "weight": 20
+      },
+      {
+        "skill_id": "the_mothers_embrace",
+        "weight": 25
+      },
+      {
+        "skill_id": "chorus_of_names",
+        "weight": 25
+      }
+    ]
   },
   {
     "monster_id": "the_vessel",
@@ -1453,18 +1828,7 @@
       "healing_pulse",
       "soothing_pulse"
     ],
-    "learnable_skills": {
-      "8": "absorb_suffering",
-      "15": "blessed_touch",
-      "20": "sanctuary",
-      "28": "divine_devotion"
-    },
     "ai_pattern": "healer",
-    "skill_weights": {
-      "stolen_grace": 45,
-      "merciful_light": 35,
-      "absorb_suffering": 20
-    },
     "base_corruption": 85,
     "corruption_resistance": 6,
     "base_experience": 28,
@@ -1488,7 +1852,39 @@
     ],
     "habitat": "Near places of worship, hospitals, orphanages",
     "behavior_notes": "Still WANTS to heal - but twisted. Approaches wounded creatures and 'heals' them by absorbing them.",
-    "purification_hint": "The stolen light becomes its own. Remembers every healer it consumed, honors them by continuing their work properly."
+    "purification_hint": "The stolen light becomes its own. Remembers every healer it consumed, honors them by continuing their work properly.",
+    "learnable_skills_list": [
+      {
+        "level": "8",
+        "skill_id": "absorb_suffering"
+      },
+      {
+        "level": "15",
+        "skill_id": "blessed_touch"
+      },
+      {
+        "level": "20",
+        "skill_id": "sanctuary"
+      },
+      {
+        "level": "28",
+        "skill_id": "divine_devotion"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "stolen_grace",
+        "weight": 45
+      },
+      {
+        "skill_id": "merciful_light",
+        "weight": 35
+      },
+      {
+        "skill_id": "absorb_suffering",
+        "weight": 20
+      }
+    ]
   },
   {
     "monster_id": "the_weeping",
@@ -1548,18 +1944,7 @@
       "dread_gaze",
       "many_eyes"
     ],
-    "learnable_skills": {
-      "8": "many_eyed_gaze",
-      "14": "shared_vision",
-      "20": "foresight",
-      "26": "absolute_vision"
-    },
     "ai_pattern": "debuffer",
-    "skill_weights": {
-      "witnessed": 30,
-      "glimpse_of_death": 35,
-      "many_eyed_gaze": 35
-    },
     "base_corruption": 85,
     "corruption_resistance": 7,
     "base_experience": 24,
@@ -1583,7 +1968,39 @@
     ],
     "habitat": "Dark places, near scenes of violence, anywhere eyes have witnessed horror",
     "behavior_notes": "Became obsessed with SEEING. Every eye carries fragments of former owner's last sight. Haunted by visions it can't process.",
-    "purification_hint": "Chooses which eyes to keep - those with beautiful memories. Uses vision for guidance, not hunting."
+    "purification_hint": "Chooses which eyes to keep - those with beautiful memories. Uses vision for guidance, not hunting.",
+    "learnable_skills_list": [
+      {
+        "level": "8",
+        "skill_id": "many_eyed_gaze"
+      },
+      {
+        "level": "14",
+        "skill_id": "shared_vision"
+      },
+      {
+        "level": "20",
+        "skill_id": "foresight"
+      },
+      {
+        "level": "26",
+        "skill_id": "absolute_vision"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "witnessed",
+        "weight": 30
+      },
+      {
+        "skill_id": "glimpse_of_death",
+        "weight": 35
+      },
+      {
+        "skill_id": "many_eyed_gaze",
+        "weight": 35
+      }
+    ]
   },
   {
     "monster_id": "voltgeist",
@@ -1624,18 +2041,7 @@
       "dread_gaze",
       "distortion_field"
     ],
-    "learnable_skills": {
-      "12": "storm_terror",
-      "20": "thunderwraith_scream",
-      "30": "inevitable_strike",
-      "42": "the_storm_that_remembers"
-    },
     "ai_pattern": "debuffer",
-    "skill_weights": {
-      "death_vision": 40,
-      "lightning_haunt": 35,
-      "storm_terror": 25
-    },
     "base_corruption": 85,
     "corruption_resistance": 8,
     "base_experience": 48,
@@ -1659,6 +2065,38 @@
     ],
     "habitat": "Storm-struck peaks, places of sudden death, electrical anomalies",
     "behavior_notes": "Inflicts Fear and Paralysis. Death Vision shows enemies their death, reducing their accuracy and causing hesitation. Can teleport short distances. More powerful during storms.",
-    "purification_hint": "The burning stops. It becomes a warning spirit, showing visions of danger to PREVENT deaths rather than foretell them. It guides travelers away from lightning strikes."
+    "purification_hint": "The burning stops. It becomes a warning spirit, showing visions of danger to PREVENT deaths rather than foretell them. It guides travelers away from lightning strikes.",
+    "learnable_skills_list": [
+      {
+        "level": "12",
+        "skill_id": "storm_terror"
+      },
+      {
+        "level": "20",
+        "skill_id": "thunderwraith_scream"
+      },
+      {
+        "level": "30",
+        "skill_id": "inevitable_strike"
+      },
+      {
+        "level": "42",
+        "skill_id": "the_storm_that_remembers"
+      }
+    ],
+    "skill_weights_list": [
+      {
+        "skill_id": "death_vision",
+        "weight": 40
+      },
+      {
+        "skill_id": "lightning_haunt",
+        "weight": 35
+      },
+      {
+        "skill_id": "storm_terror",
+        "weight": 25
+      }
+    ]
   }
 ]
