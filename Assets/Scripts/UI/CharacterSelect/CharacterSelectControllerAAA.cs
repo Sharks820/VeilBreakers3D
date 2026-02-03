@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
+using VeilBreakers.Data;
 using static VeilBreakers.Core.GameDataTypes;
 
 namespace VeilBreakers.UI.CharacterSelect

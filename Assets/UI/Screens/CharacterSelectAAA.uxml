@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/Styles/CharacterSelectAAA.uss?fileID=7433441132597879392&amp;guid=58d95f00f764bcc479eca2d4dfd9e72a&amp;type=3" />
+    <Style src="project://database/Assets/UI/Styles/VeilBreakersTheme.uss?fileID=7433441132597879392&amp;guid=0c75776285827f74db8942ace412c502&amp;type=3" />
+    
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ATMOSPHERIC BACKGROUND LAYERS                                   -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    
+    <!-- Layer 1: Deepest Void -->
+    <ui:VisualElement name="bg-layer-void" class="parallax-bg parallax-deep">
+        <ui:VisualElement name="void-stars" class="void-stars"/>
+        <ui:VisualElement name="veil-cracks" class="veil-cracks"/>
+    </ui:VisualElement>
+    
+    <!-- Layer 2: Far Atmosphere (Fog/Particles) -->
+    <ui:VisualElement name="bg-layer-fog" class="parallax-bg parallax-fog">
+        <ui:VisualElement name="fog-particles" class="fog-particles"/>
+    </ui:VisualElement>
+    
+    <!-- Layer 3: Midground Environment (Changes per hero) -->
+    <ui:VisualElement name="bg-layer-mid" class="parallax-bg parallax-mid">
+        <ui:VisualElement name="hero-environment" class="hero-environment"/>
+    </ui:VisualElement>
+    
+    <!-- Layer 4: Near Atmosphere (Glow/Lens Flare) -->
+    <ui:VisualElement name="bg-layer-near" class="parallax-bg parallax-near">
+        <ui:VisualElement name="ambient-glow" class="ambient-glow"/>
+    </ui:VisualElement>
+    
+    <!-- Layer 5: Foreground Vignette -->
+    <ui:VisualElement name="vignette-overlay" class="vignette-overlay"/>
+    
+    <!-- Transition Effect Overlay -->
+    <ui:VisualElement name="transition-overlay" class="transition-overlay hidden"/>
+    
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- MAIN STAGE - HERO DISPLAY                                       -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    
+    <ui:VisualElement name="main-stage" class="main-stage">
+        <!-- Hero Aura Effects -->
+        <ui:VisualElement name="hero-aura-container" class="hero-aura-container">
+            <ui:VisualElement name="aura-base" class="aura-base"/>
+            <ui:VisualElement name="aura-particles" class="aura-particles"/>
+            <ui:VisualElement name="ground-glow" class="ground-glow"/>
+        </ui:VisualElement>
+        
+        <!-- Hero Display Container -->
+        <ui:VisualElement name="hero-display" class="hero-display">
+            <ui:VisualElement name="hero-silhouette" class="hero-silhouette"/>
+            <ui:VisualElement name="hero-rim-light" class="hero-rim-light"/>
+            <ui:VisualElement name="hero-eyes" class="hero-eyes hidden"/>
+        </ui:VisualElement>
+        
+        <!-- Monster Companion Orbit -->
+        <ui:VisualElement name="monster-orbit" class="monster-orbit">
+            <ui:VisualElement name="synergy-tether" class="synergy-tether"/>
+            <ui:VisualElement name="monster-container" class="monster-container">
+                <ui:VisualElement name="monster-model" class="monster-model"/>
+                <ui:VisualElement name="monster-aura" class="monster-aura"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        
+        <!-- Environmental Effects (Hero-specific) -->
+        <ui:VisualElement name="env-effects" class="env-effects"/>
+    </ui:VisualElement>
+    
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- RIGHT PANEL - STATS & ABILITIES                                 -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    
+    <ui:VisualElement name="right-panel" class="right-panel glass-panel">
+        <!-- Path Badge -->
+        <ui:VisualElement name="path-badge" class="path-badge">
+            <ui:VisualElement name="path-icon" class="path-icon"/>
+            <ui:Label name="path-name" text="IRONBOUND" class="path-name"/>
+        </ui:VisualElement>
+        
+        <!-- Brand Synergy Indicator -->
+        <ui:VisualElement name="synergy-indicator" class="synergy-indicator">
+            <ui:Label text="SYNERGY" class="synergy-label"/>
+            <ui:VisualElement name="synergy-stars" class="synergy-stars">
+                <ui:VisualElement name="star-1" class="synergy-star filled"/>
+                <ui:VisualElement name="star-2" class="synergy-star filled"/>
+                <ui:VisualElement name="star-3" class="synergy-star filled"/>
+                <ui:VisualElement name="star-4" class="synergy-star filled"/>
+                <ui:VisualElement name="star-5" class="synergy-star"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        
+        <!-- Stat Pillars -->
+        <ui:VisualElement name="stat-pillars" class="stat-pillars">
+            <ui:VisualElement name="stat-str" class="stat-pillar" data-stat="str">
+                <ui:Label name="str-value" text="12" class="stat-value"/>
+                <ui:VisualElement name="str-bar-container" class="stat-bar-container">
+                    <ui:VisualElement name="str-fill" class="stat-fill" style="height: 60%;"/>
+                </ui:VisualElement>
+                <ui:Label text="STR" class="stat-label"/>
+            </ui:VisualElement>
+            
+            <ui:VisualElement name="stat-dex" class="stat-pillar" data-stat="dex">
+                <ui:Label name="dex-value" text="10" class="stat-value"/>
+                <ui:VisualElement name="dex-bar-container" class="stat-bar-container">
+                    <ui:VisualElement name="dex-fill" class="stat-fill" style="height: 50%;"/>
+                </ui:VisualElement>
+                <ui:Label text="DEX" class="stat-label"/>
+            </ui:VisualElement>
+            
+            <ui:VisualElement name="stat-con" class="stat-pillar" data-stat="con">
+                <ui:Label name="con-value" text="14" class="stat-value"/>
+                <ui:VisualElement name="con-bar-container" class="stat-bar-container">
+                    <ui:VisualElement name="con-fill" class="stat-fill" style="height: 70%;"/>
+                </ui:VisualElement>
+                <ui:Label text="CON" class="stat-label"/>
+            </ui:VisualElement>
+            
+            <ui:VisualElement name="stat-int" class="stat-pillar" data-stat="int">
+                <ui:Label name="int-value" text="10" class="stat-value"/>
+                <ui:VisualElement name="int-bar-container" class="stat-bar-container">
+                    <ui:VisualElement name="int-fill" class="stat-fill" style="height: 50%;"/>
+                </ui:VisualElement>
+                <ui:Label text="INT" class="stat-label"/>
+            </ui:VisualElement>
+            
+            <ui:VisualElement name="stat-wis" class="stat-pillar" data-stat="wis">
+                <ui:Label name="wis-value" text="11" class="stat-value"/>
+                <ui:VisualElement name="wis-bar-container" class="stat-bar-container">
+                    <ui:VisualElement name="wis-fill" class="stat-fill" style="height: 55%;"/>
+                </ui:VisualElement>
+                <ui:Label text="WIS" class="stat-label"/>
+            </ui:VisualElement>
+            
+            <ui:VisualElement name="stat-cha" class="stat-pillar" data-stat="cha">
+                <ui:Label name="cha-value" text="10" class="stat-value"/>
+                <ui:VisualElement name="cha-bar-container" class="stat-bar-container">
+                    <ui:VisualElement name="cha-fill" class="stat-fill" style="height: 50%;"/>
+                </ui:VisualElement>
+                <ui:Label text="CHA" class="stat-label"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        
+        <!-- Ability Cards -->
+        <ui:VisualElement name="ability-section" class="ability-section">
+            <ui:Label text="ABILITIES" class="section-title"/>
+            
+            <ui:VisualElement name="ability-cards" class="ability-cards">
+                <ui:VisualElement name="ability-1" class="ability-card">
+                    <ui:VisualElement name="ability-1-icon" class="ability-icon"/>
+                    <ui:VisualElement name="ability-1-info" class="ability-info">
+                        <ui:Label name="ability-1-name" text="Chained Strike" class="ability-name"/>
+                        <ui:Label name="ability-1-desc" text="Attack chains to nearby enemies" class="ability-desc"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                
+                <ui:VisualElement name="ability-2" class="ability-card">
+                    <ui:VisualElement name="ability-2-icon" class="ability-icon"/>
+                    <ui:VisualElement name="ability-2-info" class="ability-info">
+                        <ui:Label name="ability-2-name" text="Iron Will" class="ability-name"/>
+                        <ui:Label name="ability-2-desc" text="Gain defense and taunt" class="ability-desc"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                
+                <ui:VisualElement name="ability-3" class="ability-card">
+                    <ui:VisualElement name="ability-3-icon" class="ability-icon"/>
+                    <ui:VisualElement name="ability-3-info" class="ability-info">
+                        <ui:Label name="ability-3-name" text="Warden's Stand" class="ability-name"/>
+                        <ui:Label name="ability-3-desc" text="Ultimate: Protect all allies" class="ability-desc ultimate"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        
+        <!-- Starter Monster Info -->
+        <ui:VisualElement name="monster-section" class="monster-section">
+            <ui:Label text="STARTER MONSTER" class="section-title"/>
+            <ui:VisualElement name="monster-info-card" class="monster-info-card">
+                <ui:VisualElement name="monster-thumbnail" class="monster-thumbnail"/>
+                <ui:VisualElement name="monster-details" class="monster-details">
+                    <ui:Label name="monster-name" text="Skitterfang" class="monster-name"/>
+                    <ui:Label name="monster-type" text="Venom Beast" class="monster-type"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+    
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- HERO INFO (Bottom Center)                                       -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    
+    <ui:VisualElement name="hero-info-container" class="hero-info-container">
+        <ui:Label name="hero-name-display" text="VEX" class="hero-name-display"/>
+        <ui:Label name="hero-title-display" text="THE WARDEN" class="hero-title-display"/>
+        <ui:Label name="hero-quote" text="&quot;I don't kill monsters. I break them.&quot;" class="hero-quote"/>
+    </ui:VisualElement>
+    
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- HERO CAROUSEL (Bottom)                                          -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    
+    <ui:VisualElement name="hero-carousel" class="hero-carousel">
+        <ui:VisualElement name="carousel-track" class="carousel-track">
+            <!-- Vex Card -->
+            <ui:VisualElement name="hero-card-vex" class="hero-card selected" data-hero="vex">
+                <ui:VisualElement name="vex-portrait" class="hero-portrait"/>
+                <ui:VisualElement name="vex-frame" class="hero-frame"/>
+                <ui:VisualElement name="vex-glow" class="hero-glow active"/>
+                <ui:Label name="vex-name" text="VEX" class="hero-card-name"/>
+                <ui:VisualElement name="vex-path-icon" class="hero-path-icon"/>
+            </ui:VisualElement>
+            
+            <!-- Seraphina Card -->
+            <ui:VisualElement name="hero-card-seraphina" class="hero-card" data-hero="seraphina">
+                <ui:VisualElement name="seraphina-portrait" class="hero-portrait"/>
+                <ui:VisualElement name="seraphina-frame" class="hero-frame"/>
+                <ui:VisualElement name="seraphina-glow" class="hero-glow"/>
+                <ui:Label name="seraphina-name" text="SERAPHINA" class="hero-card-name"/>
+                <ui:VisualElement name="seraphina-path-icon" class="hero-path-icon"/>
+            </ui:VisualElement>
+            
+            <!-- Orion Card -->
+            <ui:VisualElement name="hero-card-orion" class="hero-card" data-hero="orion">
+                <ui:VisualElement name="orion-portrait" class="hero-portrait"/>
+                <ui:VisualElement name="orion-frame" class="hero-frame"/>
+                <ui:VisualElement name="orion-glow" class="hero-glow"/>
+                <ui:Label name="orion-name" text="ORION" class="hero-card-name"/>
+                <ui:VisualElement name="orion-path-icon" class="hero-path-icon"/>
+            </ui:VisualElement>
+            
+            <!-- Nyx Card -->
+            <ui:VisualElement name="hero-card-nyx" class="hero-card" data-hero="nyx">
+                <ui:VisualElement name="nyx-portrait" class="hero-portrait"/>
+                <ui:VisualElement name="nyx-frame" class="hero-frame"/>
+                <ui:VisualElement name="nyx-glow" class="hero-glow"/>
+                <ui:Label name="nyx-name" text="NYX" class="hero-card-name"/>
+                <ui:VisualElement name="nyx-path-icon" class="hero-path-icon"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        
+        <!-- Carousel Navigation Arrows -->
+        <ui:Button name="carousel-prev" class="carousel-arrow carousel-prev">
+            <ui:VisualElement class="arrow-icon left"/>
+        </ui:Button>
+        <ui:Button name="carousel-next" class="carousel-arrow carousel-next">
+            <ui:VisualElement class="arrow-icon right"/>
+        </ui:Button>
+    </ui:VisualElement>
+    
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- CONFIRM BUTTON (Hexagonal Ritual Button)                        -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    
+    <ui:Button name="btn-embark" class="embark-button">
+        <ui:VisualElement name="embark-hex-bg" class="embark-hex-bg"/>
+        <ui:VisualElement name="embark-glow" class="embark-glow"/>
+        <ui:VisualElement name="embark-content" class="embark-content">
+            <ui:Label name="embark-text" text="EMBARK AS VEX" class="embark-text"/>
+            <ui:Label name="embark-subtext" text="Begin Your Journey" class="embark-subtext"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="embark-particles" class="embark-particles"/>
+    </ui:Button>
+    
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- NAVIGATION BUTTONS                                              -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    
+    <ui:Button name="btn-back" class="nav-button back-button">
+        <ui:VisualElement class="nav-icon back-icon"/>
+        <ui:Label text="BACK" class="nav-label"/>
+    </ui:Button>
+    
+    <ui:Button name="btn-settings" class="nav-button settings-button">
+        <ui:VisualElement class="nav-icon settings-icon"/>
+    </ui:Button>
+    
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- VFX OVERLAYS                                                    -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    
+    <ui:VisualElement name="vfx-overlay" class="vfx-overlay">
+        <ui:VisualElement name="particle-container" class="particle-container"/>
+        <ui:VisualElement name="lightning-flash" class="lightning-flash hidden"/>
+        <ui:VisualElement name="corruption-fx" class="corruption-fx hidden"/>
+    </ui:VisualElement>
+    
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- SCREEN FADE                                                     -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    
+    <ui:VisualElement name="screen-fade" class="screen-fade hidden"/>
+    
+</ui:UXML>
