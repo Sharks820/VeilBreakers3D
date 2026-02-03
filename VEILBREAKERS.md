@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **SINGLE SOURCE OF TRUTH** | Version: **v4.54** | Last updated: 2026-02-02
+> **SINGLE SOURCE OF TRUTH** | Version: **v4.58** | Last updated: 2026-02-02
 
 ---
 
@@ -41,10 +41,10 @@
 
 | Path | Strong Synergy Brands | Weak Synergy Brands | Starter Hero | Locked Hero |
 |------|----------------------|---------------------|--------------|-------------|
-| IRONBOUND | IRON, MEND, LEECH | VOID, SAVAGE, RUIN | Bastion | Warden |
-| FANGBORN | SAVAGE, VENOM, RUIN | GRACE, MEND, IRON | Rend | Vex |
-| VOIDTOUCHED | VOID, DREAD, SURGE | IRON, GRACE, MEND | Marrow | Shade |
-| UNCHAINED | All Neutral | None (flex) | Mirage | Flux |
+| IRONBOUND | IRON, MEND, LEECH | VOID, SAVAGE, RUIN | Vex | Warden |
+| FANGBORN | SAVAGE, VENOM, RUIN | GRACE, MEND, IRON | Seraphina | Vex |
+| VOIDTOUCHED | VOID, DREAD, SURGE | IRON, GRACE, MEND | Orion | Shade |
+| UNCHAINED | All Neutral | None (flex) | Nyx | Flux |
 
 ### Path-Brand Synergy (Tiered)
 

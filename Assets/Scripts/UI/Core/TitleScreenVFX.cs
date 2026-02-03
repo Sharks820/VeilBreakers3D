@@ -8,8 +8,10 @@ namespace VeilBreakers.UI.Core
 {
     /// <summary>
     /// AAA Title Screen VFX Controller.
-    /// Creates floating embers, ash particles, and atmospheric effects
+    /// Creates floating embers, ash particles, smoke wisps, and atmospheric effects
     /// for a dark fantasy horror aesthetic.
+    ///
+    /// v2.0 - Enhanced with Gemini-recommended AAA color palette and particle specs
     /// </summary>
     public class TitleScreenVFX : MonoBehaviour
     {
@@ -20,48 +22,81 @@ namespace VeilBreakers.UI.Core
         [Header("UI Document")]
         [SerializeField] private UIDocument _uiDocument;
 
-        [Header("Ember Settings")]
-        [SerializeField] private int _emberCount = 40;
-        [SerializeField] private float _emberSpeedMin = 15f;
-        [SerializeField] private float _emberSpeedMax = 45f;
-        [SerializeField] private float _emberSizeMin = 2f;
-        [SerializeField] private float _emberSizeMax = 6f;
-        [SerializeField] private Color _emberColorCore = new Color(1f, 0.4f, 0.1f, 1f);
-        [SerializeField] private Color _emberColorGlow = new Color(1f, 0.6f, 0.2f, 0.6f);
+        [Header("Ember Settings (AAA Palette)")]
+        [SerializeField] private int _emberCount = 70;  // Gemini: 60-80
+        [SerializeField] private float _emberSpeedMin = 20f;
+        [SerializeField] private float _emberSpeedMax = 55f;
+        [SerializeField] private float _emberSizeMin = 3f;
+        [SerializeField] private float _emberSizeMax = 8f;
+        // AAA Colors: #FFF5E1 (hot core) → #FF4400 (body) → #8A0303 (outer)
+        [SerializeField] private Color _emberColorCore = new Color(1f, 0.96f, 0.88f, 1f);       // #FFF5E1
+        [SerializeField] private Color _emberColorBody = new Color(1f, 0.27f, 0f, 0.9f);        // #FF4400
+        [SerializeField] private Color _emberColorGlow = new Color(0.26f, 0f, 0f, 0.4f);        // #420000 blood red bloom
 
-        [Header("Ash Settings")]
-        [SerializeField] private int _ashCount = 30;
-        [SerializeField] private float _ashSpeedMin = 8f;
-        [SerializeField] private float _ashSpeedMax = 20f;
-        [SerializeField] private float _ashSizeMin = 3f;
-        [SerializeField] private float _ashSizeMax = 8f;
-        [SerializeField] private Color _ashColor = new Color(0.3f, 0.28f, 0.25f, 0.7f);
+        [Header("Micro-Spark Settings (AAA)")]
+        [SerializeField] private int _microSparkCount = 120;  // Gemini: 200-300, but UI Toolkit has limits
+        [SerializeField] private float _microSparkSpeedMin = 80f;
+        [SerializeField] private float _microSparkSpeedMax = 180f;
+        [SerializeField] private float _microSparkSizeMin = 1f;
+        [SerializeField] private float _microSparkSizeMax = 2.5f;
 
-        [Header("Spark Settings")]
-        [SerializeField] private int _sparkCount = 15;
-        [SerializeField] private float _sparkSpeedMin = 60f;
-        [SerializeField] private float _sparkSpeedMax = 120f;
+        [Header("Ash Settings (AAA Palette)")]
+        [SerializeField] private int _ashCount = 100;  // Gemini: 120-150
+        [SerializeField] private float _ashSpeedMin = 6f;
+        [SerializeField] private float _ashSpeedMax = 18f;
+        [SerializeField] private float _ashSizeMin = 4f;
+        [SerializeField] private float _ashSizeMax = 12f;
+        // AAA Colors: #363636 to #121212 (dark grey charcoal)
+        [SerializeField] private Color _ashColorLight = new Color(0.21f, 0.21f, 0.21f, 0.5f);   // #363636
+        [SerializeField] private Color _ashColorDark = new Color(0.07f, 0.07f, 0.07f, 0.4f);    // #121212
+
+        [Header("Smoke Wisp Settings (AAA)")]
+        [SerializeField] private int _smokeCount = 18;  // Gemini: 15-20
+        [SerializeField] private float _smokeSpeedMin = 3f;
+        [SerializeField] private float _smokeSpeedMax = 8f;
+        [SerializeField] private float _smokeSizeMin = 80f;
+        [SerializeField] private float _smokeSizeMax = 200f;
+        // AAA: #0A0A0A near black with very low opacity
+        [SerializeField] private Color _smokeColor = new Color(0.04f, 0.03f, 0.03f, 0.12f);
+
+        [Header("Spark Burst Settings")]
+        [SerializeField] private int _sparkCount = 25;
+        [SerializeField] private float _sparkSpeedMin = 100f;
+        [SerializeField] private float _sparkSpeedMax = 200f;
+
+        [Header("Atmospheric Layers")]
+        [SerializeField] private bool _enableVignette = true;
+        [SerializeField] private float _vignetteOpacity = 0.75f;  // Gemini: 0.8 at corners
+        [SerializeField] private bool _enableAtmosphereGradient = true;
+        [SerializeField] private Color _atmosphereColor = new Color(0.1f, 0f, 0f, 0.3f);  // Dark red #1A0000
 
         [Header("Animation")]
-        [SerializeField] private float _windStrength = 0.3f;
-        [SerializeField] private float _windFrequency = 0.5f;
-        [SerializeField] private float _flickerSpeed = 8f;
+        [SerializeField] private float _windStrength = 0.4f;
+        [SerializeField] private float _windFrequency = 0.4f;
+        [SerializeField] private float _flickerSpeed = 10f;
+        [SerializeField] private float _turbulenceStrength = 0.15f;  // New: adds chaos to movement
 
         [Header("Spawn Area")]
-        [SerializeField] private float _spawnMarginBottom = 0.1f; // Spawn from bottom 10%
-        [SerializeField] private float _spawnMarginSides = 0.2f;  // Avoid edges
+        [SerializeField] private float _spawnMarginBottom = 0.15f;
+        [SerializeField] private float _spawnMarginSides = 0.1f;
 
         // =============================================================================
         // STATE
         // =============================================================================
 
         private VisualElement _vfxContainer;
+        private VisualElement _atmosphereLayer;
+        private VisualElement _vignetteLayer;
+        private VisualElement _smokeLayer;
         private readonly List<EmberParticle> _embers = new();
         private readonly List<AshParticle> _ashes = new();
         private readonly List<SparkParticle> _sparks = new();
+        private readonly List<MicroSparkParticle> _microSparks = new();
+        private readonly List<SmokeParticle> _smokes = new();
         private bool _isActive;
         private Coroutine _updateCoroutine;
         private float _windOffset;
+        private float _turbulenceOffset;
         private float _screenWidth;
         private float _screenHeight;
 
@@ -134,26 +169,160 @@ namespace VeilBreakers.UI.Core
             if (_screenWidth <= 0) _screenWidth = 1920;
             if (_screenHeight <= 0) _screenHeight = 1080;
 
-            // Create embers
-            for (int i = 0; i < _emberCount; i++)
+            // === AAA ATMOSPHERIC LAYERS ===
+
+            // 1. Atmosphere gradient layer (radial dark red)
+            if (_enableAtmosphereGradient)
             {
-                CreateEmber();
+                CreateAtmosphereLayer();
             }
 
-            // Create ash particles
+            // 2. Smoke layer (behind particles)
+            _smokeLayer = new VisualElement();
+            _smokeLayer.name = "smoke-layer";
+            _smokeLayer.style.position = Position.Absolute;
+            _smokeLayer.style.left = 0;
+            _smokeLayer.style.top = 0;
+            _smokeLayer.style.right = 0;
+            _smokeLayer.style.bottom = 0;
+            _smokeLayer.pickingMode = PickingMode.Ignore;
+            _vfxContainer.Add(_smokeLayer);
+
+            // Create smoke wisps
+            for (int i = 0; i < _smokeCount; i++)
+            {
+                CreateSmoke();
+            }
+
+            // 3. Create ash particles (behind embers)
             for (int i = 0; i < _ashCount; i++)
             {
                 CreateAsh();
             }
 
-            // Create sparks
+            // 4. Create embers
+            for (int i = 0; i < _emberCount; i++)
+            {
+                CreateEmber();
+            }
+
+            // 5. Create micro-sparks (fast turbulent particles)
+            for (int i = 0; i < _microSparkCount; i++)
+            {
+                CreateMicroSpark();
+            }
+
+            // 6. Create sparks (burst particles)
             for (int i = 0; i < _sparkCount; i++)
             {
                 CreateSpark();
             }
 
+            // 7. Vignette overlay (on top of everything)
+            if (_enableVignette)
+            {
+                CreateVignetteLayer();
+            }
+
             StartVFX();
-            Debug.Log($"[TitleScreenVFX] Initialized: {_emberCount} embers, {_ashCount} ash, {_sparkCount} sparks");
+            Debug.Log($"[TitleScreenVFX] AAA VFX Initialized: {_emberCount} embers, {_microSparkCount} micro-sparks, {_ashCount} ash, {_smokeCount} smoke, {_sparkCount} sparks");
+        }
+
+        private void CreateAtmosphereLayer()
+        {
+            _atmosphereLayer = new VisualElement();
+            _atmosphereLayer.name = "atmosphere-gradient";
+            _atmosphereLayer.style.position = Position.Absolute;
+            _atmosphereLayer.style.left = 0;
+            _atmosphereLayer.style.top = 0;
+            _atmosphereLayer.style.right = 0;
+            _atmosphereLayer.style.bottom = 0;
+            _atmosphereLayer.pickingMode = PickingMode.Ignore;
+
+            // Create radial gradient effect using a centered element
+            var gradientCenter = new VisualElement();
+            gradientCenter.style.position = Position.Absolute;
+            gradientCenter.style.width = Length.Percent(150);
+            gradientCenter.style.height = Length.Percent(150);
+            gradientCenter.style.left = Length.Percent(-25);
+            gradientCenter.style.top = Length.Percent(-25);
+            gradientCenter.style.backgroundColor = _atmosphereColor;
+            gradientCenter.style.borderTopLeftRadius = Length.Percent(50);
+            gradientCenter.style.borderTopRightRadius = Length.Percent(50);
+            gradientCenter.style.borderBottomLeftRadius = Length.Percent(50);
+            gradientCenter.style.borderBottomRightRadius = Length.Percent(50);
+            gradientCenter.style.opacity = 0.5f;
+            gradientCenter.pickingMode = PickingMode.Ignore;
+            _atmosphereLayer.Add(gradientCenter);
+
+            _vfxContainer.Add(_atmosphereLayer);
+        }
+
+        private void CreateVignetteLayer()
+        {
+            _vignetteLayer = new VisualElement();
+            _vignetteLayer.name = "vignette-overlay";
+            _vignetteLayer.style.position = Position.Absolute;
+            _vignetteLayer.style.left = 0;
+            _vignetteLayer.style.top = 0;
+            _vignetteLayer.style.right = 0;
+            _vignetteLayer.style.bottom = 0;
+            _vignetteLayer.pickingMode = PickingMode.Ignore;
+
+            // Create corner vignettes
+            CreateVignetteCorner(_vignetteLayer, true, true);   // Top-left
+            CreateVignetteCorner(_vignetteLayer, true, false);  // Top-right
+            CreateVignetteCorner(_vignetteLayer, false, true);  // Bottom-left
+            CreateVignetteCorner(_vignetteLayer, false, false); // Bottom-right
+
+            // Top edge
+            var topEdge = new VisualElement();
+            topEdge.style.position = Position.Absolute;
+            topEdge.style.top = 0;
+            topEdge.style.left = Length.Percent(20);
+            topEdge.style.right = Length.Percent(20);
+            topEdge.style.height = Length.Percent(15);
+            topEdge.style.backgroundColor = new Color(0, 0, 0, _vignetteOpacity * 0.5f);
+            topEdge.style.opacity = 0.6f;
+            topEdge.pickingMode = PickingMode.Ignore;
+            _vignetteLayer.Add(topEdge);
+
+            // Bottom edge (stronger)
+            var bottomEdge = new VisualElement();
+            bottomEdge.style.position = Position.Absolute;
+            bottomEdge.style.bottom = 0;
+            bottomEdge.style.left = Length.Percent(20);
+            bottomEdge.style.right = Length.Percent(20);
+            bottomEdge.style.height = Length.Percent(20);
+            bottomEdge.style.backgroundColor = new Color(0, 0, 0, _vignetteOpacity * 0.6f);
+            bottomEdge.style.opacity = 0.7f;
+            bottomEdge.pickingMode = PickingMode.Ignore;
+            _vignetteLayer.Add(bottomEdge);
+
+            _vfxContainer.Add(_vignetteLayer);
+        }
+
+        private void CreateVignetteCorner(VisualElement parent, bool isTop, bool isLeft)
+        {
+            var corner = new VisualElement();
+            corner.style.position = Position.Absolute;
+            corner.style.width = Length.Percent(40);
+            corner.style.height = Length.Percent(40);
+
+            if (isTop) corner.style.top = 0;
+            else corner.style.bottom = 0;
+
+            if (isLeft) corner.style.left = 0;
+            else corner.style.right = 0;
+
+            corner.style.backgroundColor = new Color(0, 0, 0, _vignetteOpacity);
+            corner.style.borderTopLeftRadius = isTop && isLeft ? 0 : Length.Percent(100);
+            corner.style.borderTopRightRadius = isTop && !isLeft ? 0 : Length.Percent(100);
+            corner.style.borderBottomLeftRadius = !isTop && isLeft ? 0 : Length.Percent(100);
+            corner.style.borderBottomRightRadius = !isTop && !isLeft ? 0 : Length.Percent(100);
+            corner.pickingMode = PickingMode.Ignore;
+
+            parent.Add(corner);
         }
 
         // =============================================================================
@@ -162,29 +331,42 @@ namespace VeilBreakers.UI.Core
 
         private void CreateEmber()
         {
-            // Outer glow
+            // AAA: Multi-layer ember with outer glow, body, and hot core
+
+            // Outer blood-red glow (largest, softest)
             var glow = new VisualElement();
             glow.style.position = Position.Absolute;
-            glow.style.borderTopLeftRadius = 50;
-            glow.style.borderTopRightRadius = 50;
-            glow.style.borderBottomLeftRadius = 50;
-            glow.style.borderBottomRightRadius = 50;
+            glow.style.borderTopLeftRadius = Length.Percent(50);
+            glow.style.borderTopRightRadius = Length.Percent(50);
+            glow.style.borderBottomLeftRadius = Length.Percent(50);
+            glow.style.borderBottomRightRadius = Length.Percent(50);
             glow.pickingMode = PickingMode.Ignore;
 
-            // Inner core
+            // Middle body layer (orange/red)
+            var body = new VisualElement();
+            body.style.position = Position.Absolute;
+            body.style.borderTopLeftRadius = Length.Percent(50);
+            body.style.borderTopRightRadius = Length.Percent(50);
+            body.style.borderBottomLeftRadius = Length.Percent(50);
+            body.style.borderBottomRightRadius = Length.Percent(50);
+            body.pickingMode = PickingMode.Ignore;
+            glow.Add(body);
+
+            // Inner hot core (brightest)
             var core = new VisualElement();
             core.style.position = Position.Absolute;
-            core.style.borderTopLeftRadius = 50;
-            core.style.borderTopRightRadius = 50;
-            core.style.borderBottomLeftRadius = 50;
-            core.style.borderBottomRightRadius = 50;
+            core.style.borderTopLeftRadius = Length.Percent(50);
+            core.style.borderTopRightRadius = Length.Percent(50);
+            core.style.borderBottomLeftRadius = Length.Percent(50);
+            core.style.borderBottomRightRadius = Length.Percent(50);
             core.pickingMode = PickingMode.Ignore;
-            glow.Add(core);
+            body.Add(core);
 
             _vfxContainer.Add(glow);
 
             var size = UnityEngine.Random.Range(_emberSizeMin, _emberSizeMax);
-            var glowSize = size * 3f;
+            var bodySize = size * 2f;
+            var glowSize = size * 4f;
 
             var ember = new EmberParticle
             {
@@ -193,23 +375,30 @@ namespace VeilBreakers.UI.Core
                 Size = size,
                 GlowSize = glowSize,
                 Speed = UnityEngine.Random.Range(_emberSpeedMin, _emberSpeedMax),
-                Lifetime = UnityEngine.Random.Range(4f, 8f),
-                Age = UnityEngine.Random.Range(0f, 4f), // Stagger start times
+                Lifetime = UnityEngine.Random.Range(5f, 10f),
+                Age = UnityEngine.Random.Range(0f, 5f),
                 FlickerPhase = UnityEngine.Random.Range(0f, Mathf.PI * 2f),
                 DriftPhase = UnityEngine.Random.Range(0f, Mathf.PI * 2f),
-                DriftAmplitude = UnityEngine.Random.Range(20f, 50f)
+                DriftAmplitude = UnityEngine.Random.Range(25f, 60f)
             };
 
             ResetEmberPosition(ember);
 
-            // Style core
+            // AAA Style: Core (hot white/yellow center)
             core.style.width = size;
             core.style.height = size;
             core.style.backgroundColor = _emberColorCore;
-            core.style.left = (glowSize - size) / 2f;
-            core.style.top = (glowSize - size) / 2f;
+            core.style.left = (bodySize - size) / 2f;
+            core.style.top = (bodySize - size) / 2f;
 
-            // Style glow
+            // AAA Style: Body (orange/red)
+            body.style.width = bodySize;
+            body.style.height = bodySize;
+            body.style.backgroundColor = _emberColorBody;
+            body.style.left = (glowSize - bodySize) / 2f;
+            body.style.top = (glowSize - bodySize) / 2f;
+
+            // AAA Style: Outer glow (deep blood red)
             glow.style.width = glowSize;
             glow.style.height = glowSize;
             glow.style.backgroundColor = _emberColorGlow;
@@ -221,13 +410,16 @@ namespace VeilBreakers.UI.Core
         {
             var element = new VisualElement();
             element.style.position = Position.Absolute;
-            element.style.backgroundColor = _ashColor;
+
+            // AAA: Randomize between light and dark ash colors
+            Color ashColor = Color.Lerp(_ashColorDark, _ashColorLight, UnityEngine.Random.Range(0f, 1f));
+            element.style.backgroundColor = ashColor;
             element.pickingMode = PickingMode.Ignore;
 
             _vfxContainer.Add(element);
 
             var sizeX = UnityEngine.Random.Range(_ashSizeMin, _ashSizeMax);
-            var sizeY = UnityEngine.Random.Range(_ashSizeMin * 0.3f, _ashSizeMax * 0.5f);
+            var sizeY = UnityEngine.Random.Range(_ashSizeMin * 0.2f, _ashSizeMax * 0.4f);
 
             var ash = new AshParticle
             {
@@ -235,25 +427,25 @@ namespace VeilBreakers.UI.Core
                 SizeX = sizeX,
                 SizeY = sizeY,
                 Speed = UnityEngine.Random.Range(_ashSpeedMin, _ashSpeedMax),
-                Lifetime = UnityEngine.Random.Range(6f, 12f),
-                Age = UnityEngine.Random.Range(0f, 6f),
-                RotationSpeed = UnityEngine.Random.Range(-90f, 90f),
+                Lifetime = UnityEngine.Random.Range(8f, 16f),  // Longer life
+                Age = UnityEngine.Random.Range(0f, 8f),
+                RotationSpeed = UnityEngine.Random.Range(-120f, 120f),
                 Rotation = UnityEngine.Random.Range(0f, 360f),
                 DriftPhase = UnityEngine.Random.Range(0f, Mathf.PI * 2f),
-                DriftAmplitude = UnityEngine.Random.Range(30f, 80f),
+                DriftAmplitude = UnityEngine.Random.Range(40f, 100f),
                 TumblePhase = UnityEngine.Random.Range(0f, Mathf.PI * 2f),
-                TumbleSpeed = UnityEngine.Random.Range(1f, 3f)
+                TumbleSpeed = UnityEngine.Random.Range(1.5f, 4f)
             };
 
             ResetAshPosition(ash);
 
             element.style.width = sizeX;
             element.style.height = sizeY;
-            var ashRadius = sizeY * 0.3f;
-            element.style.borderTopLeftRadius = ashRadius;
-            element.style.borderTopRightRadius = ashRadius;
-            element.style.borderBottomLeftRadius = ashRadius;
-            element.style.borderBottomRightRadius = ashRadius;
+            // More irregular shape for ash flakes
+            element.style.borderTopLeftRadius = UnityEngine.Random.Range(0f, sizeY * 0.5f);
+            element.style.borderTopRightRadius = UnityEngine.Random.Range(0f, sizeY * 0.5f);
+            element.style.borderBottomLeftRadius = UnityEngine.Random.Range(0f, sizeY * 0.5f);
+            element.style.borderBottomRightRadius = UnityEngine.Random.Range(0f, sizeY * 0.5f);
 
             _ashes.Add(ash);
         }
@@ -262,7 +454,8 @@ namespace VeilBreakers.UI.Core
         {
             var element = new VisualElement();
             element.style.position = Position.Absolute;
-            element.style.backgroundColor = new Color(1f, 0.9f, 0.5f, 0.9f);
+            // AAA: Bright yellow-white core
+            element.style.backgroundColor = new Color(1f, 0.95f, 0.7f, 0.95f);
             element.style.borderTopLeftRadius = 50;
             element.style.borderTopRightRadius = 50;
             element.style.borderBottomLeftRadius = 50;
@@ -274,13 +467,13 @@ namespace VeilBreakers.UI.Core
             var spark = new SparkParticle
             {
                 Element = element,
-                Size = UnityEngine.Random.Range(1f, 3f),
+                Size = UnityEngine.Random.Range(2f, 4f),
                 Speed = UnityEngine.Random.Range(_sparkSpeedMin, _sparkSpeedMax),
-                Lifetime = UnityEngine.Random.Range(0.5f, 1.5f),
-                Age = UnityEngine.Random.Range(0f, 10f), // Long delay between sparks
+                Lifetime = UnityEngine.Random.Range(0.4f, 1.2f),
+                Age = UnityEngine.Random.Range(0f, 12f),
                 Direction = new Vector2(
-                    UnityEngine.Random.Range(-0.3f, 0.3f),
-                    UnityEngine.Random.Range(-1f, -0.7f)
+                    UnityEngine.Random.Range(-0.4f, 0.4f),
+                    UnityEngine.Random.Range(-1f, -0.6f)
                 ).normalized
             };
 
@@ -291,6 +484,76 @@ namespace VeilBreakers.UI.Core
             element.style.opacity = 0;
 
             _sparks.Add(spark);
+        }
+
+        private void CreateMicroSpark()
+        {
+            var element = new VisualElement();
+            element.style.position = Position.Absolute;
+            // Micro-sparks: tiny bright points
+            element.style.backgroundColor = new Color(1f, 0.85f, 0.4f, 0.9f);
+            element.style.borderTopLeftRadius = 50;
+            element.style.borderTopRightRadius = 50;
+            element.style.borderBottomLeftRadius = 50;
+            element.style.borderBottomRightRadius = 50;
+            element.pickingMode = PickingMode.Ignore;
+
+            _vfxContainer.Add(element);
+
+            var size = UnityEngine.Random.Range(_microSparkSizeMin, _microSparkSizeMax);
+
+            var microSpark = new MicroSparkParticle
+            {
+                Element = element,
+                Size = size,
+                Speed = UnityEngine.Random.Range(_microSparkSpeedMin, _microSparkSpeedMax),
+                Lifetime = UnityEngine.Random.Range(0.8f, 2f),  // Short life
+                Age = UnityEngine.Random.Range(0f, 3f),
+                TurbulencePhase = UnityEngine.Random.Range(0f, Mathf.PI * 2f),
+                TurbulenceFrequency = UnityEngine.Random.Range(3f, 8f)
+            };
+
+            ResetMicroSparkPosition(microSpark);
+
+            element.style.width = size;
+            element.style.height = size;
+
+            _microSparks.Add(microSpark);
+        }
+
+        private void CreateSmoke()
+        {
+            var element = new VisualElement();
+            element.style.position = Position.Absolute;
+            element.style.backgroundColor = _smokeColor;
+            element.style.borderTopLeftRadius = Length.Percent(50);
+            element.style.borderTopRightRadius = Length.Percent(50);
+            element.style.borderBottomLeftRadius = Length.Percent(50);
+            element.style.borderBottomRightRadius = Length.Percent(50);
+            element.pickingMode = PickingMode.Ignore;
+
+            _smokeLayer.Add(element);
+
+            var size = UnityEngine.Random.Range(_smokeSizeMin, _smokeSizeMax);
+
+            var smoke = new SmokeParticle
+            {
+                Element = element,
+                Size = size,
+                Speed = UnityEngine.Random.Range(_smokeSpeedMin, _smokeSpeedMax),
+                Lifetime = UnityEngine.Random.Range(15f, 25f),  // Slow, long-lived
+                Age = UnityEngine.Random.Range(0f, 15f),
+                DriftPhase = UnityEngine.Random.Range(0f, Mathf.PI * 2f),
+                DriftAmplitude = UnityEngine.Random.Range(30f, 60f),
+                ExpansionRate = UnityEngine.Random.Range(0.02f, 0.05f)  // Slow expansion
+            };
+
+            ResetSmokePosition(smoke);
+
+            element.style.width = size;
+            element.style.height = size;
+
+            _smokes.Add(smoke);
         }
 
         // =============================================================================
@@ -327,9 +590,51 @@ namespace VeilBreakers.UI.Core
             );
             spark.Age = 0;
             spark.Direction = new Vector2(
-                UnityEngine.Random.Range(-0.3f, 0.3f),
-                UnityEngine.Random.Range(-1f, -0.7f)
+                UnityEngine.Random.Range(-0.4f, 0.4f),
+                UnityEngine.Random.Range(-1f, -0.6f)
             ).normalized;
+        }
+
+        private void ResetMicroSparkPosition(MicroSparkParticle spark)
+        {
+            // Micro-sparks spawn anywhere on screen for ambient effect
+            spark.Position = new Vector2(
+                UnityEngine.Random.Range(0f, _screenWidth),
+                _screenHeight + UnityEngine.Random.Range(10f, 50f)
+            );
+            spark.Age = 0;
+        }
+
+        private void ResetSmokePosition(SmokeParticle smoke)
+        {
+            // Smoke spawns from bottom and sides
+            float spawnSide = UnityEngine.Random.Range(0f, 1f);
+            if (spawnSide < 0.7f)
+            {
+                // Spawn from bottom
+                smoke.Position = new Vector2(
+                    UnityEngine.Random.Range(-smoke.Size * 0.5f, _screenWidth + smoke.Size * 0.5f),
+                    _screenHeight + smoke.Size * 0.5f
+                );
+            }
+            else if (spawnSide < 0.85f)
+            {
+                // Spawn from left
+                smoke.Position = new Vector2(
+                    -smoke.Size * 0.3f,
+                    UnityEngine.Random.Range(_screenHeight * 0.3f, _screenHeight)
+                );
+            }
+            else
+            {
+                // Spawn from right
+                smoke.Position = new Vector2(
+                    _screenWidth + smoke.Size * 0.3f,
+                    UnityEngine.Random.Range(_screenHeight * 0.3f, _screenHeight)
+                );
+            }
+            smoke.Age = 0;
+            smoke.CurrentSize = smoke.Size;
         }
 
         // =============================================================================
@@ -359,19 +664,33 @@ namespace VeilBreakers.UI.Core
             {
                 float deltaTime = Time.unscaledDeltaTime;
                 _windOffset += deltaTime * _windFrequency;
+                _turbulenceOffset += deltaTime * 2.5f;
 
                 float wind = Mathf.Sin(_windOffset) * _windStrength;
+                float turbulence = Mathf.Sin(_turbulenceOffset * 1.7f) * _turbulenceStrength;
 
-                // Update embers
-                foreach (var ember in _embers)
+                // Update smoke (background layer)
+                foreach (var smoke in _smokes)
                 {
-                    UpdateEmber(ember, deltaTime, wind);
+                    UpdateSmoke(smoke, deltaTime, wind);
                 }
 
                 // Update ash
                 foreach (var ash in _ashes)
                 {
                     UpdateAsh(ash, deltaTime, wind);
+                }
+
+                // Update embers
+                foreach (var ember in _embers)
+                {
+                    UpdateEmber(ember, deltaTime, wind, turbulence);
+                }
+
+                // Update micro-sparks
+                foreach (var microSpark in _microSparks)
+                {
+                    UpdateMicroSpark(microSpark, deltaTime, turbulence);
                 }
 
                 // Update sparks
@@ -388,17 +707,100 @@ namespace VeilBreakers.UI.Core
         // PARTICLE UPDATES
         // =============================================================================
 
-        private void UpdateEmber(EmberParticle ember, float deltaTime, float wind)
+        private void UpdateEmber(EmberParticle ember, float deltaTime, float wind, float turbulence)
         {
             ember.Age += deltaTime;
 
-            // Calculate opacity with fade in/out
+            // Calculate opacity with smooth fade in/out
             float normalizedAge = ember.Age / ember.Lifetime;
             float opacity;
 
-            if (normalizedAge < 0.15f)
+            if (normalizedAge < 0.1f)
             {
-                opacity = normalizedAge / 0.15f;
+                // Quick fade in
+                opacity = normalizedAge / 0.1f;
+            }
+            else if (normalizedAge > 0.75f)
+            {
+                // Slow fade out
+                opacity = (1f - normalizedAge) / 0.25f;
+            }
+            else
+            {
+                opacity = 1f;
+            }
+
+            // AAA flicker effect - more complex pattern
+            float flicker1 = Mathf.Sin(ember.Age * _flickerSpeed + ember.FlickerPhase);
+            float flicker2 = Mathf.Sin(ember.Age * _flickerSpeed * 2.3f + ember.FlickerPhase * 1.7f);
+            float flicker = 0.6f + 0.25f * flicker1 + 0.15f * flicker2;
+            opacity *= flicker;
+
+            // Move upward with drift and turbulence
+            float drift = Mathf.Sin(ember.Age * 1.5f + ember.DriftPhase) * ember.DriftAmplitude * deltaTime;
+            float turbDrift = turbulence * ember.DriftAmplitude * 0.5f * deltaTime;
+            ember.Position.x += drift + turbDrift + wind * ember.Speed * deltaTime;
+            ember.Position.y -= ember.Speed * deltaTime;
+
+            // Apply position and opacity
+            ember.GlowElement.style.left = ember.Position.x - ember.GlowSize / 2f;
+            ember.GlowElement.style.top = ember.Position.y - ember.GlowSize / 2f;
+            ember.GlowElement.style.opacity = Mathf.Clamp01(opacity * 0.5f);  // Glow is softer
+            ember.CoreElement.style.opacity = Mathf.Clamp01(opacity);
+
+            // Reset if off screen or lifetime exceeded
+            if (ember.Age >= ember.Lifetime || ember.Position.y < -50f)
+            {
+                ResetEmberPosition(ember);
+            }
+        }
+
+        private void UpdateMicroSpark(MicroSparkParticle spark, float deltaTime, float turbulence)
+        {
+            spark.Age += deltaTime;
+
+            float normalizedAge = spark.Age / spark.Lifetime;
+            float opacity;
+
+            // Very quick fade in, fast fade out
+            if (normalizedAge < 0.05f)
+            {
+                opacity = normalizedAge / 0.05f;
+            }
+            else
+            {
+                opacity = 1f - Mathf.Pow(normalizedAge, 0.7f);
+            }
+
+            // Turbulent motion
+            float turbX = Mathf.Sin(spark.Age * spark.TurbulenceFrequency + spark.TurbulencePhase) * 40f * deltaTime;
+            float turbY = Mathf.Cos(spark.Age * spark.TurbulenceFrequency * 0.7f + spark.TurbulencePhase) * 20f * deltaTime;
+
+            spark.Position.x += turbX + turbulence * 100f * deltaTime;
+            spark.Position.y -= spark.Speed * deltaTime + turbY;
+
+            spark.Element.style.left = spark.Position.x;
+            spark.Element.style.top = spark.Position.y;
+            spark.Element.style.opacity = Mathf.Clamp01(opacity * 0.85f);
+
+            // Reset
+            if (spark.Age >= spark.Lifetime || spark.Position.y < -20f)
+            {
+                ResetMicroSparkPosition(spark);
+            }
+        }
+
+        private void UpdateSmoke(SmokeParticle smoke, float deltaTime, float wind)
+        {
+            smoke.Age += deltaTime;
+
+            float normalizedAge = smoke.Age / smoke.Lifetime;
+            float opacity;
+
+            // Very slow fade in and out
+            if (normalizedAge < 0.2f)
+            {
+                opacity = normalizedAge / 0.2f;
             }
             else if (normalizedAge > 0.7f)
             {
@@ -409,25 +811,24 @@ namespace VeilBreakers.UI.Core
                 opacity = 1f;
             }
 
-            // Flicker effect
-            float flicker = 0.7f + 0.3f * Mathf.Sin(ember.Age * _flickerSpeed + ember.FlickerPhase);
-            opacity *= flicker;
+            // Slow drift
+            float drift = Mathf.Sin(smoke.Age * 0.3f + smoke.DriftPhase) * smoke.DriftAmplitude * deltaTime;
+            smoke.Position.x += drift + wind * smoke.Speed * 3f * deltaTime;
+            smoke.Position.y -= smoke.Speed * deltaTime;
 
-            // Move upward with drift
-            float drift = Mathf.Sin(ember.Age * 1.5f + ember.DriftPhase) * ember.DriftAmplitude * deltaTime;
-            ember.Position.x += drift + wind * ember.Speed * deltaTime;
-            ember.Position.y -= ember.Speed * deltaTime;
+            // Expand slowly
+            smoke.CurrentSize = smoke.Size * (1f + smoke.Age * smoke.ExpansionRate);
 
-            // Apply position and opacity
-            ember.GlowElement.style.left = ember.Position.x - ember.GlowSize / 2f;
-            ember.GlowElement.style.top = ember.Position.y - ember.GlowSize / 2f;
-            ember.GlowElement.style.opacity = opacity * 0.6f;
-            ember.CoreElement.style.opacity = opacity;
+            smoke.Element.style.left = smoke.Position.x - smoke.CurrentSize / 2f;
+            smoke.Element.style.top = smoke.Position.y - smoke.CurrentSize / 2f;
+            smoke.Element.style.width = smoke.CurrentSize;
+            smoke.Element.style.height = smoke.CurrentSize;
+            smoke.Element.style.opacity = Mathf.Clamp01(opacity * 0.12f);  // Very subtle
 
-            // Reset if off screen or lifetime exceeded
-            if (ember.Age >= ember.Lifetime || ember.Position.y < -50f)
+            // Reset
+            if (smoke.Age >= smoke.Lifetime || smoke.Position.y < -smoke.CurrentSize)
             {
-                ResetEmberPosition(ember);
+                ResetSmokePosition(smoke);
             }
         }
 
@@ -598,6 +999,32 @@ namespace VeilBreakers.UI.Core
             public float Speed;
             public float Lifetime;
             public float Age;
+        }
+
+        private class MicroSparkParticle
+        {
+            public VisualElement Element;
+            public Vector2 Position;
+            public float Size;
+            public float Speed;
+            public float Lifetime;
+            public float Age;
+            public float TurbulencePhase;
+            public float TurbulenceFrequency;
+        }
+
+        private class SmokeParticle
+        {
+            public VisualElement Element;
+            public Vector2 Position;
+            public float Size;
+            public float CurrentSize;
+            public float Speed;
+            public float Lifetime;
+            public float Age;
+            public float DriftPhase;
+            public float DriftAmplitude;
+            public float ExpansionRate;
         }
     }
 }
