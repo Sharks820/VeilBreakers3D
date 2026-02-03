@@ -70,7 +70,22 @@ namespace VeilBreakers.UI.CharacterSelect
         
         // String builder for efficient string concatenation
         private readonly StringBuilder stringBuilder = new(128);
-        
+
+        // Monster lookup cache - O(1) instead of O(n)
+        private Dictionary<string, MonsterData> monsterLookup;
+
+        // Cached WaitForSeconds to avoid GC allocations
+        private static readonly WaitForSeconds Wait01 = new(0.1f);
+        private static readonly WaitForSeconds Wait02 = new(0.2f);
+        private static readonly WaitForSeconds Wait03 = new(0.3f);
+        private static readonly WaitForSeconds Wait10 = new(1.0f);
+
+        // Cached event handlers to enable proper unregistration
+        private readonly EventCallback<ClickEvent>[] heroCardClickHandlers = new EventCallback<ClickEvent>[4];
+
+        // Cached WaitForSeconds for quoteDelay (configured at runtime)
+        private WaitForSeconds waitQuoteDelay;
+
         #endregion
         
         #region UI Element References
@@ -148,6 +163,14 @@ namespace VeilBreakers.UI.CharacterSelect
         
         private void Awake()
         {
+            // Validate required serialized fields
+            if (heroesJson == null || monstersJson == null)
+            {
+                Debug.LogError("[CharacterSelectControllerAAA] JSON Data sources are missing in Inspector!");
+                enabled = false;
+                return;
+            }
+
             // Cache Camera.main once
             mainCamera = Camera.main;
             if (mainCamera == null)
@@ -171,6 +194,9 @@ namespace VeilBreakers.UI.CharacterSelect
                 return;
             }
             
+            // Cache configurable WaitForSeconds
+            waitQuoteDelay = new WaitForSeconds(quoteDelay);
+
             CacheUIElements();
             LoadData();
         }
@@ -321,6 +347,17 @@ namespace VeilBreakers.UI.CharacterSelect
                     {
                         monsters.Clear();
                         monsters.AddRange(wrapper.monsters);
+
+                        // Build O(1) lookup dictionary
+                        monsterLookup = new Dictionary<string, MonsterData>(monsters.Count);
+                        for (int i = 0; i < monsters.Count; i++)
+                        {
+                            var m = monsters[i];
+                            if (m != null && !string.IsNullOrEmpty(m.monster_id))
+                            {
+                                monsterLookup[m.monster_id] = m;
+                            }
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -328,6 +365,9 @@ namespace VeilBreakers.UI.CharacterSelect
                     Debug.LogError($"[CharacterSelectControllerAAA] Failed to load monsters: {ex.Message}");
                 }
             }
+
+            // Ensure lookup exists even if empty
+            monsterLookup ??= new Dictionary<string, MonsterData>(0);
             
             // Validate heroes exist
             if (heroes.Count == 0)
@@ -355,6 +395,10 @@ namespace VeilBreakers.UI.CharacterSelect
                     Debug.LogWarning($"[CharacterSelectControllerAAA] Hero '{heroId}' not found in heroes data!");
                 }
             }
+
+            // Release TextAsset memory - data is now in our lists
+            heroesJson = null;
+            monstersJson = null;
         }
         
         /// <summary>
@@ -371,13 +415,14 @@ namespace VeilBreakers.UI.CharacterSelect
             carouselPrev?.RegisterCallback<ClickEvent>(OnCarouselPrevClicked);
             carouselNext?.RegisterCallback<ClickEvent>(OnCarouselNextClicked);
             
-            // Hero card clicks - pre-capture indices
+            // Hero card clicks - use cached handlers to enable proper unregistration
             for (int i = 0; i < heroCards.Length; i++)
             {
                 if (heroCards[i] != null)
                 {
                     int index = i; // Capture for closure
-                    heroCards[i].RegisterCallback<ClickEvent>(evt => OnHeroCardClicked(index));
+                    heroCardClickHandlers[i] = evt => OnHeroCardClicked(index);
+                    heroCards[i].RegisterCallback(heroCardClickHandlers[i]);
                 }
             }
             
@@ -401,7 +446,11 @@ namespace VeilBreakers.UI.CharacterSelect
                 
                 for (int i = 0; i < heroCards.Length; i++)
                 {
-                    heroCards[i]?.UnregisterCallback<ClickEvent>(OnHeroCardClicked);
+                    if (heroCards[i] != null && heroCardClickHandlers[i] != null)
+                    {
+                        heroCards[i].UnregisterCallback(heroCardClickHandlers[i]);
+                        heroCardClickHandlers[i] = null;
+                    }
                 }
                 
                 btnBack?.UnregisterCallback<ClickEvent>(OnBackClicked);
@@ -520,19 +569,19 @@ namespace VeilBreakers.UI.CharacterSelect
             corruptionFx?.RemoveFromClassList("hidden");
             corruptionFx?.AddToClassList("active");
             
-            yield return new WaitForSeconds(0.1f);
+            yield return Wait01;
             
             // 2. Hero-specific effects
             if (hero.hero_id == "orion")
             {
                 lightningFlash?.RemoveFromClassList("hidden");
                 lightningFlash?.AddToClassList("active");
-                yield return new WaitForSeconds(0.1f);
+                yield return Wait01;
                 lightningFlash?.RemoveFromClassList("active");
                 lightningFlash?.AddToClassList("hidden");
             }
             
-            yield return new WaitForSeconds(0.2f);
+            yield return Wait02;
             
             // 3. Update all visual elements
             UpdateCarouselState();
@@ -543,7 +592,7 @@ namespace VeilBreakers.UI.CharacterSelect
             UpdateBackgroundEffects(hero, color);
             
             // 4. End transition
-            yield return new WaitForSeconds(0.3f);
+            yield return Wait03;
             
             transitionOverlay?.RemoveFromClassList("active");
             transitionOverlay?.AddToClassList("hidden");
@@ -586,19 +635,8 @@ namespace VeilBreakers.UI.CharacterSelect
             // Update aura color using USS classes instead of CSS variables
             UpdateHeroAuraColor(color);
             
-            // Find starter monster - O(n) but with small n (32 monsters max)
-            MonsterData starterMonster = null;
-            if (!string.IsNullOrEmpty(hero.starter_monster_id))
-            {
-                for (int i = 0; i < monsters.Count; i++)
-                {
-                    if (monsters[i]?.monster_id == hero.starter_monster_id)
-                    {
-                        starterMonster = monsters[i];
-                        break;
-                    }
-                }
-            }
+            // Find starter monster - O(1) using cached lookup
+            MonsterData starterMonster = GetMonster(hero.starter_monster_id);
             
             if (starterMonster != null && monsterModel != null)
             {
@@ -640,19 +678,8 @@ namespace VeilBreakers.UI.CharacterSelect
                 pathName.text = ((Path)hero.primary_path).ToString().ToUpperInvariant();
             }
             
-            // Find starter monster - O(n) search
-            MonsterData starterMonster = null;
-            if (!string.IsNullOrEmpty(hero.starter_monster_id))
-            {
-                for (int i = 0; i < monsters.Count; i++)
-                {
-                    if (monsters[i]?.monster_id == hero.starter_monster_id)
-                    {
-                        starterMonster = monsters[i];
-                        break;
-                    }
-                }
-            }
+            // Find starter monster - O(1) using cached lookup
+            MonsterData starterMonster = GetMonster(hero.starter_monster_id);
             
             if (starterMonster != null)
             {
@@ -884,7 +911,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private IEnumerator ShowQuoteAfterDelay()
         {
             heroQuote?.RemoveFromClassList("visible");
-            yield return new WaitForSeconds(quoteDelay);
+            yield return waitQuoteDelay;
             
             if (!isDestroyed)
             {
@@ -899,18 +926,9 @@ namespace VeilBreakers.UI.CharacterSelect
             int rating = 3; // Base rating
             
             if (string.IsNullOrEmpty(hero.starter_monster_id)) return rating;
-            
-            // Find starter monster
-            MonsterData starterMonster = null;
-            for (int i = 0; i < monsters.Count; i++)
-            {
-                if (monsters[i]?.monster_id == hero.starter_monster_id)
-                {
-                    starterMonster = monsters[i];
-                    break;
-                }
-            }
-            
+
+            // Find starter monster - O(1) using cached lookup
+            MonsterData starterMonster = GetMonster(hero.starter_monster_id);
             if (starterMonster == null) return rating;
             
             // Check brand match - supports both single brand and brands array
@@ -957,11 +975,11 @@ namespace VeilBreakers.UI.CharacterSelect
             
             // 1. Background fades in
             bgLayerVoid?.RemoveFromClassList("hidden");
-            yield return new WaitForSeconds(0.3f);
+            yield return Wait03;
             
             // 2. Carousel slides up
             carouselTrack?.RemoveFromClassList("hidden");
-            yield return new WaitForSeconds(0.2f);
+            yield return Wait02;
             
             // 3. Auto-select first hero (Vex preferred)
             HeroData hero = null;
@@ -997,15 +1015,15 @@ namespace VeilBreakers.UI.CharacterSelect
                 UpdateBackgroundEffects(hero, color);
             }
             
-            yield return new WaitForSeconds(0.3f);
+            yield return Wait03;
             
             // 4. Hero display fades in
             heroDisplay?.RemoveFromClassList("hidden");
-            yield return new WaitForSeconds(0.2f);
+            yield return Wait02;
             
             // 5. Right panel animates in
             rightPanel?.RemoveFromClassList("hidden");
-            yield return new WaitForSeconds(0.2f);
+            yield return Wait02;
             
             // 6. Stats animate
             if (hero != null)
@@ -1014,11 +1032,11 @@ namespace VeilBreakers.UI.CharacterSelect
             }
             
             // 7. Hero info appears
-            yield return new WaitForSeconds(0.2f);
+            yield return Wait02;
             
             // 8. Monster fades in
             monsterOrbit?.RemoveFromClassList("hidden");
-            yield return new WaitForSeconds(0.2f);
+            yield return Wait02;
             
             // 9. Embark button activates
             btnEmbark?.SetEnabled(true);
@@ -1098,7 +1116,7 @@ namespace VeilBreakers.UI.CharacterSelect
             screenFade?.RemoveFromClassList("hidden");
             screenFade?.AddToClassList("active");
             
-            yield return new WaitForSeconds(1.0f);
+            yield return Wait10;
             
             if (!isDestroyed && !string.IsNullOrEmpty(sceneName))
             {
@@ -1109,7 +1127,30 @@ namespace VeilBreakers.UI.CharacterSelect
         #endregion
         
         #region Utility
-        
+
+        /// <summary>
+        /// Safe UI element query with optional warning on missing elements
+        /// </summary>
+        private T SafeQ<T>(string name, bool warnIfMissing = false) where T : VisualElement
+        {
+            var element = rootElement?.Q<T>(name);
+            if (element == null && warnIfMissing)
+            {
+                Debug.LogWarning($"[CharacterSelectControllerAAA] UI Element '{name}' not found in UXML.");
+            }
+            return element;
+        }
+
+        /// <summary>
+        /// O(1) monster lookup using cached dictionary
+        /// </summary>
+        private MonsterData GetMonster(string monsterId)
+        {
+            if (string.IsNullOrEmpty(monsterId) || monsterLookup == null) return null;
+            monsterLookup.TryGetValue(monsterId, out MonsterData monster);
+            return monster;
+        }
+
         private static float EaseOutBack(float t)
         {
             const float c1 = 1.70158f;
