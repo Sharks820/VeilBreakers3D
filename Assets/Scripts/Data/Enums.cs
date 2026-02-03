@@ -386,7 +386,8 @@ namespace VeilBreakers.Data
     {
         MANA = 0,       // WIS/INT heroes - standard magic resource
         GUARD = 1,      // Tank heroes - blocks, charged attacks
-        FURY = 2        // Attack heroes - builds per hit, 100% = guaranteed crit
+        FURY = 2,       // Attack heroes - builds per hit, 100% = guaranteed crit
+        CHAOS = 3       // Void/entropy - unpredictable power
     }
 
     // =============================================================================

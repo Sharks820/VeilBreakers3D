@@ -83,6 +83,27 @@
     --hero-rend-glow: rgb(200, 60, 60);
     --hero-rend-dark: rgb(80, 15, 15);
 
+    /* NEW HEROES v2.0 */
+    /* VEX - Steel warden (IRONBOUND) */
+    --hero-vex: rgb(140, 128, 115);
+    --hero-vex-glow: rgb(180, 165, 145);
+    --hero-vex-dark: rgb(90, 82, 72);
+
+    /* SERAPHINA - Poison rose (FANGBORN) */
+    --hero-seraphina: rgb(165, 50, 90);
+    --hero-seraphina-glow: rgb(210, 80, 130);
+    --hero-seraphina-dark: rgb(100, 30, 55);
+
+    /* ORION - Lightning blue (VOIDTOUCHED) */
+    --hero-orion: rgb(40, 165, 240);
+    --hero-orion-glow: rgb(80, 200, 255);
+    --hero-orion-dark: rgb(25, 100, 150);
+
+    /* NYX - Void purple (UNCHAINED) */
+    --hero-nyx: rgb(100, 40, 120);
+    --hero-nyx-glow: rgb(140, 70, 170);
+    --hero-nyx-dark: rgb(60, 20, 75);
+
     /* =========================================================================
        CORRUPTION STATE COLORS
        ========================================================================= */

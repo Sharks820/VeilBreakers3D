@@ -20,6 +20,7 @@ namespace VeilBreakers.Data
         public string description;
         public int tier;
         public int brand;
+        public int[] brands;  // Array for multi-brand monsters
         public int rarity;
 
         // =============================================================================
@@ -68,14 +69,14 @@ namespace VeilBreakers.Data
         // =============================================================================
 
         public string[] innate_skills;
-        public Dictionary<string, string> learnable_skills;
+        public List<LearnableSkillEntry> learnable_skills_list;  // Serializable list instead of Dictionary
 
         // =============================================================================
         // AI CONFIGURATION
         // =============================================================================
 
         public string ai_pattern;
-        public Dictionary<string, int> skill_weights;
+        public List<SkillWeightEntry> skill_weights_list;  // Serializable list instead of Dictionary
 
         // =============================================================================
         // CORRUPTION
@@ -191,24 +192,17 @@ namespace VeilBreakers.Data
     }
 
     [Serializable]
-    public class ColorData
-    {
-        public float r;
-        public float g;
-        public float b;
-        public float a;
-
-        public Color ToColor()
-        {
-            return new Color(r, g, b, a);
-        }
-    }
-
-    [Serializable]
     public class DropEntry
     {
         public string item_id;
         public float chance;
         public int quantity;
+    }
+
+    [Serializable]
+    public class SkillWeightEntry
+    {
+        public string skill_id;
+        public int weight;
     }
 }

@@ -6,6 +6,7 @@ using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
 using VeilBreakers.Core;
 using VeilBreakers.Managers;
+using VeilBreakers.UI.Controls;
 
 namespace VeilBreakers.UI.Menus
 {
@@ -524,8 +525,19 @@ namespace VeilBreakers.UI.Menus
                     StartCoroutine(SlideInElement(button, -50, 0, 0.6f, delay, EaseType.BackOut));
                     StartCoroutine(ScaleInElement(button, 0.8f, 1f, 0.6f, delay, EaseType.BackOut));
 
-                    // Add hover glow effect
+                    // Add hover color/scale effects
                     AddButtonHoverEffects(button);
+
+                    // Apply AAA VFX (ripple, glow overlay, press effect)
+                    ButtonVFXHelper.ApplyEffects(button, ButtonVFXOptions.Silent);
+
+                    // Add shimmer to primary buttons for extra polish
+                    bool isPrimary = button.name == "btn-new-game" || button.name == "btn-continue";
+                    if (isPrimary)
+                    {
+                        ButtonVFXHelper.AddShimmer(button, 4f);
+                        ButtonVFXHelper.AddPulseBorder(button, new Color(1f, 0.5f, 0.2f, 0.8f));
+                    }
                 }
             }
         }

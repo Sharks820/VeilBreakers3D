@@ -719,6 +719,63 @@
     background-color: rgba(140, 30, 30, 0.15);
 }
 
+/* NEW HEROES v2.0 */
+.hero-vex {
+    border-color: var(--hero-vex);
+}
+
+.hero-vex:hover {
+    border-color: var(--hero-vex-glow);
+    background-color: rgba(140, 128, 115, 0.1);
+}
+
+.hero-vex.selected {
+    border-color: var(--hero-vex-glow);
+    background-color: rgba(140, 128, 115, 0.15);
+}
+
+.hero-seraphina {
+    border-color: var(--hero-seraphina);
+}
+
+.hero-seraphina:hover {
+    border-color: var(--hero-seraphina-glow);
+    background-color: rgba(165, 50, 90, 0.1);
+}
+
+.hero-seraphina.selected {
+    border-color: var(--hero-seraphina-glow);
+    background-color: rgba(165, 50, 90, 0.15);
+}
+
+.hero-orion {
+    border-color: var(--hero-orion);
+}
+
+.hero-orion:hover {
+    border-color: var(--hero-orion-glow);
+    background-color: rgba(40, 165, 240, 0.1);
+}
+
+.hero-orion.selected {
+    border-color: var(--hero-orion-glow);
+    background-color: rgba(40, 165, 240, 0.15);
+}
+
+.hero-nyx {
+    border-color: var(--hero-nyx);
+}
+
+.hero-nyx:hover {
+    border-color: var(--hero-nyx-glow);
+    background-color: rgba(100, 40, 120, 0.1);
+}
+
+.hero-nyx.selected {
+    border-color: var(--hero-nyx-glow);
+    background-color: rgba(100, 40, 120, 0.15);
+}
+
 .hero-card-portrait {
     width: 50px;
     height: 50px;

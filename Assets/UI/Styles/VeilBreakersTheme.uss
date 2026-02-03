@@ -162,6 +162,34 @@
     --hero-rend-glow: rgb(180, 50, 50);
     --hero-rend-dark: rgb(90, 15, 15);
 
+    /* NEW HEROES v2.0 */
+    /* VEX - Steel Warden (IRONBOUND/IRON) */
+    --hero-vex: rgb(140, 150, 165);
+    --hero-vex-glow: rgb(180, 190, 205);
+    --hero-vex-dark: rgb(80, 90, 100);
+
+    /* SERAPHINA - Venom Witch (FANGBORN/VENOM) */
+    --hero-seraphina: rgb(80, 180, 60);
+    --hero-seraphina-glow: rgb(120, 220, 100);
+    --hero-seraphina-dark: rgb(40, 100, 30);
+
+    /* ORION - Stormbreaker (VOIDTOUCHED/RUIN) */
+    --hero-orion: rgb(60, 140, 220);
+    --hero-orion-glow: rgb(100, 180, 255);
+    --hero-orion-dark: rgb(30, 80, 140);
+
+    /* NYX - Shadow Entity (UNCHAINED/VOID) */
+    --hero-nyx: rgb(160, 40, 70);
+    --hero-nyx-glow: rgb(200, 70, 100);
+    --hero-nyx-dark: rgb(90, 20, 40);
+    
+    /* Dynamic hero color variables (set at runtime) */
+    --hero-r: 140;
+    --hero-g: 150;
+    --hero-b: 165;
+    --hero-color-primary: rgb(140, 150, 165);
+    --hero-color-secondary: rgb(180, 190, 205);
+
     /* =========================================================================
        BORDER COLORS
        ========================================================================= */

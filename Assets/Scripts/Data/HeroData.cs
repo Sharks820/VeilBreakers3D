@@ -6,7 +6,7 @@ namespace VeilBreakers.Data
 {
     /// <summary>
     /// Hero/Champion data structure - loaded from JSON
-    /// The 4 playable champions: Bastion, Rend, Marrow, Mirage
+    /// The 4 playable champions: Vex, Seraphina, Orion, Nyx
     /// </summary>
     [Serializable]
     public class HeroData
@@ -18,6 +18,7 @@ namespace VeilBreakers.Data
         public string hero_id;
         public string display_name;
         public string title;
+        public string quote;
         public string description;
         public string backstory;
 
@@ -44,7 +45,7 @@ namespace VeilBreakers.Data
         public ColorData color_palette;
 
         // =============================================================================
-        // BASE STATS
+        // BASE STATS (Game stats)
         // =============================================================================
 
         public int base_hp;
@@ -55,6 +56,12 @@ namespace VeilBreakers.Data
         public int base_resistance;
         public int base_speed;
         public int base_luck;
+
+        // =============================================================================
+        // D&D STYLE BASE STATS (for character display)
+        // =============================================================================
+
+        public BaseStats base_stats;
 
         // =============================================================================
         // GROWTH RATES
@@ -71,10 +78,12 @@ namespace VeilBreakers.Data
 
         // =============================================================================
         // SKILLS
+        // Note: learnable_skills uses List<LearnableSkillEntry> for JSON serialization
+        // Unity's JsonUtility cannot serialize Dictionary
         // =============================================================================
 
         public string[] innate_skills;
-        public Dictionary<string, string> learnable_skills;
+        public List<LearnableSkillEntry> learnable_skills_list;
         public string ultimate_skill;
 
         // =============================================================================
@@ -83,6 +92,49 @@ namespace VeilBreakers.Data
 
         public string combat_description;
         public string preferred_targets;
+
+        // =============================================================================
+        // VALIDATION
+        // =============================================================================
+        
+        /// <summary>
+        /// Validates hero data integrity
+        /// </summary>
+        public bool Validate()
+        {
+            if (string.IsNullOrEmpty(hero_id))
+            {
+                Debug.LogError("[HeroData] Hero ID is null or empty!");
+                return false;
+            }
+            
+            if (string.IsNullOrEmpty(display_name))
+            {
+                Debug.LogWarning($"[HeroData] Hero {hero_id} has no display_name");
+                display_name = hero_id; // Fallback
+            }
+            
+            // Initialize base_stats if null
+            if (base_stats == null)
+            {
+                Debug.LogWarning($"[HeroData] Hero {hero_id} has no base_stats, using defaults");
+                base_stats = new BaseStats { strength = 10, dexterity = 10, constitution = 10, 
+                                             intelligence = 10, wisdom = 10, charisma = 10 };
+            }
+            
+            // Initialize innate_skills if null
+            if (innate_skills == null)
+            {
+                innate_skills = Array.Empty<string>();
+            }
+            
+            // Validate stat ranges
+            if (base_hp <= 0) base_hp = 1;
+            if (base_stats.strength < 1) base_stats.strength = 1;
+            if (base_stats.strength > 20) base_stats.strength = 20;
+            
+            return true;
+        }
 
         // =============================================================================
         // HELPER METHODS
@@ -117,6 +169,7 @@ namespace VeilBreakers.Data
                 "MANA" => ResourceType.MANA,
                 "GUARD" => ResourceType.GUARD,
                 "FURY" => ResourceType.FURY,
+                "CHAOS" => ResourceType.CHAOS,
                 _ => ResourceType.MANA
             };
         }
@@ -126,6 +179,8 @@ namespace VeilBreakers.Data
         /// </summary>
         public int GetStatAtLevel(Stat stat, int level)
         {
+            if (level < 1) level = 1;
+            
             int baseStat = stat switch
             {
                 Stat.HP => base_hp,
@@ -154,6 +209,66 @@ namespace VeilBreakers.Data
 
             // Heroes use additive growth per level
             return baseStat + Mathf.RoundToInt(baseStat * growth * (level - 1));
+        }
+        
+        /// <summary>
+        /// Get skill ID for a specific level if exists
+        /// </summary>
+        public string GetLearnableSkillAtLevel(int level)
+        {
+            if (learnable_skills_list == null) return null;
+            
+            string levelKey = level.ToString();
+            for (int i = 0; i < learnable_skills_list.Count; i++)
+            {
+                if (learnable_skills_list[i].level == levelKey)
+                {
+                    return learnable_skills_list[i].skill_id;
+                }
+            }
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// D&D-style ability scores for character display
+    /// </summary>
+    [Serializable]
+    public class BaseStats
+    {
+        public int strength = 10;
+        public int dexterity = 10;
+        public int constitution = 10;
+        public int intelligence = 10;
+        public int wisdom = 10;
+        public int charisma = 10;
+    }
+    
+    /// <summary>
+    /// Serializable entry for learnable skills
+    /// Unity's JsonUtility cannot serialize Dictionary
+    /// </summary>
+    [Serializable]
+    public class LearnableSkillEntry
+    {
+        public string level;
+        public string skill_id;
+    }
+    
+    /// <summary>
+    /// Serializable color data for JSON
+    /// </summary>
+    [Serializable]
+    public class ColorData
+    {
+        public float r;
+        public float g;
+        public float b;
+        public float a = 1f;
+        
+        public Color ToColor()
+        {
+            return new Color(r, g, b, a);
         }
     }
 }
