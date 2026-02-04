@@ -69,19 +69,23 @@
     position: absolute;
     width: 100%;
     height: 100%;
-    background-image: url('project://database/Assets/UI/Textures/void_stars.png');
-    background-size: cover;
-    opacity: 0.4;
+    /* Procedural starfield using radial gradients */
+    background-color: transparent;
+    opacity: 0.6;
 }
 
 .veil-cracks {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-image: url('project://database/Assets/UI/Textures/veil_cracks.png');
-    background-size: cover;
-    opacity: 0.15;
-    mix-blend-mode: screen;
+    /* Procedural crack effect using subtle gradient */
+    background: linear-gradient(135deg,
+        transparent 0%,
+        rgba(60, 20, 40, 0.1) 25%,
+        transparent 50%,
+        rgba(40, 15, 30, 0.08) 75%,
+        transparent 100%);
+    opacity: 0.3;
 }
 
 /* Layer 2: Fog Particles */
@@ -94,10 +98,17 @@
     position: absolute;
     width: 100%;
     height: 100%;
-    background-image: url('project://database/Assets/UI/Textures/fog_particles.png');
-    background-size: 200% 100%;
-    opacity: 0.3;
-    animation: fog-drift 60s linear infinite;
+    /* Procedural fog using layered gradients */
+    background: radial-gradient(ellipse 80% 50% at 20% 60%,
+            rgba(40, 30, 50, 0.4) 0%,
+            transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 40%,
+            rgba(30, 20, 40, 0.3) 0%,
+            transparent 60%),
+        radial-gradient(ellipse 100% 80% at 50% 80%,
+            rgba(20, 15, 30, 0.5) 0%,
+            transparent 50%);
+    opacity: 0.6;
 }
 
 @keyframes fog-drift {
@@ -131,8 +142,9 @@
     width: 100%;
     height: 100%;
     background: radial-gradient(ellipse at 50% 70%, 
-        rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.15) 0%,
+        var(--hero-color-primary) 0%,
         transparent 60%);
+    opacity: 0.15;
     transition: background var(--transition-slow) var(--ease-out-expo);
 }
 
@@ -196,10 +208,12 @@
     height: 80%;
     top: 10%;
     left: 10%;
-    background-image: url('project://database/Assets/UI/Textures/aura_base.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
+    /* Procedural aura glow */
+    background: radial-gradient(ellipse 50% 60% at 50% 50%,
+        rgba(140, 150, 165, 0.3) 0%,
+        rgba(140, 150, 165, 0.1) 40%,
+        transparent 70%);
+    border-radius: 50%;
     opacity: 0.6;
     animation: aura-pulse 4s var(--ease-in-out-quint) infinite;
 }
@@ -221,11 +235,13 @@
     position: absolute;
     width: 100%;
     height: 100%;
-    background-image: url('project://database/Assets/UI/Textures/aura_particles.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    opacity: 0.4;
+    /* Procedural particle effect using multiple gradients */
+    background: radial-gradient(circle 3px at 20% 30%, rgba(200, 200, 220, 0.6) 0%, transparent 100%),
+        radial-gradient(circle 2px at 60% 20%, rgba(180, 190, 200, 0.5) 0%, transparent 100%),
+        radial-gradient(circle 4px at 80% 60%, rgba(160, 170, 180, 0.4) 0%, transparent 100%),
+        radial-gradient(circle 2px at 40% 80%, rgba(200, 210, 220, 0.5) 0%, transparent 100%),
+        radial-gradient(circle 3px at 70% 40%, rgba(170, 180, 190, 0.4) 0%, transparent 100%);
+    opacity: 0.6;
     animation: particle-float 8s linear infinite;
 }
 
@@ -241,8 +257,9 @@
     bottom: 5%;
     left: 20%;
     background: radial-gradient(ellipse at 50% 100%,
-        rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.3) 0%,
+        var(--hero-color-primary) 0%,
         transparent 70%);
+    opacity: 0.3;
 }
 
 /* Hero Display */
@@ -307,7 +324,7 @@
     top: 50%;
     background: linear-gradient(90deg, 
         transparent 0%,
-        rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.8) 50%,
+        var(--hero-color-primary) 50%,
         transparent 100%);
     opacity: 0.6;
     animation: tether-pulse 2s var(--ease-in-out-quint) infinite;
@@ -367,8 +384,9 @@
     left: -10%;
     border-radius: 50%;
     background: radial-gradient(circle at 50% 50%,
-        rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.3) 0%,
+        var(--hero-color-primary) 0%,
         transparent 70%);
+    opacity: 0.3;
 }
 
 /* Environmental Effects */
@@ -408,24 +426,29 @@
     justify-content: center;
     margin-bottom: 16px;
     padding: 8px 16px;
-    background-color: rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.15);
+    background-color: rgba(0, 0, 0, 0.25);
     border-radius: 4px;
     border-width: 1px;
-    border-color: rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.3);
+    border-color: var(--hero-color-primary);
 }
 
 .path-icon {
     width: 24px;
     height: 24px;
     margin-right: 8px;
-    background-image: url('project://database/Assets/UI/Icons/path_placeholder.png');
-    background-size: contain;
+    /* Procedural path icon - diamond shape */
+    background-color: transparent;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.4);
+    border-radius: 4px;
+    rotate: 45deg;
+    scale: 0.7;
 }
 
 .path-name {
     font-size: 14px;
     -unity-font-style: bold;
-    color: rgb(var(--hero-r), var(--hero-g), var(--hero-b));
+    color: var(--hero-color-primary);
     letter-spacing: 3px;
 }
 
@@ -448,18 +471,24 @@
 }
 
 .synergy-star {
-    width: 16px;
-    height: 16px;
-    margin: 0 2px;
-    background-image: url('project://database/Assets/UI/Icons/star_empty.png');
-    background-size: contain;
-    opacity: 0.4;
-    transition: opacity var(--transition-fast) var(--ease-out-expo);
+    width: 14px;
+    height: 14px;
+    margin: 0 3px;
+    /* Procedural star - diamond/rhombus shape */
+    background-color: rgba(60, 50, 70, 0.6);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    rotate: 45deg;
+    opacity: 0.5;
+    transition: all var(--transition-fast) var(--ease-out-expo);
 }
 
 .synergy-star.filled {
-    background-image: url('project://database/Assets/UI/Icons/star_filled.png');
+    background-color: rgba(255, 200, 60, 0.9);
+    border-color: rgba(255, 220, 100, 0.8);
     opacity: 1;
+    box-shadow: 0 0 8px rgba(255, 200, 60, 0.6);
 }
 
 /* Stat Pillars */
@@ -495,17 +524,17 @@
 .stat-fill {
     width: 100%;
     background: linear-gradient(180deg,
-        rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.9) 0%,
-        rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.3) 100%);
+        var(--hero-color-secondary) 0%,
+        var(--hero-color-primary) 100%);
     border-radius: 4px;
     transition: height 0.8s var(--ease-out-back);
 }
 
 .stat-pillar.highest .stat-fill {
     background: linear-gradient(180deg,
-        rgba(var(--hero-r), var(--hero-g), var(--hero-b), 1) 0%,
-        rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.5) 100%);
-    box-shadow: 0 0 10px rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.5);
+        var(--hero-color-secondary) 0%,
+        var(--hero-color-primary) 100%);
+    box-shadow: 0 0 10px var(--hero-color-primary);
 }
 
 .stat-label {
@@ -542,8 +571,8 @@
 }
 
 .ability-card:hover {
-    background-color: rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.1);
-    border-color: rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.3);
+    background-color: rgba(0, 0, 0, 0.25);
+    border-color: var(--hero-color-primary);
     translate: 4px 0;
 }
 
@@ -551,7 +580,7 @@
     width: 32px;
     height: 32px;
     margin-right: 12px;
-    background-color: rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.2);
+    background-color: rgba(0, 0, 0, 0.3);
     border-radius: 4px;
     background-size: contain;
 }
@@ -630,9 +659,9 @@
 .hero-name-display {
     font-size: 64px;
     -unity-font-style: bold;
-    color: rgb(var(--hero-r), var(--hero-g), var(--hero-b));
+    color: var(--hero-color-primary);
     text-shadow: var(--glow-primary),
-                 0 0 60px rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.4);
+                 0 0 60px var(--hero-color-primary);
     letter-spacing: 12px;
     margin-bottom: 8px;
     transition: all var(--transition-slow) var(--ease-out-expo);
@@ -696,15 +725,18 @@
 }
 
 .hero-card:hover {
-    border-color: rgba(255, 255, 255, 0.3);
-    scale: 1.05;
+    border-color: rgba(255, 255, 255, 0.35);
+    scale: 1.08;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 .hero-card.selected {
     scale: 1.15;
-    border-color: rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.8);
+    border-color: var(--hero-color-secondary);
     border-width: 2px;
-    box-shadow: 0 0 30px rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.3);
+    box-shadow: 0 0 30px var(--hero-color-primary),
+                0 0 60px var(--hero-color-primary),
+                inset 0 0 15px rgba(255, 255, 255, 0.08);
 }
 
 .hero-portrait {
@@ -714,11 +746,9 @@
     top: 0;
     background-size: cover;
     background-position: center top;
-    mask-image: linear-gradient(180deg, 
-        rgba(0,0,0,1) 60%, 
-        rgba(0,0,0,0) 100%);
-    -unity-mask-image: linear-gradient(180deg, 
-        rgba(0,0,0,1) 60%, 
+    /* Unity UI Toolkit uses -unity-mask-image, not mask-image */
+    -unity-mask-image: linear-gradient(180deg,
+        rgba(0,0,0,1) 60%,
         rgba(0,0,0,0) 100%);
     opacity: 0.7;
     transition: opacity var(--transition-normal) var(--ease-out-expo);
@@ -741,16 +771,15 @@
     position: absolute;
     width: 100%;
     height: 100%;
-    background: radial-gradient(ellipse at 50% 30%,
-        rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0) 0%,
-        rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0) 100%);
+    background: none;
     transition: all var(--transition-normal) var(--ease-out-expo);
 }
 
 .hero-glow.active {
     background: radial-gradient(ellipse at 50% 30%,
-        rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.3) 0%,
-        rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0) 70%);
+        var(--hero-color-primary) 0%,
+        transparent 70%);
+    opacity: 0.35;
 }
 
 .hero-card-name {
@@ -795,8 +824,8 @@
 }
 
 .carousel-arrow:hover {
-    background-color: rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.2);
-    border-color: rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.5);
+    background-color: rgba(0, 0, 0, 0.35);
+    border-color: var(--hero-color-primary);
     scale: 1.1;
 }
 
@@ -809,14 +838,28 @@
 }
 
 .arrow-icon {
-    width: 16px;
-    height: 16px;
-    background-image: url('project://database/Assets/UI/Icons/arrow.png');
-    background-size: contain;
+    width: 12px;
+    height: 12px;
+    /* CSS arrow using borders */
+    background-color: transparent;
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 0;
+    border-left-width: 0;
+    border-color: rgba(255, 255, 255, 0.7);
+    rotate: 45deg;
 }
 
 .arrow-icon.left {
-    rotate: 180deg;
+    rotate: -135deg;
+}
+
+.arrow-icon.right {
+    rotate: 45deg;
+}
+
+.carousel-arrow:hover .arrow-icon {
+    border-color: var(--hero-color-secondary);
 }
 
 /* ═════════════════════════════════════════════════════════════════════════════
@@ -841,17 +884,24 @@
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: rgba(15, 12, 20, 0.9);
-    background-image: url('project://database/Assets/UI/Textures/hex_button.png');
-    background-size: 100% 100%;
-    border-color: rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.3);
+    /* Stylized button background */
+    background: linear-gradient(180deg,
+        rgba(30, 25, 40, 0.95) 0%,
+        rgba(15, 12, 20, 0.98) 100%);
+    border-color: rgba(255, 255, 255, 0.15);
     border-width: 2px;
+    border-radius: 6px;
     transition: all var(--transition-fast) var(--ease-out-expo);
 }
 
 .embark-button:hover .embark-hex-bg {
-    background-color: rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.15);
-    border-color: rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.8);
+    background: linear-gradient(180deg,
+        rgba(40, 35, 55, 0.95) 0%,
+        rgba(20, 17, 28, 0.98) 100%);
+    border-color: var(--hero-color-secondary);
+    border-width: 2px;
+    box-shadow: 0 0 25px var(--hero-color-primary),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .embark-glow {
@@ -860,16 +910,15 @@
     height: 140%;
     top: -20%;
     left: -10%;
-    background: radial-gradient(ellipse at 50% 50%,
-        rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0) 0%,
-        rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0) 100%);
+    background: none;
     transition: all var(--transition-fast) var(--ease-out-expo);
 }
 
 .embark-button:hover .embark-glow {
     background: radial-gradient(ellipse at 50% 50%,
-        rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.4) 0%,
-        rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0) 70%);
+        var(--hero-color-primary) 0%,
+        transparent 60%);
+    opacity: 0.55;
 }
 
 .embark-content {
@@ -890,8 +939,8 @@
 }
 
 .embark-button:hover .embark-text {
-    color: rgb(var(--hero-r), var(--hero-g), var(--hero-b));
-    text-shadow: 0 0 20px rgba(var(--hero-r), var(--hero-g), var(--hero-b), 0.8);
+    color: var(--hero-color-secondary);
+    text-shadow: 0 0 20px var(--hero-color-primary);
 }
 
 .embark-subtext {
@@ -964,11 +1013,26 @@
 }
 
 .back-icon {
-    background-image: url('project://database/Assets/UI/Icons/arrow_left.png');
+    /* CSS arrow pointing left */
+    width: 10px;
+    height: 10px;
+    background-color: transparent;
+    border-top-width: 2px;
+    border-left-width: 2px;
+    border-bottom-width: 0;
+    border-right-width: 0;
+    border-color: rgba(255, 255, 255, 0.6);
+    rotate: -45deg;
 }
 
 .settings-icon {
-    background-image: url('project://database/Assets/UI/Icons/settings.png');
+    /* CSS gear-like shape using border */
+    width: 18px;
+    height: 18px;
+    background-color: transparent;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
 }
 
 /* ═════════════════════════════════════════════════════════════════════════════
@@ -1006,10 +1070,14 @@
     position: absolute;
     width: 100%;
     height: 100%;
-    background-image: url('project://database/Assets/UI/Textures/corruption_noise.png');
-    background-size: 100px 100px;
+    /* Procedural corruption effect */
+    background: linear-gradient(45deg,
+        rgba(80, 20, 40, 0.3) 0%,
+        transparent 25%,
+        rgba(60, 15, 30, 0.4) 50%,
+        transparent 75%,
+        rgba(100, 25, 50, 0.3) 100%);
     opacity: 0;
-    mix-blend-mode: overlay;
 }
 
 .corruption-fx.active {
@@ -1087,33 +1155,29 @@
 /* Vex - Iron/Steel (140, 150, 165) */
 .hero-card[data-hero="vex"],
 .hero-card[data-hero="vex"] .hero-glow.active {
-    --hero-r: 140;
-    --hero-g: 150;
-    --hero-b: 165;
+    --hero-color-primary: rgb(140, 150, 165);
+    --hero-color-secondary: rgb(180, 190, 205);
 }
 
 /* Seraphina - Venom Green (80, 180, 60) */
 .hero-card[data-hero="seraphina"],
 .hero-card[data-hero="seraphina"] .hero-glow.active {
-    --hero-r: 80;
-    --hero-g: 180;
-    --hero-b: 60;
+    --hero-color-primary: rgb(80, 180, 60);
+    --hero-color-secondary: rgb(120, 220, 100);
 }
 
 /* Orion - Lightning Blue (60, 140, 220) */
 .hero-card[data-hero="orion"],
 .hero-card[data-hero="orion"] .hero-glow.active {
-    --hero-r: 60;
-    --hero-g: 140;
-    --hero-b: 220;
+    --hero-color-primary: rgb(60, 140, 220);
+    --hero-color-secondary: rgb(100, 180, 255);
 }
 
 /* Nyx - Void Crimson (160, 40, 70) */
 .hero-card[data-hero="nyx"],
 .hero-card[data-hero="nyx"] .hero-glow.active {
-    --hero-r: 160;
-    --hero-g: 40;
-    --hero-b: 70;
+    --hero-color-primary: rgb(160, 40, 70);
+    --hero-color-secondary: rgb(200, 70, 100);
 }
 
 /* ═════════════════════════════════════════════════════════════════════════════
@@ -1160,6 +1224,6 @@
     }
     
     .stat-fill {
-        background: rgba(var(--hero-r), var(--hero-g), var(--hero-b), 1);
+        background: var(--hero-color-primary);
     }
 }

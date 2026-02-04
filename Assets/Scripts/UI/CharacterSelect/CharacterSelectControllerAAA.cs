@@ -74,6 +74,15 @@ namespace VeilBreakers.UI.CharacterSelect
         // Monster lookup cache - O(1) instead of O(n)
         private Dictionary<string, MonsterData> monsterLookup;
 
+        // Sprite cache to prevent memory leaks from repeated Resources.Load calls
+        private readonly Dictionary<string, Sprite> spriteCache = new(8);
+
+        // Skill name cache to avoid repeated string allocations
+        private readonly Dictionary<string, string> skillNameCache = new(16);
+
+        // Constants
+        private const float kMaxStatValue = 20f;
+
         // Cached WaitForSeconds to avoid GC allocations
         private static readonly WaitForSeconds Wait01 = new(0.1f);
         private static readonly WaitForSeconds Wait02 = new(0.2f);
@@ -156,6 +165,9 @@ namespace VeilBreakers.UI.CharacterSelect
         private readonly int[] statValuesArray = new int[6];
         private static readonly string[] StatNames = { "str", "dex", "con", "int", "wis", "cha" };
         private static readonly string[] HeroIds = { "vex", "seraphina", "orion", "nyx" };
+
+        // Cached number strings for stat display (0-20 range) to avoid per-frame allocations
+        private static readonly string[] NumberStrings = InitNumberStrings();
         
         #endregion
         
@@ -204,11 +216,19 @@ namespace VeilBreakers.UI.CharacterSelect
         private void Start()
         {
             if (!enabled) return;
-            
+
             SetupEventHandlers();
             StartCoroutine(InitialRevealSequence());
         }
-        
+
+        private void OnDisable()
+        {
+            // Stop all coroutines when disabled to prevent stacking
+            StopAllCoroutines();
+            quoteCoroutine = null;
+            isAnimating = false;
+        }
+
         private void OnDestroy()
         {
             isDestroyed = true;
@@ -396,9 +416,8 @@ namespace VeilBreakers.UI.CharacterSelect
                 }
             }
 
-            // Release TextAsset memory - data is now in our lists
-            heroesJson = null;
-            monstersJson = null;
+            // Note: TextAssets are managed by Unity's asset system - don't null them
+            // Setting serialized fields to null can cause issues with domain reload
         }
         
         /// <summary>
@@ -519,7 +538,7 @@ namespace VeilBreakers.UI.CharacterSelect
         
         private void SelectHero(int index)
         {
-            if (isDestroyed) return;
+            if (isDestroyed || !enabled || !gameObject.activeInHierarchy) return;
             if (isAnimating || index == currentHeroIndex) return;
             if (index < 0 || index >= heroes.Count)
             {
@@ -684,17 +703,32 @@ namespace VeilBreakers.UI.CharacterSelect
             if (starterMonster != null)
             {
                 if (monsterName != null) monsterName.text = starterMonster.display_name?.ToUpperInvariant() ?? "UNKNOWN";
-                if (monsterType != null) 
+                if (monsterType != null)
                 {
                     // Derive type from brand since monster_type field doesn't exist
                     string typeName = ((Brand)starterMonster.brand).ToString();
                     monsterType.text = typeName;
+                }
+
+                // Load and display monster thumbnail sprite (using cache to prevent memory leaks)
+                if (monsterThumbnail != null)
+                {
+                    Sprite monsterSprite = GetCachedSprite(hero.starter_monster_id);
+                    if (monsterSprite != null)
+                    {
+                        monsterThumbnail.style.backgroundImage = new StyleBackground(monsterSprite);
+                    }
+                    else
+                    {
+                        monsterThumbnail.style.backgroundImage = StyleKeyword.None;
+                    }
                 }
             }
             else
             {
                 if (monsterName != null) monsterName.text = "UNKNOWN";
                 if (monsterType != null) monsterType.text = "";
+                if (monsterThumbnail != null) monsterThumbnail.style.backgroundImage = StyleKeyword.None;
             }
             
             // Calculate synergy
@@ -747,10 +781,11 @@ namespace VeilBreakers.UI.CharacterSelect
                 string skillId = hero.innate_skills[i];
                 var nameLabel = abilityCards[i].Q<Label>(className: "ability-name");
                 var descLabel = abilityCards[i].Q<Label>(className: "ability-desc");
-                
-                string skillName = FormatSkillName(skillId);
-                
-                if (nameLabel != null) nameLabel.text = skillName.ToUpperInvariant();
+
+                // Use cached uppercase skill name to avoid allocations
+                string skillNameUpper = GetCachedSkillNameUpper(skillId);
+
+                if (nameLabel != null) nameLabel.text = skillNameUpper;
                 if (descLabel != null)
                 {
                     descLabel.text = GetSkillDescription(skillId);
@@ -887,24 +922,26 @@ namespace VeilBreakers.UI.CharacterSelect
                 for (int i = 0; i < statFills.Length && i < statValuesArray.Length; i++)
                 {
                     if (statFills[i] == null || statValues[i] == null) continue;
-                    
-                    float targetHeight = (statValuesArray[i] / 20f) * 100f; // Max stat assumed 20
+
+                    float targetHeight = (statValuesArray[i] / kMaxStatValue) * 100f;
                     float currentHeight = targetHeight * eased;
                     statFills[i].style.height = new Length(currentHeight, LengthUnit.Percent);
-                    statValues[i].text = Mathf.RoundToInt(statValuesArray[i] * eased).ToString();
+                    // Use cached number strings to avoid per-frame allocations
+                    int displayValue = Mathf.RoundToInt(statValuesArray[i] * eased);
+                    statValues[i].text = GetCachedNumberString(displayValue);
                 }
-                
+
                 yield return null;
             }
-            
+
             // Ensure final values are set
             for (int i = 0; i < statFills.Length && i < statValuesArray.Length; i++)
             {
                 if (statFills[i] == null || statValues[i] == null) continue;
-                
-                float targetHeight = (statValuesArray[i] / 20f) * 100f;
+
+                float targetHeight = (statValuesArray[i] / kMaxStatValue) * 100f;
                 statFills[i].style.height = new Length(targetHeight, LengthUnit.Percent);
-                statValues[i].text = statValuesArray[i].ToString();
+                statValues[i].text = GetCachedNumberString(statValuesArray[i]);
             }
         }
         
@@ -1103,9 +1140,8 @@ namespace VeilBreakers.UI.CharacterSelect
                 AudioSource.PlayClipAtPoint(confirmSFX, mainCamera.transform.position, 0.7f);
             }
             
-            // Save hero selection
+            // Save hero selection (no explicit Save() - Unity auto-saves on quit, avoiding blocking I/O)
             PlayerPrefs.SetString("SelectedHero", selectedHero.hero_id);
-            PlayerPrefs.Save();
             
             // Navigate to game
             StartCoroutine(FadeAndNavigate("MainGame"));
@@ -1129,19 +1165,6 @@ namespace VeilBreakers.UI.CharacterSelect
         #region Utility
 
         /// <summary>
-        /// Safe UI element query with optional warning on missing elements
-        /// </summary>
-        private T SafeQ<T>(string name, bool warnIfMissing = false) where T : VisualElement
-        {
-            var element = rootElement?.Q<T>(name);
-            if (element == null && warnIfMissing)
-            {
-                Debug.LogWarning($"[CharacterSelectControllerAAA] UI Element '{name}' not found in UXML.");
-            }
-            return element;
-        }
-
-        /// <summary>
         /// O(1) monster lookup using cached dictionary
         /// </summary>
         private MonsterData GetMonster(string monsterId)
@@ -1151,6 +1174,60 @@ namespace VeilBreakers.UI.CharacterSelect
             return monster;
         }
 
+        /// <summary>
+        /// Load sprite with caching to prevent memory leaks from repeated Resources.Load calls
+        /// </summary>
+        private Sprite GetCachedSprite(string spriteName)
+        {
+            if (string.IsNullOrEmpty(spriteName)) return null;
+
+            if (spriteCache.TryGetValue(spriteName, out Sprite cached))
+            {
+                return cached;
+            }
+
+            string spritePath = $"Art/Sprites/monsters/{spriteName}";
+            Sprite sprite = Resources.Load<Sprite>(spritePath);
+
+            if (sprite != null)
+            {
+                spriteCache[spriteName] = sprite;
+            }
+            else
+            {
+                Debug.LogWarning($"[CharacterSelectAAA] Monster sprite not found: {spritePath}");
+            }
+
+            return sprite;
+        }
+
+        /// <summary>
+        /// Initialize cached number strings for stat display
+        /// </summary>
+        private static string[] InitNumberStrings()
+        {
+            // Cache strings for 0-25 (slightly above max stat for safety)
+            var strings = new string[26];
+            for (int i = 0; i < strings.Length; i++)
+            {
+                strings[i] = i.ToString();
+            }
+            return strings;
+        }
+
+        /// <summary>
+        /// Get cached number string to avoid per-frame allocations during stat animation
+        /// </summary>
+        private static string GetCachedNumberString(int value)
+        {
+            if (value >= 0 && value < NumberStrings.Length)
+            {
+                return NumberStrings[value];
+            }
+            // Fallback for out-of-range values (shouldn't happen with stats)
+            return value.ToString();
+        }
+
         private static float EaseOutBack(float t)
         {
             const float c1 = 1.70158f;
@@ -1158,10 +1235,18 @@ namespace VeilBreakers.UI.CharacterSelect
             return 1 + c3 * Mathf.Pow(t - 1, 3) + c1 * Mathf.Pow(t - 1, 2);
         }
 
-        private static string FormatSkillName(string skillId)
+        /// <summary>
+        /// Format skill ID to display name with caching to avoid repeated allocations
+        /// </summary>
+        private string FormatSkillNameCached(string skillId)
         {
             if (string.IsNullOrEmpty(skillId)) return "Unknown";
-            
+
+            if (skillNameCache.TryGetValue(skillId, out string cached))
+            {
+                return cached;
+            }
+
             // Replace underscores with spaces and title case
             var words = skillId.Split('_');
             for (int i = 0; i < words.Length; i++)
@@ -1171,7 +1256,27 @@ namespace VeilBreakers.UI.CharacterSelect
                     words[i] = char.ToUpper(words[i][0]) + words[i].Substring(1);
                 }
             }
-            return string.Join(" ", words);
+
+            string formatted = string.Join(" ", words);
+            skillNameCache[skillId] = formatted;
+            return formatted;
+        }
+
+        /// <summary>
+        /// Get cached uppercase skill name - caches both formatted and uppercase versions
+        /// </summary>
+        private string GetCachedSkillNameUpper(string skillId)
+        {
+            string cacheKey = skillId + "_UPPER";
+            if (skillNameCache.TryGetValue(cacheKey, out string cached))
+            {
+                return cached;
+            }
+
+            string formatted = FormatSkillNameCached(skillId);
+            string upper = formatted.ToUpperInvariant();
+            skillNameCache[cacheKey] = upper;
+            return upper;
         }
 
         private static string GetSkillDescription(string skillId)
