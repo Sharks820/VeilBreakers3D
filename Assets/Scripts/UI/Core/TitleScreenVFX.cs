@@ -23,7 +23,7 @@ namespace VeilBreakers.UI.Core
         [SerializeField] private UIDocument _uiDocument;
 
         [Header("Ember Settings (AAA Palette)")]
-        [SerializeField] private int _emberCount = 50;
+        [SerializeField] private int _emberCount = 140;
         [SerializeField] private float _emberSpeedMin = 12f;
         [SerializeField] private float _emberSpeedMax = 32f;
         [SerializeField] private float _emberSizeMin = 2f;
@@ -33,7 +33,7 @@ namespace VeilBreakers.UI.Core
         [SerializeField] private Color _emberColorGlow = new Color(1f, 0.22f, 0f, 0.35f);
 
         [Header("Micro-Spark Settings (AAA)")]
-        [SerializeField] private int _microSparkCount = 0;
+        [SerializeField] private int _microSparkCount = 40;
         [SerializeField] private float _microSparkSpeedMin = 45f;
         [SerializeField] private float _microSparkSpeedMax = 110f;
         [SerializeField] private float _microSparkSizeMin = 1f;
@@ -63,8 +63,8 @@ namespace VeilBreakers.UI.Core
 
         [Header("Lightning (AAA)")]
         [SerializeField] private bool _enableLightning = true;
-        [SerializeField] private float _lightningIntervalMin = 1.6f;
-        [SerializeField] private float _lightningIntervalMax = 3.8f;
+        [SerializeField] private float _lightningIntervalMin = 1.1f;
+        [SerializeField] private float _lightningIntervalMax = 2.6f;
         [SerializeField] private float _lightningStrikeDurationMin = 0.35f;
         [SerializeField] private float _lightningStrikeDurationMax = 0.65f;
         [SerializeField, Range(0f, 1f)] private float _lightningIntensity = 0.92f;
@@ -126,7 +126,7 @@ namespace VeilBreakers.UI.Core
 
         [Header("Background Override")]
         [SerializeField] private bool _overrideBackgroundWithPortal = true;
-        [SerializeField, Range(0f, 1f)] private float _backgroundDarken = 0.22f;
+        [SerializeField, Range(0f, 1f)] private float _backgroundDarken = 0.00f;
         [Tooltip("Optional. Auto-loads from Resources/Art/UI/MainMenu/mainmenu_background_portal when empty.")]
         [SerializeField] private Texture2D _backgroundPortalTexture;
 
@@ -163,7 +163,6 @@ namespace VeilBreakers.UI.Core
         private VisualElement _logoImage;
         private VisualElement _logoGlowElement;
         private VisualElement _logoFxLayer;
-        private VisualElement _logoBackplate;
         private bool _logoHover;
         private float _logoPulseRemaining;
         private float _logoPulseStrength;
@@ -172,6 +171,8 @@ namespace VeilBreakers.UI.Core
         private bool _hasMouse;
         private readonly List<BurstParticle> _burstParticles = new();
         private readonly List<TransientSmokeParticle> _transientSmokes = new();
+        private readonly List<GlowPulse> _glowPulses = new();
+        private VisualElement _backgroundElement;
 
         private sealed class LightningStrike
         {
@@ -208,6 +209,17 @@ namespace VeilBreakers.UI.Core
             public float Age;
             public float ExpansionRate;
             public float RotationSpeed;
+        }
+
+        private sealed class GlowPulse
+        {
+            public VisualElement Element;
+            public Vector2 Position;
+            public float StartSize;
+            public float EndSize;
+            public float Lifetime;
+            public float Age;
+            public float BaseOpacity;
         }
 
 
@@ -280,6 +292,11 @@ namespace VeilBreakers.UI.Core
             if (_logoGlowTexture == null)
             {
                 _logoGlowTexture = Resources.Load<Texture2D>("Art/UI/MainMenu/logo_veilbreakers_glow");
+            }
+
+            if (_backgroundPortalTexture == null && _overrideBackgroundWithPortal)
+            {
+                _backgroundPortalTexture = Resources.Load<Texture2D>("Art/UI/MainMenu/mainmenu_background_portal");
             }
 
             Debug.Log($"[TitleScreenVFX] Textures loaded - Smoke: {_smokeTexture != null}, Ash: {_ashTexture != null}, Ember: {_emberTexture != null}, Grunge: {_grungeTexture != null}");
@@ -400,35 +417,31 @@ namespace VeilBreakers.UI.Core
                 _logoContainer.RegisterCallback<MouseLeaveEvent>(OnLogoLeave);
                 _logoContainer.RegisterCallback<PointerDownEvent>(OnLogoPointerDown);
 
+                RemoveLogoArtifacts();
                 EnsureLogoGlow();
-                EnsureLogoBackplate();
                 EnsureLogoFxLayer();
             }
         }
 
+        private void RemoveLogoArtifacts()
+        {
+            if (_logoContainer == null) return;
+
+            // Defensive cleanup for cases where domain reload is disabled and old UI elements persist.
+            var glow = _logoContainer.Q<VisualElement>("logo-glow");
+            if (glow != null) glow.RemoveFromHierarchy();
+
+            var backplate = _logoContainer.Q<VisualElement>("logo-backplate");
+            if (backplate != null) backplate.RemoveFromHierarchy();
+
+            _logoGlowElement = null;
+        }
+
         private void EnsureLogoGlow()
         {
-            if (!_enableLogoPulse) return;
-            if (_logoContainer == null || _logoGlowTexture == null) return;
-            if (_logoGlowElement != null) return;
-
-            var glow = new VisualElement();
-            glow.name = "logo-glow";
-            glow.style.position = Position.Absolute;
-            glow.style.left = 0;
-            glow.style.top = 0;
-            glow.style.right = 0;
-            glow.style.bottom = 0;
-            glow.style.backgroundImage = new StyleBackground(_logoGlowTexture);
-            glow.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
-            // Slightly warmer white for readability (less orange cast).
-            glow.style.unityBackgroundImageTintColor = new Color(1f, 0.78f, 0.58f, 1f);
-            glow.style.opacity = _logoGlowBaseOpacity;
-            glow.pickingMode = PickingMode.Ignore;
-
-            _logoContainer.Insert(0, glow);
-            _logoGlowElement = glow;
-            _logoGlowCurrentOpacity = _logoGlowBaseOpacity;
+            // Disabled: the previous "glow" texture layered behind the logo reads as a muddy shadow/box.
+            // The logo should be clean; use VFX around the scene instead of a duplicated logo layer.
+            return;
         }
 
         private void EnsureLogoFxLayer()
@@ -448,31 +461,36 @@ namespace VeilBreakers.UI.Core
             _logoFxLayer = fx;
         }
 
-        private void EnsureLogoBackplate()
+        private void ApplyBackground()
         {
-            if (_logoContainer == null) return;
-            if (_logoBackplate != null) return;
+            if (_host == null) return;
 
-            var plate = new VisualElement();
-            plate.name = "logo-backplate";
-            plate.style.position = Position.Absolute;
-            plate.style.left = Length.Percent(8);
-            plate.style.right = Length.Percent(8);
-            plate.style.top = 8;
-            plate.style.bottom = 36;
-            plate.style.backgroundColor = new Color(0f, 0f, 0f, 0.28f);
-            plate.style.borderTopLeftRadius = 18;
-            plate.style.borderTopRightRadius = 18;
-            plate.style.borderBottomLeftRadius = 18;
-            plate.style.borderBottomRightRadius = 18;
-            plate.style.opacity = 0.9f;
-            plate.pickingMode = PickingMode.Ignore;
+            _backgroundElement = _host.Q<VisualElement>("background");
+            if (_backgroundElement == null) return;
 
-            // Insert at 0 so it sits behind glow/logo.
-            _logoContainer.Insert(0, plate);
+            if (_overrideBackgroundWithPortal && _backgroundPortalTexture == null)
+            {
+                _backgroundPortalTexture = Resources.Load<Texture2D>("Art/UI/MainMenu/mainmenu_background_portal");
+            }
 
-            _logoBackplate = plate;
+            if (_overrideBackgroundWithPortal && _backgroundPortalTexture != null)
+            {
+                _backgroundElement.style.backgroundImage = new StyleBackground(_backgroundPortalTexture);
+                _backgroundElement.style.unityBackgroundScaleMode = ScaleMode.ScaleAndCrop;
+                _backgroundElement.style.unityBackgroundImageTintColor = Color.white;
+            }
+
+            if (_overrideBackgroundWithPortal)
+            {
+                _backgroundElement.style.backgroundColor = new Color(0f, 0f, 0f, 0f);
+            }
+            else
+            {
+                _backgroundElement.style.backgroundColor = new Color(0f, 0f, 0f, Mathf.Clamp01(_backgroundDarken));
+            }
         }
+
+        // Removed logo backplate: it created an obvious rectangle behind the logo.
 
         private void Initialize()
         {
@@ -517,6 +535,7 @@ namespace VeilBreakers.UI.Core
             if (_screenHeight <= 0) _screenHeight = 1080;
 
             SetupInteractiveTargets(host);
+            ApplyBackground();
 
             // === AAA ATMOSPHERIC LAYERS ===
 
@@ -1292,7 +1311,27 @@ namespace VeilBreakers.UI.Core
                 return;
             }
 
+            if (_monsterElement != null && evt.target is VisualElement clicked)
+            {
+                if (!IsSelfOrChildOf(clicked, _monsterElement))
+                {
+                    return;
+                }
+            }
+
             SpawnMonsterBurstAtMonster();
+        }
+
+        private static bool IsSelfOrChildOf(VisualElement maybeChild, VisualElement parent)
+        {
+            if (maybeChild == null || parent == null) return false;
+            var current = maybeChild;
+            while (current != null)
+            {
+                if (current == parent) return true;
+                current = current.parent;
+            }
+            return false;
         }
 
         private void OnMouseMove(MouseMoveEvent evt)
@@ -1343,8 +1382,7 @@ namespace VeilBreakers.UI.Core
         {
             if (_logoContainer == null) return;
 
-            float targetGlow = _logoGlowBaseOpacity;
-            if (_logoHover) targetGlow = Mathf.Max(targetGlow, _logoGlowHoverOpacity);
+            float targetGlow = 0f;
 
             if (_logoPulseRemaining > 0f)
             {
@@ -1354,7 +1392,6 @@ namespace VeilBreakers.UI.Core
 
                 float scale = 1f + bump * 0.05f;
                 _logoContainer.style.scale = new Scale(new Vector2(scale, scale));
-                targetGlow = Mathf.Max(targetGlow, Mathf.Lerp(_logoGlowBaseOpacity, _logoGlowClickOpacity, bump));
 
                 if (_logoPulseRemaining <= 0f)
                 {
@@ -1383,34 +1420,78 @@ namespace VeilBreakers.UI.Core
                 origin = _host.WorldToLocal(new Vector2(centerWorld.x, centerWorld.y));
             }
 
+            // Big chest flash (behind the flames) to sell power.
+            SpawnGlowPulse(origin, _frontVfxContainer, 220f, 560f, 0.38f, 0.45f, insertBehind: true);
+
+            // Eye flashes aligned from monster bounds (front layer).
+            if (hasMonster)
+            {
+                Vector2 eyeLeft = _host.WorldToLocal(new Vector2(monsterWorld.xMin + monsterWorld.width * 0.44f, monsterWorld.yMin + monsterWorld.height * 0.19f));
+                Vector2 eyeRight = _host.WorldToLocal(new Vector2(monsterWorld.xMin + monsterWorld.width * 0.56f, monsterWorld.yMin + monsterWorld.height * 0.19f));
+                SpawnGlowPulse(eyeLeft, _frontVfxContainer, 26f, 86f, 0.72f, 0.28f, insertBehind: false);
+                SpawnGlowPulse(eyeRight, _frontVfxContainer, 26f, 86f, 0.72f, 0.28f, insertBehind: false);
+            }
+
             int count = Mathf.Clamp(_monsterBurstParticleCount, 0, 120);
             for (int i = 0; i < count; i++)
             {
                 float size = UnityEngine.Random.Range(10f, 22f);
 
-                var element = new VisualElement();
-                element.style.position = Position.Absolute;
-                element.pickingMode = PickingMode.Ignore;
                 // Make these more "flame-like" (taller than wide).
                 float w = size * UnityEngine.Random.Range(0.55f, 0.85f);
                 float h = size * UnityEngine.Random.Range(1.35f, 2.05f);
+
+                var element = new VisualElement();
+                element.style.position = Position.Absolute;
                 element.style.width = w;
                 element.style.height = h;
+                element.pickingMode = PickingMode.Ignore;
+
+                // Outer glow (bigger than the flame)
+                var glow = new VisualElement();
+                glow.style.position = Position.Absolute;
+                glow.style.left = -w * 0.55f;
+                glow.style.top = -h * 0.35f;
+                glow.style.width = w * 2.1f;
+                glow.style.height = h * 1.7f;
+                glow.pickingMode = PickingMode.Ignore;
+
+                // Inner core (hot center)
+                var core = new VisualElement();
+                core.style.position = Position.Absolute;
+                core.style.left = 0;
+                core.style.top = 0;
+                core.style.width = w;
+                core.style.height = h;
+                core.pickingMode = PickingMode.Ignore;
 
                 if (_emberTexture != null)
                 {
-                    element.style.backgroundImage = new StyleBackground(_emberTexture);
-                    element.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
-                    element.style.unityBackgroundImageTintColor = new Color(1f, 0.55f, 0.20f, 0.95f);
+                    glow.style.backgroundImage = new StyleBackground(_emberTexture);
+                    glow.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                    glow.style.unityBackgroundImageTintColor = new Color(1f, 0.25f, 0.08f, 0.30f);
+
+                    core.style.backgroundImage = new StyleBackground(_emberTexture);
+                    core.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                    core.style.unityBackgroundImageTintColor = new Color(1f, 0.70f, 0.28f, 0.92f);
                 }
                 else
                 {
-                    element.style.borderTopLeftRadius = Length.Percent(50);
-                    element.style.borderTopRightRadius = Length.Percent(50);
-                    element.style.borderBottomLeftRadius = Length.Percent(50);
-                    element.style.borderBottomRightRadius = Length.Percent(50);
-                    element.style.backgroundColor = new Color(1f, 0.55f, 0.20f, 0.95f);
+                    glow.style.borderTopLeftRadius = Length.Percent(50);
+                    glow.style.borderTopRightRadius = Length.Percent(50);
+                    glow.style.borderBottomLeftRadius = Length.Percent(50);
+                    glow.style.borderBottomRightRadius = Length.Percent(50);
+                    glow.style.backgroundColor = new Color(1f, 0.22f, 0.06f, 0.30f);
+
+                    core.style.borderTopLeftRadius = Length.Percent(50);
+                    core.style.borderTopRightRadius = Length.Percent(50);
+                    core.style.borderBottomLeftRadius = Length.Percent(50);
+                    core.style.borderBottomRightRadius = Length.Percent(50);
+                    core.style.backgroundColor = new Color(1f, 0.68f, 0.22f, 0.92f);
                 }
+
+                element.Add(glow);
+                element.Add(core);
 
                 element.style.left = origin.x - w * 0.5f;
                 element.style.top = origin.y - h * 0.5f;
@@ -1497,6 +1578,86 @@ namespace VeilBreakers.UI.Core
                 p.Element.style.top = p.Position.y - h * 0.5f;
                 p.Element.style.opacity = opacity;
                 p.Element.style.scale = new Scale(Vector2.one * scale);
+            }
+        }
+
+        private void SpawnGlowPulse(Vector2 position, VisualElement parent, float startSize, float endSize, float baseOpacity, float lifetime, bool insertBehind)
+        {
+            if (parent == null) return;
+
+            float s0 = Mathf.Max(4f, startSize);
+            float s1 = Mathf.Max(s0, endSize);
+
+            var el = new VisualElement();
+            el.style.position = Position.Absolute;
+            el.style.width = s0;
+            el.style.height = s0;
+            el.style.left = position.x - s0 * 0.5f;
+            el.style.top = position.y - s0 * 0.5f;
+            el.style.borderTopLeftRadius = Length.Percent(50);
+            el.style.borderTopRightRadius = Length.Percent(50);
+            el.style.borderBottomLeftRadius = Length.Percent(50);
+            el.style.borderBottomRightRadius = Length.Percent(50);
+            el.style.backgroundColor = new Color(1f, 0.35f, 0.12f, 1f);
+            el.style.opacity = 0f;
+            el.pickingMode = PickingMode.Ignore;
+
+            if (insertBehind && parent.childCount > 0)
+            {
+                parent.Insert(0, el);
+            }
+            else
+            {
+                parent.Add(el);
+            }
+
+            _glowPulses.Add(new GlowPulse
+            {
+                Element = el,
+                Position = position,
+                StartSize = s0,
+                EndSize = s1,
+                Lifetime = Mathf.Max(0.05f, lifetime),
+                Age = 0f,
+                BaseOpacity = Mathf.Clamp01(baseOpacity)
+            });
+
+            while (_glowPulses.Count > 18)
+            {
+                var p = _glowPulses[0];
+                if (p.Element != null) p.Element.RemoveFromHierarchy();
+                _glowPulses.RemoveAt(0);
+            }
+        }
+
+        private void UpdateGlowPulses(float deltaTime)
+        {
+            if (_glowPulses.Count == 0) return;
+
+            for (int i = _glowPulses.Count - 1; i >= 0; i--)
+            {
+                var p = _glowPulses[i];
+                p.Age += deltaTime;
+                float t = p.Age / Mathf.Max(0.0001f, p.Lifetime);
+                if (t >= 1f)
+                {
+                    if (p.Element != null) p.Element.RemoveFromHierarchy();
+                    _glowPulses.RemoveAt(i);
+                    continue;
+                }
+
+                float ease = 1f - Mathf.Pow(1f - t, 3f);
+                float size = Mathf.Lerp(p.StartSize, p.EndSize, ease);
+                float alpha = Mathf.Sin(Mathf.Clamp01(t) * Mathf.PI) * p.BaseOpacity;
+
+                if (p.Element != null)
+                {
+                    p.Element.style.width = size;
+                    p.Element.style.height = size;
+                    p.Element.style.left = p.Position.x - size * 0.5f;
+                    p.Element.style.top = p.Position.y - size * 0.5f;
+                    p.Element.style.opacity = alpha;
+                }
             }
         }
 

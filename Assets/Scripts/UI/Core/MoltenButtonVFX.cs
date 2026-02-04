@@ -28,7 +28,7 @@ namespace VeilBreakers.UI.Core
         [SerializeField] private float _crackLengthMax = 60f;
 
         [Header("Hover Lava Fill (AAA)")]
-        [SerializeField] private bool _enableHoverLavaFill = true;
+        [SerializeField] private bool _enableHoverLavaFill = false;
         [SerializeField] private float _lavaFillDuration = 0.22f;
         [SerializeField, Range(0f, 1f)] private float _lavaFillOpacity = 0.75f;
         [SerializeField] private Color _lavaFillTint = new Color(1f, 0.35f, 0.05f, 1f);
@@ -40,6 +40,25 @@ namespace VeilBreakers.UI.Core
         [SerializeField] private float _lavaBubbleSizeMax = 16f;
         [Tooltip("Optional bubble texture. Defaults to Resources/VFX/ParticleTextures/dirt 2.")]
         [SerializeField] private Texture2D _lavaBubbleTexture;
+
+        [Header("Button Sheet (AAA)")]
+        [SerializeField] private bool _enableButtonSheetSkins = true;
+        [Tooltip("Optional. Auto-loads from Resources/Art/UI/MainMenu/mainmenu_buttons_sheet when empty.")]
+        [SerializeField] private Texture2D _buttonSheetTexture;
+        [SerializeField, Range(1, 6)] private int _buttonSheetColumns = 2;
+        [SerializeField, Range(1, 6)] private int _buttonSheetRows = 3;
+        [SerializeField, Range(0, 64)] private int _buttonSheetAlphaThreshold = 10;
+        [SerializeField, Range(0, 32)] private int _buttonSheetCropPadding = 6;
+
+        [Header("Molten Highlight (AAA)")]
+        [SerializeField] private bool _enableMoltenHighlight = true;
+        [Tooltip("Optional. Defaults to Resources/VFX/ParticleTextures/dirt 2.")]
+        [SerializeField] private Texture2D _moltenNoiseTexture;
+        [Tooltip("Optional. Defaults to Resources/VFX/ParticleTextures/grunge crack.")]
+        [SerializeField] private Texture2D _moltenCrackTexture;
+        [SerializeField, Range(0f, 1f)] private float _moltenHighlightOpacity = 0.55f;
+        [SerializeField] private float _moltenHighlightSpeed = 220f;
+        [SerializeField] private float _moltenHighlightAngle = -18f;
 
         [Header("Colors")]
         [SerializeField] private Color _crackColorDim = new Color(0.3f, 0.1f, 0.0f, 0.3f);
@@ -65,8 +84,10 @@ namespace VeilBreakers.UI.Core
         private VisualElement _root;
         private VisualElement _lavaSweepElement;
         private readonly Dictionary<Button, ButtonVFXState> _buttonStates = new();
+        private readonly List<Texture2D> _generatedButtonSkins = new();
         private bool _isActive;
         private Coroutine _lavaUpdateCoroutine;
+        private bool _sheetModeActive;
 
         // =============================================================================
         // UNITY LIFECYCLE
@@ -109,6 +130,12 @@ namespace VeilBreakers.UI.Core
             _root = _uiDocument.rootVisualElement;
             _isActive = true;
 
+            // The new art button sheet replaces the old bubble-fill concept.
+            if (_enableButtonSheetSkins)
+            {
+                _enableHoverLavaFill = false;
+            }
+
             if (_lavaBubbleTexture == null)
             {
                 _lavaBubbleTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/dirt 2");
@@ -116,6 +143,34 @@ namespace VeilBreakers.UI.Core
                 {
                     _lavaBubbleTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/ink splat");
                 }
+            }
+
+            if (_buttonSheetTexture == null)
+            {
+                _buttonSheetTexture = Resources.Load<Texture2D>("Art/UI/MainMenu/mainmenu_buttons_sheet");
+            }
+
+            _sheetModeActive = _enableButtonSheetSkins && _buttonSheetTexture != null;
+            if (_sheetModeActive)
+            {
+                // Art-driven buttons: no cracks, no bubble-fill, no flowing sheen.
+                _enableCracks = false;
+                _enableHoverLavaFill = false;
+                _enableMoltenHighlight = false;
+            }
+
+            if (_moltenNoiseTexture == null)
+            {
+                _moltenNoiseTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/dirt 2");
+                if (_moltenNoiseTexture == null)
+                {
+                    _moltenNoiseTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/ink splat");
+                }
+            }
+
+            if (_moltenCrackTexture == null)
+            {
+                _moltenCrackTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/grunge crack");
             }
 
             // Find all buttons
@@ -132,12 +187,20 @@ namespace VeilBreakers.UI.Core
                 SetupButton(button, false);
             }
 
-            // Create lava sweep element
-            CreateLavaSweepElement();
-
-            if (_enableHoverLavaFill && _lavaUpdateCoroutine == null)
+            if (_enableButtonSheetSkins)
             {
-                _lavaUpdateCoroutine = StartCoroutine(UpdateLavaOverlays());
+                TryApplyButtonSheetSkins();
+            }
+
+            if (!_sheetModeActive)
+            {
+                // Create lava sweep element
+                CreateLavaSweepElement();
+
+                if ((_enableHoverLavaFill || _enableMoltenHighlight) && _lavaUpdateCoroutine == null)
+                {
+                    _lavaUpdateCoroutine = StartCoroutine(UpdateLavaOverlays());
+                }
             }
 
             Debug.Log($"[MoltenButtonVFX] Initialized {_buttonStates.Count} buttons");
@@ -156,17 +219,102 @@ namespace VeilBreakers.UI.Core
             // Make button position relative for absolute children
             button.style.overflow = Overflow.Hidden;
 
-            // Create crack overlay container
-            var crackContainer = new VisualElement();
-            crackContainer.name = "crack-container";
-            crackContainer.style.position = Position.Absolute;
-            crackContainer.style.left = 0;
-            crackContainer.style.top = 0;
-            crackContainer.style.right = 0;
-            crackContainer.style.bottom = 0;
-            crackContainer.pickingMode = PickingMode.Ignore;
-            button.Add(crackContainer);
-            state.CrackContainer = crackContainer;
+            if (_sheetModeActive)
+            {
+                // Simple hover outline for the new art buttons.
+                var outline = new VisualElement();
+                outline.name = "sheet-outline";
+                outline.style.position = Position.Absolute;
+                outline.style.left = 3;
+                outline.style.top = 3;
+                outline.style.right = 3;
+                outline.style.bottom = 3;
+                outline.style.borderLeftWidth = 2;
+                outline.style.borderRightWidth = 2;
+                outline.style.borderTopWidth = 2;
+                outline.style.borderBottomWidth = 2;
+                outline.style.borderLeftColor = new Color(1f, 0.55f, 0.25f, 0.95f);
+                outline.style.borderRightColor = new Color(1f, 0.55f, 0.25f, 0.95f);
+                outline.style.borderTopColor = new Color(1f, 0.65f, 0.35f, 0.95f);
+                outline.style.borderBottomColor = new Color(1f, 0.45f, 0.18f, 0.95f);
+                outline.style.borderTopLeftRadius = 18;
+                outline.style.borderTopRightRadius = 18;
+                outline.style.borderBottomLeftRadius = 18;
+                outline.style.borderBottomRightRadius = 18;
+                outline.style.opacity = 0;
+                outline.pickingMode = PickingMode.Ignore;
+                button.Add(outline);
+                state.SheetOutline = outline;
+            }
+            else
+            {
+                // Create crack overlay container
+                var crackContainer = new VisualElement();
+                crackContainer.name = "crack-container";
+                crackContainer.style.position = Position.Absolute;
+                crackContainer.style.left = 0;
+                crackContainer.style.top = 0;
+                crackContainer.style.right = 0;
+                crackContainer.style.bottom = 0;
+                crackContainer.pickingMode = PickingMode.Ignore;
+                button.Add(crackContainer);
+                state.CrackContainer = crackContainer;
+            }
+
+            if (_enableMoltenHighlight)
+            {
+                var highlight = new VisualElement();
+                highlight.name = "molten-highlight";
+                highlight.style.position = Position.Absolute;
+                highlight.style.left = 0;
+                highlight.style.top = 0;
+                highlight.style.right = 0;
+                highlight.style.bottom = 0;
+                highlight.style.opacity = 0;
+                highlight.pickingMode = PickingMode.Ignore;
+                button.Add(highlight);
+                state.MoltenHighlight = highlight;
+
+                if (_moltenNoiseTexture != null)
+                {
+                    // Oversized so we can translate it for a flowing sheen.
+                    var sheen = new VisualElement();
+                    sheen.name = "molten-sheen";
+                    sheen.style.position = Position.Absolute;
+                    sheen.style.left = -120;
+                    sheen.style.top = -80;
+                    sheen.style.width = 640;
+                    sheen.style.height = 260;
+                    sheen.style.backgroundImage = new StyleBackground(_moltenNoiseTexture);
+                    sheen.style.unityBackgroundScaleMode = ScaleMode.ScaleAndCrop;
+                    sheen.style.unityBackgroundImageTintColor = new Color(_lavaFillTint.r, _lavaFillTint.g, _lavaFillTint.b, 0.95f);
+                    sheen.style.opacity = 0;
+                    sheen.style.rotate = new Rotate(_moltenHighlightAngle);
+                    sheen.pickingMode = PickingMode.Ignore;
+                    highlight.Add(sheen);
+                    state.MoltenSheen = sheen;
+                }
+
+                if (_moltenCrackTexture != null)
+                {
+                    var cracks = new VisualElement();
+                    cracks.name = "molten-cracks";
+                    cracks.style.position = Position.Absolute;
+                    cracks.style.left = -40;
+                    cracks.style.top = -40;
+                    cracks.style.right = -40;
+                    cracks.style.bottom = -40;
+                    cracks.style.backgroundImage = new StyleBackground(_moltenCrackTexture);
+                    cracks.style.unityBackgroundScaleMode = ScaleMode.ScaleAndCrop;
+                    cracks.style.unityBackgroundImageTintColor = new Color(1f, 0.45f, 0.15f, 0.85f);
+                    cracks.style.opacity = 0;
+                    cracks.pickingMode = PickingMode.Ignore;
+                    highlight.Add(cracks);
+                    state.MoltenCracks = cracks;
+                }
+
+                state.MoltenSeed = Random.Range(0f, 1000f);
+            }
 
             // Optional: Lava fill overlay that overtakes the button on hover
             if (_enableHoverLavaFill)
@@ -252,28 +400,31 @@ namespace VeilBreakers.UI.Core
                 for (int i = 0; i < _cracksPerButton; i++)
                 {
                     var crack = CreateCrack(button);
-                    crackContainer.Add(crack);
+                    state.CrackContainer.Add(crack);
                     state.CrackElements.Add(crack);
                 }
             }
 
-            // Create glow underlay
-            var glowUnderlay = new VisualElement();
-            glowUnderlay.name = "glow-underlay";
-            glowUnderlay.style.position = Position.Absolute;
-            glowUnderlay.style.left = -10;
-            glowUnderlay.style.top = -10;
-            glowUnderlay.style.right = -10;
-            glowUnderlay.style.bottom = -10;
-            glowUnderlay.style.backgroundColor = new Color(_lavaColor.r, _lavaColor.g, _lavaColor.b, 0.1f);
-            glowUnderlay.style.borderTopLeftRadius = 10;
-            glowUnderlay.style.borderTopRightRadius = 10;
-            glowUnderlay.style.borderBottomLeftRadius = 10;
-            glowUnderlay.style.borderBottomRightRadius = 10;
-            glowUnderlay.style.opacity = 0;
-            glowUnderlay.pickingMode = PickingMode.Ignore;
-            button.Insert(0, glowUnderlay);
-            state.GlowUnderlay = glowUnderlay;
+            if (!_sheetModeActive)
+            {
+                // Create glow underlay
+                var glowUnderlay = new VisualElement();
+                glowUnderlay.name = "glow-underlay";
+                glowUnderlay.style.position = Position.Absolute;
+                glowUnderlay.style.left = -10;
+                glowUnderlay.style.top = -10;
+                glowUnderlay.style.right = -10;
+                glowUnderlay.style.bottom = -10;
+                glowUnderlay.style.backgroundColor = new Color(_lavaColor.r, _lavaColor.g, _lavaColor.b, 0.1f);
+                glowUnderlay.style.borderTopLeftRadius = 10;
+                glowUnderlay.style.borderTopRightRadius = 10;
+                glowUnderlay.style.borderBottomLeftRadius = 10;
+                glowUnderlay.style.borderBottomRightRadius = 10;
+                glowUnderlay.style.opacity = 0;
+                glowUnderlay.pickingMode = PickingMode.Ignore;
+                button.Insert(0, glowUnderlay);
+                state.GlowUnderlay = glowUnderlay;
+            }
 
             // Register events
             button.RegisterCallback<MouseEnterEvent>(evt => OnButtonHoverEnter(state));
@@ -283,10 +434,146 @@ namespace VeilBreakers.UI.Core
             _buttonStates[button] = state;
 
             // Primary buttons get ambient glow
-            if (isPrimary)
+            if (!_sheetModeActive && isPrimary)
             {
                 StartCoroutine(AmbientPulse(state));
             }
+        }
+
+        private void TryApplyButtonSheetSkins()
+        {
+            if (_buttonSheetTexture == null) return;
+            if (_buttonStates.Count == 0) return;
+
+            // Map button names -> sheet cell (col,row), row is top-to-bottom.
+            var mapping = new Dictionary<string, Vector2Int>
+            {
+                { "btn-new-game", new Vector2Int(0, 0) },
+                { "btn-settings", new Vector2Int(1, 0) },
+                { "btn-continue", new Vector2Int(1, 1) },
+                { "btn-credits", new Vector2Int(0, 2) },
+                { "btn-exit", new Vector2Int(1, 2) }
+            };
+
+            foreach (var pair in _buttonStates)
+            {
+                var button = pair.Key;
+                if (button == null) continue;
+
+                if (!mapping.TryGetValue(button.name, out var cell)) continue;
+
+                if (TryCreateCroppedTextureFromCell(_buttonSheetTexture, cell.x, cell.y, out var skin))
+                {
+                    ApplyButtonSkin(button, skin);
+                    _generatedButtonSkins.Add(skin);
+                }
+            }
+        }
+
+        private bool TryCreateCroppedTextureFromCell(Texture2D sheet, int col, int rowTopToBottom, out Texture2D cropped)
+        {
+            cropped = null;
+            if (sheet == null) return false;
+
+            int cols = Mathf.Max(1, _buttonSheetColumns);
+            int rows = Mathf.Max(1, _buttonSheetRows);
+            int cellW = Mathf.Max(1, sheet.width / cols);
+            int cellH = Mathf.Max(1, sheet.height / rows);
+            if (cellW <= 2 || cellH <= 2) return false;
+
+            col = Mathf.Clamp(col, 0, cols - 1);
+            rowTopToBottom = Mathf.Clamp(rowTopToBottom, 0, rows - 1);
+
+            // Unity texture coords: (0,0) is bottom-left.
+            int x0 = col * cellW;
+            int y0 = sheet.height - (rowTopToBottom + 1) * cellH;
+            y0 = Mathf.Clamp(y0, 0, Mathf.Max(0, sheet.height - cellH));
+
+            int x1 = Mathf.Min(sheet.width, x0 + cellW);
+            int y1 = Mathf.Min(sheet.height, y0 + cellH);
+
+            Color32[] pixels;
+            try
+            {
+                pixels = sheet.GetPixels32();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"[MoltenButtonVFX] Button sheet is not readable. Enable Read/Write on mainmenu_buttons_sheet. {ex.GetType().Name}: {ex.Message}");
+                return false;
+            }
+
+            byte threshold = (byte)Mathf.Clamp(_buttonSheetAlphaThreshold, 0, 255);
+            int minX = x1;
+            int minY = y1;
+            int maxX = x0 - 1;
+            int maxY = y0 - 1;
+
+            for (int y = y0; y < y1; y++)
+            {
+                int rowIndex = y * sheet.width;
+                for (int x = x0; x < x1; x++)
+                {
+                    byte a = pixels[rowIndex + x].a;
+                    if (a <= threshold) continue;
+
+                    if (x < minX) minX = x;
+                    if (y < minY) minY = y;
+                    if (x > maxX) maxX = x;
+                    if (y > maxY) maxY = y;
+                }
+            }
+
+            if (maxX < minX || maxY < minY)
+            {
+                return false;
+            }
+
+            int pad = Mathf.Clamp(_buttonSheetCropPadding, 0, 64);
+            minX = Mathf.Max(0, minX - pad);
+            minY = Mathf.Max(0, minY - pad);
+            maxX = Mathf.Min(sheet.width - 1, maxX + pad);
+            maxY = Mathf.Min(sheet.height - 1, maxY + pad);
+
+            int w = Mathf.Max(1, (maxX - minX) + 1);
+            int h = Mathf.Max(1, (maxY - minY) + 1);
+
+            Color[] cropPixels = sheet.GetPixels(minX, minY, w, h);
+            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false, false);
+            tex.name = $"btnskin_{col}_{rowTopToBottom}";
+            tex.wrapMode = TextureWrapMode.Clamp;
+            tex.filterMode = FilterMode.Bilinear;
+            tex.SetPixels(cropPixels);
+            tex.Apply(false, true);
+
+            cropped = tex;
+            return true;
+        }
+
+        private static void ApplyButtonSkin(Button button, Texture2D skin)
+        {
+            if (button == null || skin == null) return;
+
+            button.text = string.Empty;
+            button.AddToClassList("vb-btn-sheet");
+
+            button.style.backgroundImage = new StyleBackground(skin);
+            button.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+            button.style.unityBackgroundImageTintColor = Color.white;
+            button.style.backgroundColor = Color.clear;
+            button.style.borderLeftWidth = 0;
+            button.style.borderRightWidth = 0;
+            button.style.borderTopWidth = 0;
+            button.style.borderBottomWidth = 0;
+            button.style.borderTopLeftRadius = 0;
+            button.style.borderTopRightRadius = 0;
+            button.style.borderBottomLeftRadius = 0;
+            button.style.borderBottomRightRadius = 0;
+            button.style.paddingLeft = 0;
+            button.style.paddingRight = 0;
+            button.style.paddingTop = 0;
+            button.style.paddingBottom = 0;
+            button.style.color = new Color(0, 0, 0, 0);
         }
 
         private VisualElement CreateCrack(Button button)
@@ -351,6 +638,13 @@ namespace VeilBreakers.UI.Core
 
         private void OnButtonHoverEnter(ButtonVFXState state)
         {
+            if (_sheetModeActive)
+            {
+                state.IsHovered = true;
+                if (state.SheetOutline != null) state.SheetOutline.style.opacity = 1f;
+                return;
+            }
+
             StopCoroutine(nameof(AnimateGlow));
             StartCoroutine(AnimateGlow(state, 1f));
             StartLavaFill(state, 1f);
@@ -359,6 +653,13 @@ namespace VeilBreakers.UI.Core
 
         private void OnButtonHoverExit(ButtonVFXState state)
         {
+            if (_sheetModeActive)
+            {
+                state.IsHovered = false;
+                if (state.SheetOutline != null) state.SheetOutline.style.opacity = 0f;
+                return;
+            }
+
             StartCoroutine(AnimateGlow(state, state.IsPrimary ? 0.2f : 0f));
             StartLavaFill(state, 0f);
             state.IsHovered = false;
@@ -366,6 +667,11 @@ namespace VeilBreakers.UI.Core
 
         private void OnButtonClick(ButtonVFXState state, ClickEvent evt)
         {
+            if (_sheetModeActive)
+            {
+                return;
+            }
+
             StartCoroutine(ClickEruption(state, evt.localPosition));
             StartCoroutine(LavaSweep());
         }
@@ -455,8 +761,47 @@ namespace VeilBreakers.UI.Core
                 foreach (var state in _buttonStates.Values)
                 {
                     UpdateLavaBubbles(state, dt);
+                    UpdateMoltenHighlight(state, dt);
                 }
                 yield return null;
+            }
+        }
+
+        private void UpdateMoltenHighlight(ButtonVFXState state, float deltaTime)
+        {
+            if (!_enableMoltenHighlight) return;
+            if (state?.MoltenHighlight == null) return;
+
+            float target = state.IsHovered ? 1f : 0f;
+            state.MoltenHover = Mathf.MoveTowards(state.MoltenHover, target, deltaTime / 0.18f);
+            float a = state.MoltenHover * Mathf.Clamp01(_moltenHighlightOpacity);
+
+            state.MoltenHighlight.style.opacity = a;
+
+            if (state.MoltenSheen != null)
+            {
+                float w = state.Button.resolvedStyle.width;
+                float h = state.Button.resolvedStyle.height;
+                if (w <= 1f) w = 240f;
+                if (h <= 1f) h = 60f;
+
+                // Flow the sheen sideways; keep it oversized so it always covers the button.
+                state.MoltenSheenOffset += deltaTime * Mathf.Max(10f, _moltenHighlightSpeed);
+                float sweep = Mathf.Repeat(state.MoltenSheenOffset + state.MoltenSeed, w * 2.2f);
+
+                state.MoltenSheen.style.width = w * 2.2f;
+                state.MoltenSheen.style.height = h * 2.0f;
+                state.MoltenSheen.style.left = -w * 1.1f + sweep;
+                state.MoltenSheen.style.top = -h * 0.55f;
+
+                float flicker = 0.75f + 0.25f * Mathf.PerlinNoise(state.MoltenSeed, Time.unscaledTime * 1.8f);
+                state.MoltenSheen.style.opacity = a * flicker;
+            }
+
+            if (state.MoltenCracks != null)
+            {
+                float crackPulse = 0.65f + 0.35f * Mathf.PerlinNoise(state.MoltenSeed + 12.3f, Time.unscaledTime * 1.25f);
+                state.MoltenCracks.style.opacity = a * 0.55f * crackPulse;
             }
         }
 
@@ -685,6 +1030,21 @@ namespace VeilBreakers.UI.Core
 
         private void CleanupCallbacks()
         {
+            if (_lavaUpdateCoroutine != null)
+            {
+                StopCoroutine(_lavaUpdateCoroutine);
+                _lavaUpdateCoroutine = null;
+            }
+
+            for (int i = 0; i < _generatedButtonSkins.Count; i++)
+            {
+                if (_generatedButtonSkins[i] != null)
+                {
+                    Destroy(_generatedButtonSkins[i]);
+                }
+            }
+            _generatedButtonSkins.Clear();
+
             _buttonStates.Clear();
             _isActive = false;
         }
@@ -723,6 +1083,7 @@ namespace VeilBreakers.UI.Core
             public bool IsPrimary;
             public VisualElement CrackContainer;
             public VisualElement GlowUnderlay;
+            public VisualElement SheetOutline;
             public VisualElement LavaOverlay;
             public VisualElement LavaSurface;
             public List<VisualElement> CrackElements;
@@ -732,6 +1093,13 @@ namespace VeilBreakers.UI.Core
             public Coroutine LavaCoroutine;
             public bool IsHovered;
             public List<LavaBubble> LavaBubbles;
+
+            public VisualElement MoltenHighlight;
+            public VisualElement MoltenSheen;
+            public VisualElement MoltenCracks;
+            public float MoltenSeed;
+            public float MoltenSheenOffset;
+            public float MoltenHover;
         }
 
         private class LavaBubble

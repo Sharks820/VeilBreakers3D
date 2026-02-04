@@ -2360,6 +2360,44 @@
 }
 
 /* =============================================================================
+   MAIN MENU - ART BUTTON SHEET OVERRIDES
+   When the button sheet skins are applied, disable all "bouncy" UI motion and
+   rely on the art + a simple hover outline from MoltenButtonVFX.
+   ============================================================================= */
+
+#menu-root .vb-btn-sheet,
+#menu-root .vb-btn-sheet:hover,
+#menu-root .vb-btn-sheet:active {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    text-shadow: none;
+    scale: 1 1;
+    transition: none;
+}
+
+#button-container #btn-new-game.vb-btn-sheet,
+#button-container #btn-new-game.vb-btn-sheet:hover,
+#button-container #btn-new-game.vb-btn-sheet:active,
+#button-container #btn-continue.vb-btn-sheet,
+#button-container #btn-continue.vb-btn-sheet:hover,
+#button-container #btn-continue.vb-btn-sheet:active,
+#button-container #btn-settings.vb-btn-sheet,
+#button-container #btn-settings.vb-btn-sheet:hover,
+#button-container #btn-settings.vb-btn-sheet:active,
+#button-container #btn-credits.vb-btn-sheet,
+#button-container #btn-credits.vb-btn-sheet:hover,
+#button-container #btn-credits.vb-btn-sheet:active,
+#button-container #btn-exit.vb-btn-sheet,
+#button-container #btn-exit.vb-btn-sheet:hover,
+#button-container #btn-exit.vb-btn-sheet:active {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    text-shadow: none;
+    scale: 1 1;
+    transition: none;
+}
+
+/* =============================================================================
    ANIMATED BAR - AAA Health/Resource Bars with Ghost Effect
    Unity 6.3 Optimized Transitions
    ============================================================================= */
