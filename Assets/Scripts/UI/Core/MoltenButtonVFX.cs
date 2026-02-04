@@ -20,10 +20,26 @@ namespace VeilBreakers.UI.Core
         [SerializeField] private UIDocument _uiDocument;
 
         [Header("Crack Settings")]
+        [Tooltip("Disabled by default - cracks look bad on buttons")]
+        [SerializeField] private bool _enableCracks = false;
         [SerializeField] private int _cracksPerButton = 5;
         [SerializeField] private float _crackWidth = 2f;
         [SerializeField] private float _crackLengthMin = 20f;
         [SerializeField] private float _crackLengthMax = 60f;
+
+        [Header("Hover Lava Fill (AAA)")]
+        [SerializeField] private bool _enableHoverLavaFill = true;
+        [SerializeField] private float _lavaFillDuration = 0.22f;
+        [SerializeField, Range(0f, 1f)] private float _lavaFillOpacity = 0.75f;
+        [SerializeField] private Color _lavaFillTint = new Color(1f, 0.35f, 0.05f, 1f);
+        [SerializeField] private int _lavaBubbleCountPrimary = 10;
+        [SerializeField] private int _lavaBubbleCountSecondary = 7;
+        [SerializeField] private float _lavaBubbleSpeedMin = 70f;
+        [SerializeField] private float _lavaBubbleSpeedMax = 150f;
+        [SerializeField] private float _lavaBubbleSizeMin = 6f;
+        [SerializeField] private float _lavaBubbleSizeMax = 16f;
+        [Tooltip("Optional bubble texture. Defaults to Resources/VFX/ParticleTextures/dirt 2.")]
+        [SerializeField] private Texture2D _lavaBubbleTexture;
 
         [Header("Colors")]
         [SerializeField] private Color _crackColorDim = new Color(0.3f, 0.1f, 0.0f, 0.3f);
@@ -50,6 +66,7 @@ namespace VeilBreakers.UI.Core
         private VisualElement _lavaSweepElement;
         private readonly Dictionary<Button, ButtonVFXState> _buttonStates = new();
         private bool _isActive;
+        private Coroutine _lavaUpdateCoroutine;
 
         // =============================================================================
         // UNITY LIFECYCLE
@@ -92,6 +109,15 @@ namespace VeilBreakers.UI.Core
             _root = _uiDocument.rootVisualElement;
             _isActive = true;
 
+            if (_lavaBubbleTexture == null)
+            {
+                _lavaBubbleTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/dirt 2");
+                if (_lavaBubbleTexture == null)
+                {
+                    _lavaBubbleTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/ink splat");
+                }
+            }
+
             // Find all buttons
             var primaryButtons = _root.Query<Button>(className: _primaryButtonClass).ToList();
             var secondaryButtons = _root.Query<Button>(className: _secondaryButtonClass).ToList();
@@ -108,6 +134,11 @@ namespace VeilBreakers.UI.Core
 
             // Create lava sweep element
             CreateLavaSweepElement();
+
+            if (_enableHoverLavaFill && _lavaUpdateCoroutine == null)
+            {
+                _lavaUpdateCoroutine = StartCoroutine(UpdateLavaOverlays());
+            }
 
             Debug.Log($"[MoltenButtonVFX] Initialized {_buttonStates.Count} buttons");
         }
@@ -137,12 +168,93 @@ namespace VeilBreakers.UI.Core
             button.Add(crackContainer);
             state.CrackContainer = crackContainer;
 
-            // Create cracks
-            for (int i = 0; i < _cracksPerButton; i++)
+            // Optional: Lava fill overlay that overtakes the button on hover
+            if (_enableHoverLavaFill)
             {
-                var crack = CreateCrack(button);
-                crackContainer.Add(crack);
-                state.CrackElements.Add(crack);
+                var lavaOverlay = new VisualElement();
+                lavaOverlay.name = "lava-fill";
+                lavaOverlay.style.position = Position.Absolute;
+                lavaOverlay.style.left = 0;
+                lavaOverlay.style.right = 0;
+                lavaOverlay.style.bottom = 0;
+                lavaOverlay.style.height = Length.Percent(0);
+                lavaOverlay.style.opacity = 0;
+                lavaOverlay.pickingMode = PickingMode.Ignore;
+
+                // Base molten fill
+                lavaOverlay.style.backgroundColor = new Color(0.16f, 0.06f, 0.02f, 1f);
+
+                // Surface glow line
+                var surface = new VisualElement();
+                surface.name = "lava-surface";
+                surface.style.position = Position.Absolute;
+                surface.style.left = 0;
+                surface.style.right = 0;
+                surface.style.top = 0;
+                surface.style.height = 6;
+                surface.style.backgroundColor = new Color(_lavaFillTint.r, _lavaFillTint.g, _lavaFillTint.b, 0.55f);
+                surface.style.opacity = 0;
+                surface.pickingMode = PickingMode.Ignore;
+                lavaOverlay.Add(surface);
+
+                // Place above the underlay, below crack particles.
+                button.Insert(1, lavaOverlay);
+                state.LavaOverlay = lavaOverlay;
+                state.LavaSeed = Random.Range(0f, 1000f);
+                state.LavaSurface = surface;
+                state.LavaBubbles = new List<LavaBubble>();
+
+                int bubbleCount = Mathf.Max(0, isPrimary ? _lavaBubbleCountPrimary : _lavaBubbleCountSecondary);
+                for (int i = 0; i < bubbleCount; i++)
+                {
+                    var bubbleEl = new VisualElement();
+                    bubbleEl.style.position = Position.Absolute;
+                    bubbleEl.pickingMode = PickingMode.Ignore;
+
+                    float size = Random.Range(_lavaBubbleSizeMin, _lavaBubbleSizeMax);
+                    bubbleEl.style.width = size;
+                    bubbleEl.style.height = size;
+                    bubbleEl.style.borderTopLeftRadius = Length.Percent(50);
+                    bubbleEl.style.borderTopRightRadius = Length.Percent(50);
+                    bubbleEl.style.borderBottomLeftRadius = Length.Percent(50);
+                    bubbleEl.style.borderBottomRightRadius = Length.Percent(50);
+
+                    if (_lavaBubbleTexture != null)
+                    {
+                        bubbleEl.style.backgroundImage = new StyleBackground(_lavaBubbleTexture);
+                        bubbleEl.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                        bubbleEl.style.unityBackgroundImageTintColor = new Color(_lavaFillTint.r, _lavaFillTint.g, _lavaFillTint.b, 0.95f);
+                    }
+                    else
+                    {
+                        bubbleEl.style.backgroundColor = new Color(_lavaFillTint.r, _lavaFillTint.g, _lavaFillTint.b, 0.95f);
+                    }
+
+                    bubbleEl.style.opacity = 0;
+                    lavaOverlay.Add(bubbleEl);
+
+                    state.LavaBubbles.Add(new LavaBubble
+                    {
+                        Element = bubbleEl,
+                        Size = size,
+                        Speed = Random.Range(_lavaBubbleSpeedMin, _lavaBubbleSpeedMax),
+                        X01 = Random.value,
+                        Y01 = Random.value,
+                        DriftPhase = Random.Range(0f, Mathf.PI * 2f),
+                        DriftAmplitude = Random.Range(6f, 16f)
+                    });
+                }
+            }
+
+            // Create cracks (disabled by default - they look ugly)
+            if (_enableCracks)
+            {
+                for (int i = 0; i < _cracksPerButton; i++)
+                {
+                    var crack = CreateCrack(button);
+                    crackContainer.Add(crack);
+                    state.CrackElements.Add(crack);
+                }
             }
 
             // Create glow underlay
@@ -241,11 +353,15 @@ namespace VeilBreakers.UI.Core
         {
             StopCoroutine(nameof(AnimateGlow));
             StartCoroutine(AnimateGlow(state, 1f));
+            StartLavaFill(state, 1f);
+            state.IsHovered = true;
         }
 
         private void OnButtonHoverExit(ButtonVFXState state)
         {
             StartCoroutine(AnimateGlow(state, state.IsPrimary ? 0.2f : 0f));
+            StartLavaFill(state, 0f);
+            state.IsHovered = false;
         }
 
         private void OnButtonClick(ButtonVFXState state, ClickEvent evt)
@@ -280,18 +396,137 @@ namespace VeilBreakers.UI.Core
             ApplyGlowState(state);
         }
 
-        private void ApplyGlowState(ButtonVFXState state)
+        private void StartLavaFill(ButtonVFXState state, float targetFill)
         {
-            // Update crack colors
-            foreach (var crack in state.CrackElements)
+            if (!_enableHoverLavaFill) return;
+            if (state?.LavaOverlay == null) return;
+
+            if (state.LavaCoroutine != null)
             {
-                Color crackColor = Color.Lerp(_crackColorDim, _crackColorGlow, state.GlowIntensity);
-                crack.style.backgroundColor = crackColor;
-                crack.style.opacity = 0.3f + state.GlowIntensity * 0.7f;
+                StopCoroutine(state.LavaCoroutine);
+                state.LavaCoroutine = null;
             }
 
-            // Update glow underlay
-            state.GlowUnderlay.style.opacity = state.GlowIntensity * 0.4f;
+            state.LavaCoroutine = StartCoroutine(AnimateLavaFill(state, targetFill));
+        }
+
+        private IEnumerator AnimateLavaFill(ButtonVFXState state, float targetFill)
+        {
+            float startFill = state.LavaFill;
+            float elapsed = 0f;
+            float duration = Mathf.Max(0.05f, _lavaFillDuration);
+
+            while (elapsed < duration && state.Button != null)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                t = 1f - Mathf.Pow(1f - t, 3f);
+
+                state.LavaFill = Mathf.Lerp(startFill, targetFill, t);
+                ApplyLavaFillState(state);
+
+                yield return null;
+            }
+
+            state.LavaFill = targetFill;
+            ApplyLavaFillState(state);
+            state.LavaCoroutine = null;
+        }
+
+        private void ApplyLavaFillState(ButtonVFXState state)
+        {
+            if (state?.LavaOverlay == null) return;
+
+            float fill = Mathf.Clamp01(state.LavaFill);
+            state.LavaOverlay.style.height = Length.Percent(fill * 100f);
+            state.LavaOverlay.style.opacity = fill * _lavaFillOpacity;
+
+            if (state.LavaSurface != null)
+            {
+                state.LavaSurface.style.opacity = fill * 0.9f;
+            }
+        }
+
+        private IEnumerator UpdateLavaOverlays()
+        {
+            while (_isActive)
+            {
+                float dt = Time.unscaledDeltaTime;
+                foreach (var state in _buttonStates.Values)
+                {
+                    UpdateLavaBubbles(state, dt);
+                }
+                yield return null;
+            }
+        }
+
+        private void UpdateLavaBubbles(ButtonVFXState state, float deltaTime)
+        {
+            if (state?.LavaOverlay == null) return;
+            if (state.LavaBubbles == null || state.LavaBubbles.Count == 0) return;
+
+            float fill = Mathf.Clamp01(state.LavaFill);
+            if (fill <= 0.001f)
+            {
+                for (int i = 0; i < state.LavaBubbles.Count; i++)
+                {
+                    state.LavaBubbles[i].Element.style.opacity = 0;
+                }
+                return;
+            }
+
+            float buttonW = state.Button.resolvedStyle.width;
+            float buttonH = state.Button.resolvedStyle.height;
+            if (buttonW <= 1f) buttonW = 240f;
+            if (buttonH <= 1f) buttonH = 60f;
+
+            float lavaH = Mathf.Max(1f, buttonH * fill);
+            float time = Time.unscaledTime;
+
+            for (int i = 0; i < state.LavaBubbles.Count; i++)
+            {
+                var bubble = state.LavaBubbles[i];
+
+                // Bubble rises within the filled region and wraps.
+                bubble.Y01 -= (bubble.Speed / Mathf.Max(1f, lavaH)) * deltaTime;
+                if (bubble.Y01 < -0.2f)
+                {
+                    bubble.Y01 = 1.15f + Random.value * 0.25f;
+                    bubble.X01 = Random.value;
+                    bubble.Speed = Random.Range(_lavaBubbleSpeedMin, _lavaBubbleSpeedMax);
+                }
+
+                float x = bubble.X01 * buttonW;
+                float y = bubble.Y01 * lavaH;
+                float drift = Mathf.Sin(time * 4.2f + bubble.DriftPhase) * bubble.DriftAmplitude;
+
+                // Overlay is anchored to bottom; y=0 is top of overlay.
+                bubble.Element.style.left = x - bubble.Size * 0.5f + drift;
+                bubble.Element.style.top = y - bubble.Size * 0.5f;
+
+                float pop = 0.65f + 0.35f * Mathf.PerlinNoise(state.LavaSeed, time * 2.8f + i * 0.21f);
+                bubble.Element.style.opacity = fill * pop * 0.9f;
+            }
+        }
+
+        private void ApplyGlowState(ButtonVFXState state)
+        {
+            // Update crack colors (if cracks are enabled)
+            if (_enableCracks)
+            {
+                foreach (var crack in state.CrackElements)
+                {
+                    Color crackColor = Color.Lerp(_crackColorDim, _crackColorGlow, state.GlowIntensity);
+                    crack.style.backgroundColor = crackColor;
+                    crack.style.opacity = 0.3f + state.GlowIntensity * 0.7f;
+                }
+            }
+
+            // Update glow underlay - stronger effect when cracks are disabled
+            float glowOpacity = _enableCracks ? state.GlowIntensity * 0.4f : state.GlowIntensity * 0.6f;
+            state.GlowUnderlay.style.opacity = glowOpacity;
+
+            // Note: Scale is handled by USS :hover transition - don't override it here
         }
 
         private IEnumerator AmbientPulse(ButtonVFXState state)
@@ -303,10 +538,18 @@ namespace VeilBreakers.UI.Core
                 if (state.GlowIntensity < 0.3f) // Only pulse when not hovered
                 {
                     float pulse = 0.1f + 0.1f * Mathf.Sin(Time.unscaledTime * 2f + phase);
-                    foreach (var crack in state.CrackElements)
+
+                    // Pulse cracks if enabled
+                    if (_enableCracks)
                     {
-                        crack.style.opacity = 0.3f + pulse;
+                        foreach (var crack in state.CrackElements)
+                        {
+                            crack.style.opacity = 0.3f + pulse;
+                        }
                     }
+
+                    // Pulse the glow underlay subtly for primary buttons
+                    state.GlowUnderlay.style.opacity = pulse * 0.3f;
                 }
 
                 yield return null;
@@ -315,11 +558,17 @@ namespace VeilBreakers.UI.Core
 
         private IEnumerator ClickEruption(ButtonVFXState state, Vector2 localPosition)
         {
-            // Flash white-hot
-            foreach (var crack in state.CrackElements)
+            // Flash white-hot (cracks only if enabled)
+            if (_enableCracks)
             {
-                crack.style.backgroundColor = _crackColorWhiteHot;
+                foreach (var crack in state.CrackElements)
+                {
+                    crack.style.backgroundColor = _crackColorWhiteHot;
+                }
             }
+
+            // Flash the glow underlay bright on click
+            state.GlowUnderlay.style.opacity = 0.8f;
 
             // Create eruption particles
             var particles = new List<VisualElement>();
@@ -383,13 +632,19 @@ namespace VeilBreakers.UI.Core
                 p.RemoveFromHierarchy();
             }
 
-            // Return cracks to glow state
+            // Return to normal glow state
             yield return new WaitForSecondsRealtime(_clickFlashDuration);
 
-            foreach (var crack in state.CrackElements)
+            if (_enableCracks)
             {
-                crack.style.backgroundColor = Color.Lerp(_crackColorDim, _crackColorGlow, state.GlowIntensity);
+                foreach (var crack in state.CrackElements)
+                {
+                    crack.style.backgroundColor = Color.Lerp(_crackColorDim, _crackColorGlow, state.GlowIntensity);
+                }
             }
+
+            // Fade the underlay back to current intensity
+            ApplyGlowState(state);
         }
 
         private IEnumerator LavaSweep()
@@ -468,8 +723,26 @@ namespace VeilBreakers.UI.Core
             public bool IsPrimary;
             public VisualElement CrackContainer;
             public VisualElement GlowUnderlay;
+            public VisualElement LavaOverlay;
+            public VisualElement LavaSurface;
             public List<VisualElement> CrackElements;
             public float GlowIntensity;
+            public float LavaFill;
+            public float LavaSeed;
+            public Coroutine LavaCoroutine;
+            public bool IsHovered;
+            public List<LavaBubble> LavaBubbles;
+        }
+
+        private class LavaBubble
+        {
+            public VisualElement Element;
+            public float Size;
+            public float Speed;
+            public float X01;
+            public float Y01;
+            public float DriftPhase;
+            public float DriftAmplitude;
         }
     }
 }

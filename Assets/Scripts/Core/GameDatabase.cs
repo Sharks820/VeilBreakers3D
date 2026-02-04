@@ -129,18 +129,19 @@ namespace VeilBreakers.Core
                 }
 
                 string jsonContent = jsonAsset.text;
-                MonsterData[] monsters = await Task.Run(() =>
-                {
-                    var wrappedJson = WrapJsonArray(jsonContent, "monsters");
-                    var wrapper = JsonUtility.FromJson<MonsterDataWrapper>(wrappedJson);
-                    return wrapper?.monsters;
-                });
+
+                // String processing can happen off main thread
+                string wrappedJson = await Task.Run(() => WrapJsonArray(jsonContent, "monsters"));
+
+                // JsonUtility MUST be called on main thread (Unity API requirement)
+                var wrapper = JsonUtility.FromJson<MonsterDataWrapper>(wrappedJson);
+                MonsterData[] monsters = wrapper?.monsters;
 
                 if (monsters == null)
                 {
                     throw new InvalidDataException("[GameDatabase] monsters.json invalid format");
                 }
-                
+
                 foreach (var monster in monsters)
                 {
                     if (!string.IsNullOrEmpty(monster.monster_id))
@@ -170,13 +171,14 @@ namespace VeilBreakers.Core
                 }
 
                 string jsonContent = jsonAsset.text;
-                SkillData[] skills = await Task.Run(() =>
-                {
-                    var wrappedJson = WrapJsonArray(jsonContent, "skills");
-                    var wrapper = JsonUtility.FromJson<SkillDataWrapper>(wrappedJson);
-                    return wrapper?.skills;
-                });
-                
+
+                // String processing can happen off main thread
+                string wrappedJson = await Task.Run(() => WrapJsonArray(jsonContent, "skills"));
+
+                // JsonUtility MUST be called on main thread (Unity API requirement)
+                var wrapper = JsonUtility.FromJson<SkillDataWrapper>(wrappedJson);
+                SkillData[] skills = wrapper?.skills;
+
                 if (skills == null)
                 {
                     throw new InvalidDataException("[GameDatabase] skills.json invalid format");
@@ -209,14 +211,15 @@ namespace VeilBreakers.Core
                 {
                     throw new InvalidOperationException("[GameDatabase] HeroesJson not assigned in GameDataAssets!");
                 }
-                
+
                 string jsonContent = jsonAsset.text;
-                HeroData[] heroes = await Task.Run(() =>
-                {
-                    var wrappedJson = WrapJsonArray(jsonContent, "heroes");
-                    var wrapper = JsonUtility.FromJson<HeroDataWrapper>(wrappedJson);
-                    return wrapper?.heroes;
-                });
+
+                // String processing can happen off main thread
+                string wrappedJson = await Task.Run(() => WrapJsonArray(jsonContent, "heroes"));
+
+                // JsonUtility MUST be called on main thread (Unity API requirement)
+                var wrapper = JsonUtility.FromJson<HeroDataWrapper>(wrappedJson);
+                HeroData[] heroes = wrapper?.heroes;
 
                 if (heroes == null)
                 {
@@ -252,12 +255,13 @@ namespace VeilBreakers.Core
                 }
 
                 string jsonContent = jsonAsset.text;
-                ItemData[] items = await Task.Run(() =>
-                {
-                    var wrappedJson = WrapJsonArray(jsonContent, "items");
-                    var wrapper = JsonUtility.FromJson<ItemDataWrapper>(wrappedJson);
-                    return wrapper?.items;
-                });
+
+                // String processing can happen off main thread
+                string wrappedJson = await Task.Run(() => WrapJsonArray(jsonContent, "items"));
+
+                // JsonUtility MUST be called on main thread (Unity API requirement)
+                var wrapper = JsonUtility.FromJson<ItemDataWrapper>(wrappedJson);
+                ItemData[] items = wrapper?.items;
 
                 if (items == null)
                 {

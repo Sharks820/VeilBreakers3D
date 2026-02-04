@@ -442,25 +442,44 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier:
   _uiDocument: {fileID: 1100000002}
-  _emberCount: 40
-  _emberSpeedMin: 15
-  _emberSpeedMax: 45
-  _emberSizeMin: 2
-  _emberSizeMax: 6
-  _emberColorCore: {r: 1, g: 0.4, b: 0.1, a: 1}
-  _emberColorGlow: {r: 1, g: 0.6, b: 0.2, a: 0.6}
-  _ashCount: 30
-  _ashSpeedMin: 8
-  _ashSpeedMax: 20
+  _emberCount: 140
+  _emberSpeedMin: 10
+  _emberSpeedMax: 28
+  _emberSizeMin: 1
+  _emberSizeMax: 4.5
+  _emberColorCore: {r: 1, g: 0.75, b: 0.35, a: 1}
+  _emberColorBody: {r: 1, g: 0.38, b: 0.08, a: 0.95}
+  _emberColorGlow: {r: 1, g: 0.22, b: 0, a: 0.35}
+  _microSparkCount: 0
+  _microSparkSpeedMin: 45
+  _microSparkSpeedMax: 110
+  _microSparkSizeMin: 1
+  _microSparkSizeMax: 2.5
+  _ashCount: 22
+  _ashSpeedMin: 6
+  _ashSpeedMax: 16
   _ashSizeMin: 3
-  _ashSizeMax: 8
-  _ashColor: {r: 0.3, g: 0.28, b: 0.25, a: 0.7}
-  _sparkCount: 15
-  _sparkSpeedMin: 60
-  _sparkSpeedMax: 120
+  _ashSizeMax: 10
+  _ashColorLight: {r: 0.3, g: 0.28, b: 0.25, a: 0.55}
+  _ashColorDark: {r: 0.18, g: 0.16, b: 0.14, a: 0.35}
+  _smokeCount: 14
+  _smokeSpeedMin: 2.5
+  _smokeSpeedMax: 6
+  _smokeSizeMin: 120
+  _smokeSizeMax: 280
+  _smokeColor: {r: 0.18, g: 0.14, b: 0.12, a: 0.22}
+  _sparkCount: 0
+  _sparkSpeedMin: 100
+  _sparkSpeedMax: 200
+  _enableVignette: 1
+  _vignetteOpacity: 0.22
+  _enableAtmosphereGradient: 1
+  _atmosphereColor: {r: 0.12, g: 0.03, b: 0, a: 0.12}
+  _enableGrungeOverlay: 1
+  _grungeOpacity: 0.06
   _windStrength: 0.3
   _windFrequency: 0.5
-  _flickerSpeed: 8
+  _flickerSpeed: 2.2
   _spawnMarginBottom: 0.1
   _spawnMarginSides: 0.2
 --- !u!114 &1100000006
@@ -470,7 +489,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1100000000}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 579dc0b4a7fc736498593cd937c54a34, type: 3}
   m_Name:
@@ -493,7 +512,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1100000000}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7b5d05be568d3974b93080b0e4d4f5c2, type: 3}
   m_Name:
@@ -522,24 +541,24 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1100000000}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 204a0c3f6c2034e4fb970f3bc64089de, type: 3}
   m_Name:
   m_EditorClassIdentifier:
   _uiDocument: {fileID: 1100000002}
-  _maxParticles: 60
-  _particleSizeMin: 3
-  _particleSizeMax: 10
+  _maxParticles: 24
+  _particleSizeMin: 2
+  _particleSizeMax: 6
   _attractionStrength: 200
   _spiralStrength: 150
   _maxSpeed: 400
   _dissolveDistance: 30
-  _spawnRate: 0.1
-  _spawnRadius: 200
-  _soulColorCore: {r: 1, g: 0.6, b: 0.2, a: 1}
-  _soulColorGlow: {r: 1, g: 0.4, b: 0.1, a: 0.5}
-  _soulColorTrail: {r: 1, g: 0.3, b: 0.05, a: 0.3}
+  _spawnRate: 0.18
+  _spawnRadius: 160
+  _soulColorCore: {r: 1, g: 0.55, b: 0.22, a: 1}
+  _soulColorGlow: {r: 1, g: 0.35, b: 0.1, a: 0.32}
+  _soulColorTrail: {r: 1, g: 0.25, b: 0.05, a: 0.18}
   _dangerZones:
   - Name: Chest
     Center: {x: 0.5, y: 0.4}

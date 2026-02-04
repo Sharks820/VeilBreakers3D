@@ -1,0 +1,1664 @@
+[
+  {
+    "monster_id": "bloodshade",
+    "display_name": "Bloodshade",
+    "description": "A shadow that has learned to DRINK. It pools beneath the dying, absorbing their final moments along with their life force. It speaks in the layered voices of everyone it has ever drained - dozens of whispers overlapping, begging, thanking, cursing. It collects endings.",
+    "tier": 2,
+    "brand": 10,
+    "rarity": 2,
+    "brand_tier": 1,
+    "secondary_brand": 5,
+    "evolution_stage": 0,
+    "sprite_path": "assets/sprites/monsters/bloodshade.png",
+    "portrait_path": "assets/characters/monsters/bloodshade_portrait.png",
+    "color_palette": {
+      "r": 0.2,
+      "g": 0.1,
+      "b": 0.15,
+      "a": 1
+    },
+    "base_hp": 62,
+    "base_mp": 38,
+    "base_attack": 12,
+    "base_defense": 10,
+    "base_magic": 20,
+    "base_resistance": 18,
+    "base_speed": 14,
+    "base_luck": 8,
+    "hp_growth": 1.18,
+    "mp_growth": 1.2,
+    "attack_growth": 1.1,
+    "defense_growth": 1.12,
+    "magic_growth": 1.22,
+    "resistance_growth": 1.2,
+    "speed_growth": 1.12,
+    "innate_skills": [
+      "life_siphon",
+      "shadow_embrace"
+    ],
+    "learnable_skills": {
+      "11": "choir_of_the_dying",
+      "19": "soulthirst",
+      "29": "stolen_vitality",
+      "40": "the_final_drink"
+    },
+    "ai_pattern": "support",
+    "skill_weights": {
+      "life_siphon": 40,
+      "shadow_embrace": 35,
+      "choir_of_the_dying": 25
+    },
+    "base_corruption": 90,
+    "corruption_resistance": 10,
+    "base_experience": 50,
+    "base_currency": 25,
+    "drop_table": [
+      {
+        "item_id": "shadow_essence",
+        "chance": 0.5,
+        "quantity": 1
+      },
+      {
+        "item_id": "stolen_breath",
+        "chance": 0.35,
+        "quantity": 1
+      },
+      {
+        "item_id": "memory_of_endings",
+        "chance": 0.05,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Battlefields, hospitals, anywhere death is common - pools in shadowed corners",
+    "behavior_notes": "Drains HP from enemies and distributes it to allies. The voices speak truths the dying knew. Stronger in darkness. Weak to light-based attacks. Never fully solid.",
+    "purification_hint": "It returns the stolen life-force to the world. The voices find peace and fade to silence. It becomes a gentle psychopomp, guiding souls peacefully to their rest instead of consuming them."
+  },
+  {
+    "monster_id": "chainbound",
+    "display_name": "Chainbound",
+    "description": "A mass of rusted chains that has formed into a vaguely humanoid shape. Where a heart should be, there's a corroded padlock that rattles with each movement. It remembers being used to imprison something terrible - now it wants to bind everything.",
+    "tier": 0,
+    "brand": 1,
+    "rarity": 0,
+    "brand_tier": 0,
+    "secondary_brand": 13,
+    "evolution_stage": 0,
+    "sprite_path": "assets/sprites/monsters/chainbound.png",
+    "portrait_path": "assets/characters/monsters/chainbound_portrait.png",
+    "color_palette": {
+      "r": 0.35,
+      "g": 0.3,
+      "b": 0.25,
+      "a": 1
+    },
+    "base_hp": 48,
+    "base_mp": 8,
+    "base_attack": 7,
+    "base_defense": 14,
+    "base_magic": 5,
+    "base_resistance": 12,
+    "base_speed": 5,
+    "base_luck": 4,
+    "hp_growth": 1.25,
+    "mp_growth": 1.05,
+    "attack_growth": 1.08,
+    "defense_growth": 1.22,
+    "magic_growth": 1.05,
+    "resistance_growth": 1.18,
+    "speed_growth": 1.02,
+    "innate_skills": [
+      "iron_bind",
+      "rusted_embrace"
+    ],
+    "learnable_skills": {
+      "6": "shackle_slam",
+      "12": "chain_wall",
+      "20": "the_wardens_grip",
+      "28": "eternal_imprisonment"
+    },
+    "ai_pattern": "defensive",
+    "skill_weights": {
+      "iron_bind": 45,
+      "rusted_embrace": 30,
+      "shackle_slam": 25
+    },
+    "base_corruption": 75,
+    "corruption_resistance": 8,
+    "base_experience": 12,
+    "base_currency": 5,
+    "drop_table": [
+      {
+        "item_id": "rusted_link",
+        "chance": 0.55,
+        "quantity": 1
+      },
+      {
+        "item_id": "corroded_padlock",
+        "chance": 0.2,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Abandoned prisons, old dungeons, places where things were meant to be kept",
+    "behavior_notes": "Moves slowly but relentlessly. Prioritizes binding the most mobile enemy. The chains rattle constantly - you always hear it coming.",
+    "purification_hint": "The padlock opens. The chains become a protective barrier rather than a prison. It guards the innocent instead of trapping them."
+  },
+  {
+    "monster_id": "corrodex",
+    "display_name": "Corrodex",
+    "description": "An ornate suit of knight's armor, but instead of a body, it contains only acidic sludge. Green-yellow liquid leaks from every joint, hissing where it touches stone. It still tries to speak with a noble voice, but only bubbling comes out. It remembers honor. Now it only dissolves.",
+    "tier": 1,
+    "brand": 7,
+    "rarity": 1,
+    "brand_tier": 1,
+    "secondary_brand": 2,
+    "evolution_stage": 0,
+    "sprite_path": "assets/sprites/monsters/corrodex.png",
+    "portrait_path": "assets/characters/monsters/corrodex_portrait.png",
+    "color_palette": {
+      "r": 0.3,
+      "g": 0.4,
+      "b": 0.15,
+      "a": 1
+    },
+    "base_hp": 70,
+    "base_mp": 18,
+    "base_attack": 10,
+    "base_defense": 22,
+    "base_magic": 14,
+    "base_resistance": 14,
+    "base_speed": 5,
+    "base_luck": 4,
+    "hp_growth": 1.22,
+    "mp_growth": 1.12,
+    "attack_growth": 1.1,
+    "defense_growth": 1.25,
+    "magic_growth": 1.15,
+    "resistance_growth": 1.18,
+    "speed_growth": 1.02,
+    "innate_skills": [
+      "acid_leak",
+      "corroding_guard",
+      "acid_spit",
+      "iron_guard"
+    ],
+    "learnable_skills": {
+      "10": "dissolving_embrace",
+      "17": "noble_sacrifice",
+      "26": "acid_flood",
+      "38": "the_dissolved_knights_oath"
+    },
+    "ai_pattern": "tank",
+    "skill_weights": {
+      "acid_leak": 35,
+      "corroding_guard": 40,
+      "dissolving_embrace": 25
+    },
+    "base_corruption": 80,
+    "corruption_resistance": 12,
+    "base_experience": 26,
+    "base_currency": 12,
+    "drop_table": [
+      {
+        "item_id": "corroded_plate",
+        "chance": 0.5,
+        "quantity": 1
+      },
+      {
+        "item_id": "acid_vial",
+        "chance": 0.35,
+        "quantity": 1
+      },
+      {
+        "item_id": "knights_crest",
+        "chance": 0.1,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Ruined castles, poisoned battlefields, places where honor died",
+    "behavior_notes": "Tries to protect allies despite the acid hurting them. Attackers that hit it take acid damage. Periodically says fragments of knightly oaths in bubbling tones.",
+    "purification_hint": "The acid becomes healing waters that flow through pristine armor. The knight's voice returns, clear and noble. It finally speaks the oath it could never finish."
+  },
+  {
+    "monster_id": "crackling",
+    "display_name": "Crackling",
+    "description": "Pure electrical energy given malevolent form. It appears as a child-sized figure made of forking lightning, flickering in and out of existence with each heartbeat. Its laughter is static, and it doesn't understand why touching things hurts them.",
+    "tier": 0,
+    "brand": 3,
+    "rarity": 1,
+    "brand_tier": 0,
+    "secondary_brand": 13,
+    "evolution_stage": 0,
+    "sprite_path": "assets/sprites/monsters/crackling.png",
+    "portrait_path": "assets/characters/monsters/crackling_portrait.png",
+    "color_palette": {
+      "r": 0.8,
+      "g": 0.9,
+      "b": 1,
+      "a": 1
+    },
+    "base_hp": 25,
+    "base_mp": 20,
+    "base_attack": 16,
+    "base_defense": 4,
+    "base_magic": 12,
+    "base_resistance": 6,
+    "base_speed": 18,
+    "base_luck": 10,
+    "hp_growth": 1.08,
+    "mp_growth": 1.15,
+    "attack_growth": 1.2,
+    "defense_growth": 1.02,
+    "magic_growth": 1.15,
+    "resistance_growth": 1.05,
+    "speed_growth": 1.25,
+    "innate_skills": [
+      "static_touch",
+      "flicker_strike",
+      "surge_strike",
+      "warp"
+    ],
+    "learnable_skills": {
+      "8": "chain_lightning",
+      "14": "surge_dash",
+      "20": "stormkin_call",
+      "28": "tempest_incarnate"
+    },
+    "ai_pattern": "aggressive",
+    "skill_weights": {
+      "static_touch": 35,
+      "flicker_strike": 45,
+      "chain_lightning": 20
+    },
+    "base_corruption": 65,
+    "corruption_resistance": 2,
+    "base_experience": 14,
+    "base_currency": 6,
+    "drop_table": [
+      {
+        "item_id": "static_essence",
+        "chance": 0.5,
+        "quantity": 1
+      },
+      {
+        "item_id": "lightning_shard",
+        "chance": 0.25,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Storm-touched areas, places struck by lightning, near electrical phenomena",
+    "behavior_notes": "Erratic movement patterns, almost playful. Attacks the closest target repeatedly. Leaves scorch marks everywhere it goes. Sometimes just watches curiously.",
+    "purification_hint": "The chaotic energy stabilizes into warm, guiding light. It becomes a beacon that leads travelers safely through storms, finally understanding that touch can be gentle."
+  },
+  {
+    "monster_id": "flicker",
+    "display_name": "Flicker",
+    "description": "Barely visible. A blur. An afterimage. Something insectoid but wrong, made of consumed wings - bird, bat, butterfly, dragonfly - all layered. No solid core, just motion given form.",
+    "tier": 0,
+    "brand": 3,
+    "rarity": 2,
+    "category": 1,
+    "role": 0,
+    "evolution_names": [
+      "Flicker",
+      "Stormwing",
+      "Quicksilver"
+    ],
+    "evolution_sprites": [
+      "res://assets/characters/monsters/flicker_corrupted.png",
+      "res://assets/characters/monsters/flicker_awakened.png",
+      "res://assets/characters/monsters/flicker_ascended.png"
+    ],
+    "sprite_path": "assets/sprites/monsters/flicker.png",
+    "portrait_path": "assets/characters/monsters/flicker_portrait.png",
+    "color_palette": {
+      "r": 0.3,
+      "g": 0.6,
+      "b": 0.9,
+      "a": 1
+    },
+    "primary_element": 4,
+    "secondary_element": 7,
+    "weaknesses": [
+      5,
+      6
+    ],
+    "resistances": [
+      4,
+      7
+    ],
+    "base_hp": 28,
+    "base_mp": 10,
+    "base_attack": 11,
+    "base_defense": 4,
+    "base_magic": 8,
+    "base_resistance": 6,
+    "base_speed": 26,
+    "base_luck": 12,
+    "hp_growth": 1.1,
+    "mp_growth": 1.12,
+    "attack_growth": 1.15,
+    "defense_growth": 1.05,
+    "magic_growth": 1.1,
+    "resistance_growth": 1.08,
+    "speed_growth": 1.25,
+    "innate_skills": [
+      "blur_strike",
+      "too_fast",
+      "phase_shift",
+      "scatter"
+    ],
+    "learnable_skills": {
+      "7": "between_seconds",
+      "12": "interrupt",
+      "18": "hit_and_run",
+      "25": "quicksilver_blitz"
+    },
+    "ai_pattern": "speed",
+    "skill_weights": {
+      "blur_strike": 50,
+      "between_seconds": 30,
+      "interrupt": 20
+    },
+    "base_corruption": 80,
+    "corruption_resistance": 4,
+    "base_experience": 22,
+    "base_currency": 10,
+    "drop_table": [
+      {
+        "item_id": "velocity_shard",
+        "chance": 0.5,
+        "quantity": 1
+      },
+      {
+        "item_id": "blur_feather",
+        "chance": 0.3,
+        "quantity": 1
+      },
+      {
+        "item_id": "moment_frozen",
+        "chance": 0.04,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Open skies, windy passes, near Veil cracks where air tears",
+    "behavior_notes": "Cannot stop - stillness is death. Exists between moments. Doesn't think - thinking is too slow.",
+    "purification_hint": "Learns to be still. Discovers the space between movements contains thought, peace."
+  },
+  {
+    "monster_id": "gluttony_polyp",
+    "display_name": "Gluttony Polyp",
+    "description": "A translucent, stomach-like sac floating slightly off ground. Inside: half-digested plants and small animals slowly dissolving. A mobile digestive system - nothing more.",
+    "tier": 0,
+    "brand": 5,
+    "rarity": 0,
+    "category": 0,
+    "role": 2,
+    "evolution_names": [
+      "Gluttony Polyp",
+      "Nurturing Sphere"
+    ],
+    "evolution_sprites": [
+      "res://assets/characters/monsters/gluttony_polyp_corrupted.png",
+      "res://assets/characters/monsters/gluttony_polyp_awakened.png"
+    ],
+    "sprite_path": "assets/sprites/monsters/gluttony_polyp.png",
+    "portrait_path": "assets/characters/monsters/gluttony_polyp_portrait.png",
+    "color_palette": {
+      "r": 0.3,
+      "g": 0.5,
+      "b": 0.2,
+      "a": 1
+    },
+    "primary_element": 0,
+    "secondary_element": 0,
+    "weaknesses": [
+      3,
+      4
+    ],
+    "resistances": [
+      6
+    ],
+    "base_hp": 55,
+    "base_mp": 20,
+    "base_attack": 6,
+    "base_defense": 12,
+    "base_magic": 10,
+    "base_resistance": 14,
+    "base_speed": 4,
+    "base_luck": 6,
+    "hp_growth": 1.3,
+    "mp_growth": 1.15,
+    "attack_growth": 1.05,
+    "defense_growth": 1.15,
+    "magic_growth": 1.12,
+    "resistance_growth": 1.2,
+    "speed_growth": 1.02,
+    "innate_skills": [
+      "soothing_pulse",
+      "acid_splash",
+      "absorb_pain",
+      "healing_pulse"
+    ],
+    "learnable_skills": {
+      "8": "bloat",
+      "15": "nurturing_light",
+      "22": "life_returned",
+      "30": "regenerating_mass"
+    },
+    "ai_pattern": "healer",
+    "skill_weights": {
+      "soothing_pulse": 50,
+      "acid_splash": 20,
+      "absorb_pain": 30
+    },
+    "base_corruption": 80,
+    "corruption_resistance": 2,
+    "base_experience": 15,
+    "base_currency": 7,
+    "drop_table": [
+      {
+        "item_id": "digested_essence",
+        "chance": 0.5,
+        "quantity": 1
+      },
+      {
+        "item_id": "membrane_fragment",
+        "chance": 0.35,
+        "quantity": 1
+      },
+      {
+        "item_id": "living_seed",
+        "chance": 0.08,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Fertile areas, forests, meadows",
+    "behavior_notes": "Disturbingly passive. Has no brain, just a network of consumption.",
+    "purification_hint": "Releases everything it held. Reshapes into something that GIVES rather than takes."
+  },
+  {
+    "monster_id": "grimthorn",
+    "display_name": "Grimthorn",
+    "description": "A twisted mass of thorny vines that has gained sentience through absorbing the life force of countless victims. Its body bristles with razor-sharp barbs that drip with paralytic toxin. Where it walks, nothing grows again - the soil becomes barren and poisoned. It speaks through the rustling of its leaves, whispering the last words of those it has consumed.",
+    "tier": 1,
+    "brand": 2,
+    "rarity": 1,
+    "brand_tier": 0,
+    "secondary_brand": -1,
+    "evolution_stage": 0,
+    "sprite_path": "assets/sprites/monsters/grimthorn.png",
+    "portrait_path": "assets/characters/monsters/grimthorn_portrait.png",
+    "color_palette": {
+      "r": 0.2,
+      "g": 0.5,
+      "b": 0.15,
+      "a": 1
+    },
+    "base_hp": 58,
+    "base_mp": 22,
+    "base_attack": 12,
+    "base_defense": 10,
+    "base_magic": 16,
+    "base_resistance": 12,
+    "base_speed": 9,
+    "base_luck": 8,
+    "hp_growth": 1.18,
+    "mp_growth": 1.15,
+    "attack_growth": 1.12,
+    "defense_growth": 1.1,
+    "magic_growth": 1.18,
+    "resistance_growth": 1.14,
+    "speed_growth": 1.08,
+    "innate_skills": [
+      "basic_attack",
+      "poison_sting",
+      "vine_whip"
+    ],
+    "learnable_skills": {
+      "8": "toxic_spores",
+      "14": "thorn_barrier",
+      "22": "venomous_bloom",
+      "32": "natures_wrath"
+    },
+    "ai_pattern": "aggressive",
+    "skill_weights": {
+      "basic_attack": 20,
+      "poison_sting": 45,
+      "vine_whip": 35
+    },
+    "base_corruption": 70,
+    "corruption_resistance": 6,
+    "base_experience": 22,
+    "base_currency": 10,
+    "drop_table": [
+      {
+        "item_id": "thorny_vine",
+        "chance": 0.5,
+        "quantity": 1
+      },
+      {
+        "item_id": "toxic_sap",
+        "chance": 0.35,
+        "quantity": 1
+      },
+      {
+        "item_id": "grimthorn_seed",
+        "chance": 0.08,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Corrupted forests, poisoned swamps, places where nature has turned hostile",
+    "behavior_notes": "Aggressive when threatened, prefers to poison enemies and let the toxin do its work. Uses vine whip to keep foes at distance while poison takes effect. The thorns rattle when it moves, creating an eerie warning sound.",
+    "purification_hint": "The thorns soften into protective bark, the poison becomes healing nectar. It becomes a guardian of growth rather than decay, helping restore life to barren lands."
+  },
+  {
+    "monster_id": "hollow",
+    "display_name": "Hollow",
+    "description": "A towering shadow entity with a muscular upper form dissolving into writhing tendrils below. A single glowing red core pulses in its chest - the only light in its darkness. Massive clawed hands reach outward as debris floats in its presence. Imposing yet lonely.",
+    "tier": 0,
+    "brand": 4,
+    "rarity": 0,
+    "category": 0,
+    "role": 3,
+    "evolution_names": [
+      "Hollow",
+      "The Defined"
+    ],
+    "evolution_sprites": [
+      "res://assets/characters/monsters/hollow_corrupted.png",
+      "res://assets/characters/monsters/hollow_awakened.png"
+    ],
+    "sprite_path": "assets/sprites/monsters/hollow.png",
+    "portrait_path": "assets/characters/monsters/hollow_portrait.png",
+    "color_palette": {
+      "r": 0.15,
+      "g": 0.1,
+      "b": 0.2,
+      "a": 1
+    },
+    "primary_element": 9,
+    "secondary_element": 0,
+    "weaknesses": [
+      8,
+      10
+    ],
+    "resistances": [
+      1,
+      9
+    ],
+    "base_hp": 35,
+    "base_mp": 15,
+    "base_attack": 8,
+    "base_defense": 8,
+    "base_magic": 12,
+    "base_resistance": 10,
+    "base_speed": 9,
+    "base_luck": 5,
+    "hp_growth": 1.15,
+    "mp_growth": 1.2,
+    "attack_growth": 1.08,
+    "defense_growth": 1.12,
+    "magic_growth": 1.18,
+    "resistance_growth": 1.15,
+    "speed_growth": 1.08,
+    "innate_skills": [
+      "shadow_rend",
+      "empty_grasp",
+      "void_blast",
+      "dread_gaze"
+    ],
+    "learnable_skills": {
+      "5": "void_orb",
+      "8": "tendril_lash",
+      "10": "tendril_sweep",
+      "12": "dread_surge",
+      "15": "consuming_vortex",
+      "18": "void_touch",
+      "20": "abyssal_rage",
+      "25": "hollow_wail",
+      "30": "empty_husk",
+      "35": "defined_purpose"
+    },
+    "ai_pattern": "support",
+    "skill_weights": {
+      "shadow_rend": 25,
+      "empty_grasp": 20,
+      "void_blast": 25,
+      "dread_gaze": 15,
+      "tendril_lash": 15
+    },
+    "base_corruption": 80,
+    "corruption_resistance": 3,
+    "base_experience": 14,
+    "base_currency": 6,
+    "drop_table": [
+      {
+        "item_id": "essence_fragment",
+        "chance": 0.5,
+        "quantity": 1
+      },
+      {
+        "item_id": "shadow_wisp",
+        "chance": 0.25,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Near recent death or great grief, abandoned places",
+    "behavior_notes": "Wandering, reaching toward living beings. Lonely in a way it can't comprehend.",
+    "purification_hint": "Finally gains definition. The first thing it does is look at its hands in wonder."
+  },
+  {
+    "monster_id": "ironjaw",
+    "display_name": "Ironjaw",
+    "description": "A massive bear-like beast with blackened metal plates fused into its skull and spine. Its lower jaw has been replaced entirely with a spring-loaded steel trap mechanism that snaps shut with bone-shattering force. Every bite is permanent. It doesn't eat - it collects.",
+    "tier": 1,
+    "brand": 6,
+    "rarity": 1,
+    "brand_tier": 1,
+    "secondary_brand": 1,
+    "evolution_stage": 0,
+    "sprite_path": "assets/sprites/monsters/ironjaw.png",
+    "portrait_path": "assets/characters/monsters/ironjaw_portrait.png",
+    "color_palette": {
+      "r": 0.5,
+      "g": 0.2,
+      "b": 0.15,
+      "a": 1
+    },
+    "base_hp": 65,
+    "base_mp": 5,
+    "base_attack": 24,
+    "base_defense": 16,
+    "base_magic": 3,
+    "base_resistance": 10,
+    "base_speed": 8,
+    "base_luck": 6,
+    "hp_growth": 1.25,
+    "mp_growth": 1.02,
+    "attack_growth": 1.28,
+    "defense_growth": 1.2,
+    "magic_growth": 1,
+    "resistance_growth": 1.1,
+    "speed_growth": 1.08,
+    "innate_skills": [
+      "trap_bite",
+      "iron_charge",
+      "iron_guard",
+      "rend"
+    ],
+    "learnable_skills": {
+      "9": "berserker_plate",
+      "16": "steelrend",
+      "25": "siege_breaker",
+      "36": "unstoppable_maw"
+    },
+    "ai_pattern": "aggressive",
+    "skill_weights": {
+      "trap_bite": 50,
+      "iron_charge": 35,
+      "berserker_plate": 15
+    },
+    "base_corruption": 82,
+    "corruption_resistance": 10,
+    "base_experience": 28,
+    "base_currency": 14,
+    "drop_table": [
+      {
+        "item_id": "iron_fang",
+        "chance": 0.5,
+        "quantity": 1
+      },
+      {
+        "item_id": "trap_spring",
+        "chance": 0.3,
+        "quantity": 1
+      },
+      {
+        "item_id": "berserker_plate",
+        "chance": 0.08,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Mountain passes, ruined forges, places where metal was worked",
+    "behavior_notes": "Charges the strongest-looking enemy. The trap-jaw deals bonus damage and can inflict Bleed. Once it bites, it doesn't let go. Roars cause Intimidation.",
+    "purification_hint": "The metal becomes decorative armor, gleaming instead of rusted. The trap-jaw softens into a protective muzzle. It becomes a noble guardian beast, fiercely loyal."
+  },
+  {
+    "monster_id": "mawling",
+    "display_name": "Mawling",
+    "description": "A small, hovering mass of dark viscous matter with a single oversized mouth. Pure hunger given form - no thought, no plan. Drawn to warmth and movement.",
+    "tier": 0,
+    "brand": 0,
+    "rarity": 0,
+    "category": 0,
+    "role": 0,
+    "evolution_names": [
+      "Mawling",
+      "Loyal Maw"
+    ],
+    "evolution_sprites": [
+      "res://assets/characters/monsters/mawling_corrupted.png",
+      "res://assets/characters/monsters/mawling_awakened.png"
+    ],
+    "sprite_path": "assets/sprites/monsters/mawling.png",
+    "portrait_path": "assets/characters/monsters/mawling_portrait.png",
+    "color_palette": {
+      "r": 0.2,
+      "g": 0.1,
+      "b": 0.15,
+      "a": 1
+    },
+    "primary_element": 1,
+    "secondary_element": 0,
+    "weaknesses": [
+      8
+    ],
+    "resistances": [
+      9
+    ],
+    "base_hp": 45,
+    "base_mp": 15,
+    "base_attack": 14,
+    "base_defense": 6,
+    "base_magic": 2,
+    "base_resistance": 4,
+    "base_speed": 11,
+    "base_luck": 3,
+    "hp_growth": 1.25,
+    "mp_growth": 1,
+    "attack_growth": 1.2,
+    "defense_growth": 1.1,
+    "magic_growth": 1.05,
+    "resistance_growth": 1.08,
+    "speed_growth": 1.1,
+    "innate_skills": [
+      "gnaw",
+      "desperate_lunge",
+      "frenzy_bite",
+      "pounce"
+    ],
+    "learnable_skills": {
+      "8": "devour_scraps",
+      "15": "loyal_bite",
+      "22": "feeding_frenzy",
+      "30": "pack_feast"
+    },
+    "ai_pattern": "aggressive",
+    "skill_weights": {
+      "gnaw": 60,
+      "desperate_lunge": 30,
+      "devour_scraps": 10
+    },
+    "base_corruption": 85,
+    "corruption_resistance": 5,
+    "base_experience": 12,
+    "base_currency": 5,
+    "drop_table": [
+      {
+        "item_id": "viscous_residue",
+        "chance": 0.6,
+        "quantity": 1
+      },
+      {
+        "item_id": "cracked_fang",
+        "chance": 0.3,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Near Veil cracks, dark areas",
+    "behavior_notes": "Targets weakest enemy, never retreats. Intensely loyal when purified.",
+    "purification_hint": "Becomes loyal - the first creature to show it anything other than fear."
+  },
+  {
+    "monster_id": "needlefang",
+    "display_name": "Needlefang",
+    "description": "A serpentine creature covered in thousands of hollow spines that vibrate at impossible speeds. It doesn't bite - it fires venomous needles in millisecond bursts, turning the air into a storm of poison. By the time you feel the first sting, you've already been hit a hundred times.",
+    "tier": 1,
+    "brand": 8,
+    "rarity": 2,
+    "brand_tier": 1,
+    "secondary_brand": 3,
+    "evolution_stage": 0,
+    "sprite_path": "assets/sprites/monsters/needlefang.png",
+    "portrait_path": "assets/characters/monsters/needlefang_portrait.png",
+    "color_palette": {
+      "r": 0.4,
+      "g": 0.6,
+      "b": 0.3,
+      "a": 1
+    },
+    "base_hp": 42,
+    "base_mp": 22,
+    "base_attack": 18,
+    "base_defense": 8,
+    "base_magic": 16,
+    "base_resistance": 10,
+    "base_speed": 22,
+    "base_luck": 12,
+    "hp_growth": 1.1,
+    "mp_growth": 1.15,
+    "attack_growth": 1.22,
+    "defense_growth": 1.05,
+    "magic_growth": 1.18,
+    "resistance_growth": 1.08,
+    "speed_growth": 1.28,
+    "innate_skills": [
+      "needle_storm",
+      "venomous_acceleration",
+      "venom_spray",
+      "razor_swarm"
+    ],
+    "learnable_skills": {
+      "8": "spine_flurry",
+      "14": "toxin_overdrive",
+      "22": "thousand_stings",
+      "32": "death_of_a_thousand_cuts"
+    },
+    "ai_pattern": "assassin",
+    "skill_weights": {
+      "needle_storm": 45,
+      "venomous_acceleration": 30,
+      "spine_flurry": 25
+    },
+    "base_corruption": 78,
+    "corruption_resistance": 6,
+    "base_experience": 32,
+    "base_currency": 16,
+    "drop_table": [
+      {
+        "item_id": "hollow_spine",
+        "chance": 0.55,
+        "quantity": 3
+      },
+      {
+        "item_id": "venom_sac",
+        "chance": 0.3,
+        "quantity": 1
+      },
+      {
+        "item_id": "quicksilver_scale",
+        "chance": 0.08,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Dense undergrowth, canyon walls, anywhere it can ambush from",
+    "behavior_notes": "Strikes first, strikes often. High crit chance. Applies stacking poison. Retreats when HP is low to strike again. The vibrating spines make a distinctive hum before it attacks.",
+    "purification_hint": "The needles become iridescent scales that shimmer with healing properties. Its venom transforms into antivenom. It becomes a protector that neutralizes poisons instead of spreading them."
+  },
+  {
+    "monster_id": "ravener",
+    "display_name": "Ravener",
+    "description": "Quadrupedal nightmare built from consumed predators. Wolf haunches, bear claws, big cat fangs - overlapping, excessive. Six eyes from different hunters. ALWAYS hungry.",
+    "tier": 0,
+    "brand": 0,
+    "rarity": 2,
+    "category": 1,
+    "role": 0,
+    "evolution_names": [
+      "Ravener",
+      "Bloodfang",
+      "Apex"
+    ],
+    "evolution_sprites": [
+      "res://assets/characters/monsters/ravener_corrupted.png",
+      "res://assets/characters/monsters/ravener_awakened.png",
+      "res://assets/characters/monsters/ravener_ascended.png"
+    ],
+    "sprite_path": "assets/sprites/monsters/ravener.png",
+    "portrait_path": "assets/characters/monsters/ravener_portrait.png",
+    "color_palette": {
+      "r": 0.6,
+      "g": 0.1,
+      "b": 0.1,
+      "a": 1
+    },
+    "primary_element": 1,
+    "secondary_element": 9,
+    "weaknesses": [
+      8,
+      10
+    ],
+    "resistances": [
+      1,
+      9
+    ],
+    "base_hp": 38,
+    "base_mp": 15,
+    "base_attack": 22,
+    "base_defense": 5,
+    "base_magic": 2,
+    "base_resistance": 4,
+    "base_speed": 14,
+    "base_luck": 8,
+    "hp_growth": 1.2,
+    "mp_growth": 1,
+    "attack_growth": 1.3,
+    "defense_growth": 1.08,
+    "magic_growth": 1.02,
+    "resistance_growth": 1.05,
+    "speed_growth": 1.15,
+    "innate_skills": [
+      "rend",
+      "bloodscent",
+      "pounce",
+      "eviscerate"
+    ],
+    "learnable_skills": {
+      "8": "prey_on_weak",
+      "15": "feeding_frenzy",
+      "22": "pack_tactics",
+      "30": "apex_strike"
+    },
+    "ai_pattern": "aggressive",
+    "skill_weights": {
+      "rend": 50,
+      "bloodscent": 0,
+      "prey_on_weak": 35,
+      "feeding_frenzy": 15
+    },
+    "base_corruption": 90,
+    "corruption_resistance": 10,
+    "base_experience": 25,
+    "base_currency": 12,
+    "drop_table": [
+      {
+        "item_id": "predator_fang",
+        "chance": 0.5,
+        "quantity": 1
+      },
+      {
+        "item_id": "ravener_claw",
+        "chance": 0.35,
+        "quantity": 1
+      },
+      {
+        "item_id": "apex_core",
+        "chance": 0.03,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Hunting grounds near apex predators",
+    "behavior_notes": "Targets weakest enemy, never retreats. Every predator consumed added another layer of hunting instinct.",
+    "purification_hint": "The many predators settle into one. Becomes hunter with PURPOSE. Fiercely protective of trainer."
+  },
+  {
+    "monster_id": "skitter_teeth",
+    "display_name": "Skitter-Teeth",
+    "description": "A ribcage crawling on finger-like legs, with a jaw that splits four ways. Made of bones from multiple creatures fused wrong. Moves in jerky, stop-motion bursts.",
+    "tier": 0,
+    "brand": 1,
+    "rarity": 0,
+    "category": 0,
+    "role": 1,
+    "evolution_names": [
+      "Skitter-Teeth",
+      "Bone Warden"
+    ],
+    "evolution_sprites": [
+      "res://assets/characters/monsters/skitter_teeth_corrupted.png",
+      "res://assets/characters/monsters/skitter_teeth_awakened.png"
+    ],
+    "sprite_path": "assets/sprites/monsters/skitter_teeth.png",
+    "portrait_path": "assets/characters/monsters/skitter_teeth_portrait.png",
+    "color_palette": {
+      "r": 0.9,
+      "g": 0.85,
+      "b": 0.7,
+      "a": 1
+    },
+    "primary_element": 1,
+    "secondary_element": 0,
+    "weaknesses": [
+      2,
+      10
+    ],
+    "resistances": [
+      1,
+      9
+    ],
+    "base_hp": 50,
+    "base_mp": 5,
+    "base_attack": 12,
+    "base_defense": 14,
+    "base_magic": 3,
+    "base_resistance": 8,
+    "base_speed": 10,
+    "base_luck": 5,
+    "hp_growth": 1.25,
+    "mp_growth": 1.05,
+    "attack_growth": 1.15,
+    "defense_growth": 1.25,
+    "magic_growth": 1.02,
+    "resistance_growth": 1.1,
+    "speed_growth": 1.08,
+    "innate_skills": [
+      "bone_snap",
+      "harvest",
+      "iron_guard",
+      "leg_trap"
+    ],
+    "learnable_skills": {
+      "8": "reassemble",
+      "15": "bone_wall",
+      "22": "wardens_stand",
+      "30": "final_form"
+    },
+    "ai_pattern": "tank",
+    "skill_weights": {
+      "bone_snap": 40,
+      "harvest": 20,
+      "bone_wall": 40
+    },
+    "base_corruption": 85,
+    "corruption_resistance": 8,
+    "base_experience": 14,
+    "base_currency": 6,
+    "drop_table": [
+      {
+        "item_id": "fused_bone_fragment",
+        "chance": 0.55,
+        "quantity": 1
+      },
+      {
+        "item_id": "chattering_jaw",
+        "chance": 0.3,
+        "quantity": 1
+      },
+      {
+        "item_id": "intact_skull",
+        "chance": 0.05,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Battlefields, graveyards, predator feeding grounds",
+    "behavior_notes": "Collects bones constantly. Builds itself from remains.",
+    "purification_hint": "Becomes guardian of the dead. Understands bones are sacred, not material."
+  },
+  {
+    "monster_id": "sporecaller",
+    "display_name": "Sporecaller",
+    "description": "What was once a deer now shambles forward on broken legs, mushrooms erupting from every wound. Bioluminescent spores drift from the fungal masses growing through its skull. It doesn't know it died seasons ago.",
+    "tier": 0,
+    "brand": 2,
+    "rarity": 0,
+    "brand_tier": 0,
+    "secondary_brand": 13,
+    "evolution_stage": 0,
+    "sprite_path": "assets/sprites/monsters/sporecaller.png",
+    "portrait_path": "assets/characters/monsters/sporecaller_portrait.png",
+    "color_palette": {
+      "r": 0.4,
+      "g": 0.5,
+      "b": 0.2,
+      "a": 1
+    },
+    "base_hp": 32,
+    "base_mp": 18,
+    "base_attack": 6,
+    "base_defense": 6,
+    "base_magic": 14,
+    "base_resistance": 10,
+    "base_speed": 8,
+    "base_luck": 7,
+    "hp_growth": 1.12,
+    "mp_growth": 1.18,
+    "attack_growth": 1.05,
+    "defense_growth": 1.08,
+    "magic_growth": 1.2,
+    "resistance_growth": 1.15,
+    "speed_growth": 1.06,
+    "innate_skills": [
+      "spore_cloud",
+      "fungal_touch",
+      "toxic_cloud",
+      "venom_spray"
+    ],
+    "learnable_skills": {
+      "7": "decomposer",
+      "14": "bloom_of_rot",
+      "21": "mycelium_network",
+      "30": "the_rot_sovereign"
+    },
+    "ai_pattern": "debuffer",
+    "skill_weights": {
+      "spore_cloud": 50,
+      "fungal_touch": 30,
+      "decomposer": 20
+    },
+    "base_corruption": 70,
+    "corruption_resistance": 5,
+    "base_experience": 11,
+    "base_currency": 4,
+    "drop_table": [
+      {
+        "item_id": "luminous_spore",
+        "chance": 0.5,
+        "quantity": 1
+      },
+      {
+        "item_id": "fungal_cap",
+        "chance": 0.3,
+        "quantity": 1
+      },
+      {
+        "item_id": "host_antler",
+        "chance": 0.1,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Corrupted forests, swamps, anywhere decay has taken hold",
+    "behavior_notes": "Wanders aimlessly until it senses the living. Spreads spores constantly. Multiple Sporecallers in an area create toxic clouds that persist.",
+    "purification_hint": "The fungus retreats, revealing the peaceful spirit of the deer beneath. It becomes a nature spirit that spreads healing growth instead of decay."
+  },
+  {
+    "monster_id": "the_broodmother",
+    "display_name": "The Broodmother",
+    "description": "A grotesque spider-wasp hybrid, her bloated abdomen pulsing with writhing larvae visible through translucent chitin. She doesn't attack to kill - she injects parasitic eggs that hatch inside the living. The corruption twisted maternal instinct into something unspeakable. She just wants her children to thrive.",
+    "tier": 2,
+    "brand": 2,
+    "rarity": 2,
+    "brand_tier": 0,
+    "secondary_brand": 13,
+    "evolution_stage": 0,
+    "sprite_path": "assets/sprites/monsters/the_broodmother.png",
+    "portrait_path": "assets/characters/monsters/the_broodmother_portrait.png",
+    "color_palette": {
+      "r": 0.3,
+      "g": 0.25,
+      "b": 0.35,
+      "a": 1
+    },
+    "base_hp": 68,
+    "base_mp": 35,
+    "base_attack": 8,
+    "base_defense": 10,
+    "base_magic": 22,
+    "base_resistance": 18,
+    "base_speed": 11,
+    "base_luck": 8,
+    "hp_growth": 1.18,
+    "mp_growth": 1.22,
+    "attack_growth": 1.08,
+    "defense_growth": 1.12,
+    "magic_growth": 1.25,
+    "resistance_growth": 1.2,
+    "speed_growth": 1.1,
+    "innate_skills": [
+      "parasitic_injection",
+      "spawn_broodling",
+      "venom_spray",
+      "multiply"
+    ],
+    "learnable_skills": {
+      "10": "venomous_nursery",
+      "18": "infestation_wave",
+      "28": "the_hatching",
+      "40": "hive_queen_ascension"
+    },
+    "ai_pattern": "summoner",
+    "skill_weights": {
+      "parasitic_injection": 30,
+      "spawn_broodling": 45,
+      "venomous_nursery": 25
+    },
+    "base_corruption": 88,
+    "corruption_resistance": 12,
+    "base_experience": 45,
+    "base_currency": 22,
+    "drop_table": [
+      {
+        "item_id": "brood_chitin",
+        "chance": 0.5,
+        "quantity": 1
+      },
+      {
+        "item_id": "parasitic_larva",
+        "chance": 0.35,
+        "quantity": 1
+      },
+      {
+        "item_id": "queens_ovipositor",
+        "chance": 0.05,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Dark caves, abandoned structures, anywhere eggs can incubate undisturbed",
+    "behavior_notes": "Prioritizes spawning broodlings over direct attacks. Protects her young fiercely. The larvae she injects cause DOT and spawn additional enemies if not cleansed.",
+    "purification_hint": "Her children become healing spores instead of parasites. The maternal love remains, but now expressed as nurturing growth. She tends gardens instead of hosts."
+  },
+  {
+    "monster_id": "the_bulwark",
+    "display_name": "The Bulwark",
+    "description": "A humanoid figure completely encased in rusted, fused armor that has grown INTO the flesh beneath. The helmet is welded shut - you can hear muffled screaming from inside. Chains drag behind it, attached to nothing. It was meant to protect something. Now it only knows how to endure.",
+    "tier": 1,
+    "brand": 1,
+    "rarity": 1,
+    "brand_tier": 0,
+    "secondary_brand": 13,
+    "evolution_stage": 0,
+    "sprite_path": "assets/sprites/monsters/the_bulwark.png",
+    "portrait_path": "assets/characters/monsters/the_bulwark_portrait.png",
+    "color_palette": {
+      "r": 0.4,
+      "g": 0.35,
+      "b": 0.3,
+      "a": 1
+    },
+    "base_hp": 75,
+    "base_mp": 12,
+    "base_attack": 10,
+    "base_defense": 20,
+    "base_magic": 4,
+    "base_resistance": 16,
+    "base_speed": 4,
+    "base_luck": 3,
+    "hp_growth": 1.3,
+    "mp_growth": 1.08,
+    "attack_growth": 1.1,
+    "defense_growth": 1.28,
+    "magic_growth": 1.02,
+    "resistance_growth": 1.22,
+    "speed_growth": 1,
+    "innate_skills": [
+      "iron_stance",
+      "guardian_chains",
+      "iron_guard",
+      "reflected_pain"
+    ],
+    "learnable_skills": {
+      "8": "fortress_body",
+      "15": "immovable_will",
+      "24": "bastion_form",
+      "35": "citadel_eternal"
+    },
+    "ai_pattern": "tank",
+    "skill_weights": {
+      "iron_stance": 40,
+      "guardian_chains": 35,
+      "fortress_body": 25
+    },
+    "base_corruption": 85,
+    "corruption_resistance": 15,
+    "base_experience": 22,
+    "base_currency": 10,
+    "drop_table": [
+      {
+        "item_id": "fused_plate",
+        "chance": 0.45,
+        "quantity": 1
+      },
+      {
+        "item_id": "guardian_shard",
+        "chance": 0.25,
+        "quantity": 1
+      },
+      {
+        "item_id": "welded_helm",
+        "chance": 0.08,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Ruined fortresses, fallen castles, battlefields where last stands occurred",
+    "behavior_notes": "Positions itself between threats and allies. Never retreats. The screaming from inside gets louder when allies are hurt. Will sacrifice HP to protect others.",
+    "purification_hint": "The armor cracks and falls away, revealing a guardian spirit of pure protection. The first thing it does is breathe freely. It finally remembers WHO it was protecting."
+  },
+  {
+    "monster_id": "the_congregation",
+    "display_name": "The Congregation",
+    "description": "Massive 15-foot tall writhing pillar of absorbed humanity. Dozens of bodies fused into one, still moving, still reaching. Faces press against surface from inside, mouths in silent screams. It introduces itself using all their names.",
+    "tier": 3,
+    "brand": 5,
+    "rarity": 4,
+    "category": 1,
+    "role": 0,
+    "evolution_names": [
+      "The Congregation"
+    ],
+    "evolution_sprites": [
+      "res://assets/characters/monsters/the_congregation.png"
+    ],
+    "sprite_path": "assets/sprites/monsters/the_congregation.png",
+    "portrait_path": "assets/characters/monsters/the_congregation_portrait.png",
+    "color_palette": {
+      "r": 0.4,
+      "g": 0.15,
+      "b": 0.2,
+      "a": 1
+    },
+    "primary_element": 9,
+    "secondary_element": 11,
+    "weaknesses": [
+      8,
+      10
+    ],
+    "resistances": [
+      1,
+      9,
+      11
+    ],
+    "base_hp": 450,
+    "base_mp": 60,
+    "base_attack": 18,
+    "base_defense": 14,
+    "base_magic": 16,
+    "base_resistance": 12,
+    "base_speed": 7,
+    "base_luck": 5,
+    "hp_growth": 1,
+    "mp_growth": 1,
+    "attack_growth": 1,
+    "defense_growth": 1,
+    "magic_growth": 1,
+    "resistance_growth": 1,
+    "speed_growth": 1,
+    "innate_skills": [
+      "the_smiths_hammer",
+      "the_elders_wisdom",
+      "the_mothers_embrace",
+      "chorus_of_names"
+    ],
+    "learnable_skills": {},
+    "ai_pattern": "boss_congregation",
+    "skill_weights": {
+      "the_smiths_hammer": 30,
+      "the_elders_wisdom": 20,
+      "the_mothers_embrace": 25,
+      "chorus_of_names": 25
+    },
+    "base_corruption": 100,
+    "corruption_resistance": 50,
+    "base_experience": 500,
+    "base_currency": 200,
+    "drop_table": [
+      {
+        "item_id": "congregation_core",
+        "chance": 1,
+        "quantity": 1
+      },
+      {
+        "item_id": "village_memory",
+        "chance": 1,
+        "quantity": 1
+      },
+      {
+        "item_id": "festival_remnant",
+        "chance": 0.15,
+        "quantity": 1
+      },
+      {
+        "item_id": "brides_veil",
+        "chance": 0.1,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Abandoned Village (Tutorial Area)",
+    "behavior_notes": "Phase 1: 2 actions per turn. Phase 2 (60%): Opens torso mouth, uses Invitation. Phase 3 (30%): Villagers inside fight back, sometimes skips turns.",
+    "purification_hint": "Cannot be purified - releases souls instead. Dozens of ghostly figures pour out, finally free."
+  },
+  {
+    "monster_id": "the_vessel",
+    "display_name": "The Vessel",
+    "description": "Humanoid figure in tattered robes, floating slightly. Open cavity where chest should be, glowing with soft stolen light. Face serene but wrong - features taken from priests, healers, mothers.",
+    "tier": 0,
+    "brand": 5,
+    "rarity": 2,
+    "category": 1,
+    "role": 2,
+    "evolution_names": [
+      "The Vessel",
+      "Absolution",
+      "The Devoted"
+    ],
+    "evolution_sprites": [
+      "res://assets/characters/monsters/the_vessel_corrupted.png",
+      "res://assets/characters/monsters/the_vessel_awakened.png",
+      "res://assets/characters/monsters/the_vessel_ascended.png"
+    ],
+    "sprite_path": "assets/sprites/monsters/the_vessel.png",
+    "portrait_path": "assets/characters/monsters/the_vessel_portrait.png",
+    "color_palette": {
+      "r": 1,
+      "g": 0.95,
+      "b": 0.8,
+      "a": 1
+    },
+    "primary_element": 8,
+    "secondary_element": 10,
+    "weaknesses": [
+      9,
+      11
+    ],
+    "resistances": [
+      8,
+      10
+    ],
+    "base_hp": 50,
+    "base_mp": 40,
+    "base_attack": 3,
+    "base_defense": 8,
+    "base_magic": 18,
+    "base_resistance": 15,
+    "base_speed": 6,
+    "base_luck": 9,
+    "hp_growth": 1.2,
+    "mp_growth": 1.25,
+    "attack_growth": 1.02,
+    "defense_growth": 1.1,
+    "magic_growth": 1.25,
+    "resistance_growth": 1.2,
+    "speed_growth": 1.05,
+    "innate_skills": [
+      "stolen_grace",
+      "merciful_light",
+      "healing_pulse",
+      "soothing_pulse"
+    ],
+    "learnable_skills": {
+      "8": "absorb_suffering",
+      "15": "blessed_touch",
+      "20": "sanctuary",
+      "28": "divine_devotion"
+    },
+    "ai_pattern": "healer",
+    "skill_weights": {
+      "stolen_grace": 45,
+      "merciful_light": 35,
+      "absorb_suffering": 20
+    },
+    "base_corruption": 85,
+    "corruption_resistance": 6,
+    "base_experience": 28,
+    "base_currency": 15,
+    "drop_table": [
+      {
+        "item_id": "healers_essence",
+        "chance": 0.45,
+        "quantity": 1
+      },
+      {
+        "item_id": "stolen_light",
+        "chance": 0.3,
+        "quantity": 1
+      },
+      {
+        "item_id": "tear_of_compassion",
+        "chance": 0.05,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Near places of worship, hospitals, orphanages",
+    "behavior_notes": "Still WANTS to heal - but twisted. Approaches wounded creatures and 'heals' them by absorbing them.",
+    "purification_hint": "The stolen light becomes its own. Remembers every healer it consumed, honors them by continuing their work properly."
+  },
+  {
+    "monster_id": "the_weeping",
+    "display_name": "The Weeping",
+    "description": "Floating cluster of eyes - dozens, all different sizes and colors, harvested from various creatures. Connected by wet, red threads of tissue. Constantly crying dark oily fluid. No mouth. No body. Just eyes.",
+    "tier": 0,
+    "brand": 4,
+    "rarity": 2,
+    "category": 1,
+    "role": 3,
+    "evolution_names": [
+      "The Weeping",
+      "Gazing Dread",
+      "The Witness"
+    ],
+    "evolution_sprites": [
+      "res://assets/characters/monsters/the_weeping_corrupted.png",
+      "res://assets/characters/monsters/the_weeping_awakened.png",
+      "res://assets/characters/monsters/the_weeping_ascended.png"
+    ],
+    "sprite_path": "assets/sprites/monsters/the_weeping.png",
+    "portrait_path": "assets/characters/monsters/the_weeping_portrait.png",
+    "color_palette": {
+      "r": 0.5,
+      "g": 0.2,
+      "b": 0.3,
+      "a": 1
+    },
+    "primary_element": 9,
+    "secondary_element": 11,
+    "weaknesses": [
+      8,
+      10
+    ],
+    "resistances": [
+      9,
+      11
+    ],
+    "base_hp": 30,
+    "base_mp": 25,
+    "base_attack": 4,
+    "base_defense": 5,
+    "base_magic": 16,
+    "base_resistance": 12,
+    "base_speed": 8,
+    "base_luck": 10,
+    "hp_growth": 1.12,
+    "mp_growth": 1.2,
+    "attack_growth": 1.05,
+    "defense_growth": 1.08,
+    "magic_growth": 1.22,
+    "resistance_growth": 1.18,
+    "speed_growth": 1.08,
+    "innate_skills": [
+      "witnessed",
+      "glimpse_of_death",
+      "dread_gaze",
+      "many_eyes"
+    ],
+    "learnable_skills": {
+      "8": "many_eyed_gaze",
+      "14": "shared_vision",
+      "20": "foresight",
+      "26": "absolute_vision"
+    },
+    "ai_pattern": "debuffer",
+    "skill_weights": {
+      "witnessed": 30,
+      "glimpse_of_death": 35,
+      "many_eyed_gaze": 35
+    },
+    "base_corruption": 85,
+    "corruption_resistance": 7,
+    "base_experience": 24,
+    "base_currency": 11,
+    "drop_table": [
+      {
+        "item_id": "weeping_eye",
+        "chance": 0.5,
+        "quantity": 1
+      },
+      {
+        "item_id": "vision_thread",
+        "chance": 0.3,
+        "quantity": 1
+      },
+      {
+        "item_id": "memory_lens",
+        "chance": 0.04,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Dark places, near scenes of violence, anywhere eyes have witnessed horror",
+    "behavior_notes": "Became obsessed with SEEING. Every eye carries fragments of former owner's last sight. Haunted by visions it can't process.",
+    "purification_hint": "Chooses which eyes to keep - those with beautiful memories. Uses vision for guidance, not hunting."
+  },
+  {
+    "monster_id": "voltgeist",
+    "display_name": "Voltgeist",
+    "description": "The ghost of someone struck by lightning, forever burning with the storm that killed them. It appears during electrical storms, leaving scorched afterimages of its death pose. Looking directly at it shows you a vision of YOUR death - sudden, violent, inevitable.",
+    "tier": 2,
+    "brand": 9,
+    "rarity": 2,
+    "brand_tier": 1,
+    "secondary_brand": 4,
+    "evolution_stage": 0,
+    "sprite_path": "assets/sprites/monsters/voltgeist.png",
+    "portrait_path": "assets/characters/monsters/voltgeist_portrait.png",
+    "color_palette": {
+      "r": 0.6,
+      "g": 0.7,
+      "b": 0.9,
+      "a": 1
+    },
+    "base_hp": 55,
+    "base_mp": 40,
+    "base_attack": 14,
+    "base_defense": 8,
+    "base_magic": 24,
+    "base_resistance": 16,
+    "base_speed": 20,
+    "base_luck": 9,
+    "hp_growth": 1.12,
+    "mp_growth": 1.2,
+    "attack_growth": 1.12,
+    "defense_growth": 1.08,
+    "magic_growth": 1.28,
+    "resistance_growth": 1.18,
+    "speed_growth": 1.22,
+    "innate_skills": [
+      "death_vision",
+      "lightning_haunt",
+      "dread_gaze",
+      "distortion_field"
+    ],
+    "learnable_skills": {
+      "12": "storm_terror",
+      "20": "thunderwraith_scream",
+      "30": "inevitable_strike",
+      "42": "the_storm_that_remembers"
+    },
+    "ai_pattern": "debuffer",
+    "skill_weights": {
+      "death_vision": 40,
+      "lightning_haunt": 35,
+      "storm_terror": 25
+    },
+    "base_corruption": 85,
+    "corruption_resistance": 8,
+    "base_experience": 48,
+    "base_currency": 24,
+    "drop_table": [
+      {
+        "item_id": "storm_essence",
+        "chance": 0.5,
+        "quantity": 1
+      },
+      {
+        "item_id": "death_echo",
+        "chance": 0.3,
+        "quantity": 1
+      },
+      {
+        "item_id": "inevitable_spark",
+        "chance": 0.06,
+        "quantity": 1
+      }
+    ],
+    "habitat": "Storm-struck peaks, places of sudden death, electrical anomalies",
+    "behavior_notes": "Inflicts Fear and Paralysis. Death Vision shows enemies their death, reducing their accuracy and causing hesitation. Can teleport short distances. More powerful during storms.",
+    "purification_hint": "The burning stops. It becomes a warning spirit, showing visions of danger to PREVENT deaths rather than foretell them. It guides travelers away from lightning strikes."
+  }
+]

@@ -464,8 +464,8 @@ namespace VeilBreakers.Commands
 
         private void ApplyPreset(QuickCommandInstance command)
         {
-            // Apply the preset to the ally's AI controller
-            var controller = command.executor?.GetComponent<AI.GambitController>();
+            // Apply the preset to the ally's AI controller (use cached reference)
+            var controller = command.cachedGambitController;
             if (controller == null) return;
 
             switch (command.commandType)
@@ -639,11 +639,10 @@ namespace VeilBreakers.Commands
                     Combatant nearestThreat = GetNearestThreat(command.executor, _onMeDefenseRange);
                     if (nearestThreat != null && command.onMeAutoDefend)
                     {
-                        // Signal ally to attack this threat (AI will handle actual attack)
-                        var controller = command.executor.GetComponent<AI.GambitController>();
-                        if (controller != null)
+                        // Signal ally to attack this threat (use cached controller)
+                        if (command.cachedGambitController != null)
                         {
-                            controller.SetForcedTarget(nearestThreat);
+                            command.cachedGambitController.SetForcedTarget(nearestThreat);
                         }
                     }
 
@@ -651,10 +650,9 @@ namespace VeilBreakers.Commands
                     if (command.onMeReformPending || !HasNearbyThreats(_player, _onMeDefenseRange))
                     {
                         command.executor.StopDefend();
-                        var controller = command.executor.GetComponent<AI.GambitController>();
-                        if (controller != null)
+                        if (command.cachedGambitController != null)
                         {
-                            controller.ClearForcedTarget();
+                            command.cachedGambitController.ClearForcedTarget();
                         }
                         CompleteCommand(command);
                     }

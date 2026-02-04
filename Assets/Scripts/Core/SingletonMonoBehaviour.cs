@@ -40,6 +40,10 @@ namespace VeilBreakers.Core
 
         protected virtual void Awake()
         {
+            // Reset quitting flag for Editor play mode support
+            // In builds, this is harmless since Awake only runs once
+            _isQuitting = false;
+
             if (_instance != null && _instance != this)
             {
                 Debug.LogWarning($"[{typeof(T).Name}] Duplicate instance destroyed");

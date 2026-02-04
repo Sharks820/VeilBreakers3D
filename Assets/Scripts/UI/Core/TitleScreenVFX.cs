@@ -23,62 +23,91 @@ namespace VeilBreakers.UI.Core
         [SerializeField] private UIDocument _uiDocument;
 
         [Header("Ember Settings (AAA Palette)")]
-        [SerializeField] private int _emberCount = 70;  // Gemini: 60-80
-        [SerializeField] private float _emberSpeedMin = 20f;
-        [SerializeField] private float _emberSpeedMax = 55f;
-        [SerializeField] private float _emberSizeMin = 3f;
-        [SerializeField] private float _emberSizeMax = 8f;
-        // AAA Colors: #FFF5E1 (hot core) → #FF4400 (body) → #8A0303 (outer)
-        [SerializeField] private Color _emberColorCore = new Color(1f, 0.96f, 0.88f, 1f);       // #FFF5E1
-        [SerializeField] private Color _emberColorBody = new Color(1f, 0.27f, 0f, 0.9f);        // #FF4400
-        [SerializeField] private Color _emberColorGlow = new Color(0.26f, 0f, 0f, 0.4f);        // #420000 blood red bloom
+        [SerializeField] private int _emberCount = 50;
+        [SerializeField] private float _emberSpeedMin = 12f;
+        [SerializeField] private float _emberSpeedMax = 32f;
+        [SerializeField] private float _emberSizeMin = 2f;
+        [SerializeField] private float _emberSizeMax = 6f;
+        [SerializeField] private Color _emberColorCore = new Color(1f, 0.75f, 0.35f, 1f);
+        [SerializeField] private Color _emberColorBody = new Color(1f, 0.38f, 0.08f, 0.95f);
+        [SerializeField] private Color _emberColorGlow = new Color(1f, 0.22f, 0f, 0.35f);
 
         [Header("Micro-Spark Settings (AAA)")]
-        [SerializeField] private int _microSparkCount = 120;  // Gemini: 200-300, but UI Toolkit has limits
-        [SerializeField] private float _microSparkSpeedMin = 80f;
-        [SerializeField] private float _microSparkSpeedMax = 180f;
+        [SerializeField] private int _microSparkCount = 0;
+        [SerializeField] private float _microSparkSpeedMin = 45f;
+        [SerializeField] private float _microSparkSpeedMax = 110f;
         [SerializeField] private float _microSparkSizeMin = 1f;
         [SerializeField] private float _microSparkSizeMax = 2.5f;
 
         [Header("Ash Settings (AAA Palette)")]
-        [SerializeField] private int _ashCount = 100;  // Gemini: 120-150
+        [SerializeField] private int _ashCount = 16;
         [SerializeField] private float _ashSpeedMin = 6f;
-        [SerializeField] private float _ashSpeedMax = 18f;
-        [SerializeField] private float _ashSizeMin = 4f;
-        [SerializeField] private float _ashSizeMax = 12f;
-        // AAA Colors: #363636 to #121212 (dark grey charcoal)
-        [SerializeField] private Color _ashColorLight = new Color(0.21f, 0.21f, 0.21f, 0.5f);   // #363636
-        [SerializeField] private Color _ashColorDark = new Color(0.07f, 0.07f, 0.07f, 0.4f);    // #121212
+        [SerializeField] private float _ashSpeedMax = 16f;
+        [SerializeField] private float _ashSizeMin = 3f;
+        [SerializeField] private float _ashSizeMax = 10f;
+        [SerializeField] private Color _ashColorLight = new Color(0.3f, 0.28f, 0.25f, 0.55f);
+        [SerializeField] private Color _ashColorDark = new Color(0.18f, 0.16f, 0.14f, 0.35f);
 
         [Header("Smoke Wisp Settings (AAA)")]
-        [SerializeField] private int _smokeCount = 18;  // Gemini: 15-20
-        [SerializeField] private float _smokeSpeedMin = 3f;
-        [SerializeField] private float _smokeSpeedMax = 8f;
-        [SerializeField] private float _smokeSizeMin = 80f;
-        [SerializeField] private float _smokeSizeMax = 200f;
-        // AAA: #0A0A0A near black with very low opacity
-        [SerializeField] private Color _smokeColor = new Color(0.04f, 0.03f, 0.03f, 0.12f);
+        [SerializeField] private int _smokeCount = 10;
+        [SerializeField] private float _smokeSpeedMin = 2.5f;
+        [SerializeField] private float _smokeSpeedMax = 6f;
+        [SerializeField] private float _smokeSizeMin = 120f;
+        [SerializeField] private float _smokeSizeMax = 280f;
+        [SerializeField] private Color _smokeColor = new Color(0.18f, 0.14f, 0.12f, 0.22f);
 
         [Header("Spark Burst Settings")]
-        [SerializeField] private int _sparkCount = 25;
+        [SerializeField] private int _sparkCount = 0;
         [SerializeField] private float _sparkSpeedMin = 100f;
         [SerializeField] private float _sparkSpeedMax = 200f;
 
+        [Header("Lightning (AAA)")]
+        [SerializeField] private bool _enableLightning = true;
+        [SerializeField] private float _lightningIntervalMin = 1.6f;
+        [SerializeField] private float _lightningIntervalMax = 3.8f;
+        [SerializeField] private float _lightningStrikeDurationMin = 0.35f;
+        [SerializeField] private float _lightningStrikeDurationMax = 0.65f;
+        [SerializeField, Range(0f, 1f)] private float _lightningIntensity = 0.92f;
+        [SerializeField] private Color _lightningTint = new Color(1f, 0.55f, 0.25f, 1f);
+
+        [Header("Interactions (AAA)")]
+        [SerializeField] private bool _enableClickMonsterBurst = true;
+        [SerializeField] private int _monsterBurstParticleCount = 32;
+        [SerializeField] private float _monsterBurstForceMin = 260f;
+        [SerializeField] private float _monsterBurstForceMax = 520f;
+        [SerializeField] private float _monsterBurstLifetime = 0.75f;
+
+        [SerializeField] private bool _enableEmberMouseAttraction = true;
+        [SerializeField] private float _emberAttractRadius = 520f;
+        [SerializeField] private float _emberAttractStrength = 260f;
+        [SerializeField] private float _emberAttractVerticalInfluence = 0.12f;
+
+        [Header("Logo (Reactive)")]
+        [SerializeField] private bool _enableLogoPulse = true;
+        [SerializeField] private bool _enableLogoSmoke = true;
+        [SerializeField, Range(0f, 1f)] private float _logoGlowBaseOpacity = 0.28f;
+        [SerializeField, Range(0f, 1f)] private float _logoGlowHoverOpacity = 0.46f;
+        [SerializeField, Range(0f, 1f)] private float _logoGlowClickOpacity = 0.78f;
+        [SerializeField] private float _logoPulseDuration = 0.22f;
+        [SerializeField] private Color _logoSmokeTint = new Color(0.22f, 0.18f, 0.16f, 0.30f);
+
         [Header("Atmospheric Layers")]
         [SerializeField] private bool _enableVignette = true;
-        [SerializeField] private float _vignetteOpacity = 0.75f;  // Gemini: 0.8 at corners
+        [SerializeField, Range(0f, 1f)] private float _vignetteOpacity = 0.22f;
         [SerializeField] private bool _enableAtmosphereGradient = true;
-        [SerializeField] private Color _atmosphereColor = new Color(0.1f, 0f, 0f, 0.3f);  // Dark red #1A0000
+        [SerializeField] private Color _atmosphereColor = new Color(0.12f, 0.03f, 0f, 0.12f);
+        [SerializeField] private bool _enableGrungeOverlay = true;
+        [SerializeField, Range(0f, 0.35f)] private float _grungeOpacity = 0.06f;
 
         [Header("Animation")]
         [SerializeField] private float _windStrength = 0.4f;
         [SerializeField] private float _windFrequency = 0.4f;
-        [SerializeField] private float _flickerSpeed = 10f;
+        [SerializeField] private float _flickerSpeed = 2.2f;
         [SerializeField] private float _turbulenceStrength = 0.15f;  // New: adds chaos to movement
 
         [Header("Spawn Area")]
         [SerializeField] private float _spawnMarginBottom = 0.15f;
-        [SerializeField] private float _spawnMarginSides = 0.1f;
+        [SerializeField] private float _spawnMarginSides = 0.05f;
 
         [Header("Particle Textures (Assign in Inspector)")]
         [Tooltip("Smoke texture for smoke wisps - use smoke.png or smoke 2.png")]
@@ -89,26 +118,98 @@ namespace VeilBreakers.UI.Core
         [SerializeField] private Texture2D _emberTexture;
         [Tooltip("Grunge overlay texture - use grunge crack.png")]
         [SerializeField] private Texture2D _grungeTexture;
+        [Tooltip("Lightning bolt textures (optional). If missing, auto-loads from Resources/UI/Lightning/.")]
+        [SerializeField] private Texture2D _lightningBoltTextureA;
+        [SerializeField] private Texture2D _lightningBoltTextureB;
+        [Tooltip("Logo glow texture (optional). Auto-loads Art/UI/MainMenu/logo_veilbreakers_glow when empty.")]
+        [SerializeField] private Texture2D _logoGlowTexture;
+
+        [Header("Background Override")]
+        [SerializeField] private bool _overrideBackgroundWithPortal = true;
+        [SerializeField, Range(0f, 1f)] private float _backgroundDarken = 0.22f;
+        [Tooltip("Optional. Auto-loads from Resources/Art/UI/MainMenu/mainmenu_background_portal when empty.")]
+        [SerializeField] private Texture2D _backgroundPortalTexture;
 
         // =============================================================================
         // STATE
         // =============================================================================
 
         private VisualElement _vfxContainer;
+        private VisualElement _frontVfxContainer;
         private VisualElement _atmosphereLayer;
         private VisualElement _vignetteLayer;
+        private VisualElement _lightningLayer;
+        private VisualElement _lightningFlashOverlay;
         private VisualElement _smokeLayer;
         private readonly List<EmberParticle> _embers = new();
         private readonly List<AshParticle> _ashes = new();
         private readonly List<SparkParticle> _sparks = new();
         private readonly List<MicroSparkParticle> _microSparks = new();
         private readonly List<SmokeParticle> _smokes = new();
+        private readonly List<LightningStrike> _lightningStrikes = new();
         private bool _isActive;
         private Coroutine _updateCoroutine;
         private float _windOffset;
         private float _turbulenceOffset;
         private float _screenWidth;
         private float _screenHeight;
+        private float _nextLightningAt;
+        private float _lightningFlashOpacity;
+        private Texture2D _lightningMaskedA;
+        private Texture2D _lightningMaskedB;
+        private VisualElement _host;
+        private VisualElement _monsterElement;
+        private VisualElement _logoContainer;
+        private VisualElement _logoImage;
+        private VisualElement _logoGlowElement;
+        private VisualElement _logoFxLayer;
+        private VisualElement _logoBackplate;
+        private bool _logoHover;
+        private float _logoPulseRemaining;
+        private float _logoPulseStrength;
+        private float _logoGlowCurrentOpacity;
+        private Vector2 _mousePosition;
+        private bool _hasMouse;
+        private readonly List<BurstParticle> _burstParticles = new();
+        private readonly List<TransientSmokeParticle> _transientSmokes = new();
+
+        private sealed class LightningStrike
+        {
+            public VisualElement Bolt;
+            public VisualElement Glow;
+            public float Age;
+            public float Duration;
+            public float FlickerSeed;
+            public bool Active;
+            public float BaseOpacity;
+            public Texture2D Texture;
+        }
+
+        private sealed class BurstParticle
+        {
+            public VisualElement Element;
+            public Vector2 Position;
+            public Vector2 Velocity;
+            public float Size;
+            public float Width;
+            public float Height;
+            public float Lifetime;
+            public float Age;
+            public float FlickerSeed;
+        }
+
+        private sealed class TransientSmokeParticle
+        {
+            public VisualElement Element;
+            public Vector2 Position;
+            public Vector2 Velocity;
+            public float Size;
+            public float Lifetime;
+            public float Age;
+            public float ExpansionRate;
+            public float RotationSpeed;
+        }
+
 
         // =============================================================================
         // UNITY LIFECYCLE
@@ -138,7 +239,9 @@ namespace VeilBreakers.UI.Core
             // Auto-load from Resources/VFX/ParticleTextures/ if not assigned
             if (_smokeTexture == null)
             {
-                _smokeTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/smoke");
+                _smokeTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/smoke_kenney");
+                if (_smokeTexture == null)
+                    _smokeTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/smoke");
                 if (_smokeTexture == null)
                     _smokeTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/smoke 2");
             }
@@ -146,16 +249,37 @@ namespace VeilBreakers.UI.Core
             if (_ashTexture == null)
             {
                 _ashTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/dust");
+                if (_ashTexture == null)
+                    _ashTexture = Resources.Load<Texture2D>("Art/UI/MainMenu/ash_particles");
             }
 
             if (_emberTexture == null)
             {
                 _emberTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/dirt 2");
+                if (_emberTexture == null)
+                    _emberTexture = Resources.Load<Texture2D>("Art/UI/MainMenu/ember_particles");
             }
 
             if (_grungeTexture == null)
             {
                 _grungeTexture = Resources.Load<Texture2D>("VFX/ParticleTextures/grunge crack");
+                if (_grungeTexture == null)
+                    _grungeTexture = Resources.Load<Texture2D>("Art/UI/MainMenu/vignette_overlay");
+            }
+
+            if (_lightningBoltTextureA == null)
+            {
+                _lightningBoltTextureA = Resources.Load<Texture2D>("UI/Lightning/lightning_bolt_01");
+            }
+
+            if (_lightningBoltTextureB == null)
+            {
+                _lightningBoltTextureB = Resources.Load<Texture2D>("UI/Lightning/lightning_bolt_04");
+            }
+
+            if (_logoGlowTexture == null)
+            {
+                _logoGlowTexture = Resources.Load<Texture2D>("Art/UI/MainMenu/logo_veilbreakers_glow");
             }
 
             Debug.Log($"[TitleScreenVFX] Textures loaded - Smoke: {_smokeTexture != null}, Ash: {_ashTexture != null}, Ember: {_emberTexture != null}, Grunge: {_grungeTexture != null}");
@@ -186,11 +310,176 @@ namespace VeilBreakers.UI.Core
         // INITIALIZATION
         // =============================================================================
 
+        private static void InsertBehindMonster(VisualElement host, VisualElement vfxContainer)
+        {
+            if (host == null || vfxContainer == null) return;
+
+            var background = host.Q<VisualElement>("background");
+            if (background != null && background.parent == host)
+            {
+                int index = host.IndexOf(background);
+                if (index >= 0 && index + 1 <= host.childCount)
+                {
+                    host.Insert(index + 1, vfxContainer);
+                    return;
+                }
+            }
+
+            var monster = host.Q<VisualElement>("monster-image");
+            if (monster != null && monster.parent == host)
+            {
+                int index = host.IndexOf(monster);
+                if (index >= 0)
+                {
+                    host.Insert(index, vfxContainer);
+                    return;
+                }
+            }
+
+            host.Insert(0, vfxContainer);
+        }
+
+        private static void InsertInFrontOfMonster(VisualElement host, VisualElement vfxContainer)
+        {
+            if (host == null || vfxContainer == null) return;
+
+            var monster = host.Q<VisualElement>("monster-image");
+            if (monster != null && monster.parent == host)
+            {
+                int index = host.IndexOf(monster);
+                if (index >= 0 && index + 1 <= host.childCount)
+                {
+                    host.Insert(index + 1, vfxContainer);
+                    return;
+                }
+            }
+
+            var logo = host.Q<VisualElement>("logo-container");
+            if (logo != null && logo.parent == host)
+            {
+                int index = host.IndexOf(logo);
+                if (index >= 0)
+                {
+                    host.Insert(index, vfxContainer);
+                    return;
+                }
+            }
+
+            host.Add(vfxContainer);
+        }
+
+        private void SetupInteractiveTargets(VisualElement host)
+        {
+            if (host == null) return;
+
+            host.UnregisterCallback<PointerDownEvent>(OnPointerDown);
+            host.UnregisterCallback<MouseMoveEvent>(OnMouseMove);
+            host.UnregisterCallback<MouseLeaveEvent>(OnMouseLeave);
+            host.RegisterCallback<PointerDownEvent>(OnPointerDown);
+            host.RegisterCallback<MouseMoveEvent>(OnMouseMove);
+            host.RegisterCallback<MouseLeaveEvent>(OnMouseLeave);
+
+            _monsterElement = host.Q<VisualElement>("monster-image");
+            if (_monsterElement != null)
+            {
+                _monsterElement.pickingMode = PickingMode.Position;
+            }
+
+            _logoContainer = host.Q<VisualElement>("logo-container");
+            _logoImage = host.Q<VisualElement>("logo-image");
+
+            if (_logoContainer != null)
+            {
+                _logoContainer.pickingMode = PickingMode.Position;
+
+                _logoContainer.UnregisterCallback<MouseEnterEvent>(OnLogoEnter);
+                _logoContainer.UnregisterCallback<MouseLeaveEvent>(OnLogoLeave);
+                _logoContainer.UnregisterCallback<PointerDownEvent>(OnLogoPointerDown);
+
+                _logoContainer.RegisterCallback<MouseEnterEvent>(OnLogoEnter);
+                _logoContainer.RegisterCallback<MouseLeaveEvent>(OnLogoLeave);
+                _logoContainer.RegisterCallback<PointerDownEvent>(OnLogoPointerDown);
+
+                EnsureLogoGlow();
+                EnsureLogoBackplate();
+                EnsureLogoFxLayer();
+            }
+        }
+
+        private void EnsureLogoGlow()
+        {
+            if (!_enableLogoPulse) return;
+            if (_logoContainer == null || _logoGlowTexture == null) return;
+            if (_logoGlowElement != null) return;
+
+            var glow = new VisualElement();
+            glow.name = "logo-glow";
+            glow.style.position = Position.Absolute;
+            glow.style.left = 0;
+            glow.style.top = 0;
+            glow.style.right = 0;
+            glow.style.bottom = 0;
+            glow.style.backgroundImage = new StyleBackground(_logoGlowTexture);
+            glow.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+            // Slightly warmer white for readability (less orange cast).
+            glow.style.unityBackgroundImageTintColor = new Color(1f, 0.78f, 0.58f, 1f);
+            glow.style.opacity = _logoGlowBaseOpacity;
+            glow.pickingMode = PickingMode.Ignore;
+
+            _logoContainer.Insert(0, glow);
+            _logoGlowElement = glow;
+            _logoGlowCurrentOpacity = _logoGlowBaseOpacity;
+        }
+
+        private void EnsureLogoFxLayer()
+        {
+            if (_logoContainer == null) return;
+            if (_logoFxLayer != null) return;
+
+            var fx = new VisualElement();
+            fx.name = "logo-fx-layer";
+            fx.style.position = Position.Absolute;
+            fx.style.left = 0;
+            fx.style.top = 0;
+            fx.style.right = 0;
+            fx.style.bottom = 0;
+            fx.pickingMode = PickingMode.Ignore;
+            _logoContainer.Add(fx);
+            _logoFxLayer = fx;
+        }
+
+        private void EnsureLogoBackplate()
+        {
+            if (_logoContainer == null) return;
+            if (_logoBackplate != null) return;
+
+            var plate = new VisualElement();
+            plate.name = "logo-backplate";
+            plate.style.position = Position.Absolute;
+            plate.style.left = Length.Percent(8);
+            plate.style.right = Length.Percent(8);
+            plate.style.top = 8;
+            plate.style.bottom = 36;
+            plate.style.backgroundColor = new Color(0f, 0f, 0f, 0.28f);
+            plate.style.borderTopLeftRadius = 18;
+            plate.style.borderTopRightRadius = 18;
+            plate.style.borderBottomLeftRadius = 18;
+            plate.style.borderBottomRightRadius = 18;
+            plate.style.opacity = 0.9f;
+            plate.pickingMode = PickingMode.Ignore;
+
+            // Insert at 0 so it sits behind glow/logo.
+            _logoContainer.Insert(0, plate);
+
+            _logoBackplate = plate;
+        }
+
         private void Initialize()
         {
             if (_uiDocument == null) return;
 
             var root = _uiDocument.rootVisualElement;
+            var host = root.Q<VisualElement>("menu-root") ?? root;
 
             // Create VFX container
             _vfxContainer = new VisualElement();
@@ -204,14 +493,30 @@ namespace VeilBreakers.UI.Core
             _vfxContainer.style.overflow = Overflow.Hidden;
             _vfxContainer.pickingMode = PickingMode.Ignore;
 
-            // Insert behind other elements
-            root.Insert(0, _vfxContainer);
+            // Insert behind monster/text (between background and monster-image when available)
+            InsertBehindMonster(host, _vfxContainer);
 
-            _screenWidth = root.resolvedStyle.width;
-            _screenHeight = root.resolvedStyle.height;
+            // Separate front layer for interactive bursts/cursor cinders (in front of monster, behind logo/buttons)
+            _frontVfxContainer = new VisualElement();
+            _frontVfxContainer.name = "title-front-vfx-container";
+            _frontVfxContainer.style.position = Position.Absolute;
+            _frontVfxContainer.style.left = 0;
+            _frontVfxContainer.style.top = 0;
+            _frontVfxContainer.style.right = 0;
+            _frontVfxContainer.style.bottom = 0;
+            _frontVfxContainer.style.overflow = Overflow.Hidden;
+            _frontVfxContainer.pickingMode = PickingMode.Ignore;
+            InsertInFrontOfMonster(host, _frontVfxContainer);
+
+            _host = host;
+
+            _screenWidth = host.resolvedStyle.width;
+            _screenHeight = host.resolvedStyle.height;
 
             if (_screenWidth <= 0) _screenWidth = 1920;
             if (_screenHeight <= 0) _screenHeight = 1080;
+
+            SetupInteractiveTargets(host);
 
             // === AAA ATMOSPHERIC LAYERS ===
 
@@ -221,7 +526,13 @@ namespace VeilBreakers.UI.Core
                 CreateAtmosphereLayer();
             }
 
-            // 2. Smoke layer (behind particles)
+            // 2. Lightning strikes (behind smoke/embers, above atmosphere)
+            if (_enableLightning)
+            {
+                CreateLightningLayer();
+            }
+
+            // 3. Smoke layer (behind particles)
             _smokeLayer = new VisualElement();
             _smokeLayer.name = "smoke-layer";
             _smokeLayer.style.position = Position.Absolute;
@@ -238,44 +549,44 @@ namespace VeilBreakers.UI.Core
                 CreateSmoke();
             }
 
-            // 3. Create ash particles (behind embers)
+            // 4. Create ash particles (behind embers)
             for (int i = 0; i < _ashCount; i++)
             {
                 CreateAsh();
             }
 
-            // 4. Create embers
+            // 5. Create embers
             for (int i = 0; i < _emberCount; i++)
             {
                 CreateEmber();
             }
 
-            // 5. Create micro-sparks (fast turbulent particles)
+            // 6. Create micro-sparks (fast turbulent particles)
             for (int i = 0; i < _microSparkCount; i++)
             {
                 CreateMicroSpark();
             }
 
-            // 6. Create sparks (burst particles)
+            // 7. Create sparks (burst particles)
             for (int i = 0; i < _sparkCount; i++)
             {
                 CreateSpark();
             }
 
-            // 7. Vignette overlay (on top of everything)
+            // 8. Vignette overlay (on top of everything)
             if (_enableVignette)
             {
                 CreateVignetteLayer();
             }
 
-            // 8. Grunge overlay (film grain / grit effect)
-            if (_grungeTexture != null)
+            // 9. Grunge overlay (film grain / grit effect)
+            if (_enableGrungeOverlay && _grungeTexture != null)
             {
                 CreateGrungeOverlay();
             }
 
             StartVFX();
-            Debug.Log($"[TitleScreenVFX] AAA VFX Initialized: {_emberCount} embers, {_microSparkCount} micro-sparks, {_ashCount} ash, {_smokeCount} smoke, {_sparkCount} sparks (Textures: {(_smokeTexture != null ? "smoke " : "")}{(_ashTexture != null ? "ash " : "")}{(_emberTexture != null ? "ember " : "")}{(_grungeTexture != null ? "grunge" : "")})");
+            Debug.Log($"[TitleScreenVFX] AAA VFX Initialized: {_emberCount} embers, {_microSparkCount} micro-sparks, {_ashCount} ash, {_smokeCount} smoke, {_sparkCount} sparks (Lightning: {_enableLightning}) (Textures: {(_smokeTexture != null ? "smoke " : "")}{(_ashTexture != null ? "ash " : "")}{(_emberTexture != null ? "ember " : "")}{(_grungeTexture != null ? "grunge" : "")})");
         }
 
         private void CreateAtmosphereLayer()
@@ -306,6 +617,134 @@ namespace VeilBreakers.UI.Core
             _atmosphereLayer.Add(gradientCenter);
 
             _vfxContainer.Add(_atmosphereLayer);
+        }
+
+        private void CreateLightningLayer()
+        {
+            if (!TryPrepareLightningTextures())
+            {
+                _enableLightning = false;
+                return;
+            }
+
+            _lightningLayer = new VisualElement();
+            _lightningLayer.name = "lightning-layer";
+            _lightningLayer.style.position = Position.Absolute;
+            _lightningLayer.style.left = 0;
+            _lightningLayer.style.top = 0;
+            _lightningLayer.style.right = 0;
+            _lightningLayer.style.bottom = 0;
+            _lightningLayer.pickingMode = PickingMode.Ignore;
+            _vfxContainer.Add(_lightningLayer);
+
+            _lightningFlashOverlay = new VisualElement();
+            _lightningFlashOverlay.name = "lightning-flash";
+            _lightningFlashOverlay.style.position = Position.Absolute;
+            _lightningFlashOverlay.style.left = 0;
+            _lightningFlashOverlay.style.top = 0;
+            _lightningFlashOverlay.style.right = 0;
+            _lightningFlashOverlay.style.bottom = 0;
+            _lightningFlashOverlay.style.backgroundColor = new Color(1f, 0.4f, 0.15f, 0.12f);
+            _lightningFlashOverlay.style.opacity = 0;
+            _lightningFlashOverlay.pickingMode = PickingMode.Ignore;
+            _lightningLayer.Add(_lightningFlashOverlay);
+
+            for (int i = 0; i < 2; i++)
+            {
+                CreateLightningStrikeElement();
+            }
+
+            ScheduleNextLightning(0.6f);
+        }
+
+        private void CreateLightningStrikeElement()
+        {
+            var glow = new VisualElement();
+            glow.style.position = Position.Absolute;
+            glow.pickingMode = PickingMode.Ignore;
+            glow.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+            glow.style.opacity = 0;
+
+            var bolt = new VisualElement();
+            bolt.style.position = Position.Absolute;
+            bolt.pickingMode = PickingMode.Ignore;
+            bolt.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+            bolt.style.opacity = 0;
+
+            _lightningLayer.Add(glow);
+            _lightningLayer.Add(bolt);
+
+            _lightningStrikes.Add(new LightningStrike
+            {
+                Bolt = bolt,
+                Glow = glow,
+                Age = 0,
+                Duration = 0.5f,
+                FlickerSeed = UnityEngine.Random.Range(0f, 1000f),
+                Active = false,
+                BaseOpacity = UnityEngine.Random.Range(0.7f, 1f),
+                Texture = null
+            });
+        }
+
+        private bool TryPrepareLightningTextures()
+        {
+            if (_lightningMaskedA != null || _lightningMaskedB != null) return true;
+            if (_lightningBoltTextureA == null && _lightningBoltTextureB == null) return false;
+
+            try
+            {
+                if (_lightningBoltTextureA != null)
+                {
+                    _lightningMaskedA = CreateWhitenessMaskedTexture(_lightningBoltTextureA, 0.28f, 0.72f, 1.6f);
+                }
+
+                if (_lightningBoltTextureB != null)
+                {
+                    _lightningMaskedB = CreateWhitenessMaskedTexture(_lightningBoltTextureB, 0.28f, 0.72f, 1.6f);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[TitleScreenVFX] Lightning textures could not be processed (make sure they are Read/Write enabled). Disabling lightning. {ex.GetType().Name}: {ex.Message}");
+                _lightningMaskedA = null;
+                _lightningMaskedB = null;
+                return false;
+            }
+
+            return _lightningMaskedA != null || _lightningMaskedB != null;
+        }
+
+        private static Texture2D CreateWhitenessMaskedTexture(Texture2D source, float minChannelLow, float minChannelHigh, float alphaPower)
+        {
+            if (source == null) return null;
+
+            var pixels = source.GetPixels32();
+            var output = new Color32[pixels.Length];
+
+            byte low = (byte)Mathf.Clamp(Mathf.RoundToInt(minChannelLow * 255f), 0, 255);
+            byte high = (byte)Mathf.Clamp(Mathf.RoundToInt(minChannelHigh * 255f), 0, 255);
+            int range = Mathf.Max(1, high - low);
+
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                Color32 c = pixels[i];
+                byte min = c.r < c.g ? (c.r < c.b ? c.r : c.b) : (c.g < c.b ? c.g : c.b);
+
+                float t = Mathf.Clamp01((min - low) / (float)range);
+                t = Mathf.Pow(t, alphaPower);
+                byte a = (byte)Mathf.Clamp(Mathf.RoundToInt(t * 255f), 0, 255);
+
+                output[i] = new Color32(c.r, c.g, c.b, a);
+            }
+
+            var tex = new Texture2D(source.width, source.height, TextureFormat.RGBA32, false, false);
+            tex.name = $"{source.name}_whitenessMasked";
+            tex.wrapMode = TextureWrapMode.Clamp;
+            tex.filterMode = FilterMode.Bilinear;
+            tex.SetPixels32(output);
+            tex.Apply(false, true);
+            return tex;
         }
 
         private void CreateVignetteLayer()
@@ -386,8 +825,8 @@ namespace VeilBreakers.UI.Core
             grungeLayer.style.bottom = 0;
             grungeLayer.style.backgroundImage = new StyleBackground(_grungeTexture);
             grungeLayer.style.unityBackgroundScaleMode = ScaleMode.ScaleAndCrop;
-            grungeLayer.style.unityBackgroundImageTintColor = new Color(1f, 1f, 1f, 0.08f);  // Very subtle
-            grungeLayer.style.opacity = 0.15f;  // Film grain level
+            grungeLayer.style.unityBackgroundImageTintColor = new Color(1f, 1f, 1f, 1f);
+            grungeLayer.style.opacity = _grungeOpacity;
             grungeLayer.pickingMode = PickingMode.Ignore;
 
             _vfxContainer.Add(grungeLayer);
@@ -432,9 +871,15 @@ namespace VeilBreakers.UI.Core
 
             _vfxContainer.Add(glow);
 
-            var size = UnityEngine.Random.Range(_emberSizeMin, _emberSizeMax);
-            var bodySize = size * 2f;
-            var glowSize = size * 4f;
+            float depth = UnityEngine.Random.Range(0.35f, 1f); // 0 = far, 1 = near (more volume via parallax)
+            var size = UnityEngine.Random.Range(_emberSizeMin, _emberSizeMax) * Mathf.Lerp(0.75f, 1.25f, depth);
+            var bodySize = size * Mathf.Lerp(1.6f, 2.3f, depth);
+            var glowSize = size * Mathf.Lerp(2.8f, 4.8f, depth);
+
+            float speed = UnityEngine.Random.Range(_emberSpeedMin, _emberSpeedMax) * Mathf.Lerp(0.55f, 1.1f, depth);
+            float opacityScale = Mathf.Lerp(0.25f, 1f, depth);
+            float driftAmp = UnityEngine.Random.Range(10f, 30f) * Mathf.Lerp(0.7f, 1.4f, depth);
+            float lifetime = UnityEngine.Random.Range(6f, 12f) * Mathf.Lerp(1.25f, 0.9f, depth);
 
             var ember = new EmberParticle
             {
@@ -442,12 +887,14 @@ namespace VeilBreakers.UI.Core
                 CoreElement = core,
                 Size = size,
                 GlowSize = glowSize,
-                Speed = UnityEngine.Random.Range(_emberSpeedMin, _emberSpeedMax),
-                Lifetime = UnityEngine.Random.Range(5f, 10f),
+                Depth = depth,
+                OpacityScale = opacityScale,
+                Speed = speed,
+                Lifetime = lifetime,
                 Age = UnityEngine.Random.Range(0f, 5f),
                 FlickerPhase = UnityEngine.Random.Range(0f, Mathf.PI * 2f),
                 DriftPhase = UnityEngine.Random.Range(0f, Mathf.PI * 2f),
-                DriftAmplitude = UnityEngine.Random.Range(25f, 60f)
+                DriftAmplitude = driftAmp
             };
 
             ResetEmberPosition(ember);
@@ -455,7 +902,9 @@ namespace VeilBreakers.UI.Core
             // AAA Style: Core (hot white/yellow center)
             core.style.width = size;
             core.style.height = size;
-            core.style.backgroundColor = _emberColorCore;
+            var coreTint = _emberColorCore;
+            coreTint.a *= Mathf.Lerp(0.7f, 1f, depth);
+            core.style.backgroundColor = coreTint;
             core.style.left = (bodySize - size) / 2f;
             core.style.top = (bodySize - size) / 2f;
 
@@ -464,13 +913,17 @@ namespace VeilBreakers.UI.Core
             body.style.height = bodySize;
             if (_emberTexture != null)
             {
+                var bodyTint = _emberColorBody;
+                bodyTint.a *= Mathf.Lerp(0.55f, 1f, depth);
                 body.style.backgroundImage = new StyleBackground(_emberTexture);
                 body.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
-                body.style.unityBackgroundImageTintColor = _emberColorBody;
+                body.style.unityBackgroundImageTintColor = bodyTint;
             }
             else
             {
-                body.style.backgroundColor = _emberColorBody;
+                var bodyTint = _emberColorBody;
+                bodyTint.a *= Mathf.Lerp(0.55f, 1f, depth);
+                body.style.backgroundColor = bodyTint;
             }
             body.style.left = (glowSize - bodySize) / 2f;
             body.style.top = (glowSize - bodySize) / 2f;
@@ -480,13 +933,17 @@ namespace VeilBreakers.UI.Core
             glow.style.height = glowSize;
             if (_emberTexture != null)
             {
+                var glowTint = _emberColorGlow;
+                glowTint.a *= Mathf.Lerp(0.35f, 1f, depth);
                 glow.style.backgroundImage = new StyleBackground(_emberTexture);
                 glow.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
-                glow.style.unityBackgroundImageTintColor = _emberColorGlow;
+                glow.style.unityBackgroundImageTintColor = glowTint;
             }
             else
             {
-                glow.style.backgroundColor = _emberColorGlow;
+                var glowTint = _emberColorGlow;
+                glowTint.a *= Mathf.Lerp(0.35f, 1f, depth);
+                glow.style.backgroundColor = glowTint;
             }
 
             _embers.Add(ember);
@@ -516,9 +973,10 @@ namespace VeilBreakers.UI.Core
 
             _vfxContainer.Add(element);
 
-            // Larger size when using textures for better visibility
-            var sizeX = UnityEngine.Random.Range(_ashSizeMin * 2f, _ashSizeMax * 2.5f);
-            var sizeY = UnityEngine.Random.Range(_ashSizeMin * 1.5f, _ashSizeMax * 2f);
+            float aspect = UnityEngine.Random.Range(0.6f, 1.4f);
+            var sizeBase = UnityEngine.Random.Range(_ashSizeMin, _ashSizeMax);
+            var sizeX = sizeBase * aspect;
+            var sizeY = sizeBase;
 
             var ash = new AshParticle
             {
@@ -528,10 +986,10 @@ namespace VeilBreakers.UI.Core
                 Speed = UnityEngine.Random.Range(_ashSpeedMin, _ashSpeedMax),
                 Lifetime = UnityEngine.Random.Range(8f, 16f),
                 Age = UnityEngine.Random.Range(0f, 8f),
-                RotationSpeed = UnityEngine.Random.Range(-120f, 120f),
+                RotationSpeed = UnityEngine.Random.Range(-60f, 60f),
                 Rotation = UnityEngine.Random.Range(0f, 360f),
                 DriftPhase = UnityEngine.Random.Range(0f, Mathf.PI * 2f),
-                DriftAmplitude = UnityEngine.Random.Range(40f, 100f),
+                DriftAmplitude = UnityEngine.Random.Range(12f, 35f),
                 TumblePhase = UnityEngine.Random.Range(0f, Mathf.PI * 2f),
                 TumbleSpeed = UnityEngine.Random.Range(1.5f, 4f)
             };
@@ -604,10 +1062,7 @@ namespace VeilBreakers.UI.Core
 
             _vfxContainer.Add(element);
 
-            // Slightly larger when using textures
-            var size = _emberTexture != null
-                ? UnityEngine.Random.Range(_microSparkSizeMin * 2f, _microSparkSizeMax * 3f)
-                : UnityEngine.Random.Range(_microSparkSizeMin, _microSparkSizeMax);
+            var size = UnityEngine.Random.Range(_microSparkSizeMin, _microSparkSizeMax);
 
             var microSpark = new MicroSparkParticle
             {
@@ -653,8 +1108,7 @@ namespace VeilBreakers.UI.Core
 
             _smokeLayer.Add(element);
 
-            // Larger smoke puffs when using textures
-            var size = UnityEngine.Random.Range(_smokeSizeMin * 1.5f, _smokeSizeMax * 2f);
+            var size = UnityEngine.Random.Range(_smokeSizeMin, _smokeSizeMax);
 
             var smoke = new SmokeParticle
             {
@@ -789,6 +1243,11 @@ namespace VeilBreakers.UI.Core
                 float wind = Mathf.Sin(_windOffset) * _windStrength;
                 float turbulence = Mathf.Sin(_turbulenceOffset * 1.7f) * _turbulenceStrength;
 
+                UpdateLightning(deltaTime);
+                UpdateLogo(deltaTime);
+                UpdateBurstParticles(deltaTime, wind, turbulence);
+                UpdateTransientSmokes(deltaTime, wind);
+
                 // Update smoke (background layer)
                 foreach (var smoke in _smokes)
                 {
@@ -823,6 +1282,439 @@ namespace VeilBreakers.UI.Core
             }
         }
 
+        private void OnPointerDown(PointerDownEvent evt)
+        {
+            if (!_enableClickMonsterBurst) return;
+            if (evt.button != 0) return;
+
+            if (evt.target is Button)
+            {
+                return;
+            }
+
+            SpawnMonsterBurstAtMonster();
+        }
+
+        private void OnMouseMove(MouseMoveEvent evt)
+        {
+            _mousePosition = evt.localMousePosition;
+            _hasMouse = true;
+        }
+
+        private void OnMouseLeave(MouseLeaveEvent evt)
+        {
+            _hasMouse = false;
+        }
+
+        private void OnLogoEnter(MouseEnterEvent evt)
+        {
+            _logoHover = true;
+        }
+
+        private void OnLogoLeave(MouseLeaveEvent evt)
+        {
+            _logoHover = false;
+        }
+
+        private void OnLogoPointerDown(PointerDownEvent evt)
+        {
+            if (evt.button != 0) return;
+
+            if (_enableLogoPulse)
+            {
+                TriggerLogoPulse();
+            }
+
+            if (_enableLogoSmoke)
+            {
+                SpawnLogoSmokeBurst();
+            }
+
+            evt.StopPropagation();
+        }
+
+        private void TriggerLogoPulse()
+        {
+            _logoPulseRemaining = Mathf.Max(0.05f, _logoPulseDuration);
+            _logoPulseStrength = 1f;
+        }
+
+        private void UpdateLogo(float deltaTime)
+        {
+            if (_logoContainer == null) return;
+
+            float targetGlow = _logoGlowBaseOpacity;
+            if (_logoHover) targetGlow = Mathf.Max(targetGlow, _logoGlowHoverOpacity);
+
+            if (_logoPulseRemaining > 0f)
+            {
+                _logoPulseRemaining -= deltaTime;
+                float t = 1f - Mathf.Clamp01(_logoPulseRemaining / Mathf.Max(0.01f, _logoPulseDuration));
+                float bump = Mathf.Sin(t * Mathf.PI);
+
+                float scale = 1f + bump * 0.05f;
+                _logoContainer.style.scale = new Scale(new Vector2(scale, scale));
+                targetGlow = Mathf.Max(targetGlow, Mathf.Lerp(_logoGlowBaseOpacity, _logoGlowClickOpacity, bump));
+
+                if (_logoPulseRemaining <= 0f)
+                {
+                    _logoContainer.style.scale = new Scale(Vector2.one);
+                }
+            }
+
+            if (_logoGlowElement != null)
+            {
+                _logoGlowCurrentOpacity = Mathf.Lerp(_logoGlowCurrentOpacity, targetGlow, deltaTime * 10f);
+                _logoGlowElement.style.opacity = _logoGlowCurrentOpacity;
+            }
+        }
+
+        private void SpawnMonsterBurstAtMonster()
+        {
+            if (_frontVfxContainer == null) return;
+
+            Vector2 origin = new Vector2(_screenWidth * 0.5f, _screenHeight * 0.65f);
+            Rect monsterWorld = default;
+            bool hasMonster = _host != null && _monsterElement != null;
+            if (hasMonster)
+            {
+                monsterWorld = _monsterElement.worldBound;
+                var centerWorld = monsterWorld.center;
+                origin = _host.WorldToLocal(new Vector2(centerWorld.x, centerWorld.y));
+            }
+
+            int count = Mathf.Clamp(_monsterBurstParticleCount, 0, 120);
+            for (int i = 0; i < count; i++)
+            {
+                float size = UnityEngine.Random.Range(10f, 22f);
+
+                var element = new VisualElement();
+                element.style.position = Position.Absolute;
+                element.pickingMode = PickingMode.Ignore;
+                // Make these more "flame-like" (taller than wide).
+                float w = size * UnityEngine.Random.Range(0.55f, 0.85f);
+                float h = size * UnityEngine.Random.Range(1.35f, 2.05f);
+                element.style.width = w;
+                element.style.height = h;
+
+                if (_emberTexture != null)
+                {
+                    element.style.backgroundImage = new StyleBackground(_emberTexture);
+                    element.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                    element.style.unityBackgroundImageTintColor = new Color(1f, 0.55f, 0.20f, 0.95f);
+                }
+                else
+                {
+                    element.style.borderTopLeftRadius = Length.Percent(50);
+                    element.style.borderTopRightRadius = Length.Percent(50);
+                    element.style.borderBottomLeftRadius = Length.Percent(50);
+                    element.style.borderBottomRightRadius = Length.Percent(50);
+                    element.style.backgroundColor = new Color(1f, 0.55f, 0.20f, 0.95f);
+                }
+
+                element.style.left = origin.x - w * 0.5f;
+                element.style.top = origin.y - h * 0.5f;
+                element.style.opacity = 1f;
+                element.style.rotate = new Rotate(UnityEngine.Random.Range(-18f, 18f));
+
+                _frontVfxContainer.Add(element);
+
+                Vector2 dir = (UnityEngine.Random.insideUnitCircle * 0.55f + new Vector2(0f, -1.15f)).normalized;
+                float force = UnityEngine.Random.Range(_monsterBurstForceMin, _monsterBurstForceMax);
+
+                _burstParticles.Add(new BurstParticle
+                {
+                    Element = element,
+                    Position = origin,
+                    Velocity = dir * force,
+                    Size = Mathf.Max(w, h),
+                    Width = w,
+                    Height = h,
+                    Lifetime = Mathf.Max(0.2f, _monsterBurstLifetime) * UnityEngine.Random.Range(0.85f, 1.15f),
+                    Age = 0f,
+                    FlickerSeed = UnityEngine.Random.Range(0f, 1000f)
+                });
+            }
+
+            // Add smoke kick for volume (front + behind the monster)
+            SpawnTransientSmoke(origin, _frontVfxContainer, 4, 90f, 160f, new Color(0.20f, 0.16f, 0.14f, 0.22f), 1.1f);
+
+            if (hasMonster && _vfxContainer != null)
+            {
+                // Smoke from ears / behind head (behind monster)
+                Vector2 earLeft = _host.WorldToLocal(new Vector2(monsterWorld.xMin + monsterWorld.width * 0.34f, monsterWorld.yMin + monsterWorld.height * 0.22f));
+                Vector2 earRight = _host.WorldToLocal(new Vector2(monsterWorld.xMin + monsterWorld.width * 0.66f, monsterWorld.yMin + monsterWorld.height * 0.22f));
+                Vector2 behindHead = _host.WorldToLocal(new Vector2(monsterWorld.center.x, monsterWorld.yMin + monsterWorld.height * 0.26f));
+
+                var earTint = new Color(0.18f, 0.14f, 0.12f, 0.22f);
+                SpawnTransientSmoke(earLeft, _vfxContainer, 5, 110f, 210f, earTint, 1.35f);
+                SpawnTransientSmoke(earRight, _vfxContainer, 5, 110f, 210f, earTint, 1.35f);
+                SpawnTransientSmoke(behindHead, _vfxContainer, 6, 140f, 260f, new Color(0.18f, 0.13f, 0.11f, 0.18f), 1.55f);
+            }
+
+            // Prevent unbounded growth if spam-clicked
+            while (_burstParticles.Count > 260)
+            {
+                var p = _burstParticles[0];
+                if (p.Element != null) p.Element.RemoveFromHierarchy();
+                _burstParticles.RemoveAt(0);
+            }
+        }
+
+        private void UpdateBurstParticles(float deltaTime, float wind, float turbulence)
+        {
+            if (_burstParticles.Count == 0) return;
+
+            for (int i = _burstParticles.Count - 1; i >= 0; i--)
+            {
+                var p = _burstParticles[i];
+                p.Age += deltaTime;
+                float t = p.Age / Mathf.Max(0.0001f, p.Lifetime);
+                if (t >= 1f)
+                {
+                    if (p.Element != null) p.Element.RemoveFromHierarchy();
+                    _burstParticles.RemoveAt(i);
+                    continue;
+                }
+
+                // UI coordinate: negative Y is "up"
+                p.Velocity += new Vector2(wind * 160f, -520f) * deltaTime;
+                p.Velocity += new Vector2(0f, turbulence * -160f) * deltaTime;
+                p.Velocity *= Mathf.Clamp01(1f - deltaTime * 2.2f);
+
+                p.Position += p.Velocity * deltaTime;
+
+                float flicker = 0.70f + 0.30f * Mathf.PerlinNoise(p.FlickerSeed, p.Age * 18f);
+                float opacity = (1f - t) * flicker;
+                float scale = 1f - t * 0.25f;
+
+                float w = p.Width > 0 ? p.Width : p.Element.resolvedStyle.width;
+                float h = p.Height > 0 ? p.Height : p.Element.resolvedStyle.height;
+                if (w <= 0) w = p.Size;
+                if (h <= 0) h = p.Size;
+
+                p.Element.style.left = p.Position.x - w * 0.5f;
+                p.Element.style.top = p.Position.y - h * 0.5f;
+                p.Element.style.opacity = opacity;
+                p.Element.style.scale = new Scale(Vector2.one * scale);
+            }
+        }
+
+        private void SpawnLogoSmokeBurst()
+        {
+            if (_logoFxLayer == null || _host == null || _logoContainer == null) return;
+
+            var b = _logoContainer.worldBound;
+            Vector2 origin = _host.WorldToLocal(new Vector2(b.center.x, b.yMin + 40f));
+            SpawnTransientSmoke(origin, _logoFxLayer, 8, 90f, 160f, _logoSmokeTint, 1.2f);
+        }
+
+        private void SpawnTransientSmoke(Vector2 origin, VisualElement parent, int count, float sizeMin, float sizeMax, Color tint, float lifetime)
+        {
+            if (parent == null) return;
+            if (_smokeTexture == null) return;
+
+            for (int i = 0; i < Mathf.Max(0, count); i++)
+            {
+                float size = UnityEngine.Random.Range(sizeMin, sizeMax);
+
+                var element = new VisualElement();
+                element.style.position = Position.Absolute;
+                element.pickingMode = PickingMode.Ignore;
+                element.style.width = size;
+                element.style.height = size;
+                element.style.backgroundImage = new StyleBackground(_smokeTexture);
+                element.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                element.style.unityBackgroundImageTintColor = tint;
+                element.style.opacity = 0f;
+
+                parent.Add(element);
+
+                Vector2 offset = UnityEngine.Random.insideUnitCircle * 70f;
+                Vector2 pos = origin + offset;
+                Vector2 vel = new Vector2(UnityEngine.Random.Range(-20f, 20f), UnityEngine.Random.Range(-120f, -70f));
+
+                _transientSmokes.Add(new TransientSmokeParticle
+                {
+                    Element = element,
+                    Position = pos,
+                    Velocity = vel,
+                    Size = size,
+                    Lifetime = Mathf.Max(0.2f, lifetime) * UnityEngine.Random.Range(0.85f, 1.2f),
+                    Age = 0f,
+                    ExpansionRate = UnityEngine.Random.Range(0.06f, 0.10f),
+                    RotationSpeed = UnityEngine.Random.Range(-18f, 18f)
+                });
+            }
+
+            while (_transientSmokes.Count > 140)
+            {
+                var s = _transientSmokes[0];
+                if (s.Element != null) s.Element.RemoveFromHierarchy();
+                _transientSmokes.RemoveAt(0);
+            }
+        }
+
+        private void UpdateTransientSmokes(float deltaTime, float wind)
+        {
+            if (_transientSmokes.Count == 0) return;
+
+            for (int i = _transientSmokes.Count - 1; i >= 0; i--)
+            {
+                var s = _transientSmokes[i];
+                s.Age += deltaTime;
+                float t = s.Age / Mathf.Max(0.0001f, s.Lifetime);
+                if (t >= 1f)
+                {
+                    if (s.Element != null) s.Element.RemoveFromHierarchy();
+                    _transientSmokes.RemoveAt(i);
+                    continue;
+                }
+
+                s.Velocity.x += wind * 18f * deltaTime;
+                s.Velocity *= Mathf.Clamp01(1f - deltaTime * 0.9f);
+
+                s.Position += s.Velocity * deltaTime;
+                s.Size *= 1f + s.ExpansionRate * deltaTime;
+
+                float fadeIn = Mathf.Clamp01(t / 0.12f);
+                float fadeOut = Mathf.Clamp01((1f - t) / 0.30f);
+                float opacity = Mathf.Min(fadeIn, fadeOut) * 0.95f;
+
+                s.Element.style.width = s.Size;
+                s.Element.style.height = s.Size;
+                s.Element.style.left = s.Position.x - s.Size * 0.5f;
+                s.Element.style.top = s.Position.y - s.Size * 0.5f;
+                s.Element.style.opacity = opacity;
+                s.Element.style.rotate = new Rotate(s.RotationSpeed * s.Age);
+            }
+        }
+
+        private void ScheduleNextLightning(float biasSeconds = 0f)
+        {
+            _nextLightningAt = Time.unscaledTime + UnityEngine.Random.Range(_lightningIntervalMin, _lightningIntervalMax) + biasSeconds;
+        }
+
+        private void UpdateLightning(float deltaTime)
+        {
+            if (!_enableLightning || _lightningLayer == null) return;
+
+            float now = Time.unscaledTime;
+            if (now >= _nextLightningAt)
+            {
+                TriggerLightningStrike();
+                ScheduleNextLightning();
+            }
+
+            float maxFlash = 0f;
+            foreach (var strike in _lightningStrikes)
+            {
+                if (!strike.Active) continue;
+
+                strike.Age += deltaTime;
+                float t = strike.Age / Mathf.Max(0.0001f, strike.Duration);
+                if (t >= 1f)
+                {
+                    strike.Active = false;
+                    strike.Bolt.style.opacity = 0;
+                    strike.Glow.style.opacity = 0;
+                    continue;
+                }
+
+                float primary = 1f - Mathf.Clamp01(Mathf.Abs((t - 0.12f) / 0.10f));
+                float secondary = 1f - Mathf.Clamp01(Mathf.Abs((t - 0.34f) / 0.12f));
+                float after = Mathf.Clamp01(1f - t);
+                float flicker = 0.85f + 0.15f * Mathf.PerlinNoise(strike.FlickerSeed, strike.Age * 35f);
+                float alpha = Mathf.Clamp01(Mathf.Max(primary, secondary * 0.6f) * after * flicker) * strike.BaseOpacity * _lightningIntensity;
+
+                strike.Bolt.style.opacity = alpha * 0.95f;
+                strike.Glow.style.opacity = alpha * 0.25f;
+                maxFlash = Mathf.Max(maxFlash, alpha);
+            }
+
+            _lightningFlashOpacity = Mathf.Lerp(_lightningFlashOpacity, maxFlash, deltaTime * 10f);
+            if (_lightningFlashOverlay != null)
+            {
+                _lightningFlashOverlay.style.opacity = _lightningFlashOpacity * 0.20f;
+            }
+        }
+
+        private void TriggerLightningStrike()
+        {
+            if (_lightningMaskedA == null && _lightningMaskedB == null) return;
+
+            LightningStrike strike = null;
+            foreach (var candidate in _lightningStrikes)
+            {
+                if (!candidate.Active)
+                {
+                    strike = candidate;
+                    break;
+                }
+            }
+
+            if (strike == null && _lightningStrikes.Count > 0)
+            {
+                strike = _lightningStrikes[0];
+            }
+
+            if (strike == null) return;
+
+            var tex = UnityEngine.Random.value < 0.5f ? _lightningMaskedA : _lightningMaskedB;
+            if (tex == null) tex = _lightningMaskedA ?? _lightningMaskedB;
+
+            strike.Texture = tex;
+            strike.Active = true;
+            strike.Age = 0f;
+            strike.Duration = UnityEngine.Random.Range(_lightningStrikeDurationMin, _lightningStrikeDurationMax);
+            strike.FlickerSeed = UnityEngine.Random.Range(0f, 1000f);
+            strike.BaseOpacity = UnityEngine.Random.Range(0.75f, 1f);
+
+            float texAspect = tex.height > 0 ? tex.width / (float)tex.height : 0.25f;
+            float height = Mathf.Max(420f, _screenHeight * UnityEngine.Random.Range(0.95f, 1.25f));
+            float width = Mathf.Clamp(height * texAspect, 140f, 520f);
+
+            // Bias lightning to the sides so it frames the monster instead of sitting behind it.
+            bool sideBiased = UnityEngine.Random.value < 0.88f;
+            float left;
+            if (sideBiased)
+            {
+                bool leftSide = UnityEngine.Random.value < 0.5f;
+                if (leftSide)
+                {
+                    left = UnityEngine.Random.Range(_screenWidth * 0.05f, _screenWidth * 0.28f);
+                }
+                else
+                {
+                    left = UnityEngine.Random.Range(_screenWidth * 0.72f, _screenWidth * 0.95f - width);
+                }
+            }
+            else
+            {
+                left = UnityEngine.Random.Range(_screenWidth * 0.22f, _screenWidth * 0.78f - width);
+            }
+            float top = -_screenHeight * UnityEngine.Random.Range(0.05f, 0.18f);
+            float rotation = UnityEngine.Random.Range(-12f, 12f);
+
+            strike.Bolt.style.backgroundImage = new StyleBackground(tex);
+            strike.Bolt.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+            strike.Bolt.style.unityBackgroundImageTintColor = _lightningTint;
+            strike.Bolt.style.width = width;
+            strike.Bolt.style.height = height;
+            strike.Bolt.style.left = left;
+            strike.Bolt.style.top = top;
+            strike.Bolt.style.rotate = new Rotate(rotation);
+
+            strike.Glow.style.backgroundImage = new StyleBackground(tex);
+            strike.Glow.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+            strike.Glow.style.unityBackgroundImageTintColor = new Color(1f, 0.35f, 0.12f, 1f);
+            strike.Glow.style.width = width * 1.12f;
+            strike.Glow.style.height = height * 1.12f;
+            strike.Glow.style.left = left - width * 0.06f;
+            strike.Glow.style.top = top - height * 0.06f;
+            strike.Glow.style.rotate = new Rotate(rotation);
+        }
+
         // =============================================================================
         // PARTICLE UPDATES
         // =============================================================================
@@ -850,17 +1742,39 @@ namespace VeilBreakers.UI.Core
                 opacity = 1f;
             }
 
-            // AAA flicker effect - more complex pattern
+            // Gentle variation instead of harsh flicker
             float flicker1 = Mathf.Sin(ember.Age * _flickerSpeed + ember.FlickerPhase);
-            float flicker2 = Mathf.Sin(ember.Age * _flickerSpeed * 2.3f + ember.FlickerPhase * 1.7f);
-            float flicker = 0.6f + 0.25f * flicker1 + 0.15f * flicker2;
-            opacity *= flicker;
+            float flicker2 = Mathf.Sin(ember.Age * _flickerSpeed * 1.8f + ember.FlickerPhase * 1.3f);
+            float variation = 0.85f + 0.12f * flicker1 + 0.05f * flicker2;
+            opacity *= variation;
+            opacity *= ember.OpacityScale;
 
             // Move upward with drift and turbulence
             float drift = Mathf.Sin(ember.Age * 1.5f + ember.DriftPhase) * ember.DriftAmplitude * deltaTime;
             float turbDrift = turbulence * ember.DriftAmplitude * 0.5f * deltaTime;
-            ember.Position.x += drift + turbDrift + wind * ember.Speed * deltaTime;
+            float lateral = wind * ember.Speed * deltaTime * Mathf.Lerp(0.25f, 1f, ember.Depth);
+            ember.Position.x += drift + turbDrift + lateral;
             ember.Position.y -= ember.Speed * deltaTime;
+
+            // Intelligent mouse attraction: existing embers are pulled toward the cursor (strongest near the bottom).
+            if (_enableEmberMouseAttraction && _hasMouse)
+            {
+                Vector2 toMouse = _mousePosition - ember.Position;
+                float dist = toMouse.magnitude;
+                float radius = Mathf.Max(20f, _emberAttractRadius);
+                if (dist < radius)
+                {
+                    float band = Mathf.InverseLerp(_screenHeight * 0.35f, _screenHeight * 1.05f, ember.Position.y);
+                    float influence = (1f - (dist / radius));
+                    influence *= influence;
+                    influence *= band;
+                    influence *= Mathf.Lerp(0.4f, 1f, ember.Depth);
+
+                    Vector2 dir = dist > 0.001f ? (toMouse / dist) : Vector2.zero;
+                    ember.Position.x += dir.x * _emberAttractStrength * influence * deltaTime;
+                    ember.Position.y += dir.y * _emberAttractStrength * influence * deltaTime * _emberAttractVerticalInfluence;
+                }
+            }
 
             // Apply position and opacity
             ember.GlowElement.style.left = ember.Position.x - ember.GlowSize / 2f;
@@ -1085,6 +1999,8 @@ namespace VeilBreakers.UI.Core
             public Vector2 Position;
             public float Size;
             public float GlowSize;
+            public float Depth;
+            public float OpacityScale;
             public float Speed;
             public float Lifetime;
             public float Age;

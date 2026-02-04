@@ -686,7 +686,17 @@ namespace VeilBreakers.UI.Menus
 
         public void Show()
         {
-            gameObject.SetActive(true);
+            // When used as overlay (via Initialize), don't touch gameObject
+            // MainMenuBootstrap handles overlay visibility
+            if (_root != null)
+            {
+                _root.style.display = DisplayStyle.Flex;
+            }
+            else
+            {
+                gameObject.SetActive(true);
+            }
+
             LoadSettings();
             UpdateUIFromSettings();
 
@@ -718,9 +728,14 @@ namespace VeilBreakers.UI.Menus
             CloseAllDropdowns();
             HideConfirmationDialog();
             _pendingSettings = _currentSettings.Clone();
-            gameObject.SetActive(false);
-            OnSettingsClosed?.Invoke();
+
+            // Re-enable the settings panel in case it was disabled by confirmation dialog
             _settingsPanel?.SetEnabled(true);
+
+            // Fire the close event - MainMenuBootstrap handles the visual transition
+            // Don't deactivate the GameObject or hide elements here, as that would
+            // bypass the animation and potentially hide the entire main menu
+            OnSettingsClosed?.Invoke();
         }
 
         /// <summary>
@@ -782,10 +797,10 @@ namespace VeilBreakers.UI.Menus
             dialogBox.style.borderBottomWidth = 2;
             dialogBox.style.borderLeftWidth = 2;
             dialogBox.style.borderRightWidth = 2;
-            dialogBox.style.borderTopColor = new Color(0.7f, 0.16f, 0.24f, 1f);
-            dialogBox.style.borderBottomColor = new Color(0.7f, 0.16f, 0.24f, 1f);
-            dialogBox.style.borderLeftColor = new Color(0.7f, 0.16f, 0.24f, 1f);
-            dialogBox.style.borderRightColor = new Color(0.7f, 0.16f, 0.24f, 1f);
+            dialogBox.style.borderTopColor = new Color(0.85f, 0.4f, 0.12f, 1f);
+            dialogBox.style.borderBottomColor = new Color(0.85f, 0.4f, 0.12f, 1f);
+            dialogBox.style.borderLeftColor = new Color(0.85f, 0.4f, 0.12f, 1f);
+            dialogBox.style.borderRightColor = new Color(0.85f, 0.4f, 0.12f, 1f);
             dialogBox.style.borderTopLeftRadius = 8;
             dialogBox.style.borderTopRightRadius = 8;
             dialogBox.style.borderBottomLeftRadius = 8;
@@ -807,7 +822,7 @@ namespace VeilBreakers.UI.Menus
             dialogBox.Add(title);
 
             // Message
-            var message = new Label("You have unsaved changes.\nWould you like to apply them before closing?");
+            var message = new Label("You have unsaved changes.\nIf you close without saving, your changes will be reverted.");
             message.style.fontSize = 14;
             message.style.color = new Color(0.65f, 0.6f, 0.56f, 1f);
             message.style.marginBottom = 24;
@@ -826,16 +841,16 @@ namespace VeilBreakers.UI.Menus
                 ForceClose();
             });
             btnSave.text = "SAVE";
-            btnSave.style.backgroundColor = new Color(0.7f, 0.16f, 0.24f, 1f);
+            btnSave.style.backgroundColor = new Color(0.85f, 0.4f, 0.12f, 1f);
             btnSave.style.color = new Color(0.92f, 0.88f, 0.84f, 1f);
             btnSave.style.borderTopWidth = 2;
             btnSave.style.borderBottomWidth = 2;
             btnSave.style.borderLeftWidth = 2;
             btnSave.style.borderRightWidth = 2;
-            btnSave.style.borderTopColor = new Color(0.86f, 0.24f, 0.31f, 1f);
-            btnSave.style.borderBottomColor = new Color(0.86f, 0.24f, 0.31f, 1f);
-            btnSave.style.borderLeftColor = new Color(0.86f, 0.24f, 0.31f, 1f);
-            btnSave.style.borderRightColor = new Color(0.86f, 0.24f, 0.31f, 1f);
+            btnSave.style.borderTopColor = new Color(1.0f, 0.55f, 0.2f, 1f);
+            btnSave.style.borderBottomColor = new Color(1.0f, 0.55f, 0.2f, 1f);
+            btnSave.style.borderLeftColor = new Color(1.0f, 0.55f, 0.2f, 1f);
+            btnSave.style.borderRightColor = new Color(1.0f, 0.55f, 0.2f, 1f);
             btnSave.style.borderTopLeftRadius = 4;
             btnSave.style.borderTopRightRadius = 4;
             btnSave.style.borderBottomLeftRadius = 4;
@@ -862,10 +877,10 @@ namespace VeilBreakers.UI.Menus
             btnDiscard.style.borderBottomWidth = 1;
             btnDiscard.style.borderLeftWidth = 1;
             btnDiscard.style.borderRightWidth = 1;
-            btnDiscard.style.borderTopColor = new Color(0.7f, 0.16f, 0.24f, 0.3f);
-            btnDiscard.style.borderBottomColor = new Color(0.7f, 0.16f, 0.24f, 0.3f);
-            btnDiscard.style.borderLeftColor = new Color(0.7f, 0.16f, 0.24f, 0.3f);
-            btnDiscard.style.borderRightColor = new Color(0.7f, 0.16f, 0.24f, 0.3f);
+            btnDiscard.style.borderTopColor = new Color(0.85f, 0.4f, 0.12f, 0.3f);
+            btnDiscard.style.borderBottomColor = new Color(0.85f, 0.4f, 0.12f, 0.3f);
+            btnDiscard.style.borderLeftColor = new Color(0.85f, 0.4f, 0.12f, 0.3f);
+            btnDiscard.style.borderRightColor = new Color(0.85f, 0.4f, 0.12f, 0.3f);
             btnDiscard.style.borderTopLeftRadius = 4;
             btnDiscard.style.borderTopRightRadius = 4;
             btnDiscard.style.borderBottomLeftRadius = 4;
@@ -931,7 +946,17 @@ namespace VeilBreakers.UI.Menus
         {
             // Close any open dropdowns first
             CloseAllDropdowns();
-            gameObject.SetActive(false);
+
+            // When used as overlay (via Initialize), don't touch gameObject
+            // MainMenuBootstrap handles overlay visibility
+            if (_root != null)
+            {
+                _root.style.display = DisplayStyle.None;
+            }
+            else
+            {
+                gameObject.SetActive(false);
+            }
         }
 
         /// <summary>

@@ -76,6 +76,9 @@ namespace VeilBreakers.Commands
         public bool onMeAutoDefend;
         public bool onMeReformPending;
 
+        // Cached references (avoid GetComponent in update loops)
+        [NonSerialized] public AI.GambitController cachedGambitController;
+
         // =============================================================================
         // PROPERTIES
         // =============================================================================
@@ -94,7 +97,7 @@ namespace VeilBreakers.Commands
         public static QuickCommandInstance Create(QuickCommandType type, Combatant issuer,
             Combatant executor, Combatant target = null, Vector3? position = null)
         {
-            return new QuickCommandInstance
+            var instance = new QuickCommandInstance
             {
                 commandType = type,
                 state = CommandState.IDLE,
@@ -105,6 +108,14 @@ namespace VeilBreakers.Commands
                 startTime = Time.time,
                 duration = GetEstimatedDuration(type)
             };
+
+            // Cache GambitController to avoid GetComponent in update loops
+            if (executor != null)
+            {
+                instance.cachedGambitController = executor.GetComponent<AI.GambitController>();
+            }
+
+            return instance;
         }
 
         /// <summary>
