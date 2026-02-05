@@ -672,6 +672,7 @@ namespace VeilBreakers.UI.Menus
 
             // PROGRAMMATIC HOVER COLORS - bypasses USS specificity issues with Unity's built-in Button theme
             // USS hover states get overridden by Unity's default Button:hover, so we set colors directly via C#
+            // NOTE: Skip color changes for buttons using art skins (vb-btn-sheet class) - MoltenButtonVFX handles those
 
             bool isPrimary = button.name == "btn-new-game" || button.name == "btn-continue";
 
@@ -688,14 +689,19 @@ namespace VeilBreakers.UI.Menus
             Color secondaryBorderBase = new Color(180f / 255f, 90f / 255f, 40f / 255f, 1f);
             Color secondaryBorderHover = new Color(200f / 255f, 120f / 255f, 60f / 255f, 1f);
 
-            // Set initial base colors
-            Color baseColor = isPrimary ? primaryBaseColor : secondaryBaseColor;
-            Color baseBorder = isPrimary ? primaryBorderBase : secondaryBorderBase;
-            SetButtonColors(button, baseColor, baseBorder);
+            // Only set initial base colors if NOT using art skins
+            // (art skin buttons will have vb-btn-sheet class added later by MoltenButtonVFX)
+            // We delay the initial color setting since the class isn't present yet at startup
 
             // Create and store hover enter callback (for proper unregistration)
             EventCallback<MouseEnterEvent> enterCallback = evt =>
             {
+                // Skip entirely for art skin buttons - MoltenButtonVFX handles hover
+                if (button.ClassListContains("vb-btn-sheet"))
+                {
+                    return;
+                }
+
                 Color hoverColor = isPrimary ? primaryHoverColor : secondaryHoverColor;
                 Color hoverBorder = isPrimary ? primaryBorderHover : secondaryBorderHover;
                 SetButtonColors(button, hoverColor, hoverBorder);
@@ -706,6 +712,12 @@ namespace VeilBreakers.UI.Menus
             // Create and store hover leave callback (for proper unregistration)
             EventCallback<MouseLeaveEvent> leaveCallback = evt =>
             {
+                // Skip entirely for art skin buttons - MoltenButtonVFX handles hover
+                if (button.ClassListContains("vb-btn-sheet"))
+                {
+                    return;
+                }
+
                 Color restoreColor = isPrimary ? primaryBaseColor : secondaryBaseColor;
                 Color restoreBorder = isPrimary ? primaryBorderBase : secondaryBorderBase;
                 SetButtonColors(button, restoreColor, restoreBorder);

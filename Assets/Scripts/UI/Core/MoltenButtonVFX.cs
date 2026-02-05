@@ -42,7 +42,7 @@ namespace VeilBreakers.UI.Core
         [SerializeField] private Texture2D _lavaBubbleTexture;
 
         [Header("Button Sheet (AAA)")]
-        [SerializeField] private bool _enableButtonSheetSkins = true;
+        [SerializeField] private bool _enableButtonSheetSkins = false;
         [Tooltip("Optional. Auto-loads from Resources/Art/UI/MainMenu/mainmenu_buttons_sheet when empty.")]
         [SerializeField] private Texture2D _buttonSheetTexture;
         [SerializeField, Range(1, 6)] private int _buttonSheetColumns = 2;
@@ -95,6 +95,12 @@ namespace VeilBreakers.UI.Core
 
         private void Start()
         {
+            // DISABLE ALL hover block effects
+            _enableButtonSheetSkins = false;
+            _enableHoverLavaFill = false;
+            _enableMoltenHighlight = false;  // This was the sweeping block - DISABLED
+            _enableCracks = false;
+
             if (_uiDocument == null)
             {
                 _uiDocument = GetComponent<UIDocument>();
@@ -221,30 +227,8 @@ namespace VeilBreakers.UI.Core
 
             if (_sheetModeActive)
             {
-                // Simple hover outline for the new art buttons.
-                var outline = new VisualElement();
-                outline.name = "sheet-outline";
-                outline.style.position = Position.Absolute;
-                outline.style.left = 3;
-                outline.style.top = 3;
-                outline.style.right = 3;
-                outline.style.bottom = 3;
-                outline.style.borderLeftWidth = 2;
-                outline.style.borderRightWidth = 2;
-                outline.style.borderTopWidth = 2;
-                outline.style.borderBottomWidth = 2;
-                outline.style.borderLeftColor = new Color(1f, 0.55f, 0.25f, 0.95f);
-                outline.style.borderRightColor = new Color(1f, 0.55f, 0.25f, 0.95f);
-                outline.style.borderTopColor = new Color(1f, 0.65f, 0.35f, 0.95f);
-                outline.style.borderBottomColor = new Color(1f, 0.45f, 0.18f, 0.95f);
-                outline.style.borderTopLeftRadius = 18;
-                outline.style.borderTopRightRadius = 18;
-                outline.style.borderBottomLeftRadius = 18;
-                outline.style.borderBottomRightRadius = 18;
-                outline.style.opacity = 0;
-                outline.pickingMode = PickingMode.Ignore;
-                button.Add(outline);
-                state.SheetOutline = outline;
+                // Art buttons: no outline overlay, just scale on hover (handled in OnButtonHoverEnter/Exit)
+                // Keep state.SheetOutline null - no visual effects needed
             }
             else
             {
@@ -442,11 +426,52 @@ namespace VeilBreakers.UI.Core
 
         private void TryApplyButtonSheetSkins()
         {
-            if (_buttonSheetTexture == null) return;
             if (_buttonStates.Count == 0) return;
 
-            // Map button names -> sheet cell (col,row), row is top-to-bottom.
-            var mapping = new Dictionary<string, Vector2Int>
+            // Map button names -> individual image resource paths (preferred approach)
+            var imageMapping = new Dictionary<string, string>
+            {
+                { "btn-new-game", "Art/UI/MainMenu/btn_new_game" },
+                { "btn-settings", "Art/UI/MainMenu/btn_settings" },
+                { "btn-continue", "Art/UI/MainMenu/btn_continue" },
+                { "btn-credits", "Art/UI/MainMenu/btn_credits" },
+                { "btn-exit", "Art/UI/MainMenu/btn_exit" }
+            };
+
+            bool anyApplied = false;
+
+            foreach (var pair in _buttonStates)
+            {
+                var button = pair.Key;
+                if (button == null) continue;
+
+                if (!imageMapping.TryGetValue(button.name, out var resourcePath)) continue;
+
+                // Try to load individual button image first
+                var buttonTexture = Resources.Load<Texture2D>(resourcePath);
+                if (buttonTexture != null)
+                {
+                    ApplyButtonSkin(button, buttonTexture);
+                    anyApplied = true;
+                    Debug.Log($"[MoltenButtonVFX] Applied individual button skin: {button.name}");
+                }
+            }
+
+            if (anyApplied)
+            {
+                Debug.Log("[MoltenButtonVFX] Successfully applied individual button art skins");
+                return;
+            }
+
+            // Fallback to legacy sheet-cropping if individual images not found
+            if (_buttonSheetTexture == null)
+            {
+                Debug.LogWarning("[MoltenButtonVFX] No individual button images found and no sheet texture available");
+                return;
+            }
+
+            // Legacy sheet cell mapping for fallback
+            var sheetMapping = new Dictionary<string, Vector2Int>
             {
                 { "btn-new-game", new Vector2Int(0, 0) },
                 { "btn-settings", new Vector2Int(1, 0) },
@@ -460,7 +485,7 @@ namespace VeilBreakers.UI.Core
                 var button = pair.Key;
                 if (button == null) continue;
 
-                if (!mapping.TryGetValue(button.name, out var cell)) continue;
+                if (!sheetMapping.TryGetValue(button.name, out var cell)) continue;
 
                 if (TryCreateCroppedTextureFromCell(_buttonSheetTexture, cell.x, cell.y, out var skin))
                 {
@@ -641,7 +666,8 @@ namespace VeilBreakers.UI.Core
             if (_sheetModeActive)
             {
                 state.IsHovered = true;
-                if (state.SheetOutline != null) state.SheetOutline.style.opacity = 1f;
+                // Simple scale effect for art buttons - no outline or glow
+                state.Button.style.scale = new Scale(new Vector2(1.05f, 1.05f));
                 return;
             }
 
@@ -656,7 +682,8 @@ namespace VeilBreakers.UI.Core
             if (_sheetModeActive)
             {
                 state.IsHovered = false;
-                if (state.SheetOutline != null) state.SheetOutline.style.opacity = 0f;
+                // Reset scale for art buttons
+                state.Button.style.scale = new Scale(Vector2.one);
                 return;
             }
 

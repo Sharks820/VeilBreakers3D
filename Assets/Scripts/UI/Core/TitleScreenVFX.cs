@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.Video;
 
 namespace VeilBreakers.UI.Core
 {
@@ -49,7 +50,7 @@ namespace VeilBreakers.UI.Core
         [SerializeField] private Color _ashColorDark = new Color(0.18f, 0.16f, 0.14f, 0.35f);
 
         [Header("Smoke Wisp Settings (AAA)")]
-        [SerializeField] private int _smokeCount = 10;
+        [SerializeField] private int _smokeCount = 0; // Disabled - looked like shadow spheres
         [SerializeField] private float _smokeSpeedMin = 2.5f;
         [SerializeField] private float _smokeSpeedMax = 6f;
         [SerializeField] private float _smokeSizeMin = 120f;
@@ -61,12 +62,18 @@ namespace VeilBreakers.UI.Core
         [SerializeField] private float _sparkSpeedMin = 100f;
         [SerializeField] private float _sparkSpeedMax = 200f;
 
+        [Header("Menu Music")]
+        [SerializeField] private AudioClip _menuMusic;
+        [SerializeField, Range(0f, 1f)] private float _musicVolume = 0.7f;
+        [SerializeField] private float _musicFadeInDuration = 2f;
+        private AudioSource _audioSource;
+
         [Header("Lightning (AAA)")]
         [SerializeField] private bool _enableLightning = true;
-        [SerializeField] private float _lightningIntervalMin = 1.1f;
-        [SerializeField] private float _lightningIntervalMax = 2.6f;
-        [SerializeField] private float _lightningStrikeDurationMin = 0.35f;
-        [SerializeField] private float _lightningStrikeDurationMax = 0.65f;
+        [SerializeField] private float _lightningIntervalMin = 2.0f;
+        [SerializeField] private float _lightningIntervalMax = 4.0f;
+        [SerializeField] private float _lightningStrikeDurationMin = 1.2f;
+        [SerializeField] private float _lightningStrikeDurationMax = 2.0f;
         [SerializeField, Range(0f, 1f)] private float _lightningIntensity = 0.92f;
         [SerializeField] private Color _lightningTint = new Color(1f, 0.55f, 0.25f, 1f);
 
@@ -129,6 +136,23 @@ namespace VeilBreakers.UI.Core
         [SerializeField, Range(0f, 1f)] private float _backgroundDarken = 0.00f;
         [Tooltip("Optional. Auto-loads from Resources/Art/UI/MainMenu/mainmenu_background_portal when empty.")]
         [SerializeField] private Texture2D _backgroundPortalTexture;
+
+        [Header("Background Video (Looping)")]
+        [SerializeField] private bool _useVideoBackground = true;
+        [SerializeField] private VideoClip _backgroundVideoClip;
+        [Tooltip("Path to video in StreamingAssets or Resources if clip not assigned")]
+        [SerializeField] private string _videoPath = "Art/UI/MainMenu/background_video";
+
+        // PING-PONG VideoPlayer for seamless looping (forward video + reversed video)
+        private VideoPlayer _videoPlayerForward;
+        private VideoPlayer _videoPlayerReversed;
+        private RenderTexture _videoRenderTextureForward;
+        private RenderTexture _videoRenderTextureReversed;
+        private bool _playingForward = true; // Which direction is currently showing
+        private double _videoLength;
+        private bool _isVideoPlaying;
+        private string _videoFilePath;
+        private string _videoFilePathReversed;
 
         // =============================================================================
         // STATE
@@ -235,6 +259,35 @@ namespace VeilBreakers.UI.Core
 
         private void Start()
         {
+            // DISABLE ALL SHADOW/VIGNETTE OVERLAYS
+            _enableAtmosphereGradient = false;
+            _enableVignette = false;
+
+            // ENABLE VIDEO BACKGROUND
+            _useVideoBackground = true;
+
+            // PARTICLES SPAWN FROM FULL SCREEN (no margins)
+            _spawnMarginSides = 0f;
+            _spawnMarginBottom = 0f;
+
+            // BOOST particle counts for full-screen coverage
+            _emberCount = 350;       // Lots of embers everywhere
+            _microSparkCount = 120;  // Many micro sparks
+            _ashCount = 50;          // Floating ash across screen
+            _smokeCount = 10;        // Smoke wisps
+            _sparkCount = 25;        // Bright sparks
+
+            // Match particle colors to fiery red/orange portal video
+            _emberColorCore = new Color(1f, 0.6f, 0.2f, 1f);    // Hot orange-yellow core
+            _emberColorBody = new Color(0.9f, 0.25f, 0.05f, 0.85f); // Deep red-orange
+            _emberColorGlow = new Color(0.8f, 0.1f, 0f, 0.5f);  // Dark red glow
+
+            // CURSOR ATTRACTION - embers follow the mouse
+            _enableEmberMouseAttraction = true;
+            _emberAttractRadius = 400f;      // Large attraction radius
+            _emberAttractStrength = 350f;    // Strong pull toward cursor
+            _emberAttractVerticalInfluence = 0.8f; // Allow vertical pull too
+
             if (_uiDocument == null)
             {
                 _uiDocument = GetComponent<UIDocument>();
@@ -300,6 +353,47 @@ namespace VeilBreakers.UI.Core
             }
 
             Debug.Log($"[TitleScreenVFX] Textures loaded - Smoke: {_smokeTexture != null}, Ash: {_ashTexture != null}, Ember: {_emberTexture != null}, Grunge: {_grungeTexture != null}");
+
+            // Load menu music from Resources if not assigned
+            if (_menuMusic == null)
+            {
+                _menuMusic = Resources.Load<AudioClip>("Audio/Music/menu_music");
+            }
+
+            // Setup and play menu music
+            SetupMenuMusic();
+        }
+
+        private void SetupMenuMusic()
+        {
+            if (_menuMusic == null) return;
+
+            _audioSource = gameObject.GetComponent<AudioSource>();
+            if (_audioSource == null)
+            {
+                _audioSource = gameObject.AddComponent<AudioSource>();
+            }
+
+            _audioSource.clip = _menuMusic;
+            _audioSource.loop = true;
+            _audioSource.playOnAwake = false;
+            _audioSource.volume = 0f; // Start silent for fade-in
+            _audioSource.Play();
+
+            // Start fade-in coroutine
+            StartCoroutine(FadeMusicIn());
+        }
+
+        private System.Collections.IEnumerator FadeMusicIn()
+        {
+            float elapsed = 0f;
+            while (elapsed < _musicFadeInDuration)
+            {
+                elapsed += Time.deltaTime;
+                _audioSource.volume = Mathf.Lerp(0f, _musicVolume, elapsed / _musicFadeInDuration);
+                yield return null;
+            }
+            _audioSource.volume = _musicVolume;
         }
 
         private void OnGeometryChanged(GeometryChangedEvent evt)
@@ -418,6 +512,7 @@ namespace VeilBreakers.UI.Core
                 _logoContainer.RegisterCallback<PointerDownEvent>(OnLogoPointerDown);
 
                 RemoveLogoArtifacts();
+                AddLogoShadow();
                 EnsureLogoGlow();
                 EnsureLogoFxLayer();
             }
@@ -433,6 +528,16 @@ namespace VeilBreakers.UI.Core
 
             var backplate = _logoContainer.Q<VisualElement>("logo-backplate");
             if (backplate != null) backplate.RemoveFromHierarchy();
+
+            var shadow = _logoContainer.Q<VisualElement>("logo-shadow");
+            if (shadow != null) shadow.RemoveFromHierarchy();
+
+            // Also remove old top vignette if it exists
+            if (_host != null)
+            {
+                var vignette = _host.Q<VisualElement>("top-vignette");
+                if (vignette != null) vignette.RemoveFromHierarchy();
+            }
 
             _logoGlowElement = null;
         }
@@ -468,6 +573,14 @@ namespace VeilBreakers.UI.Core
             _backgroundElement = _host.Q<VisualElement>("background");
             if (_backgroundElement == null) return;
 
+            // Try video background first
+            if (_useVideoBackground)
+            {
+                SetupVideoBackground();
+                return;
+            }
+
+            // Fall back to static image
             if (_overrideBackgroundWithPortal && _backgroundPortalTexture == null)
             {
                 _backgroundPortalTexture = Resources.Load<Texture2D>("Art/UI/MainMenu/mainmenu_background_portal");
@@ -487,6 +600,252 @@ namespace VeilBreakers.UI.Core
             else
             {
                 _backgroundElement.style.backgroundColor = new Color(0f, 0f, 0f, Mathf.Clamp01(_backgroundDarken));
+            }
+        }
+
+        private void CreateTopVignette(VisualElement host)
+        {
+            // Disabled - user rejected screen-wide vignette
+            // Logo shadow added directly to logo instead
+        }
+
+        private void AddLogoShadow()
+        {
+            if (_logoImage == null || _logoContainer == null) return;
+
+            // Remove any existing shadow
+            var existingShadow = _logoContainer.Q<VisualElement>("logo-shadow");
+            if (existingShadow != null) existingShadow.RemoveFromHierarchy();
+
+            // Load logo texture directly (UXML style.backgroundImage not accessible in code)
+            var logoTexture = Resources.Load<Texture2D>("Art/UI/MainMenu/logo_veilbreakers");
+            if (logoTexture == null)
+            {
+                Debug.LogWarning("[TitleScreenVFX] Could not load logo texture for shadow");
+                return;
+            }
+
+            // Create shadow - a dark copy of the logo, offset down/right
+            // Use same centering as logo-image (left: 50%, translateX: -50%) plus shadow offset
+            var shadow = new VisualElement();
+            shadow.name = "logo-shadow";
+            shadow.style.position = Position.Absolute;
+            shadow.style.width = 1600;
+            shadow.style.height = 400;
+            shadow.style.left = Length.Percent(50);
+            // Translate: center (-50% of 1600 = -800) plus small shadow offset
+            shadow.style.translate = new Translate(new Length(-796, LengthUnit.Pixel), new Length(6, LengthUnit.Pixel));
+            shadow.style.top = 0;
+            shadow.style.backgroundImage = new StyleBackground(logoTexture);
+            shadow.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+            shadow.style.unityBackgroundImageTintColor = new Color(0f, 0f, 0f, 0.7f); // Dark shadow
+            shadow.pickingMode = PickingMode.Ignore;
+
+            // Insert shadow behind the logo image
+            int logoIndex = _logoContainer.IndexOf(_logoImage);
+            if (logoIndex >= 0)
+            {
+                _logoContainer.Insert(logoIndex, shadow);
+            }
+        }
+
+        private void SetupVideoBackground()
+        {
+            // PING-PONG TECHNIQUE with TWO VIDEOS for seamless looping
+            // Forward video plays to end, then swap to reversed video (which starts at same frame!)
+            // Reversed video plays to its end (original start), then swap back to forward
+            // This creates PERFECT seamless loops - no glitches possible!
+
+            // Find forward video file path
+            _videoFilePath = System.IO.Path.Combine(Application.streamingAssetsPath, "background_video.mp4");
+            if (!System.IO.File.Exists(_videoFilePath))
+            {
+                _videoFilePath = System.IO.Path.Combine(Application.dataPath, "Art/UI/MainMenu/background_video.mp4");
+            }
+
+            // Find reversed video file path
+            _videoFilePathReversed = System.IO.Path.Combine(Application.streamingAssetsPath, "background_video_reversed.mp4");
+            if (!System.IO.File.Exists(_videoFilePathReversed))
+            {
+                _videoFilePathReversed = System.IO.Path.Combine(Application.dataPath, "Art/UI/MainMenu/background_video_reversed.mp4");
+            }
+
+            if (!System.IO.File.Exists(_videoFilePath) && _backgroundVideoClip == null)
+            {
+                Debug.LogWarning($"[TitleScreenVFX] Video file not found at: {_videoFilePath}");
+                _useVideoBackground = false;
+                ApplyBackground();
+                return;
+            }
+
+            // Create high-quality RenderTextures for both players
+            int rtWidth = Mathf.Max(Screen.width, 1920);
+            int rtHeight = Mathf.Max(Screen.height, 1080);
+            _videoRenderTextureForward = CreateVideoRenderTexture(rtWidth, rtHeight, "BackgroundVideoRT_Forward");
+            _videoRenderTextureReversed = CreateVideoRenderTexture(rtWidth, rtHeight, "BackgroundVideoRT_Reversed");
+
+            // Create and configure both VideoPlayers
+            _videoPlayerForward = CreateVideoPlayer(_videoRenderTextureForward, _videoFilePath);
+            _videoPlayerReversed = CreateVideoPlayer(_videoRenderTextureReversed, _videoFilePathReversed);
+
+            // Prepare forward player first (it will start playback)
+            _videoPlayerForward.prepareCompleted += OnForwardVideoPrepared;
+            _videoPlayerForward.Prepare();
+
+            // Set background to black while video loads
+            _backgroundElement.style.backgroundColor = Color.black;
+
+            Debug.Log("[TitleScreenVFX] Ping-Pong dual video setup initiated (forward + reversed)");
+        }
+
+        private RenderTexture CreateVideoRenderTexture(int width, int height, string name)
+        {
+            var rt = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32);
+            rt.name = name;
+            rt.filterMode = FilterMode.Bilinear;
+            rt.antiAliasing = 1;
+            rt.useMipMap = false;
+            rt.Create();
+            return rt;
+        }
+
+        private VideoPlayer CreateVideoPlayer(RenderTexture targetTexture, string videoUrl)
+        {
+            // Create a child GameObject to hold the VideoPlayer
+            var playerObj = new GameObject(targetTexture.name + "_Player");
+            playerObj.transform.SetParent(transform);
+            var player = playerObj.AddComponent<VideoPlayer>();
+
+            player.playOnAwake = false;
+            player.renderMode = VideoRenderMode.RenderTexture;
+            player.targetTexture = targetTexture;
+            player.isLooping = false; // We control looping via loopPointReached event
+            player.skipOnDrop = false;
+            player.playbackSpeed = 1.15f; // Slightly faster for more dynamic feel
+            player.audioOutputMode = VideoAudioOutputMode.None;
+            player.aspectRatio = VideoAspectRatio.Stretch; // Stretch to fill RenderTexture exactly - no zoom
+
+            // Set source
+            player.source = VideoSource.Url;
+            player.url = videoUrl;
+
+            return player;
+        }
+
+        private void OnForwardVideoPrepared(VideoPlayer vp)
+        {
+            _videoLength = vp.length;
+            _isVideoPlaying = true;
+            _playingForward = true;
+
+            Debug.Log($"[TitleScreenVFX] Forward video prepared - Duration: {_videoLength:F2}s");
+
+            // Apply forward RenderTexture to background
+            _backgroundElement.style.backgroundImage = new StyleBackground(Background.FromRenderTexture(_videoRenderTextureForward));
+            _backgroundElement.style.unityBackgroundScaleMode = ScaleMode.StretchToFill;
+            _backgroundElement.style.unityBackgroundImageTintColor = Color.white;
+            _backgroundElement.style.backgroundColor = new Color(0f, 0f, 0f, 0f);
+
+            // Start playing forward video
+            vp.Play();
+
+            // Setup event-based ping-pong loop
+            SetupPingPongEvents();
+
+            // Prepare reversed video so it's ready for the swap
+            _videoPlayerReversed.prepareCompleted += OnReversedVideoPrepared;
+            _videoPlayerReversed.Prepare();
+        }
+
+        private void OnReversedVideoPrepared(VideoPlayer vp)
+        {
+            Debug.Log("[TitleScreenVFX] Reversed video prepared and standing by at frame 0");
+            // Reversed video stays paused at time=0, ready to instantly play when forward ends
+            vp.time = 0;
+            vp.Pause();
+        }
+
+        private void SetupPingPongEvents()
+        {
+            // EVENT-BASED SEAMLESS LOOP
+            // When one video finishes, instantly swap texture and start the other
+            // The "next" video is always pre-positioned at time=0, no seeking needed
+
+            _videoPlayerForward.loopPointReached += OnForwardVideoEnded;
+            _videoPlayerReversed.loopPointReached += OnReversedVideoEnded;
+        }
+
+        private void OnForwardVideoEnded(VideoPlayer vp)
+        {
+            if (!_isVideoPlaying) return;
+
+            // INSTANT swap - reversed is already paused at time=0
+            _backgroundElement.style.backgroundImage = new StyleBackground(Background.FromRenderTexture(_videoRenderTextureReversed));
+            _playingForward = false;
+
+            // Play reversed (already at 0), pause forward and reset for next cycle
+            _videoPlayerReversed.Play();
+            _videoPlayerForward.Pause();
+            _videoPlayerForward.time = 0; // Reset AFTER pause so it's ready for next swap
+        }
+
+        private void OnReversedVideoEnded(VideoPlayer vp)
+        {
+            if (!_isVideoPlaying) return;
+
+            // INSTANT swap - forward is already paused at time=0
+            _backgroundElement.style.backgroundImage = new StyleBackground(Background.FromRenderTexture(_videoRenderTextureForward));
+            _playingForward = true;
+
+            // Play forward (already at 0), pause reversed and reset for next cycle
+            _videoPlayerForward.Play();
+            _videoPlayerReversed.Pause();
+            _videoPlayerReversed.time = 0; // Reset AFTER pause so it's ready for next swap
+        }
+
+        private void OnDestroy()
+        {
+            // Stop video monitoring
+            _isVideoPlaying = false;
+
+            // Cleanup Forward VideoPlayer
+            if (_videoPlayerForward != null)
+            {
+                _videoPlayerForward.loopPointReached -= OnForwardVideoEnded;
+                _videoPlayerForward.Stop();
+                if (_videoPlayerForward.gameObject != gameObject)
+                {
+                    Destroy(_videoPlayerForward.gameObject);
+                }
+            }
+
+            // Cleanup Reversed VideoPlayer
+            if (_videoPlayerReversed != null)
+            {
+                _videoPlayerReversed.loopPointReached -= OnReversedVideoEnded;
+                _videoPlayerReversed.Stop();
+                if (_videoPlayerReversed.gameObject != gameObject)
+                {
+                    Destroy(_videoPlayerReversed.gameObject);
+                }
+            }
+
+            // Cleanup RenderTextures
+            if (_videoRenderTextureForward != null)
+            {
+                _videoRenderTextureForward.Release();
+                Destroy(_videoRenderTextureForward);
+            }
+            if (_videoRenderTextureReversed != null)
+            {
+                _videoRenderTextureReversed.Release();
+                Destroy(_videoRenderTextureReversed);
+            }
+
+            // Stop menu music
+            if (_audioSource != null)
+            {
+                _audioSource.Stop();
             }
         }
 
@@ -528,6 +887,10 @@ namespace VeilBreakers.UI.Core
 
             _host = host;
 
+            // Clean up any old vignette boxes from previous runs (domain reload disabled)
+            var oldVignette = host.Q<VisualElement>("top-vignette");
+            if (oldVignette != null) oldVignette.RemoveFromHierarchy();
+
             _screenWidth = host.resolvedStyle.width;
             _screenHeight = host.resolvedStyle.height;
 
@@ -536,6 +899,7 @@ namespace VeilBreakers.UI.Core
 
             SetupInteractiveTargets(host);
             ApplyBackground();
+            CreateTopVignette(host);
 
             // === AAA ATMOSPHERIC LAYERS ===
 
@@ -857,43 +1221,92 @@ namespace VeilBreakers.UI.Core
 
         private void CreateEmber()
         {
-            // AAA: Multi-layer ember with outer glow, body, and hot core
+            // =================================================================
+            // AAA EMBER PARTICLE - Multi-layer radial gradient with trail
+            // Creates realistic rising ember with hot core and soft outer glow
+            // =================================================================
 
-            // Outer blood-red glow (largest, softest)
-            var glow = new VisualElement();
-            glow.style.position = Position.Absolute;
-            glow.style.borderTopLeftRadius = Length.Percent(50);
-            glow.style.borderTopRightRadius = Length.Percent(50);
-            glow.style.borderBottomLeftRadius = Length.Percent(50);
-            glow.style.borderBottomRightRadius = Length.Percent(50);
-            glow.pickingMode = PickingMode.Ignore;
+            float depth = UnityEngine.Random.Range(0.35f, 1f);
+            float baseSize = UnityEngine.Random.Range(_emberSizeMin, _emberSizeMax) * Mathf.Lerp(0.75f, 1.25f, depth);
+            float elongation = UnityEngine.Random.Range(1.4f, 2.0f); // Varied elongation for natural look
 
-            // Middle body layer (orange/red)
-            var body = new VisualElement();
-            body.style.position = Position.Absolute;
-            body.style.borderTopLeftRadius = Length.Percent(50);
-            body.style.borderTopRightRadius = Length.Percent(50);
-            body.style.borderBottomLeftRadius = Length.Percent(50);
-            body.style.borderBottomRightRadius = Length.Percent(50);
-            body.pickingMode = PickingMode.Ignore;
-            glow.Add(body);
+            // Root container for the ember
+            var root = new VisualElement();
+            root.style.position = Position.Absolute;
+            root.pickingMode = PickingMode.Ignore;
 
-            // Inner hot core (brightest)
-            var core = new VisualElement();
-            core.style.position = Position.Absolute;
+            // === LAYER 1: Outermost soft glow (very faint, large) ===
+            float layer1Size = baseSize * 6f;
+            var layer1 = CreateEmberLayer(layer1Size, elongation, _emberColorGlow, 0.15f * depth);
+            layer1.style.borderTopLeftRadius = Length.Percent(50);
+            layer1.style.borderTopRightRadius = Length.Percent(50);
+            layer1.style.borderBottomLeftRadius = Length.Percent(15);
+            layer1.style.borderBottomRightRadius = Length.Percent(15);
+            root.Add(layer1);
+
+            // === LAYER 2: Mid glow ===
+            float layer2Size = baseSize * 4f;
+            var layer2 = CreateEmberLayer(layer2Size, elongation, _emberColorGlow, 0.25f * depth);
+            layer2.style.borderTopLeftRadius = Length.Percent(50);
+            layer2.style.borderTopRightRadius = Length.Percent(50);
+            layer2.style.borderBottomLeftRadius = Length.Percent(18);
+            layer2.style.borderBottomRightRadius = Length.Percent(18);
+            CenterInParent(layer2, layer1Size, layer2Size, elongation);
+            layer1.Add(layer2);
+
+            // === LAYER 3: Inner glow (orange) ===
+            float layer3Size = baseSize * 2.5f;
+            var layer3 = CreateEmberLayer(layer3Size, elongation, _emberColorBody, 0.5f * depth);
+            layer3.style.borderTopLeftRadius = Length.Percent(50);
+            layer3.style.borderTopRightRadius = Length.Percent(50);
+            layer3.style.borderBottomLeftRadius = Length.Percent(22);
+            layer3.style.borderBottomRightRadius = Length.Percent(22);
+            CenterInParent(layer3, layer2Size, layer3Size, elongation);
+            layer2.Add(layer3);
+
+            // === LAYER 4: Hot body (bright orange/yellow) ===
+            float layer4Size = baseSize * 1.5f;
+            Color hotColor = Color.Lerp(_emberColorBody, _emberColorCore, 0.5f);
+            var layer4 = CreateEmberLayer(layer4Size, elongation, hotColor, 0.75f * depth);
+            layer4.style.borderTopLeftRadius = Length.Percent(50);
+            layer4.style.borderTopRightRadius = Length.Percent(50);
+            layer4.style.borderBottomLeftRadius = Length.Percent(28);
+            layer4.style.borderBottomRightRadius = Length.Percent(28);
+            CenterInParent(layer4, layer3Size, layer4Size, elongation);
+            layer3.Add(layer4);
+
+            // === LAYER 5: White-hot core ===
+            float coreSize = baseSize * 0.8f;
+            var core = CreateEmberLayer(coreSize, elongation * 0.9f, _emberColorCore, 1f);
             core.style.borderTopLeftRadius = Length.Percent(50);
             core.style.borderTopRightRadius = Length.Percent(50);
-            core.style.borderBottomLeftRadius = Length.Percent(50);
-            core.style.borderBottomRightRadius = Length.Percent(50);
-            core.pickingMode = PickingMode.Ignore;
-            body.Add(core);
+            core.style.borderBottomLeftRadius = Length.Percent(35);
+            core.style.borderBottomRightRadius = Length.Percent(35);
+            CenterInParent(core, layer4Size, coreSize, elongation);
+            layer4.Add(core);
 
-            _vfxContainer.Add(glow);
+            // === TRAILING TAIL (creates motion blur effect) ===
+            var tail = new VisualElement();
+            tail.style.position = Position.Absolute;
+            tail.style.width = baseSize * 0.4f;
+            tail.style.height = baseSize * elongation * 2f; // Long trailing tail
+            tail.style.left = (layer1Size - baseSize * 0.4f) / 2f;
+            tail.style.top = layer1Size * elongation * 0.85f; // Below the main ember
+            var tailColor = _emberColorBody;
+            tailColor.a = 0.15f * depth;
+            tail.style.backgroundColor = tailColor;
+            tail.style.borderTopLeftRadius = Length.Percent(50);
+            tail.style.borderTopRightRadius = Length.Percent(50);
+            tail.style.borderBottomLeftRadius = Length.Percent(80);
+            tail.style.borderBottomRightRadius = Length.Percent(80);
+            tail.pickingMode = PickingMode.Ignore;
+            layer1.Add(tail);
 
-            float depth = UnityEngine.Random.Range(0.35f, 1f); // 0 = far, 1 = near (more volume via parallax)
-            var size = UnityEngine.Random.Range(_emberSizeMin, _emberSizeMax) * Mathf.Lerp(0.75f, 1.25f, depth);
-            var bodySize = size * Mathf.Lerp(1.6f, 2.3f, depth);
-            var glowSize = size * Mathf.Lerp(2.8f, 4.8f, depth);
+            // Set root size
+            root.style.width = layer1Size;
+            root.style.height = layer1Size * elongation + baseSize * elongation * 2f; // Include tail
+
+            _vfxContainer.Add(root);
 
             float speed = UnityEngine.Random.Range(_emberSpeedMin, _emberSpeedMax) * Mathf.Lerp(0.55f, 1.1f, depth);
             float opacityScale = Mathf.Lerp(0.25f, 1f, depth);
@@ -902,10 +1315,10 @@ namespace VeilBreakers.UI.Core
 
             var ember = new EmberParticle
             {
-                GlowElement = glow,
+                GlowElement = root,
                 CoreElement = core,
-                Size = size,
-                GlowSize = glowSize,
+                Size = baseSize,
+                GlowSize = layer1Size,
                 Depth = depth,
                 OpacityScale = opacityScale,
                 Speed = speed,
@@ -917,55 +1330,26 @@ namespace VeilBreakers.UI.Core
             };
 
             ResetEmberPosition(ember);
-
-            // AAA Style: Core (hot white/yellow center)
-            core.style.width = size;
-            core.style.height = size;
-            var coreTint = _emberColorCore;
-            coreTint.a *= Mathf.Lerp(0.7f, 1f, depth);
-            core.style.backgroundColor = coreTint;
-            core.style.left = (bodySize - size) / 2f;
-            core.style.top = (bodySize - size) / 2f;
-
-            // AAA Style: Body (orange/red) - USE TEXTURE if assigned
-            body.style.width = bodySize;
-            body.style.height = bodySize;
-            if (_emberTexture != null)
-            {
-                var bodyTint = _emberColorBody;
-                bodyTint.a *= Mathf.Lerp(0.55f, 1f, depth);
-                body.style.backgroundImage = new StyleBackground(_emberTexture);
-                body.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
-                body.style.unityBackgroundImageTintColor = bodyTint;
-            }
-            else
-            {
-                var bodyTint = _emberColorBody;
-                bodyTint.a *= Mathf.Lerp(0.55f, 1f, depth);
-                body.style.backgroundColor = bodyTint;
-            }
-            body.style.left = (glowSize - bodySize) / 2f;
-            body.style.top = (glowSize - bodySize) / 2f;
-
-            // AAA Style: Outer glow (deep blood red) - USE TEXTURE if assigned
-            glow.style.width = glowSize;
-            glow.style.height = glowSize;
-            if (_emberTexture != null)
-            {
-                var glowTint = _emberColorGlow;
-                glowTint.a *= Mathf.Lerp(0.35f, 1f, depth);
-                glow.style.backgroundImage = new StyleBackground(_emberTexture);
-                glow.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
-                glow.style.unityBackgroundImageTintColor = glowTint;
-            }
-            else
-            {
-                var glowTint = _emberColorGlow;
-                glowTint.a *= Mathf.Lerp(0.35f, 1f, depth);
-                glow.style.backgroundColor = glowTint;
-            }
-
             _embers.Add(ember);
+        }
+
+        private VisualElement CreateEmberLayer(float size, float elongation, Color color, float alphaMultiplier)
+        {
+            var layer = new VisualElement();
+            layer.style.position = Position.Absolute;
+            layer.style.width = size;
+            layer.style.height = size * elongation;
+            var c = color;
+            c.a *= alphaMultiplier;
+            layer.style.backgroundColor = c;
+            layer.pickingMode = PickingMode.Ignore;
+            return layer;
+        }
+
+        private void CenterInParent(VisualElement child, float parentSize, float childSize, float elongation)
+        {
+            child.style.left = (parentSize - childSize) / 2f;
+            child.style.top = (parentSize * elongation - childSize * elongation) / 2f;
         }
 
         private void CreateAsh()
@@ -1155,78 +1539,56 @@ namespace VeilBreakers.UI.Core
 
         private void ResetEmberPosition(EmberParticle ember)
         {
-            float marginX = _screenWidth * _spawnMarginSides;
+            // Spawn from ANYWHERE on screen (full coverage for animated background)
             ember.Position = new Vector2(
-                UnityEngine.Random.Range(marginX, _screenWidth - marginX),
-                _screenHeight + UnityEngine.Random.Range(20f, 100f)
+                UnityEngine.Random.Range(0f, _screenWidth),
+                UnityEngine.Random.Range(0f, _screenHeight * 1.2f) // Some spawn off-screen top
             );
-            ember.Age = 0;
+            ember.Age = UnityEngine.Random.Range(0f, ember.Lifetime * 0.5f); // Stagger ages
         }
 
         private void ResetAshPosition(AshParticle ash)
         {
-            float marginX = _screenWidth * _spawnMarginSides;
+            // Spawn from ANYWHERE on screen
             ash.Position = new Vector2(
-                UnityEngine.Random.Range(marginX, _screenWidth - marginX),
-                _screenHeight + UnityEngine.Random.Range(20f, 80f)
+                UnityEngine.Random.Range(0f, _screenWidth),
+                UnityEngine.Random.Range(0f, _screenHeight * 1.1f)
             );
-            ash.Age = 0;
+            ash.Age = UnityEngine.Random.Range(0f, ash.Lifetime * 0.5f);
         }
 
         private void ResetSparkPosition(SparkParticle spark)
         {
-            float marginX = _screenWidth * _spawnMarginSides;
-            float bottomArea = _screenHeight * _spawnMarginBottom;
+            // Sparks spawn from ANYWHERE on screen
             spark.Position = new Vector2(
-                UnityEngine.Random.Range(marginX, _screenWidth - marginX),
-                _screenHeight - UnityEngine.Random.Range(0f, bottomArea)
+                UnityEngine.Random.Range(0f, _screenWidth),
+                UnityEngine.Random.Range(_screenHeight * 0.3f, _screenHeight)
             );
             spark.Age = 0;
             spark.Direction = new Vector2(
-                UnityEngine.Random.Range(-0.4f, 0.4f),
-                UnityEngine.Random.Range(-1f, -0.6f)
+                UnityEngine.Random.Range(-0.5f, 0.5f),
+                UnityEngine.Random.Range(-1f, -0.4f)
             ).normalized;
         }
 
         private void ResetMicroSparkPosition(MicroSparkParticle spark)
         {
-            // Micro-sparks spawn anywhere on screen for ambient effect
+            // Micro-sparks spawn ANYWHERE on screen
             spark.Position = new Vector2(
                 UnityEngine.Random.Range(0f, _screenWidth),
-                _screenHeight + UnityEngine.Random.Range(10f, 50f)
+                UnityEngine.Random.Range(0f, _screenHeight)
             );
-            spark.Age = 0;
+            spark.Age = UnityEngine.Random.Range(0f, spark.Lifetime * 0.3f);
         }
 
         private void ResetSmokePosition(SmokeParticle smoke)
         {
-            // Smoke spawns from bottom and sides
-            float spawnSide = UnityEngine.Random.Range(0f, 1f);
-            if (spawnSide < 0.7f)
-            {
-                // Spawn from bottom
-                smoke.Position = new Vector2(
-                    UnityEngine.Random.Range(-smoke.Size * 0.5f, _screenWidth + smoke.Size * 0.5f),
-                    _screenHeight + smoke.Size * 0.5f
-                );
-            }
-            else if (spawnSide < 0.85f)
-            {
-                // Spawn from left
-                smoke.Position = new Vector2(
-                    -smoke.Size * 0.3f,
-                    UnityEngine.Random.Range(_screenHeight * 0.3f, _screenHeight)
-                );
-            }
-            else
-            {
-                // Spawn from right
-                smoke.Position = new Vector2(
-                    _screenWidth + smoke.Size * 0.3f,
-                    UnityEngine.Random.Range(_screenHeight * 0.3f, _screenHeight)
-                );
-            }
-            smoke.Age = 0;
+            // Smoke spawns ANYWHERE across the screen
+            smoke.Position = new Vector2(
+                UnityEngine.Random.Range(-smoke.Size * 0.3f, _screenWidth + smoke.Size * 0.3f),
+                UnityEngine.Random.Range(0f, _screenHeight * 1.1f)
+            );
+            smoke.Age = UnityEngine.Random.Range(0f, smoke.Lifetime * 0.4f);
             smoke.CurrentSize = smoke.Size;
         }
 
@@ -1782,14 +2144,14 @@ namespace VeilBreakers.UI.Core
                     continue;
                 }
 
-                float primary = 1f - Mathf.Clamp01(Mathf.Abs((t - 0.12f) / 0.10f));
-                float secondary = 1f - Mathf.Clamp01(Mathf.Abs((t - 0.34f) / 0.12f));
-                float after = Mathf.Clamp01(1f - t);
-                float flicker = 0.85f + 0.15f * Mathf.PerlinNoise(strike.FlickerSeed, strike.Age * 35f);
-                float alpha = Mathf.Clamp01(Mathf.Max(primary, secondary * 0.6f) * after * flicker) * strike.BaseOpacity * _lightningIntensity;
+                // Bright flash, hold, then fade - lingering lightning
+                float flashPeak = t < 0.1f ? t / 0.1f : 1f; // Quick ramp up
+                float decay = Mathf.Pow(1f - t, 0.8f); // Slower decay - stays visible longer
+                float flicker = 0.85f + 0.15f * Mathf.PerlinNoise(strike.FlickerSeed, strike.Age * 25f);
+                float alpha = Mathf.Clamp01(flashPeak * decay * flicker) * strike.BaseOpacity * _lightningIntensity;
 
-                strike.Bolt.style.opacity = alpha * 0.95f;
-                strike.Glow.style.opacity = alpha * 0.25f;
+                strike.Bolt.style.opacity = alpha;
+                strike.Glow.style.opacity = alpha * 0.35f;
                 maxFlash = Mathf.Max(maxFlash, alpha);
             }
 
@@ -1831,9 +2193,9 @@ namespace VeilBreakers.UI.Core
             strike.FlickerSeed = UnityEngine.Random.Range(0f, 1000f);
             strike.BaseOpacity = UnityEngine.Random.Range(0.75f, 1f);
 
-            float texAspect = tex.height > 0 ? tex.width / (float)tex.height : 0.25f;
-            float height = Mathf.Max(420f, _screenHeight * UnityEngine.Random.Range(0.95f, 1.25f));
-            float width = Mathf.Clamp(height * texAspect, 140f, 520f);
+            float height = Mathf.Max(400f, _screenHeight * UnityEngine.Random.Range(0.85f, 1.1f)); // Normal length
+            // Width independent of aspect - wide = StretchToFill makes bolt LINE thicker
+            float width = UnityEngine.Random.Range(550f, 800f); // Wide = thick bolt lines
 
             // Bias lightning to the sides so it frames the monster instead of sitting behind it.
             bool sideBiased = UnityEngine.Random.value < 0.88f;
@@ -1858,7 +2220,7 @@ namespace VeilBreakers.UI.Core
             float rotation = UnityEngine.Random.Range(-12f, 12f);
 
             strike.Bolt.style.backgroundImage = new StyleBackground(tex);
-            strike.Bolt.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+            strike.Bolt.style.unityBackgroundScaleMode = ScaleMode.StretchToFill; // Stretch to make bolt THICKER
             strike.Bolt.style.unityBackgroundImageTintColor = _lightningTint;
             strike.Bolt.style.width = width;
             strike.Bolt.style.height = height;
@@ -1867,12 +2229,12 @@ namespace VeilBreakers.UI.Core
             strike.Bolt.style.rotate = new Rotate(rotation);
 
             strike.Glow.style.backgroundImage = new StyleBackground(tex);
-            strike.Glow.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+            strike.Glow.style.unityBackgroundScaleMode = ScaleMode.StretchToFill; // Stretch glow too
             strike.Glow.style.unityBackgroundImageTintColor = new Color(1f, 0.35f, 0.12f, 1f);
-            strike.Glow.style.width = width * 1.12f;
-            strike.Glow.style.height = height * 1.12f;
-            strike.Glow.style.left = left - width * 0.06f;
-            strike.Glow.style.top = top - height * 0.06f;
+            strike.Glow.style.width = width * 1.6f;  // Bigger glow for thick appearance
+            strike.Glow.style.height = height * 1.3f;
+            strike.Glow.style.left = left - width * 0.3f;
+            strike.Glow.style.top = top - height * 0.15f;
             strike.Glow.style.rotate = new Rotate(rotation);
         }
 

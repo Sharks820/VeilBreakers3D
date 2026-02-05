@@ -220,6 +220,12 @@ namespace VeilBreakers.UI.Menus
 
                 btn.RegisterCallback<MouseEnterEvent>(evt =>
                 {
+                    // Skip entirely for art skin buttons - MoltenButtonVFX handles hover
+                    if (btn.ClassListContains("vb-btn-sheet"))
+                    {
+                        return;
+                    }
+
                     btn.style.scale = new Scale(new Vector2(1.05f, 1.05f));
                     if (isPrimary)
                     {
@@ -244,6 +250,12 @@ namespace VeilBreakers.UI.Menus
 
                 btn.RegisterCallback<MouseLeaveEvent>(evt =>
                 {
+                    // Skip entirely for art skin buttons - MoltenButtonVFX handles hover
+                    if (btn.ClassListContains("vb-btn-sheet"))
+                    {
+                        return;
+                    }
+
                     btn.style.scale = new Scale(Vector2.one);
                     if (isPrimary)
                     {
