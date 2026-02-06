@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI/Styles/CharacterSelect.uss" />
+    <Style src="project://database/Assets/UI/Styles/VeilBreakersTheme.uss" />
+
+    <!-- ================================================================== -->
+    <!-- ENVIRONMENT BACKGROUND                                              -->
+    <!-- ================================================================== -->
+
+    <ui:VisualElement name="environment-container" class="environment-container">
+        <ui:VisualElement name="env-layer-base" class="env-layer env-layer-base" />
+        <ui:VisualElement name="env-layer-color" class="env-layer env-layer-color" />
+        <ui:VisualElement name="env-vignette" class="env-layer env-vignette" />
+    </ui:VisualElement>
+
+    <!-- ================================================================== -->
+    <!-- HERO STAGE (3D RenderTexture target)                                -->
+    <!-- ================================================================== -->
+
+    <ui:VisualElement name="hero-stage" class="hero-stage">
+        <ui:VisualElement name="hero-stage-render" class="hero-stage-render" />
+    </ui:VisualElement>
+
+    <!-- ================================================================== -->
+    <!-- VFX OVERLAY                                                         -->
+    <!-- ================================================================== -->
+
+    <ui:VisualElement name="vfx-overlay" class="vfx-overlay" />
+
+    <!-- ================================================================== -->
+    <!-- VEIL TEAR TRANSITION                                                -->
+    <!-- ================================================================== -->
+
+    <ui:VisualElement name="veil-tear-overlay" class="veil-tear-overlay hidden">
+        <ui:VisualElement name="veil-tear-flash" class="veil-tear-flash" />
+        <ui:VisualElement name="veil-tear-crack-left" class="veil-tear-crack" />
+        <ui:VisualElement name="veil-tear-crack-right" class="veil-tear-crack" />
+    </ui:VisualElement>
+
+    <!-- ================================================================== -->
+    <!-- LEFT INFO PANEL                                                     -->
+    <!-- ================================================================== -->
+
+    <ui:VisualElement name="info-panel" class="info-panel glass-panel">
+        <ui:Label name="hero-name" text="VEX" class="hero-name" />
+        <ui:Label name="hero-title" text="THE WARDEN" class="hero-title" />
+        <ui:Label name="hero-quote" text="" class="hero-quote" />
+
+        <ui:VisualElement name="hero-details" class="hero-details">
+            <ui:VisualElement name="detail-path" class="detail-row">
+                <ui:Label text="PATH" class="detail-label" />
+                <ui:Label name="hero-path" text="IRONBOUND" class="detail-value" />
+            </ui:VisualElement>
+            <ui:VisualElement name="detail-role" class="detail-row">
+                <ui:Label text="ROLE" class="detail-label" />
+                <ui:Label name="hero-role" text="TANK" class="detail-value" />
+            </ui:VisualElement>
+            <ui:VisualElement name="detail-resource" class="detail-row">
+                <ui:Label text="RESOURCE" class="detail-label" />
+                <ui:Label name="hero-resource" text="GUARD" class="detail-value" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Starter Monster Info -->
+        <ui:VisualElement name="monster-info" class="monster-info">
+            <ui:Label text="STARTER COMPANION" class="section-label" />
+            <ui:VisualElement name="monster-card" class="monster-card">
+                <ui:VisualElement name="monster-thumbnail" class="monster-thumbnail" />
+                <ui:VisualElement name="monster-text" class="monster-text">
+                    <ui:Label name="monster-name" text="Ironjaw" class="monster-name" />
+                    <ui:Label name="monster-brand" text="IRON" class="monster-brand" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+
+    <!-- ================================================================== -->
+    <!-- RIGHT STATS PANEL (Tab to toggle)                                   -->
+    <!-- ================================================================== -->
+
+    <ui:VisualElement name="stats-panel" class="stats-panel glass-panel hidden">
+        <ui:Label text="ATTRIBUTES" class="section-label" />
+
+        <ui:VisualElement name="stat-bars" class="stat-bars">
+            <!-- STR -->
+            <ui:VisualElement name="stat-row-str" class="stat-row">
+                <ui:Label text="STR" class="stat-label" />
+                <ui:VisualElement class="stat-bar-track">
+                    <ui:VisualElement name="stat-fill-str" class="stat-bar-fill" />
+                </ui:VisualElement>
+                <ui:Label name="stat-val-str" text="0" class="stat-value" />
+            </ui:VisualElement>
+            <!-- DEX -->
+            <ui:VisualElement name="stat-row-dex" class="stat-row">
+                <ui:Label text="DEX" class="stat-label" />
+                <ui:VisualElement class="stat-bar-track">
+                    <ui:VisualElement name="stat-fill-dex" class="stat-bar-fill" />
+                </ui:VisualElement>
+                <ui:Label name="stat-val-dex" text="0" class="stat-value" />
+            </ui:VisualElement>
+            <!-- CON -->
+            <ui:VisualElement name="stat-row-con" class="stat-row">
+                <ui:Label text="CON" class="stat-label" />
+                <ui:VisualElement class="stat-bar-track">
+                    <ui:VisualElement name="stat-fill-con" class="stat-bar-fill" />
+                </ui:VisualElement>
+                <ui:Label name="stat-val-con" text="0" class="stat-value" />
+            </ui:VisualElement>
+            <!-- INT -->
+            <ui:VisualElement name="stat-row-int" class="stat-row">
+                <ui:Label text="INT" class="stat-label" />
+                <ui:VisualElement class="stat-bar-track">
+                    <ui:VisualElement name="stat-fill-int" class="stat-bar-fill" />
+                </ui:VisualElement>
+                <ui:Label name="stat-val-int" text="0" class="stat-value" />
+            </ui:VisualElement>
+            <!-- WIS -->
+            <ui:VisualElement name="stat-row-wis" class="stat-row">
+                <ui:Label text="WIS" class="stat-label" />
+                <ui:VisualElement class="stat-bar-track">
+                    <ui:VisualElement name="stat-fill-wis" class="stat-bar-fill" />
+                </ui:VisualElement>
+                <ui:Label name="stat-val-wis" text="0" class="stat-value" />
+            </ui:VisualElement>
+            <!-- CHA -->
+            <ui:VisualElement name="stat-row-cha" class="stat-row">
+                <ui:Label text="CHA" class="stat-label" />
+                <ui:VisualElement class="stat-bar-track">
+                    <ui:VisualElement name="stat-fill-cha" class="stat-bar-fill" />
+                </ui:VisualElement>
+                <ui:Label name="stat-val-cha" text="0" class="stat-value" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Abilities -->
+        <ui:Label text="ABILITIES" class="section-label" />
+        <ui:VisualElement name="ability-list" class="ability-list">
+            <ui:VisualElement name="ability-0" class="ability-row">
+                <ui:Label name="ability-name-0" text="" class="ability-name" />
+                <ui:Label name="ability-desc-0" text="" class="ability-desc" />
+            </ui:VisualElement>
+            <ui:VisualElement name="ability-1" class="ability-row">
+                <ui:Label name="ability-name-1" text="" class="ability-name" />
+                <ui:Label name="ability-desc-1" text="" class="ability-desc" />
+            </ui:VisualElement>
+            <ui:VisualElement name="ability-2" class="ability-row">
+                <ui:Label name="ability-name-2" text="" class="ability-name" />
+                <ui:Label name="ability-desc-2" text="" class="ability-desc" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+
+    <!-- ================================================================== -->
+    <!-- CAROUSEL STRIP (Bottom)                                             -->
+    <!-- ================================================================== -->
+
+    <ui:VisualElement name="carousel-strip" class="carousel-strip">
+        <ui:VisualElement name="carousel-track" class="carousel-track">
+            <!-- Hero slots populated by CharacterSelectController -->
+            <ui:VisualElement name="carousel-slot-0" class="carousel-slot selected" data-hero="vex">
+                <ui:VisualElement class="slot-portrait" />
+                <ui:VisualElement class="slot-glow" />
+                <ui:Label text="VEX" class="slot-name" />
+            </ui:VisualElement>
+            <ui:VisualElement name="carousel-slot-1" class="carousel-slot" data-hero="seraphina">
+                <ui:VisualElement class="slot-portrait" />
+                <ui:VisualElement class="slot-glow" />
+                <ui:Label text="SERAPHINA" class="slot-name" />
+            </ui:VisualElement>
+            <ui:VisualElement name="carousel-slot-2" class="carousel-slot" data-hero="orion">
+                <ui:VisualElement class="slot-portrait" />
+                <ui:VisualElement class="slot-glow" />
+                <ui:Label text="ORION" class="slot-name" />
+            </ui:VisualElement>
+            <ui:VisualElement name="carousel-slot-3" class="carousel-slot" data-hero="nyx">
+                <ui:VisualElement class="slot-portrait" />
+                <ui:VisualElement class="slot-glow" />
+                <ui:Label text="NYX" class="slot-name" />
+            </ui:VisualElement>
+            <!-- Teaser slot -->
+            <ui:VisualElement name="carousel-slot-teaser" class="carousel-slot teaser">
+                <ui:Label text="?" class="slot-teaser-mark" />
+                <ui:Label text="COMING SOON" class="slot-name teaser-name" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+
+    <!-- ================================================================== -->
+    <!-- EMBARK BUTTON                                                       -->
+    <!-- ================================================================== -->
+
+    <ui:Button name="btn-embark" class="embark-btn">
+        <ui:VisualElement class="embark-glow" />
+        <ui:Label name="embark-label" text="EMBARK AS VEX" class="embark-label" />
+        <ui:Label text="Begin Your Journey" class="embark-sub" />
+    </ui:Button>
+
+    <!-- ================================================================== -->
+    <!-- NAVIGATION                                                          -->
+    <!-- ================================================================== -->
+
+    <ui:Button name="btn-back" class="nav-btn back-btn">
+        <ui:VisualElement class="back-arrow" />
+        <ui:Label text="BACK" class="nav-label" />
+    </ui:Button>
+
+    <ui:Button name="btn-neutral-toggle" class="nav-btn neutral-btn hidden">
+        <ui:Label text="NEUTRAL BG" class="nav-label" />
+    </ui:Button>
+
+    <!-- ================================================================== -->
+    <!-- SCREEN FADE                                                         -->
+    <!-- ================================================================== -->
+
+    <ui:VisualElement name="screen-fade" class="screen-fade" />
+
+</ui:UXML>
