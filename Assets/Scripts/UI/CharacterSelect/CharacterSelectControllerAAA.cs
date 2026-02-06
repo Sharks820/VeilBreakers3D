@@ -505,7 +505,7 @@ namespace VeilBreakers.UI.CharacterSelect
         
         private void OnBackClicked(ClickEvent evt)
         {
-            StartCoroutine(FadeAndNavigate("TitleScreen"));
+            StartCoroutine(FadeAndNavigate("MainMenu"));
         }
         
         private void OnSettingsClicked(ClickEvent evt)
@@ -1116,7 +1116,7 @@ namespace VeilBreakers.UI.CharacterSelect
                     break;
                     
                 case KeyCode.Escape:
-                    StartCoroutine(FadeAndNavigate("TitleScreen"));
+                    StartCoroutine(FadeAndNavigate("MainMenu"));
                     evt.StopPropagation();
                     break;
             }
@@ -1144,7 +1144,7 @@ namespace VeilBreakers.UI.CharacterSelect
             PlayerPrefs.SetString("SelectedHero", selectedHero.hero_id);
             
             // Navigate to game
-            StartCoroutine(FadeAndNavigate("MainGame"));
+            StartCoroutine(FadeAndNavigate("Overworld"));
         }
         
         private IEnumerator FadeAndNavigate(string sceneName)
