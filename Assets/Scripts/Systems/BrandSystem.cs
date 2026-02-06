@@ -16,6 +16,18 @@ namespace VeilBreakers.Systems
         public const float NOT_EFFECTIVE = 0.5f;
         public const float NEUTRAL = 1.0f;
 
+        // Pre-computed brand display names to avoid repeated ToString + string manipulation
+        private static readonly Dictionary<Brand, string> _brandDisplayNames = new Dictionary<Brand, string>();
+
+        static BrandSystem()
+        {
+            foreach (Brand brand in Enum.GetValues(typeof(Brand)))
+            {
+                string name = brand.ToString();
+                _brandDisplayNames[brand] = name.Substring(0, 1) + name.Substring(1).ToLower();
+            }
+        }
+
         // Effectiveness matrix: Attacker -> (Strong against, Weak against)
         private static readonly Dictionary<Brand, (Brand[] strong, Brand[] weak)> EffectivenessMatrix =
             new Dictionary<Brand, (Brand[], Brand[])>
@@ -120,7 +132,7 @@ namespace VeilBreakers.Systems
         /// </summary>
         public static string GetBrandName(Brand brand)
         {
-            return brand.ToString().Substring(0, 1) + brand.ToString().Substring(1).ToLower();
+            return _brandDisplayNames.TryGetValue(brand, out string name) ? name : brand.ToString();
         }
 
         /// <summary>

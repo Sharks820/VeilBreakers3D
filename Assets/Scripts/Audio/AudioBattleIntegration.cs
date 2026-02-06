@@ -104,6 +104,8 @@ namespace VeilBreakers.Audio
         public void UnsubscribeFromBattleEvents()
         {
             if (!_isSubscribed) return;
+            _isSubscribed = false;
+
             if (BattleManager.Instance == null) return;
 
             BattleManager.Instance.OnBattleStart -= HandleBattleStart;
@@ -111,8 +113,6 @@ namespace VeilBreakers.Audio
             BattleManager.Instance.OnDamageDealt -= HandleDamageDealt;
             BattleManager.Instance.OnHealApplied -= HandleHealApplied;
             BattleManager.Instance.OnCombatantDeath -= HandleCombatantDeath;
-
-            _isSubscribed = false;
         }
 
         /// <summary>

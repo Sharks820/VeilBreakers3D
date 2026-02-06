@@ -382,7 +382,11 @@ namespace VeilBreakers.Test
 
         private void UnsubscribeFromBattleEvents()
         {
-            if (BattleManager.Instance == null) return;
+            if (BattleManager.Instance == null)
+            {
+                // BattleManager already destroyed - delegates are gone, nothing to unsub
+                return;
+            }
 
             if (_onBattleStart != null) BattleManager.Instance.OnBattleStart -= _onBattleStart;
             if (_onBattleEnd != null) BattleManager.Instance.OnBattleEnd -= _onBattleEnd;

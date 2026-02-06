@@ -60,8 +60,8 @@ namespace VeilBreakers.AI
         );
 
         // Rarity to base intelligence mapping (matches MonsterRarity enum order)
-        private static readonly int[] _rarityBaseIntelligence = { 0, 10, 20, 35, 50 };
-        // COMMON=0, UNCOMMON=10, RARE=20, EPIC=35, LEGENDARY=50
+        private static readonly int[] _rarityBaseIntelligence = { 0, 10, 20, 35, 50, 65 };
+        // COMMON=0, UNCOMMON=10, RARE=20, EPIC=35, LEGENDARY=50, MYTHIC=65
 
         // =============================================================================
         // CACHED DATA

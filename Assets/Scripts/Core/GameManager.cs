@@ -170,6 +170,11 @@ namespace VeilBreakers.Core
         /// </summary>
         public void SelectHero(string heroId)
         {
+            if (GameDatabase.Instance == null)
+            {
+                Debug.LogError("[GameManager] GameDatabase not initialized");
+                return;
+            }
             var heroData = GameDatabase.Instance.GetHero(heroId);
             if (heroData == null)
             {
@@ -208,6 +213,7 @@ namespace VeilBreakers.Core
         {
             if (CurrentHero == null) return;
 
+            if (GameDatabase.Instance == null) return;
             var heroData = GameDatabase.Instance.GetHero(CurrentHero.heroId);
             if (heroData == null) return;
 
@@ -246,6 +252,11 @@ namespace VeilBreakers.Core
                 return false;
             }
 
+            if (GameDatabase.Instance == null)
+            {
+                Debug.LogError("[GameManager] GameDatabase not initialized");
+                return false;
+            }
             var monsterData = GameDatabase.Instance.GetMonster(monsterId);
             if (monsterData == null)
             {
@@ -300,6 +311,7 @@ namespace VeilBreakers.Core
         /// </summary>
         public void RecalculateMonsterStats(PartyMember member)
         {
+            if (GameDatabase.Instance == null) return;
             var monsterData = GameDatabase.Instance.GetMonster(member.monsterId);
             if (monsterData == null) return;
 
