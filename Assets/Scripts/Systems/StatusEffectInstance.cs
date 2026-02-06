@@ -218,7 +218,7 @@ namespace VeilBreakers.Systems
         /// </summary>
         public bool RemoveStack()
         {
-            stacks--;
+            stacks = Mathf.Max(0, stacks - 1);
             return stacks > 0;
         }
 

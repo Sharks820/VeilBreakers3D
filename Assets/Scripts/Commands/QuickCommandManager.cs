@@ -372,6 +372,7 @@ namespace VeilBreakers.Commands
         private bool IsAlly(Combatant unit)
         {
             if (unit == _player) return true;
+            if (_allies == null) return false;
             for (int i = 0; i < _allies.Length; i++)
             {
                 if (_allies[i] == unit) return true;

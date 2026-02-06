@@ -163,8 +163,8 @@ namespace VeilBreakers.Capture
             }
             else if (difference < 0)
             {
-                // Player lower level - penalty
-                float penalty = difference * CaptureFormulaConfig.PER_LEVEL_ABOVE_PENALTY;
+                // Player lower level - penalty (use abs since difference is negative and penalty is negative)
+                float penalty = Mathf.Abs(difference) * CaptureFormulaConfig.PER_LEVEL_ABOVE_PENALTY;
                 return Mathf.Max(penalty, CaptureFormulaConfig.MAX_LEVEL_PENALTY);
             }
 

@@ -90,6 +90,9 @@ namespace VeilBreakers.Audio
 
         private void Awake()
         {
+            // Reset static quit flag for Editor play mode restarts
+            _isQuitting = false;
+
             if (_instance != null && _instance != this)
             {
                 Destroy(gameObject);

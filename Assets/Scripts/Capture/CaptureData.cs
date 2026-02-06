@@ -181,8 +181,8 @@ namespace VeilBreakers.Capture
         public const float CORRUPTED_PENALTY = -0.10f; // 51-75%
         public const float ABYSSAL_PENALTY = -0.20f;  // 76-100%
 
-        // Rarity modifiers
-        public static readonly float[] RarityModifiers = { 0f, -0.10f, -0.20f, -0.375f, -0.75f };
+        // Rarity modifiers (Common, Uncommon, Rare, Epic, Legendary, Mythic)
+        public static readonly float[] RarityModifiers = { 0f, -0.10f, -0.20f, -0.375f, -0.75f, -0.90f };
 
         // Level difference modifiers
         public const float PER_LEVEL_BELOW_BONUS = 0.03f;

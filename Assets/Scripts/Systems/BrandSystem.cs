@@ -124,6 +124,7 @@ namespace VeilBreakers.Systems
         public static Color GetBrandColor(Brand brand)
         {
             // Delegate to ThemeManager for a single source of truth
+            if (ThemeManager.Instance == null) return Color.white;
             return ThemeManager.Instance.GetBrandColor(brand);
         }
 

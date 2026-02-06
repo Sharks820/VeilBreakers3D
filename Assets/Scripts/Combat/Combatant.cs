@@ -81,9 +81,9 @@ namespace VeilBreakers.Combat
         public int Resistance => _resistance;
         public int Speed => _speed;
 
-        public float HpPercent => _maxHp > 0 ? (float)_currentHp / _maxHp : 0f;
-        public float HealthPercent => HpPercent; // Alias for audio system
-        public float MpPercent => _maxMp > 0 ? (float)_currentMp / _maxMp : 0f;
+        public float HpPercent => _maxHp > 0 ? (float)_currentHp / _maxHp * 100f : 0f;
+        public float HealthPercent => HpPercent; // Alias for audio system (divide by 100 for 0-1)
+        public float MpPercent => _maxMp > 0 ? (float)_currentMp / _maxMp * 100f : 0f;
 
         // Damage modifiers
         private float _damageBuffMultiplier = 1f;
@@ -245,7 +245,7 @@ namespace VeilBreakers.Combat
         public void Revive(float hpPercent = 0.5f)
         {
             _isAlive = true;
-            _currentHp = Mathf.RoundToInt(_maxHp * hpPercent);
+            _currentHp = Mathf.Max(1, Mathf.RoundToInt(_maxHp * Mathf.Clamp01(hpPercent)));
             OnRevive?.Invoke();
             OnHpChanged?.Invoke(_currentHp, _maxHp);
         }
