@@ -335,7 +335,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_PanelSettings: {fileID: 11400000, guid: e4ba88e66cb501148b61139b572544b3, type: 2}
   m_ParentUI: {fileID: 0}
-  sourceAsset: {fileID: 9197481963319205126, guid: e5b1f7b5da39e334da0ff6e809390032, type: 3}
+  sourceAsset: {fileID: 9197481963319205126, guid: 79fe1bde4e7cfbb4b866962f8d09d50d, type: 3}
   m_SortingOrder: 0
   m_Position: 0
   m_WorldSpaceSizeMode: 1
@@ -353,19 +353,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1200000000}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dac7e1630a0ee6d40bfd1e47ba781607, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _uiDocument: {fileID: 1200000002}
-  _heroModelMappings: []
-  _monsterModelMappings: []
-  _previewModelParent: {fileID: 1200000001}
-  _previewCamera: {fileID: 519420031}
-  _previewRenderTexture: {fileID: 0}
-  _pairPreview: {fileID: 0}
-  _backdropController: {fileID: 0}
-  _mainMenuScene: MainMenu
-  _gameScene: Battle
+  m_Script: {fileID: 11500000, guid: 2d8ace1e8b5db5d4887b18407f981e12, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  _switchSFX: {fileID: 0}
+  _confirmSFX: {fileID: 0}
+  _cancelSFX: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
