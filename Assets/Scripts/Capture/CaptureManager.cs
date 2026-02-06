@@ -145,6 +145,8 @@ namespace VeilBreakers.Capture
 
         private void HandleInput()
         {
+            if (!InputManager.HasInstance) return;
+
             // Mark action to mark/unmark current target
             if (InputManager.Instance.GetActionDown(InputManager.GameAction.Mark))
             {

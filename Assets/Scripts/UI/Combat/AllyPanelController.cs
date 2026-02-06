@@ -88,6 +88,8 @@ namespace VeilBreakers.UI.Combat
 
         private void Update()
         {
+            if (!InputManager.HasInstance) return;
+
             // Ally1-Ally3 triggers ally ultimates
             InputManager.GameAction action = _allyIndex switch
             {

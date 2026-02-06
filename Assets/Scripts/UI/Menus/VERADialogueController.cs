@@ -122,6 +122,8 @@ namespace VeilBreakers.UI.Menus
 
         private void Update()
         {
+            if (!InputManager.HasInstance) return;
+
             // Check for input to advance dialogue
             if (_isWaitingForInput && (InputManager.Instance.GetMouseButtonDown(0) || InputManager.Instance.GetActionDown(InputManager.GameAction.DialogueAdvance)))
             {

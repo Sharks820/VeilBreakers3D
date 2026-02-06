@@ -1,0 +1,102 @@
+name: Unity CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - master
+    paths:
+      - Assets/**
+      - Packages/**
+      - ProjectSettings/**
+      - .github/workflows/unity-ci.yml
+  workflow_dispatch:
+
+concurrency:
+  group: unity-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  build-windows:
+    name: Build (Windows x64)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Build Player
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          projectPath: .
+          targetPlatform: StandaloneWindows64
+          allowDirtyBuild: true
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: player-windows-x64
+          path: build/StandaloneWindows64
+          if-no-files-found: error
+
+  test-editmode:
+    name: Test (EditMode)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Run EditMode Tests
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          projectPath: .
+          testMode: editmode
+      - name: Upload EditMode Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-editmode
+          path: artifacts
+          if-no-files-found: error
+
+  test-playmode-smoke:
+    name: Test (PlayMode Smoke)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Run PlayMode Smoke Tests
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          projectPath: .
+          testMode: playmode
+          customParameters: -testCategory Suite.Smoke
+      - name: Upload PlayMode Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-playmode-smoke
+          path: artifacts
+          if-no-files-found: error

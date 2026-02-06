@@ -106,40 +106,40 @@ namespace VeilBreakers.Core
 
             Log("=== INITIALIZING VEILBREAKERS ===");
 
-            // The act of accessing the .Instance property will cause the singleton's
-            // Awake method to run, creating the manager if it doesn't exist.
-            // This ensures a controlled, orderly initialization.
+            // Explicitly ensure manager GameObjects exist. SingletonMonoBehaviour.Instance
+            // does not auto-create by itself.
 
             // Phase 1: Core Managers
             Log("Phase 1: Core Managers");
-            _ = GameManager.Instance;
-            _ = GameDatabase.Instance;
-            _ = InputManager.Instance;
+            EnsureManager<GameManager>("[GameManager]");
+            EnsureManager<GameDatabase>("[GameDatabase]");
+            EnsureManager<InputManager>("[InputManager]");
             Log("  - Core managers initialized.");
 
             // Phase 2: Persistence & Settings
             Log("Phase 2: Persistence & Settings");
-            _ = SettingsManager.Instance;
-            _ = VBSceneManager.Instance;
-            _ = SaveManager.Instance;
-            _ = AutoSaveManager.Instance;
+            EnsureManager<SettingsManager>("[SettingsManager]");
+            EnsureManager<VBSceneManager>("[VBSceneManager]");
+            EnsureManager<SaveManager>("[SaveManager]");
+            EnsureManager<AutoSaveManager>("[AutoSaveManager]");
             Log("  - Persistence systems initialized.");
 
             // Phase 3: Audio System
             Log("Phase 3: Audio System");
-            if (AudioManager.HasInstance)
+            var audioManager = EnsureManager<AudioManager>("[AudioManager]");
+            if (audioManager != null)
             {
-                AudioManager.Instance.SetConfig(_audioConfig);
+                audioManager.SetConfig(_audioConfig);
             }
-            _ = MusicManager.Instance;
-            _ = VERAVoiceController.Instance;
-            _ = LowHealthAudio.Instance;
+            EnsureManager<MusicManager>("[MusicManager]");
+            EnsureManager<VERAVoiceController>("[VERAVoiceController]");
+            EnsureLowHealthAudio("[LowHealthAudio]");
             Log("  - Audio systems initialized.");
             
             // Phase 4: Gameplay Systems
             Log("Phase 4: Gameplay Systems");
-            _ = StatusEffectManager.Instance;
-            _ = ShrineManager.Instance;
+            EnsureManager<StatusEffectManager>("[StatusEffectManager]");
+            EnsureManager<ShrineManager>("[ShrineManager]");
             Log("  - Gameplay systems initialized.");
 
             _isInitialized = true;
@@ -188,6 +188,42 @@ namespace VeilBreakers.Core
             {
                 LogError($"  [MISSING] {name}");
             }
+        }
+
+        private T EnsureManager<T>(string objectName) where T : SingletonMonoBehaviour<T>
+        {
+            if (!SingletonMonoBehaviour<T>.HasInstance)
+            {
+                var managerObject = new GameObject(objectName);
+                managerObject.AddComponent<T>();
+                Log($"  - Created {typeof(T).Name}");
+            }
+
+            var instance = SingletonMonoBehaviour<T>.Instance;
+            if (instance == null)
+            {
+                LogError($"  - Failed to initialize {typeof(T).Name}");
+            }
+
+            return instance;
+        }
+
+        private LowHealthAudio EnsureLowHealthAudio(string objectName)
+        {
+            if (!LowHealthAudio.HasInstance)
+            {
+                var managerObject = new GameObject(objectName);
+                managerObject.AddComponent<LowHealthAudio>();
+                Log("  - Created LowHealthAudio");
+            }
+
+            var instance = LowHealthAudio.Instance;
+            if (instance == null)
+            {
+                LogError("  - Failed to initialize LowHealthAudio");
+            }
+
+            return instance;
         }
 
         // =============================================================================

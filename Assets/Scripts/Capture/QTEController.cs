@@ -272,6 +272,8 @@ namespace VeilBreakers.Capture
 
         private void CheckInput()
         {
+            if (!InputManager.HasInstance) return;
+
             if (InputManager.Instance.GetActionDown(InputManager.GameAction.Confirm) || InputManager.Instance.GetActionDown(InputManager.GameAction.Capture))
             {
                 EvaluateTimingBar();

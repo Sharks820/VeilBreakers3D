@@ -317,6 +317,8 @@ namespace VeilBreakers.UI.Combat
 
         private void CheckInput()
         {
+            if (!InputManager.HasInstance) return;
+
             // Map slot index to GameAction
             // 0 -> Basic Attack (Q)
             // 1 -> Defend (E)

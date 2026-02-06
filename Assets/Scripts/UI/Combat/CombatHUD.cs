@@ -325,6 +325,7 @@ namespace VeilBreakers.UI.Combat
         private void HandleTargetCycling()
         {
             if (!_isInitialized) return;
+            if (!InputManager.HasInstance) return;
 
             // Cycle targets
             if (InputManager.Instance.GetActionDown(InputManager.GameAction.TargetNext))

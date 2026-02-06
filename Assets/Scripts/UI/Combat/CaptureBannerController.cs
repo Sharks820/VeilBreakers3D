@@ -107,6 +107,8 @@ namespace VeilBreakers.UI.Combat
 
         private void Update()
         {
+            if (!InputManager.HasInstance) return;
+
             // Capture action handles capture
             if (InputManager.Instance.GetActionDown(InputManager.GameAction.Capture))
             {

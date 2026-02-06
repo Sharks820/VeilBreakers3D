@@ -1,0 +1,18 @@
+# Update this file as team ownership evolves.
+# Format: <pattern> <owner>
+
+* @Sharks820
+
+# Core systems
+Assets/Scripts/Core/ @Sharks820
+Assets/Scripts/Managers/ @Sharks820
+
+# Gameplay domains
+Assets/Scripts/Combat/ @Sharks820
+Assets/Scripts/Capture/ @Sharks820
+Assets/Scripts/AI/ @Sharks820
+
+# UI domains
+Assets/Scripts/UI/ @Sharks820
+Assets/Resources/UI/ @Sharks820
+

@@ -71,6 +71,7 @@ crashlytics-build.properties
 !.vscode/launch.json
 !.vscode/extensions.json
 *.code-workspace
+.vs/
 
 # OS Generated
 .DS_Store
@@ -83,6 +84,8 @@ Thumbs.db
 
 # Screenshots (debug artifacts)
 screenshots/
+test-results/
+TestResults/
 
 # Godot files (should not be in Unity project)
 *.import
@@ -105,3 +108,10 @@ TempCompileCheck/
 
 # Gemini CLI
 .gemini/
+
+# Claude local settings
+.claude/settings.local.json
+
+# Patch/rebase leftovers
+*.orig
+*.rej
