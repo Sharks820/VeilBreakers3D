@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
@@ -37,6 +36,11 @@ namespace VeilBreakers.UI.Menus
         private const string kPrefShowFPS = "Graphics_ShowFPS";
         private const string kPrefSensitivity = "Controls_Sensitivity";
         private const string kPrefInvertY = "Controls_InvertY";
+        private const string kPrefSubtitles = "Audio_Subtitles";
+        private const string kPrefDifficulty = "Gameplay_Difficulty";
+        private const string kPrefDamageNumbers = "Gameplay_DamageNumbers";
+        private const string kPrefHealthBars = "Gameplay_HealthBars";
+        private const string kPrefTutorials = "Gameplay_Tutorials";
 
         // =============================================================================
         // UI ELEMENTS
@@ -69,6 +73,7 @@ namespace VeilBreakers.UI.Menus
         private Label _labelSFXValue;
         private Label _labelVoiceValue;
         private Toggle _toggleMute;
+        private Toggle _toggleSubtitles;
 
         // Graphics
         private VBDropdownField _dropdownResolution;
@@ -128,6 +133,7 @@ namespace VeilBreakers.UI.Menus
             public float sfxVolume = 0.8f;
             public float voiceVolume = 1.0f;
             public bool muteAll = false;
+            public bool subtitles = true;
 
             // Graphics
             public int resolutionIndex = 0;
@@ -140,6 +146,12 @@ namespace VeilBreakers.UI.Menus
             public float mouseSensitivity = 50f;
             public bool invertY = false;
 
+            // Gameplay
+            public int difficulty = 1;  // 0=Story, 1=Normal, 2=Hard, 3=Nightmare
+            public bool damageNumbers = true;
+            public bool healthBars = true;
+            public bool tutorials = true;
+
             public SettingsData Clone()
             {
                 return new SettingsData
@@ -149,13 +161,18 @@ namespace VeilBreakers.UI.Menus
                     sfxVolume = this.sfxVolume,
                     voiceVolume = this.voiceVolume,
                     muteAll = this.muteAll,
+                    subtitles = this.subtitles,
                     resolutionIndex = this.resolutionIndex,
                     fullscreenMode = this.fullscreenMode,
                     qualityLevel = this.qualityLevel,
                     vsync = this.vsync,
                     showFPS = this.showFPS,
                     mouseSensitivity = this.mouseSensitivity,
-                    invertY = this.invertY
+                    invertY = this.invertY,
+                    difficulty = this.difficulty,
+                    damageNumbers = this.damageNumbers,
+                    healthBars = this.healthBars,
+                    tutorials = this.tutorials
                 };
             }
         }
@@ -243,6 +260,7 @@ namespace VeilBreakers.UI.Menus
             _labelSFXValue = _root.Q<Label>("label-sfx-value");
             _labelVoiceValue = _root.Q<Label>("label-voice-value");
             _toggleMute = _root.Q<Toggle>("toggle-mute");
+            _toggleSubtitles = _root.Q<Toggle>("toggle-subtitles");
 
             // Graphics controls
             _dropdownResolution = _root.Q<VBDropdownField>("dropdown-resolution");
@@ -268,6 +286,7 @@ namespace VeilBreakers.UI.Menus
             // Bind events
             BindEvents();
 
+            _initialized = true;
             ErrorLogger.UI("SettingsPanel initialized");
         }
 
@@ -325,6 +344,7 @@ namespace VeilBreakers.UI.Menus
             _sliderSFX?.RegisterValueChangedCallback(OnSFXVolumeChanged);
             _sliderVoice?.RegisterValueChangedCallback(OnVoiceVolumeChanged);
             _toggleMute?.RegisterValueChangedCallback(OnMuteChanged);
+            _toggleSubtitles?.RegisterValueChangedCallback(OnSubtitlesChanged);
 
             _dropdownResolution?.RegisterValueChangedCallback(OnResolutionChanged);
             _dropdownFullscreen?.RegisterValueChangedCallback(OnFullscreenChanged);
@@ -334,6 +354,11 @@ namespace VeilBreakers.UI.Menus
 
             _sliderSensitivity?.RegisterValueChangedCallback(OnSensitivityChanged);
             _toggleInvertY?.RegisterValueChangedCallback(OnInvertYChanged);
+
+            _dropdownDifficulty?.RegisterValueChangedCallback(OnDifficultyChanged);
+            _toggleDamageNumbers?.RegisterValueChangedCallback(OnDamageNumbersChanged);
+            _toggleHealthBars?.RegisterValueChangedCallback(OnHealthBarsChanged);
+            _toggleTutorials?.RegisterValueChangedCallback(OnTutorialsChanged);
 
             _root?.RegisterCallback<KeyDownEvent>(OnKeyDown);
         }
@@ -354,6 +379,7 @@ namespace VeilBreakers.UI.Menus
             _sliderSFX?.UnregisterValueChangedCallback(OnSFXVolumeChanged);
             _sliderVoice?.UnregisterValueChangedCallback(OnVoiceVolumeChanged);
             _toggleMute?.UnregisterValueChangedCallback(OnMuteChanged);
+            _toggleSubtitles?.UnregisterValueChangedCallback(OnSubtitlesChanged);
 
             _dropdownResolution?.UnregisterValueChangedCallback(OnResolutionChanged);
             _dropdownFullscreen?.UnregisterValueChangedCallback(OnFullscreenChanged);
@@ -363,6 +389,11 @@ namespace VeilBreakers.UI.Menus
 
             _sliderSensitivity?.UnregisterValueChangedCallback(OnSensitivityChanged);
             _toggleInvertY?.UnregisterValueChangedCallback(OnInvertYChanged);
+
+            _dropdownDifficulty?.UnregisterValueChangedCallback(OnDifficultyChanged);
+            _toggleDamageNumbers?.UnregisterValueChangedCallback(OnDamageNumbersChanged);
+            _toggleHealthBars?.UnregisterValueChangedCallback(OnHealthBarsChanged);
+            _toggleTutorials?.UnregisterValueChangedCallback(OnTutorialsChanged);
 
             _root?.UnregisterCallback<KeyDownEvent>(OnKeyDown);
         }
@@ -400,6 +431,7 @@ namespace VeilBreakers.UI.Menus
         }
 
         private void OnMuteChanged(ChangeEvent<bool> evt) => _pendingSettings.muteAll = evt.newValue;
+        private void OnSubtitlesChanged(ChangeEvent<bool> evt) => _pendingSettings.subtitles = evt.newValue;
 
         private void OnResolutionChanged(ChangeEvent<string> evt) => _pendingSettings.resolutionIndex = _dropdownResolution.index;
         private void OnFullscreenChanged(ChangeEvent<string> evt) => _pendingSettings.fullscreenMode = _dropdownFullscreen.index;
@@ -414,6 +446,11 @@ namespace VeilBreakers.UI.Menus
         }
 
         private void OnInvertYChanged(ChangeEvent<bool> evt) => _pendingSettings.invertY = evt.newValue;
+
+        private void OnDifficultyChanged(ChangeEvent<string> evt) => _pendingSettings.difficulty = _dropdownDifficulty.index;
+        private void OnDamageNumbersChanged(ChangeEvent<bool> evt) => _pendingSettings.damageNumbers = evt.newValue;
+        private void OnHealthBarsChanged(ChangeEvent<bool> evt) => _pendingSettings.healthBars = evt.newValue;
+        private void OnTutorialsChanged(ChangeEvent<bool> evt) => _pendingSettings.tutorials = evt.newValue;
 
         private void OnKeyDown(KeyDownEvent evt)
         {
@@ -512,6 +549,12 @@ namespace VeilBreakers.UI.Menus
             _currentSettings.mouseSensitivity = PlayerPrefs.GetFloat(kPrefSensitivity, 50f);
             _currentSettings.invertY = PlayerPrefs.GetInt(kPrefInvertY, 0) == 1;
 
+            _currentSettings.subtitles = PlayerPrefs.GetInt(kPrefSubtitles, 1) == 1;
+            _currentSettings.difficulty = PlayerPrefs.GetInt(kPrefDifficulty, 1);
+            _currentSettings.damageNumbers = PlayerPrefs.GetInt(kPrefDamageNumbers, 1) == 1;
+            _currentSettings.healthBars = PlayerPrefs.GetInt(kPrefHealthBars, 1) == 1;
+            _currentSettings.tutorials = PlayerPrefs.GetInt(kPrefTutorials, 1) == 1;
+
             _pendingSettings = _currentSettings.Clone();
         }
 
@@ -546,6 +589,12 @@ namespace VeilBreakers.UI.Menus
             PlayerPrefs.SetFloat(kPrefSensitivity, _currentSettings.mouseSensitivity);
             PlayerPrefs.SetInt(kPrefInvertY, _currentSettings.invertY ? 1 : 0);
 
+            PlayerPrefs.SetInt(kPrefSubtitles, _currentSettings.subtitles ? 1 : 0);
+            PlayerPrefs.SetInt(kPrefDifficulty, _currentSettings.difficulty);
+            PlayerPrefs.SetInt(kPrefDamageNumbers, _currentSettings.damageNumbers ? 1 : 0);
+            PlayerPrefs.SetInt(kPrefHealthBars, _currentSettings.healthBars ? 1 : 0);
+            PlayerPrefs.SetInt(kPrefTutorials, _currentSettings.tutorials ? 1 : 0);
+
             PlayerPrefs.Save();
             ErrorLogger.UI("Settings saved");
         }
@@ -562,6 +611,7 @@ namespace VeilBreakers.UI.Menus
             UpdateVolumeLabel(_labelSFXValue, _currentSettings.sfxVolume * 100f);
             UpdateVolumeLabel(_labelVoiceValue, _currentSettings.voiceVolume * 100f);
             _toggleMute?.SetValueWithoutNotify(_currentSettings.muteAll);
+            _toggleSubtitles?.SetValueWithoutNotify(_currentSettings.subtitles);
 
             // Graphics
             if (_dropdownResolution != null && _availableResolutions.Count > 0)
@@ -584,6 +634,16 @@ namespace VeilBreakers.UI.Menus
             if (_labelSensitivityValue != null)
                 _labelSensitivityValue.text = $"{_currentSettings.mouseSensitivity:F0}";
             _toggleInvertY?.SetValueWithoutNotify(_currentSettings.invertY);
+
+            // Gameplay
+            if (_dropdownDifficulty != null)
+            {
+                _dropdownDifficulty.index = Mathf.Clamp(_currentSettings.difficulty, 0, 3);
+                _dropdownDifficulty.SetValueWithoutNotify(GetDifficultyString(_currentSettings.difficulty));
+            }
+            _toggleDamageNumbers?.SetValueWithoutNotify(_currentSettings.damageNumbers);
+            _toggleHealthBars?.SetValueWithoutNotify(_currentSettings.healthBars);
+            _toggleTutorials?.SetValueWithoutNotify(_currentSettings.tutorials);
         }
 
         private void UpdateVolumeLabel(Label label, float value)
@@ -615,6 +675,18 @@ namespace VeilBreakers.UI.Menus
             };
         }
 
+        private string GetDifficultyString(int level)
+        {
+            return level switch
+            {
+                0 => "Story",
+                1 => "Normal",
+                2 => "Hard",
+                3 => "Nightmare",
+                _ => "Normal"
+            };
+        }
+
         // =============================================================================
         // ACTIONS
         // =============================================================================
@@ -629,6 +701,12 @@ namespace VeilBreakers.UI.Menus
             // Apply graphics
             ApplyGraphicsSettings();
 
+            // Apply FPS counter
+            ApplyFPSCounter();
+
+            // Sync to SettingsManager singleton (bridges both settings systems)
+            SyncToSettingsManager();
+
             // Save to PlayerPrefs
             SaveSettings();
 
@@ -638,11 +716,14 @@ namespace VeilBreakers.UI.Menus
 
         private void ApplyAudioSettings()
         {
-            // TODO: Integrate with AudioManager
-            // AudioManager.Instance?.SetMasterVolume(_currentSettings.muteAll ? 0 : _currentSettings.masterVolume);
-            // AudioManager.Instance?.SetMusicVolume(_currentSettings.musicVolume);
-            // AudioManager.Instance?.SetSFXVolume(_currentSettings.sfxVolume);
-            // AudioManager.Instance?.SetVoiceVolume(_currentSettings.voiceVolume);
+            if (Audio.AudioManager.HasInstance)
+            {
+                var audioManager = Audio.AudioManager.Instance;
+                audioManager.SetMasterVolume(_currentSettings.muteAll ? 0f : _currentSettings.masterVolume);
+                audioManager.SetMusicVolume(_currentSettings.musicVolume);
+                audioManager.SetSFXVolume(_currentSettings.sfxVolume);
+                audioManager.SetVoiceVolume(_currentSettings.voiceVolume);
+            }
         }
 
         private void ApplyGraphicsSettings()
@@ -669,6 +750,41 @@ namespace VeilBreakers.UI.Menus
 
             // VSync
             QualitySettings.vSyncCount = _currentSettings.vsync ? 1 : 0;
+        }
+
+        private void ApplyFPSCounter()
+        {
+            var fpsCounter = FPSCounter.Instance;
+            if (fpsCounter != null)
+            {
+                fpsCounter.SetVisible(_currentSettings.showFPS);
+            }
+        }
+
+        private void SyncToSettingsManager()
+        {
+            if (!Managers.SettingsManager.HasInstance) return;
+            var sm = Managers.SettingsManager.Instance;
+
+            // Audio
+            sm.SetMasterVolume(_currentSettings.masterVolume);
+            sm.SetMusicVolume(_currentSettings.musicVolume);
+            sm.SetSFXVolume(_currentSettings.sfxVolume);
+            sm.SetVoiceVolume(_currentSettings.voiceVolume);
+            sm.SetMuteAll(_currentSettings.muteAll);
+            sm.SetSubtitles(_currentSettings.subtitles);
+
+            // Controls - normalize slider range (1-100) to sensitivity range (0.02-2.0)
+            sm.SetCameraSensitivity(_currentSettings.mouseSensitivity / 50f);
+            sm.SetInvertY(_currentSettings.invertY);
+
+            // Gameplay
+            sm.SetDamageNumbers(_currentSettings.damageNumbers);
+            sm.SetHealthBars(_currentSettings.healthBars);
+            sm.SetTutorialTips(_currentSettings.tutorials);
+            sm.SetDifficulty(_currentSettings.difficulty);
+
+            sm.SaveSettings();
         }
 
         private void ResetToDefaults()
@@ -762,6 +878,15 @@ namespace VeilBreakers.UI.Menus
             // Controls
             if (!Mathf.Approximately(_pendingSettings.mouseSensitivity, _currentSettings.mouseSensitivity)) return true;
             if (_pendingSettings.invertY != _currentSettings.invertY) return true;
+
+            // Audio extras
+            if (_pendingSettings.subtitles != _currentSettings.subtitles) return true;
+
+            // Gameplay
+            if (_pendingSettings.difficulty != _currentSettings.difficulty) return true;
+            if (_pendingSettings.damageNumbers != _currentSettings.damageNumbers) return true;
+            if (_pendingSettings.healthBars != _currentSettings.healthBars) return true;
+            if (_pendingSettings.tutorials != _currentSettings.tutorials) return true;
 
             return false;
         }
@@ -974,12 +1099,13 @@ namespace VeilBreakers.UI.Menus
             _root = root;
             _initialized = true;
 
-            // Query settings panel
+            // Query settings panel and scroll view
             _settingsPanel = _root.Q<VisualElement>("settings-panel");
             if (_settingsPanel == null)
             {
                 _settingsPanel = _root;
             }
+            _settingsScrollView = _root.Q<ScrollView>("settings-content");
 
             // Query tabs
             _tabAudio = _root.Q<Button>("tab-audio");
@@ -999,6 +1125,7 @@ namespace VeilBreakers.UI.Menus
             _sliderSFX = _root.Q<Slider>("slider-sfx");
             _sliderVoice = _root.Q<Slider>("slider-voice");
             _toggleMute = _root.Q<Toggle>("toggle-mute");
+            _toggleSubtitles = _root.Q<Toggle>("toggle-subtitles");
 
             _labelMasterValue = _root.Q<Label>("label-master-value");
             _labelMusicValue = _root.Q<Label>("label-music-value");

@@ -140,6 +140,7 @@ namespace VeilBreakers.Core
             Log("Phase 4: Gameplay Systems");
             EnsureManager<StatusEffectManager>("[StatusEffectManager]");
             EnsureManager<ShrineManager>("[ShrineManager]");
+            EnsureFPSCounter("[FPSCounter]");
             Log("  - Gameplay systems initialized.");
 
             _isInitialized = true;
@@ -224,6 +225,17 @@ namespace VeilBreakers.Core
             }
 
             return instance;
+        }
+
+        private UI.Menus.FPSCounter EnsureFPSCounter(string objectName)
+        {
+            if (UI.Menus.FPSCounter.Instance == null)
+            {
+                var fpsObject = new GameObject(objectName);
+                fpsObject.AddComponent<UI.Menus.FPSCounter>();
+                Log("  - Created FPSCounter");
+            }
+            return UI.Menus.FPSCounter.Instance;
         }
 
         // =============================================================================
