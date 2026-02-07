@@ -42,7 +42,7 @@ namespace VeilBreakers.UI.CharacterSelect
         [SerializeField] private float _framingMaxDistance = 3.8f;
 
         [Header("Model Positions")]
-        [SerializeField] private Vector3 _heroPosition = new Vector3(0f, -1.15f, 0f);
+        [SerializeField] private Vector3 _heroPosition = new Vector3(0f, -1.45f, 0f);
         [SerializeField] private Vector3 _monsterPosition = new Vector3(0.7f, 0f, 0.3f);
         [SerializeField] private float _heroScale = 1.4f;
         [SerializeField] private float _monsterScale = 0.5f;
@@ -54,7 +54,7 @@ namespace VeilBreakers.UI.CharacterSelect
         [SerializeField] private float _autoOrbitSpeed = 5f;
         [SerializeField] private float _idleBeforeOrbit = 3f;
         [SerializeField] private float _rotateStepDegrees = 20f;
-        [SerializeField] private float _initialFacingYaw = 90f;
+        [SerializeField] private float _initialFacingYaw = -90f;
 
         [Header("Animation")]
         [SerializeField] private float _spawnDuration = 0.5f;
@@ -560,7 +560,7 @@ namespace VeilBreakers.UI.CharacterSelect
             distance = Mathf.Clamp(distance, _framingMinDistance, _framingMaxDistance);
 
             // Bias focus toward upper torso so the full character sits lower in frame.
-            Vector3 lookTarget = bounds.center + Vector3.up * (bounds.size.y * 0.24f);
+            Vector3 lookTarget = bounds.center + Vector3.up * (bounds.size.y * 0.34f);
             float yOffset = _cameraPosition.y - _cameraLookAt.y;
             Vector3 camPosition = new Vector3(lookTarget.x + _cameraPosition.x, lookTarget.y + yOffset, lookTarget.z - distance);
 
