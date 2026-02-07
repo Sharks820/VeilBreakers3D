@@ -30,6 +30,17 @@ namespace VeilBreakers.UI.CharacterSelect
         private const string kSelectedHeroPref = "SelectedHero";
         private const string kStarterTownLocation = "StarterTown";
         private static readonly string[] kStatKeys = { "str", "dex", "con", "int", "wis", "cha" };
+        private static readonly Color[] kStatFillBaseColors =
+        {
+            new Color(0.86f, 0.36f, 0.28f, 1f), // STR
+            new Color(0.34f, 0.76f, 0.45f, 1f), // DEX
+            new Color(0.80f, 0.64f, 0.30f, 1f), // CON
+            new Color(0.30f, 0.62f, 0.92f, 1f), // INT
+            new Color(0.31f, 0.78f, 0.78f, 1f), // WIS
+            new Color(0.86f, 0.45f, 0.66f, 1f)  // CHA
+        };
+        private static readonly string[] kFallbackAbilityIds = { "attack_basic", "defend" };
+        private const string kMissingAbilityDescription = "Signature technique data syncing.";
 
         // =============================================================================
         // SERIALIZED FIELDS
@@ -68,6 +79,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private readonly VisualElement[] _statFills = new VisualElement[6];
         private readonly VisualElement[] _statRows = new VisualElement[6];
         private readonly Label[] _statValues = new Label[6];
+        private readonly VisualElement[] _abilityRows = new VisualElement[kMaxAbilities];
         private readonly Label[] _abilityNames = new Label[kMaxAbilities];
         private readonly Label[] _abilityDescs = new Label[kMaxAbilities];
 
@@ -316,6 +328,7 @@ namespace VeilBreakers.UI.CharacterSelect
             }
             for (int i = 0; i < kMaxAbilities; i++)
             {
+                _abilityRows[i] = _root.Q($"ability-{i}");
                 _abilityNames[i] = _root.Q<Label>($"ability-name-{i}");
                 _abilityDescs[i] = _root.Q<Label>($"ability-desc-{i}");
             }
@@ -407,9 +420,9 @@ namespace VeilBreakers.UI.CharacterSelect
             var heroStage = EnsureElement(_root, "hero-stage");
             heroStage.style.position = Position.Absolute;
             heroStage.style.left = Length.Percent(25f);
-            heroStage.style.top = Length.Percent(5f);
+            heroStage.style.top = Length.Percent(11f);
             heroStage.style.width = Length.Percent(50f);
-            heroStage.style.height = Length.Percent(70f);
+            heroStage.style.height = Length.Percent(66f);
             heroStage.style.overflow = Overflow.Hidden;
 
             var heroStageRender = EnsureElement(heroStage, "hero-stage-render");
@@ -511,7 +524,7 @@ namespace VeilBreakers.UI.CharacterSelect
             var cycleHud = EnsureElement(_root, "hero-cycle-hud");
             cycleHud.style.position = Position.Absolute;
             cycleHud.style.left = Length.Percent(50f);
-            cycleHud.style.bottom = 286f;
+            cycleHud.style.bottom = 236f;
             cycleHud.style.width = 320f;
             cycleHud.style.height = 36f;
             cycleHud.style.marginLeft = -160f;
@@ -536,7 +549,7 @@ namespace VeilBreakers.UI.CharacterSelect
             var embark = EnsureButton(_root, "btn-embark");
             embark.style.position = Position.Absolute;
             embark.style.left = Length.Percent(50f);
-            embark.style.bottom = 206f;
+            embark.style.bottom = 152f;
             embark.style.width = 320f;
             embark.style.height = 64f;
             embark.style.marginLeft = -160f;
@@ -612,7 +625,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private static void ApplyFallbackPanelStyle(VisualElement panel, bool right)
         {
             panel.style.position = Position.Absolute;
-            panel.style.top = 80f;
+            panel.style.top = 130f;
             if (right)
             {
                 panel.style.right = 40f;
@@ -705,7 +718,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             button.tooltip = tooltip;
 
-            var arrowLabel = button.Q<Label>(className: "hero-cycle-arrow") ?? button.Q<Label>();
+            var arrowLabel = button.Q<Label>(className: "vb-hero-cycle-arrow") ?? button.Q<Label>();
             if (arrowLabel != null)
             {
                 if (string.IsNullOrWhiteSpace(arrowLabel.text))
@@ -730,7 +743,8 @@ namespace VeilBreakers.UI.CharacterSelect
             var cycleHud = _heroCycleHud ?? EnsureElement(_root, "hero-cycle-hud");
             cycleHud.style.position = Position.Absolute;
             cycleHud.style.left = Length.Percent(50f);
-            cycleHud.style.top = 30f;
+            cycleHud.style.top = StyleKeyword.Null;
+            cycleHud.style.bottom = 236f;
             cycleHud.style.width = 420f;
             cycleHud.style.height = 46f;
             cycleHud.style.marginLeft = -210f;
@@ -781,7 +795,7 @@ namespace VeilBreakers.UI.CharacterSelect
                 _btnEmbark.style.position = Position.Absolute;
                 _btnEmbark.style.left = Length.Percent(50f);
                 _btnEmbark.style.marginLeft = -170f;
-                _btnEmbark.style.bottom = 184f;
+                _btnEmbark.style.bottom = 148f;
                 _btnEmbark.style.width = 340f;
                 _btnEmbark.style.height = 68f;
                 _btnEmbark.style.display = DisplayStyle.Flex;
@@ -1202,7 +1216,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void ApplyStatsTheme(HeroData hero, int[] stats)
         {
-            Color baseColor = hero?.color_palette != null ? hero.color_palette.ToColor() : new Color(0.95f, 0.5f, 0.2f);
+            Color heroAccent = hero?.color_palette != null ? hero.color_palette.ToColor() : new Color(0.95f, 0.5f, 0.2f);
 
             int highestIndex = 0;
             int highestValue = int.MinValue;
@@ -1219,17 +1233,20 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 if (_statRows[i] != null)
                 {
-                    _statRows[i].RemoveFromClassList("stat-row-primary");
+                    _statRows[i].RemoveFromClassList("vb-stat-row-primary");
                     if (i == highestIndex)
                     {
-                        _statRows[i].AddToClassList("stat-row-primary");
+                        _statRows[i].AddToClassList("vb-stat-row-primary");
                     }
                 }
 
                 if (_statFills[i] != null)
                 {
-                    float brighten = Mathf.Lerp(0.18f, 0.42f, i / 5f);
-                    Color fillColor = Color.Lerp(baseColor, Color.white, brighten);
+                    Color fillColor = Color.Lerp(kStatFillBaseColors[i], heroAccent, 0.18f);
+                    if (i == highestIndex)
+                    {
+                        fillColor = Color.Lerp(fillColor, Color.white, 0.22f);
+                    }
                     fillColor.a = 0.95f;
                     _statFills[i].style.backgroundColor = fillColor;
                 }
@@ -1238,19 +1255,60 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void ApplyAbilities(HeroData hero)
         {
-            var skills = GameDatabase.Instance?.GetHeroInnateSkills(hero);
             for (int i = 0; i < kMaxAbilities; i++)
             {
-                if (skills != null && i < skills.Count && skills[i] != null)
+                string abilityName = string.Empty;
+                string abilityDesc = string.Empty;
+                bool hasAbility = false;
+
+                string skillId = (hero?.innate_skills != null && i < hero.innate_skills.Length)
+                    ? hero.innate_skills[i]
+                    : null;
+
+                SkillData skill = !string.IsNullOrWhiteSpace(skillId)
+                    ? GameDatabase.Instance?.GetSkill(skillId)
+                    : null;
+
+                if (skill != null)
                 {
-                    if (_abilityNames[i] != null) _abilityNames[i].text = FormatSkillName(skills[i].display_name);
-                    if (_abilityDescs[i] != null) _abilityDescs[i].text = skills[i].description ?? "";
+                    hasAbility = true;
+                    abilityName = FormatSkillName(skill.display_name);
+                    abilityDesc = skill.description ?? string.Empty;
+                }
+                else if (!string.IsNullOrWhiteSpace(skillId))
+                {
+                    hasAbility = true;
+                    abilityName = FormatSkillName(skillId);
+                    abilityDesc = kMissingAbilityDescription;
+                }
+                else if (i < kFallbackAbilityIds.Length)
+                {
+                    SkillData fallbackSkill = GameDatabase.Instance?.GetSkill(kFallbackAbilityIds[i]);
+                    hasAbility = true;
+                    if (fallbackSkill != null)
+                    {
+                        abilityName = FormatSkillName(fallbackSkill.display_name);
+                        abilityDesc = fallbackSkill.description ?? string.Empty;
+                    }
+                    else
+                    {
+                        abilityName = i == 0 ? "Attack" : "Defend";
+                        abilityDesc = i == 0
+                            ? "A basic physical attack."
+                            : "Brace for incoming attacks this turn.";
+                    }
                 }
                 else
                 {
-                    if (_abilityNames[i] != null) _abilityNames[i].text = "";
-                    if (_abilityDescs[i] != null) _abilityDescs[i].text = "";
+                    hasAbility = false;
                 }
+
+                if (_abilityRows[i] != null)
+                {
+                    _abilityRows[i].style.display = hasAbility ? DisplayStyle.Flex : DisplayStyle.None;
+                }
+                if (_abilityNames[i] != null) _abilityNames[i].text = abilityName;
+                if (_abilityDescs[i] != null) _abilityDescs[i].text = abilityDesc;
             }
         }
 

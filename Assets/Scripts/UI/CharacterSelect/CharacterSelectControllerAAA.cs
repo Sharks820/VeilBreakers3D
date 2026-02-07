@@ -779,8 +779,8 @@ namespace VeilBreakers.UI.CharacterSelect
                 if (i >= hero.innate_skills.Length) continue;
                 
                 string skillId = hero.innate_skills[i];
-                var nameLabel = abilityCards[i].Q<Label>(className: "ability-name");
-                var descLabel = abilityCards[i].Q<Label>(className: "ability-desc");
+                var nameLabel = abilityCards[i].Q<Label>(className: "vb-ability-name");
+                var descLabel = abilityCards[i].Q<Label>(className: "vb-ability-desc");
 
                 // Use cached uppercase skill name to avoid allocations
                 string skillNameUpper = GetCachedSkillNameUpper(skillId);
