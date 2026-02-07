@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
@@ -50,8 +51,10 @@ namespace VeilBreakers.UI.Menus
         private VisualElement _titleSection;
         private VisualElement _buttonContainer;
         private List<Button> _cachedButtons; // Cache for entrance animation (avoid ToList allocation)
-        private Coroutine _animationCoroutine;
         private bool _hasValidSave;
+        private bool _initialized;
+        private bool _eventsBound;
+        private int _continueSlot = SaveManager.kNoneSlot;
 
         // Hover callback storage for proper unregistration (prevents memory leaks)
         private Dictionary<Button, EventCallback<MouseEnterEvent>> _hoverEnterCallbacks;
@@ -81,8 +84,16 @@ namespace VeilBreakers.UI.Menus
 
         private void OnEnable()
         {
-            InitializeUI();
-            StartCoroutine(RefreshContinueButton());
+            if (!_initialized)
+            {
+                InitializeUI();
+            }
+
+            if (_initialized)
+            {
+                BindEvents();
+                StartCoroutine(RefreshContinueButton());
+            }
 
             // Subscribe to InputManager for universal navigation
             if (InputManager.Instance != null)
@@ -102,11 +113,8 @@ namespace VeilBreakers.UI.Menus
                 InputManager.Instance.OnActionTriggered -= OnActionTriggered;
             }
 
-            if (_animationCoroutine != null)
-            {
-                StopCoroutine(_animationCoroutine);
-                _animationCoroutine = null;
-            }
+            // Stop all coroutines (entrance animations, RefreshContinueButton, etc.)
+            StopAllCoroutines();
         }
 
         private void OnActionTriggered(InputManager.GameAction action)
@@ -151,7 +159,7 @@ namespace VeilBreakers.UI.Menus
             _buttonContainer = _root.Q<VisualElement>("button-container");
 
             // Cache buttons for entrance animation (avoid ToList allocation)
-            _cachedButtons = _buttonContainer.Query<Button>().ToList();
+            _cachedButtons = _buttonContainer != null ? _buttonContainer.Query<Button>().ToList() : new List<Button>();
 
             // Initialize hover callback dictionaries for proper cleanup
             _hoverEnterCallbacks = new Dictionary<Button, EventCallback<MouseEnterEvent>>();
@@ -169,29 +177,32 @@ namespace VeilBreakers.UI.Menus
             // Start animations
             PlayEntranceAnimation();
 
+            _initialized = true;
             ErrorLogger.UI("MainMenu initialized");
         }
 
         private void BindEvents()
         {
+            if (_eventsBound) return;
+            _eventsBound = true;
+
             _btnContinue?.RegisterCallback<ClickEvent>(OnContinueButtonClicked);
             _btnNewGame?.RegisterCallback<ClickEvent>(OnNewGameButtonClicked);
             _btnSettings?.RegisterCallback<ClickEvent>(OnSettingsButtonClicked);
             _btnCredits?.RegisterCallback<ClickEvent>(OnCreditsButtonClicked);
             _btnExit?.RegisterCallback<ClickEvent>(OnExitButtonClicked);
-
-            // Keyboard navigation
-            _root?.RegisterCallback<KeyDownEvent>(OnKeyDown);
         }
 
         private void UnbindEvents()
         {
+            if (!_eventsBound) return;
+            _eventsBound = false;
+
             _btnContinue?.UnregisterCallback<ClickEvent>(OnContinueButtonClicked);
             _btnNewGame?.UnregisterCallback<ClickEvent>(OnNewGameButtonClicked);
             _btnSettings?.UnregisterCallback<ClickEvent>(OnSettingsButtonClicked);
             _btnCredits?.UnregisterCallback<ClickEvent>(OnCreditsButtonClicked);
             _btnExit?.UnregisterCallback<ClickEvent>(OnExitButtonClicked);
-            _root?.UnregisterCallback<KeyDownEvent>(OnKeyDown);
         }
 
         // =============================================================================
@@ -202,45 +213,63 @@ namespace VeilBreakers.UI.Menus
         {
             bool saveExists = false;
             bool corrupted = false;
+            int continueSlot = SaveManager.kNoneSlot;
 
             if (SaveManager.HasInstance)
             {
-                var metaTask = SaveManager.Instance.GetSlotMetadataAsync(0);
-                while (!metaTask.IsCompleted)
+                var slotTask = SaveManager.Instance.GetMostRecentSlotAsync(includeAutoSlots: true);
+                while (!slotTask.IsCompleted)
                 {
                     yield return null;
                 }
 
-                var meta = metaTask.Result;
-                saveExists = meta?.hasData == true && meta.isCorrupted == false;
-                corrupted = meta?.isCorrupted == true;
+                if (slotTask.IsFaulted)
+                {
+                    Debug.LogError($"[MainMenu] Failed to get save slot: {slotTask.Exception?.InnerException?.Message}");
+                    yield break;
+                }
+
+                continueSlot = slotTask.Result;
+                saveExists = continueSlot != SaveManager.kNoneSlot;
+
+                if (saveExists)
+                {
+                    var metaTask = SaveManager.Instance.GetSlotMetadataAsync(continueSlot);
+                    while (!metaTask.IsCompleted)
+                    {
+                        yield return null;
+                    }
+
+                    if (metaTask.IsFaulted)
+                    {
+                        Debug.LogError($"[MainMenu] Failed to get slot metadata: {metaTask.Exception?.InnerException?.Message}");
+                        yield break;
+                    }
+
+                    var meta = metaTask.Result;
+                    corrupted = meta?.isCorrupted == true;
+                    if (corrupted)
+                    {
+                        saveExists = false;
+                        continueSlot = SaveManager.kNoneSlot;
+                    }
+                }
             }
             else
             {
-                // Fallback for early initialization before SaveManager is created
-                string savePath = System.IO.Path.Combine(
-                    Application.persistentDataPath,
-                    "saves",
-                    "slot_0.sav"
-                );
-                saveExists = System.IO.File.Exists(savePath);
+                // Fallback for early initialization before SaveManager is created.
+                continueSlot = FindMostRecentSlotFromDiskFallback();
+                saveExists = continueSlot != SaveManager.kNoneSlot;
             }
 
             SetContinueVisible(saveExists);
             _hasValidSave = saveExists;
+            _continueSlot = continueSlot;
 
             if (corrupted)
             {
-                Debug.LogWarning("[MainMenuController] Save slot 0 appears corrupted; hiding Continue.");
+                Debug.LogWarning($"[MainMenuController] Save slot {continueSlot} appears corrupted; hiding Continue.");
             }
-        }
-
-        /// <summary>
-        /// Triggers a check for existing save files and updates the Continue button visibility.
-        /// </summary>
-        private void CheckForSaveFile()
-        {
-            StartCoroutine(RefreshContinueButton());
         }
 
         private void SetContinueVisible(bool visible)
@@ -249,11 +278,6 @@ namespace VeilBreakers.UI.Menus
             {
                 _btnContinue.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
             }
-        }
-
-        private bool SaveFileExists()
-        {
-            return _hasValidSave;
         }
 
         // =============================================================================
@@ -315,15 +339,7 @@ namespace VeilBreakers.UI.Menus
             QuitGame();
         }
 
-        private void OnKeyDown(KeyDownEvent evt)
-        {
-            // Primary navigation handled by OnActionTriggered.
-            // Keeping KeyDown only for specific accessibility fallbacks if needed.
-            if (evt.keyCode == KeyCode.Escape)
-            {
-                OnExitButtonClicked(null);
-            }
-        }
+        // OnKeyDown removed - Escape handling is done via InputManager.GameAction.Cancel in OnActionTriggered
 
         // =============================================================================
         // GAME FLOW
@@ -337,8 +353,30 @@ namespace VeilBreakers.UI.Menus
                 GameManager.Instance.ResetGame();
             }
 
-            // Load character select scene
-            UnityEngine.SceneManagement.SceneManager.LoadScene(_characterSelectScene);
+            StartCoroutine(TransitionToScene(_characterSelectScene));
+        }
+
+        private IEnumerator TransitionToScene(string sceneName)
+        {
+            // Fade out (0.5 seconds)
+            if (_root != null)
+            {
+                _root.style.opacity = 1f;
+                float elapsed = 0f;
+                float duration = 0.5f;
+                while (elapsed < duration)
+                {
+                    elapsed += Time.unscaledDeltaTime;
+                    _root.style.opacity = 1f - (elapsed / duration);
+                    yield return null;
+                }
+            }
+
+            var asyncOp = SceneManager.LoadSceneAsync(sceneName);
+            while (asyncOp != null && !asyncOp.isDone)
+            {
+                yield return null;
+            }
         }
 
         private void LoadGame()
@@ -370,26 +408,56 @@ namespace VeilBreakers.UI.Menus
         }
 
         /// <summary>
-        /// Attempts to load save slot 0 via SaveManager, then transitions to the game scene.
+        /// Attempts to load the most recent valid save slot via SaveManager, then transitions to the game scene.
         /// Falls back to direct scene load if SaveManager is unavailable or load fails.
         /// </summary>
         private IEnumerator LoadAndEnterGame()
         {
             SetInteractable(false);
-            bool loaded = false;
+            int slotToLoad = _continueSlot;
 
             if (SaveManager.HasInstance)
             {
-                var loadTask = SaveManager.Instance.LoadAsync(0);
-                while (!loadTask.IsCompleted)
+                if (slotToLoad == SaveManager.kNoneSlot)
                 {
-                    yield return null;
+                    var slotTask = SaveManager.Instance.GetMostRecentSlotAsync(includeAutoSlots: true);
+                    while (!slotTask.IsCompleted)
+                    {
+                        yield return null;
+                    }
+
+                    if (slotTask.IsFaulted)
+                    {
+                        Debug.LogError($"[MainMenu] Failed to get save slot during load: {slotTask.Exception?.InnerException?.Message}");
+                        SetInteractable(true);
+                        yield break;
+                    }
+                    slotToLoad = slotTask.Result;
                 }
 
-                loaded = loadTask.Result;
-                if (!loaded)
+                if (slotToLoad != SaveManager.kNoneSlot)
                 {
-                    Debug.LogWarning("[MainMenuController] Failed to load slot 0. Proceeding to scene load.");
+                    var loadTask = SaveManager.Instance.LoadAsync(slotToLoad);
+                    while (!loadTask.IsCompleted)
+                    {
+                        yield return null;
+                    }
+
+                    if (loadTask.IsFaulted)
+                    {
+                        Debug.LogError($"[MainMenu] Failed to load save: {loadTask.Exception?.InnerException?.Message}");
+                        SetInteractable(true);
+                        yield break;
+                    }
+
+                    if (!loadTask.Result)
+                    {
+                        Debug.LogWarning($"[MainMenuController] Failed to load slot {slotToLoad}. Proceeding to scene load.");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("[MainMenuController] Continue requested but no valid save slot was found.");
                 }
             }
 
@@ -444,6 +512,11 @@ namespace VeilBreakers.UI.Menus
         /// </summary>
         public void Initialize(VisualElement root)
         {
+            if (_initialized)
+            {
+                return;
+            }
+
             _root = root;
 
             // Query UI elements
@@ -453,6 +526,11 @@ namespace VeilBreakers.UI.Menus
             _btnCredits = _root.Q<Button>("btn-credits");
             _btnExit = _root.Q<Button>("btn-exit");
             _versionLabel = _root.Q<Label>("version-label");
+            _gameTitle = _root.Q<Label>("game-title");
+            _tagline = _root.Q<Label>("tagline");
+            _titleSection = _root.Q<VisualElement>("title-section");
+            _buttonContainer = _root.Q<VisualElement>("button-container");
+            _cachedButtons = _buttonContainer != null ? _buttonContainer.Query<Button>().ToList() : new List<Button>();
 
             // Set version
             if (_versionLabel != null)
@@ -466,24 +544,67 @@ namespace VeilBreakers.UI.Menus
             // Check for save
             StartCoroutine(RefreshContinueButton());
 
+            _initialized = true;
             ErrorLogger.UI("MainMenu initialized via external root");
+        }
+
+        private int FindMostRecentSlotFromDiskFallback()
+        {
+            string savesDir = Path.Combine(Application.persistentDataPath, "saves");
+            if (!Directory.Exists(savesDir))
+            {
+                return SaveManager.kNoneSlot;
+            }
+
+            string[] candidatePaths =
+            {
+                Path.Combine(savesDir, "slot_0.sav"),
+                Path.Combine(savesDir, "slot_1.sav"),
+                Path.Combine(savesDir, "slot_2.sav"),
+                Path.Combine(savesDir, "auto.sav"),
+                Path.Combine(savesDir, "auto_checkpoint.sav")
+            };
+
+            int[] candidateSlots =
+            {
+                0,
+                1,
+                2,
+                SaveManager.kAutoSlot,
+                SaveManager.kAutoSlotCheckpoint
+            };
+
+            DateTime bestWriteTime = DateTime.MinValue;
+            int bestSlot = SaveManager.kNoneSlot;
+
+            for (int i = 0; i < candidatePaths.Length; i++)
+            {
+                string path = candidatePaths[i];
+                if (!File.Exists(path))
+                {
+                    continue;
+                }
+
+                DateTime writeTime = File.GetLastWriteTimeUtc(path);
+                if (writeTime > bestWriteTime)
+                {
+                    bestWriteTime = writeTime;
+                    bestSlot = candidateSlots[i];
+                }
+            }
+
+            return bestSlot;
         }
 
         /// <summary>
         /// Get the button container for animation purposes.
         /// </summary>
-        public VisualElement GetButtonContainer()
-        {
-            return _root?.Q<VisualElement>("button-container");
-        }
+        public VisualElement GetButtonContainer() => _buttonContainer;
 
         /// <summary>
         /// Get the title element for animation purposes.
         /// </summary>
-        public Label GetTitleElement()
-        {
-            return _root?.Q<Label>("game-title");
-        }
+        public Label GetTitleElement() => _gameTitle;
 
         // =============================================================================
         // ANIMATIONS
@@ -520,7 +641,7 @@ namespace VeilBreakers.UI.Menus
                     button.style.translate = new Translate(-50, 0);
                     button.style.scale = new Scale(Vector2.one * 0.8f);
 
-                    float delay = 1.2f + (i * 0.15f); // Stagger each button
+                    float delay = 1.2f + (i * _buttonStaggerDelay); // Stagger each button
                     StartCoroutine(FadeInElement(button, 0.5f, delay));
                     StartCoroutine(SlideInElement(button, -50, 0, 0.6f, delay, EaseType.BackOut));
                     StartCoroutine(ScaleInElement(button, 0.8f, 1f, 0.6f, delay, EaseType.BackOut));

@@ -22,8 +22,17 @@ namespace VeilBreakers.Core
         private readonly Dictionary<string, SkillData> _skills = new Dictionary<string, SkillData>();
         private readonly Dictionary<string, HeroData> _heroes = new Dictionary<string, HeroData>();
         private readonly Dictionary<string, ItemData> _items = new Dictionary<string, ItemData>();
+        private bool _isLoading;
 
         public bool IsLoaded { get; private set; } = false;
+        public bool LoadFailed { get; private set; } = false;
+        public string LastLoadError { get; private set; }
+
+        /// <summary>True when data loaded successfully (IsLoaded && !LoadFailed). Use for consumers that need valid data.</summary>
+        public bool IsReady => IsLoaded && !LoadFailed;
+
+        /// <summary>Task representing the initialization load. Await this to ensure data is available.</summary>
+        public Task InitializationTask { get; private set; }
 
         // =============================================================================
         // DATA ACCESS
@@ -47,7 +56,7 @@ namespace VeilBreakers.Core
         protected override void OnSingletonAwake()
         {
             // Do not block the main thread here
-            _ = LoadAllDataAsync();
+            InitializationTask = LoadAllDataAsync();
         }
 
         /// <summary>
@@ -55,26 +64,47 @@ namespace VeilBreakers.Core
         /// </summary>
         public async Task LoadAllDataAsync()
         {
-            if (IsLoaded) return;
+            if (IsLoaded || _isLoading) return;
             Debug.Log("[GameDatabase] Starting asynchronous data load...");
+            _isLoading = true;
+            LoadFailed = false;
+            LastLoadError = null;
 
-            var tasks = new List<Task>
+            try
             {
-                LoadMonstersAsync(),
-                LoadSkillsAsync(),
-                LoadHeroesAsync(),
-                LoadItemsAsync()
-            };
+                // Each loader writes exclusively to its own dictionary (_monsters, _skills, etc.),
+                // so parallel execution is safe with no shared mutable state between tasks.
+                var tasks = new List<Task>
+                {
+                    LoadMonstersAsync(),
+                    LoadSkillsAsync(),
+                    LoadHeroesAsync(),
+                    LoadItemsAsync()
+                };
 
-            await Task.WhenAll(tasks);
+                await Task.WhenAll(tasks);
 
-            IsLoaded = true;
+                IsLoaded = true;
 
-            Debug.Log($"[GameDatabase] Data loaded successfully!");
-            Debug.Log($"  - Monsters: {_monsters.Count}");
-            Debug.Log($"  - Skills: {_skills.Count}");
-            Debug.Log($"  - Heroes: {_heroes.Count}");
-            Debug.Log($"  - Items: {_items.Count}");
+                Debug.Log("[GameDatabase] Data loaded successfully!");
+                Debug.Log($"  - Monsters: {_monsters.Count}");
+                Debug.Log($"  - Skills: {_skills.Count}");
+                Debug.Log($"  - Heroes: {_heroes.Count}");
+                Debug.Log($"  - Items: {_items.Count}");
+            }
+            catch (Exception ex)
+            {
+                LoadFailed = true;
+                LastLoadError = ex.Message;
+                IsLoaded = true; // Unblock menu flows; consumers can inspect counts/LoadFailed.
+
+                Debug.LogError($"[GameDatabase] Data load failed: {ex.Message}");
+                Debug.LogError($"[GameDatabase] Partial load counts - Monsters: {_monsters.Count}, Skills: {_skills.Count}, Heroes: {_heroes.Count}, Items: {_items.Count}");
+            }
+            finally
+            {
+                _isLoading = false;
+            }
         }
 
         // =============================================================================
@@ -117,7 +147,7 @@ namespace VeilBreakers.Core
         // DATA LOADERS
         // =============================================================================
 
-        private async Task LoadMonstersAsync()
+        private Task LoadMonstersAsync()
         {
             try
             {
@@ -130,10 +160,9 @@ namespace VeilBreakers.Core
 
                 string jsonContent = jsonAsset.text;
 
-                // String processing can happen off main thread
-                string wrappedJson = await Task.Run(() => WrapJsonArray(jsonContent, "monsters"));
+                // Wrapping is trivial string work - no need for a background thread
+                string wrappedJson = WrapJsonArray(jsonContent, "monsters");
 
-                // JsonUtility MUST be called on main thread (Unity API requirement)
                 var wrapper = JsonUtility.FromJson<MonsterDataWrapper>(wrappedJson);
                 MonsterData[] monsters = wrapper?.monsters;
 
@@ -157,9 +186,11 @@ namespace VeilBreakers.Core
                 throw;
 #endif
             }
+
+            return Task.CompletedTask;
         }
 
-        private async Task LoadSkillsAsync()
+        private Task LoadSkillsAsync()
         {
             try
             {
@@ -172,10 +203,9 @@ namespace VeilBreakers.Core
 
                 string jsonContent = jsonAsset.text;
 
-                // String processing can happen off main thread
-                string wrappedJson = await Task.Run(() => WrapJsonArray(jsonContent, "skills"));
+                // Wrapping is trivial string work - no need for a background thread
+                string wrappedJson = WrapJsonArray(jsonContent, "skills");
 
-                // JsonUtility MUST be called on main thread (Unity API requirement)
                 var wrapper = JsonUtility.FromJson<SkillDataWrapper>(wrappedJson);
                 SkillData[] skills = wrapper?.skills;
 
@@ -199,9 +229,11 @@ namespace VeilBreakers.Core
                 throw;
 #endif
             }
+
+            return Task.CompletedTask;
         }
 
-        private async Task LoadHeroesAsync()
+        private Task LoadHeroesAsync()
         {
             try
             {
@@ -214,10 +246,9 @@ namespace VeilBreakers.Core
 
                 string jsonContent = jsonAsset.text;
 
-                // String processing can happen off main thread
-                string wrappedJson = await Task.Run(() => WrapJsonArray(jsonContent, "heroes"));
+                // Wrapping is trivial string work - no need for a background thread
+                string wrappedJson = WrapJsonArray(jsonContent, "heroes");
 
-                // JsonUtility MUST be called on main thread (Unity API requirement)
                 var wrapper = JsonUtility.FromJson<HeroDataWrapper>(wrappedJson);
                 HeroData[] heroes = wrapper?.heroes;
 
@@ -241,9 +272,11 @@ namespace VeilBreakers.Core
                 throw;
 #endif
             }
+
+            return Task.CompletedTask;
         }
 
-        private async Task LoadItemsAsync()
+        private Task LoadItemsAsync()
         {
             try
             {
@@ -256,10 +289,9 @@ namespace VeilBreakers.Core
 
                 string jsonContent = jsonAsset.text;
 
-                // String processing can happen off main thread
-                string wrappedJson = await Task.Run(() => WrapJsonArray(jsonContent, "items"));
+                // Wrapping is trivial string work - no need for a background thread
+                string wrappedJson = WrapJsonArray(jsonContent, "items");
 
-                // JsonUtility MUST be called on main thread (Unity API requirement)
                 var wrapper = JsonUtility.FromJson<ItemDataWrapper>(wrappedJson);
                 ItemData[] items = wrapper?.items;
 
@@ -283,6 +315,8 @@ namespace VeilBreakers.Core
                 throw;
 #endif
             }
+
+            return Task.CompletedTask;
         }
 
         // =============================================================================
@@ -322,67 +356,103 @@ namespace VeilBreakers.Core
         }
 
         /// <summary>
-        /// Get all monsters of a specific brand
+        /// Get all monsters of a specific brand (allocates a new list).
         /// </summary>
         public List<MonsterData> GetMonstersByBrand(Brand brand)
         {
             var result = new List<MonsterData>();
+            GetMonstersByBrand(brand, result);
+            return result;
+        }
+
+        /// <summary>
+        /// Get all monsters of a specific brand into a pre-allocated list.
+        /// </summary>
+        public void GetMonstersByBrand(Brand brand, List<MonsterData> results)
+        {
+            results.Clear();
             foreach (var monster in _monsters.Values)
             {
                 if (monster.GetPrimaryBrand() == brand)
                 {
-                    result.Add(monster);
+                    results.Add(monster);
                 }
             }
-            return result;
         }
 
         /// <summary>
-        /// Get all monsters of a specific rarity
+        /// Get all monsters of a specific rarity (allocates a new list).
         /// </summary>
         public List<MonsterData> GetMonstersByRarity(Rarity rarity)
         {
             var result = new List<MonsterData>();
+            GetMonstersByRarity(rarity, result);
+            return result;
+        }
+
+        /// <summary>
+        /// Get all monsters of a specific rarity into a pre-allocated list.
+        /// </summary>
+        public void GetMonstersByRarity(Rarity rarity, List<MonsterData> results)
+        {
+            results.Clear();
             foreach (var monster in _monsters.Values)
             {
                 if (monster.GetRarity() == rarity)
                 {
-                    result.Add(monster);
+                    results.Add(monster);
                 }
             }
-            return result;
         }
 
         /// <summary>
-        /// Get all skills usable by a specific brand
+        /// Get all skills usable by a specific brand (allocates a new list).
         /// </summary>
         public List<SkillData> GetSkillsByBrand(Brand brand)
         {
             var result = new List<SkillData>();
-            foreach (var skill in _skills.Values)
-            {
-                if (skill.GetBrandRequirement() == brand || skill.GetBrandRequirement() == Brand.NONE)
-                {
-                    result.Add(skill);
-                }
-            }
+            GetSkillsByBrand(brand, result);
             return result;
         }
 
         /// <summary>
-        /// Get all items by category
+        /// Get all skills usable by a specific brand into a pre-allocated list.
+        /// </summary>
+        public void GetSkillsByBrand(Brand brand, List<SkillData> results)
+        {
+            results.Clear();
+            foreach (var skill in _skills.Values)
+            {
+                if (skill.GetBrandRequirement() == brand || skill.GetBrandRequirement() == Brand.NONE)
+                {
+                    results.Add(skill);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Get all items by category (allocates a new list).
         /// </summary>
         public List<ItemData> GetItemsByCategory(ItemCategory category)
         {
             var result = new List<ItemData>();
+            GetItemsByCategory(category, result);
+            return result;
+        }
+
+        /// <summary>
+        /// Get all items by category into a pre-allocated list.
+        /// </summary>
+        public void GetItemsByCategory(ItemCategory category, List<ItemData> results)
+        {
+            results.Clear();
             foreach (var item in _items.Values)
             {
                 if (item.GetCategory() == category)
                 {
-                    result.Add(item);
+                    results.Add(item);
                 }
             }
-            return result;
         }
 
         /// <summary>
@@ -456,33 +526,33 @@ namespace VeilBreakers.Core
             }
             return result;
         }
-    }
 
-    // =============================================================================
-    // WRAPPER CLASSES FOR JSON DESERIALIZATION
-    // =============================================================================
+        // =============================================================================
+        // WRAPPER CLASSES FOR JSON DESERIALIZATION
+        // =============================================================================
 
-    [Serializable]
-    internal class MonsterDataWrapper
-    {
-        public MonsterData[] monsters;
-    }
+        [Serializable]
+        private class MonsterDataWrapper
+        {
+            public MonsterData[] monsters;
+        }
 
-    [Serializable]
-    internal class SkillDataWrapper
-    {
-        public SkillData[] skills;
-    }
+        [Serializable]
+        private class SkillDataWrapper
+        {
+            public SkillData[] skills;
+        }
 
-    [Serializable]
-    internal class HeroDataWrapper
-    {
-        public HeroData[] heroes;
-    }
+        [Serializable]
+        private class HeroDataWrapper
+        {
+            public HeroData[] heroes;
+        }
 
-    [Serializable]
-    internal class ItemDataWrapper
-    {
-        public ItemData[] items;
+        [Serializable]
+        private class ItemDataWrapper
+        {
+            public ItemData[] items;
+        }
     }
 }

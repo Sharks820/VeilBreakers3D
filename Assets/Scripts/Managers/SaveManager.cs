@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,11 +21,15 @@ namespace VeilBreakers.Managers
         // CONSTANTS
         // =============================================================================
 
-        public const int SLOT_COUNT = 3;           // Manual save slots (0, 1, 2)
-        public const int AUTO_SLOT = -1;           // Auto-save slot identifier
-        private const string SAVES_FOLDER = "saves";
+        public const int kSlotCount = 3;                    // Manual save slots (0, 1, 2)
+        public const int kAutoSlot = -1;                   // Primary auto-save slot
+        public const int kAutoSlotCheckpoint = -2;         // Secondary rolling auto-save slot
+        public const int kAutoSlotCount = 2;               // Total auto-save slots
+        public const int kNoneSlot = -999;                 // No active slot loaded
+        private const string kSavesFolder = "saves";
         private const string SLOT_PREFIX = "slot_";
         private const string AUTO_FILENAME = "auto";
+        private const string AUTO_CHECKPOINT_FILENAME = "auto_checkpoint";
         private const string SAVE_EXTENSION = ".sav";
 
         // =============================================================================
@@ -32,10 +37,11 @@ namespace VeilBreakers.Managers
         // =============================================================================
 
         private SaveData _currentSave;
-        private int _currentSlot = -1;
+        private int _currentSlot = kNoneSlot;
         private bool _isSaving;
         private bool _isLoading;
         private float _sessionStartTime;
+        private int _nextAutoSlot = kAutoSlot;
         private readonly SemaphoreSlim _saveMutex = new SemaphoreSlim(1, 1);
         private MigrationRunner _migrationRunner;
 
@@ -46,7 +52,7 @@ namespace VeilBreakers.Managers
         /// <summary>Currently loaded save data (null if no save loaded)</summary>
         public SaveData CurrentSave => _currentSave;
 
-        /// <summary>Currently loaded slot (-1 = auto, 0-2 = manual, -2 = none)</summary>
+        /// <summary>Currently loaded slot (0-2 = manual, -1/-2 = auto, -999 = none)</summary>
         public int CurrentSlot => _currentSlot;
 
         /// <summary>True if a save operation is in progress</summary>
@@ -59,7 +65,7 @@ namespace VeilBreakers.Managers
         public bool HasActiveSave => _currentSave != null;
 
         /// <summary>Path to saves directory</summary>
-        public string SavesDirectory => IOPath.Combine(Application.persistentDataPath, SAVES_FOLDER);
+        public string SavesDirectory => IOPath.Combine(Application.persistentDataPath, kSavesFolder);
 
         // =============================================================================
         // UNITY LIFECYCLE
@@ -73,15 +79,24 @@ namespace VeilBreakers.Managers
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            _saveMutex?.Dispose();
+            // Only dispose if no save/load operations are in flight to avoid ObjectDisposedException
+            if (!_isSaving && !_isLoading)
+                _saveMutex?.Dispose();
         }
 
         private void OnApplicationPause(bool pauseStatus)
         {
-            // Auto-save when app is paused (mobile)
             if (pauseStatus && HasActiveSave)
             {
-                _ = AutoSaveAsync("app_pause");
+                // Synchronous path for mobile pause - async may not complete before OS kills app
+                try
+                {
+                    AutoSaveAsync("app_pause").GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[SaveManager] Auto-save on pause failed: {ex.Message}");
+                }
             }
         }
 
@@ -125,7 +140,7 @@ namespace VeilBreakers.Managers
         /// <returns>True if save succeeded</returns>
         public async Task<bool> SaveAsync(int slot)
         {
-            if (slot < 0 || slot >= SLOT_COUNT)
+            if (slot < 0 || slot >= kSlotCount)
             {
                 Debug.LogError($"[SaveManager] Invalid slot: {slot}");
                 return false;
@@ -143,7 +158,11 @@ namespace VeilBreakers.Managers
         {
             Debug.Log($"[SaveManager] Auto-save triggered: {reason}");
             EventBus.AutoSaveTriggered(reason);
-            return await SaveInternalAsync(AUTO_SLOT, GetAutoSavePath());
+
+            // Keep two rolling auto-save checkpoints so recovery doesn't depend on a single file.
+            int targetAutoSlot = _nextAutoSlot;
+            _nextAutoSlot = targetAutoSlot == kAutoSlot ? kAutoSlotCheckpoint : kAutoSlot;
+            return await SaveInternalAsync(targetAutoSlot, GetAutoSavePath(targetAutoSlot));
         }
 
         /// <summary>
@@ -151,7 +170,7 @@ namespace VeilBreakers.Managers
         /// </summary>
         public async Task<bool> CreateNewSaveAsync(int slot, string heroId, string heroName, Data.Path heroPath)
         {
-            if (slot < 0 || slot >= SLOT_COUNT)
+            if (slot < 0 || slot >= kSlotCount)
             {
                 Debug.LogError($"[SaveManager] Invalid slot: {slot}");
                 return false;
@@ -171,11 +190,15 @@ namespace VeilBreakers.Managers
         /// <summary>
         /// Loads save data from specified slot.
         /// </summary>
-        /// <param name="slot">Slot index (0-2 for manual, -1 for auto)</param>
+        /// <param name="slot">Slot index (0-2 for manual, -1/-2 for auto)</param>
         /// <returns>True if load succeeded</returns>
         public async Task<bool> LoadAsync(int slot)
         {
-            string path = slot == AUTO_SLOT ? GetAutoSavePath() : GetSlotPath(slot);
+            if (!TryResolveSlotPath(slot, out string path))
+            {
+                Debug.LogError($"[SaveManager] Invalid slot: {slot}");
+                return false;
+            }
 
             if (!File.Exists(path))
             {
@@ -268,7 +291,11 @@ namespace VeilBreakers.Managers
         /// </summary>
         public bool DeleteSlot(int slot)
         {
-            string path = slot == AUTO_SLOT ? GetAutoSavePath() : GetSlotPath(slot);
+            if (!TryResolveSlotPath(slot, out string path))
+            {
+                Debug.LogError($"[SaveManager] Invalid slot: {slot}");
+                return false;
+            }
 
             try
             {
@@ -289,7 +316,7 @@ namespace VeilBreakers.Managers
                 if (_currentSlot == slot)
                 {
                     _currentSave = null;
-                    _currentSlot = -2;
+                    _currentSlot = kNoneSlot;
                 }
 
                 Debug.Log($"[SaveManager] Deleted slot {slot}");
@@ -307,7 +334,11 @@ namespace VeilBreakers.Managers
         /// </summary>
         public bool SlotExists(int slot)
         {
-            string path = slot == AUTO_SLOT ? GetAutoSavePath() : GetSlotPath(slot);
+            if (!TryResolveSlotPath(slot, out string path))
+            {
+                return false;
+            }
+
             return File.Exists(path);
         }
 
@@ -316,7 +347,10 @@ namespace VeilBreakers.Managers
         /// </summary>
         public async Task<SaveSlotMetadata> GetSlotMetadataAsync(int slot)
         {
-            string path = slot == AUTO_SLOT ? GetAutoSavePath() : GetSlotPath(slot);
+            if (!TryResolveSlotPath(slot, out string path))
+            {
+                return SaveSlotMetadata.Empty(slot);
+            }
 
             if (!File.Exists(path))
             {
@@ -339,18 +373,129 @@ namespace VeilBreakers.Managers
         /// </summary>
         public async Task<SaveSlotMetadata[]> GetAllSlotsMetadataAsync()
         {
-            var results = new SaveSlotMetadata[SLOT_COUNT + 1]; // +1 for auto slot
+            var results = new SaveSlotMetadata[kSlotCount + kAutoSlotCount];
 
-            // Manual slots
-            for (int i = 0; i < SLOT_COUNT; i++)
-            {
-                results[i] = await GetSlotMetadataAsync(i);
-            }
+            // Load all slots in parallel - each reads a separate file
+            var tasks = new Task<SaveSlotMetadata>[kSlotCount + kAutoSlotCount];
+            for (int i = 0; i < kSlotCount; i++)
+                tasks[i] = GetSlotMetadataAsync(i);
+            tasks[kSlotCount] = GetSlotMetadataAsync(kAutoSlot);
+            tasks[kSlotCount + 1] = GetSlotMetadataAsync(kAutoSlotCheckpoint);
 
-            // Auto slot
-            results[SLOT_COUNT] = await GetSlotMetadataAsync(AUTO_SLOT);
+            await Task.WhenAll(tasks);
+
+            for (int i = 0; i < tasks.Length; i++)
+                results[i] = tasks[i].Result;
 
             return results;
+        }
+
+        /// <summary>
+        /// Returns the most recent valid slot across manual slots and, optionally, auto-save slots.
+        /// Returns kNoneSlot when no valid save exists.
+        /// </summary>
+        public async Task<int> GetMostRecentSlotAsync(bool includeAutoSlots = true)
+        {
+            var all = await GetAllSlotsMetadataAsync();
+            return SelectMostRecentSlot(all, includeAutoSlots);
+        }
+
+        /// <summary>
+        /// Returns the manual slot to use for a new character.
+        /// Prefers first empty slot; if all are occupied, returns the oldest manual slot.
+        /// </summary>
+        public async Task<int> GetBestNewGameSlotAsync()
+        {
+            SaveSlotMetadata[] manual = new SaveSlotMetadata[kSlotCount];
+
+            for (int i = 0; i < kSlotCount; i++)
+            {
+                manual[i] = await GetSlotMetadataAsync(i);
+            }
+
+            return SelectBestNewGameSlot(manual);
+        }
+
+        public static int SelectMostRecentSlot(SaveSlotMetadata[] metadata, bool includeAutoSlots)
+        {
+            if (metadata == null || metadata.Length == 0)
+            {
+                return kNoneSlot;
+            }
+
+            int bestSlot = kNoneSlot;
+            DateTime bestDate = DateTime.MinValue;
+            bool foundValid = false;
+
+            for (int i = 0; i < metadata.Length; i++)
+            {
+                var meta = metadata[i];
+                if (meta == null)
+                {
+                    continue;
+                }
+
+                bool isAutoSlot = meta.slotIndex == kAutoSlot || meta.slotIndex == kAutoSlotCheckpoint;
+                if (!includeAutoSlots && isAutoSlot)
+                {
+                    continue;
+                }
+
+                if (!TryGetMetadataTimestamp(meta, out DateTime timestamp))
+                {
+                    continue;
+                }
+
+                if (!foundValid || timestamp > bestDate)
+                {
+                    foundValid = true;
+                    bestDate = timestamp;
+                    bestSlot = meta.slotIndex;
+                }
+            }
+
+            return bestSlot;
+        }
+
+        public static int SelectBestNewGameSlot(SaveSlotMetadata[] manualMetadata)
+        {
+            if (manualMetadata == null || manualMetadata.Length == 0)
+            {
+                return 0;
+            }
+
+            int count = Math.Min(kSlotCount, manualMetadata.Length);
+
+            for (int i = 0; i < count; i++)
+            {
+                var meta = manualMetadata[i];
+                if (meta == null || !meta.hasData || meta.isCorrupted)
+                {
+                    return i;
+                }
+            }
+
+            int oldestSlot = 0;
+            DateTime oldestDate = DateTime.MaxValue;
+            bool foundTimestamp = false;
+
+            for (int i = 0; i < count; i++)
+            {
+                var meta = manualMetadata[i];
+                if (!TryGetMetadataTimestamp(meta, out DateTime timestamp))
+                {
+                    continue;
+                }
+
+                if (!foundTimestamp || timestamp < oldestDate)
+                {
+                    foundTimestamp = true;
+                    oldestDate = timestamp;
+                    oldestSlot = meta.slotIndex >= 0 ? meta.slotIndex : i;
+                }
+            }
+
+            return oldestSlot;
         }
 
         // =============================================================================
@@ -486,9 +631,53 @@ namespace VeilBreakers.Managers
             return IOPath.Combine(SavesDirectory, $"{SLOT_PREFIX}{slot}{SAVE_EXTENSION}");
         }
 
-        private string GetAutoSavePath()
+        private string GetAutoSavePath(int slot = kAutoSlot)
         {
+            if (slot == kAutoSlotCheckpoint)
+            {
+                return IOPath.Combine(SavesDirectory, $"{AUTO_CHECKPOINT_FILENAME}{SAVE_EXTENSION}");
+            }
+
             return IOPath.Combine(SavesDirectory, $"{AUTO_FILENAME}{SAVE_EXTENSION}");
+        }
+
+        private bool TryResolveSlotPath(int slot, out string path)
+        {
+            if (slot >= 0 && slot < kSlotCount)
+            {
+                path = GetSlotPath(slot);
+                return true;
+            }
+
+            if (slot == kAutoSlot || slot == kAutoSlotCheckpoint)
+            {
+                path = GetAutoSavePath(slot);
+                return true;
+            }
+
+            path = null;
+            return false;
+        }
+
+        private static bool TryGetMetadataTimestamp(SaveSlotMetadata metadata, out DateTime timestamp)
+        {
+            timestamp = DateTime.MinValue;
+            if (metadata == null || !metadata.hasData || metadata.isCorrupted)
+            {
+                return false;
+            }
+
+            if (!DateTime.TryParse(
+                metadata.saveDate,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+                out timestamp))
+            {
+                timestamp = DateTime.MinValue;
+                return false;
+            }
+
+            return true;
         }
     }
 }

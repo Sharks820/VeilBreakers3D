@@ -146,15 +146,19 @@ namespace VeilBreakers.Data
         }
 
         /// <summary>
-        /// Validates the save data for required fields.
+        /// Validates the save data for required fields and repairs invalid values.
+        /// Mutates state: initializes null lists, clamps out-of-range values, resets invalid enums.
         /// </summary>
         /// <returns>True if valid, false if corrupted/incomplete</returns>
-        public bool Validate()
+        public bool ValidateAndRepair()
         {
             // Critical fields must exist
             if (string.IsNullOrEmpty(heroId)) return false;
             if (heroLevel < 1) return false;
             if (version < 1) return false;
+
+            // Validate hero path enum
+            if (!System.Enum.IsDefined(typeof(Path), heroPath)) heroPath = Path.NONE;
 
             // Initialize null lists to empty (defensive)
             party ??= new List<SavedMonster>();
@@ -164,6 +168,24 @@ namespace VeilBreakers.Data
             storyFlags ??= new List<string>();
             heroLearnedSkills ??= new List<string>();
             inventory ??= new List<SavedItem>();
+
+            // Clamp corruption values for all monsters
+            if (party != null)
+            {
+                foreach (var monster in party)
+                {
+                    if (monster != null)
+                        monster.corruption = Mathf.Clamp(monster.corruption, 0f, 100f);
+                }
+            }
+            if (storage != null)
+            {
+                foreach (var monster in storage)
+                {
+                    if (monster != null)
+                        monster.corruption = Mathf.Clamp(monster.corruption, 0f, 100f);
+                }
+            }
 
             return true;
         }
@@ -235,7 +257,7 @@ namespace VeilBreakers.Data
                 level = level,
                 currentHp = 100, // Will be recalculated
                 currentMp = 50,
-                corruption = corruption,
+                corruption = Mathf.Clamp(corruption, 0f, 100f),
                 experience = 0,
                 learnedSkills = new List<string>()
             };
@@ -279,7 +301,7 @@ namespace VeilBreakers.Data
     [Serializable]
     public class SaveSlotMetadata
     {
-        /// <summary>Slot index (0-2 for manual, -1 for auto)</summary>
+        /// <summary>Slot index (0-2 for manual, -1/-2 for auto slots)</summary>
         public int slotIndex;
 
         /// <summary>True if slot has save data</summary>

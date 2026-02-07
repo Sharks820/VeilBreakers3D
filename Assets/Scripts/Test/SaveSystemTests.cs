@@ -68,7 +68,7 @@ namespace VeilBreakers.Test
 
             // Run tests in order
             await Test_SaveData_CreateNew();
-            await Test_SaveData_Validate();
+            await Test_SaveData_ValidateAndRepair();
             await Test_SaveFileHandler_SerializeDeserialize();
             await Test_SaveFileHandler_Compression();
             await Test_SaveFileHandler_Checksum();
@@ -129,22 +129,22 @@ namespace VeilBreakers.Test
             await Task.Yield();
         }
 
-        private async Task Test_SaveData_Validate()
+        private async Task Test_SaveData_ValidateAndRepair()
         {
-            string testName = "SaveData.Validate";
+            string testName = "SaveData.ValidateAndRepair";
             try
             {
                 // Valid data
                 var validData = SaveData.CreateNew("vex", "Test", GamePath.IRONBOUND);
-                Assert(validData.Validate(), "Valid data should pass validation");
+                Assert(validData.ValidateAndRepair(), "Valid data should pass validation");
 
                 // Invalid data - missing heroId
                 var invalidData = new SaveData { heroId = null, heroLevel = 1, version = 1 };
-                Assert(!invalidData.Validate(), "Invalid data should fail validation");
+                Assert(!invalidData.ValidateAndRepair(), "Invalid data should fail validation");
 
                 // Invalid data - level < 1
                 var invalidLevel = new SaveData { heroId = "test", heroLevel = 0, version = 1 };
-                Assert(!invalidLevel.Validate(), "Zero level should fail validation");
+                Assert(!invalidLevel.ValidateAndRepair(), "Zero level should fail validation");
 
                 Pass(testName);
             }

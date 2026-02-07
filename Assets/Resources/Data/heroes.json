@@ -3,6 +3,7 @@
     "hero_id": "vex",
     "display_name": "Vex",
     "title": "The Warden",
+    "quote": "I don't kill monsters. I break them.",
     "description": "The last warden of the Black Iron Prison. When the walls fell, he didn't flee—he bound the worst monsters to his will with chains forged from compacted Veil-energy. His prisoners fight for him now. They don't have a choice.",
     "resource_type": "GUARD",
     "backstory": "Vex was born in a prison. Not as a prisoner—as a warder's son. He grew up watching the Veil-twisted creatures pound against reinforced doors, learning their rhythms, their weaknesses, their hungers. When the Great Breach collapsed the prison's wards, Vex walked cell to cell with nothing but a hammer and sigil-chains. He didn't kill the monsters. He broke them. Bound them. Made them his. The Skitter-Teeth was his first capture—a ribcage crawling on finger-bones that tried to bite his ankles. Now it rides his shoulder like a parrot from hell. The Compact didn't recruit Vex. They granted him license to continue his work.",
@@ -34,6 +35,14 @@
     "base_resistance": 16,
     "base_speed": 5,
     "base_luck": 6,
+    "base_stats": {
+      "strength": 14,
+      "dexterity": 10,
+      "constitution": 14,
+      "intelligence": 10,
+      "wisdom": 12,
+      "charisma": 10
+    },
     "hp_growth": 0.95,
     "mp_growth": 0.3,
     "attack_growth": 0.45,
@@ -48,13 +57,13 @@
       "shackle_strike",
       "wardens_gaze"
     ],
-    "learnable_skills": {
-      "5": "iron_bind",
-      "10": "prison_wall",
-      "15": "incarcerate",
-      "20": "wardens_ward",
-      "25": "inescapable"
-    },
+    "learnable_skills_list": [
+      { "level": 5, "skill_id": "iron_bind" },
+      { "level": 10, "skill_id": "prison_wall" },
+      { "level": 15, "skill_id": "incarcerate" },
+      { "level": 20, "skill_id": "wardens_ward" },
+      { "level": 25, "skill_id": "inescapable" }
+    ],
     "ultimate_skill": "eternal_imprisonment",
     "combat_description": "Heavy tank with binding abilities. Can lock down single targets, create walls that block enemy movement, and gains defense bonuses when allies are nearby. Specializes in controlling the battlefield through forced imprisonment.",
     "preferred_targets": "strongest"
@@ -63,6 +72,7 @@
     "hero_id": "seraphina",
     "display_name": "Seraphina",
     "title": "The Thornspeaker",
+    "quote": "The garden remembers every foot that crushed it.",
     "description": "She wears poison like perfume and speaks to plants that learned to bite. The most beautiful gardens grow from corrupted soil—and Seraphina tends hers with blood.",
     "resource_type": "FURY",
     "backstory": "Seraphina was a noble's daughter who disappeared into the Thornwaste at sixteen. Ten years later she emerged, wrapped in living vines that whispered to her. She had cultivated toxins until her sweat could kill, her touch could paralyze, her kiss could end. The Grimthorn didn't attack when they met—it bowed, recognizing a queen of poisons. Now she walks with a crown of barbs and an army of carnivorous flora. The Compact employs her because she keeps the worse things in the wilds away. Mostly by feeding them to her garden.",
@@ -94,6 +104,14 @@
     "base_resistance": 8,
     "base_speed": 16,
     "base_luck": 9,
+    "base_stats": {
+      "strength": 10,
+      "dexterity": 16,
+      "constitution": 8,
+      "intelligence": 12,
+      "wisdom": 10,
+      "charisma": 14
+    },
     "hp_growth": 0.55,
     "mp_growth": 0.35,
     "attack_growth": 0.85,
@@ -108,13 +126,13 @@
       "venom_strike",
       "thorn_lash"
     ],
-    "learnable_skills": {
-      "5": "paralytic_touch",
-      "10": "bloodscent",
-      "15": "toxic_bloom",
-      "20": "predatory_grace",
-      "25": "garden_of_bones"
-    },
+    "learnable_skills_list": [
+      { "level": 5, "skill_id": "paralytic_touch" },
+      { "level": 10, "skill_id": "bloodscent" },
+      { "level": 15, "skill_id": "toxic_bloom" },
+      { "level": 20, "skill_id": "predatory_grace" },
+      { "level": 25, "skill_id": "garden_of_bones" }
+    ],
     "ultimate_skill": "the_thousand_thorns",
     "combat_description": "Fast melee assassin specializing in poison and bleed stacking. Applies debilitating toxins that weaken enemies over time, then executes weakened targets. High mobility with vine-based movement abilities.",
     "preferred_targets": "weakest"
@@ -123,6 +141,7 @@
     "hero_id": "orion",
     "display_name": "Orion",
     "title": "The Conductor",
+    "quote": "I died once. Now I collect interest on that death.",
     "description": "He died in a storm. Then he woke up, lightning still burning through his nerves. Now he carries the storm in his chest—and the ghost of his own death follows behind.",
     "resource_type": "MANA",
     "backstory": "Orion was a storm-seer, one of the few who study Veil-convergence weather patterns. During the Great Convergence of '09, he stood too close to the epicenter. Lightning struck him—not once, but forty-seven times in thirteen seconds. He died. His heart stopped. His brain fried. Then he gasped, lightning arcing between his teeth, and stood up changed. The Voltgeist is what's left of his original body: an electrical ghost bound to his new form. He joined the Compact not for redemption or duty, but to find out if he can truly die, or if he'll just keep exploding and reforming forever.",
@@ -154,6 +173,14 @@
     "base_resistance": 12,
     "base_speed": 11,
     "base_luck": 7,
+    "base_stats": {
+      "strength": 8,
+      "dexterity": 12,
+      "constitution": 8,
+      "intelligence": 16,
+      "wisdom": 14,
+      "charisma": 12
+    },
     "hp_growth": 0.4,
     "mp_growth": 0.9,
     "attack_growth": 0.2,
@@ -168,13 +195,13 @@
       "arcing_bolt",
       "static_field"
     ],
-    "learnable_skills": {
-      "5": "chain_lightning",
-      "10": "conductive_ground",
-      "15": "storm_call",
-      "20": "ionization",
-      "25": "eye_of_the_storm"
-    },
+    "learnable_skills_list": [
+      { "level": 5, "skill_id": "chain_lightning" },
+      { "level": 10, "skill_id": "conductive_ground" },
+      { "level": 15, "skill_id": "storm_call" },
+      { "level": 20, "skill_id": "ionization" },
+      { "level": 25, "skill_id": "eye_of_the_storm" }
+    ],
     "ultimate_skill": "final_convergence",
     "combat_description": "Elemental mage specializing in lightning and area denial. Can call storms, create conductive zones, and chain lightning between enemies. Glass cannon—devastating damage but fragile.",
     "preferred_targets": "grouped"
@@ -183,6 +210,7 @@
     "hero_id": "nyx",
     "display_name": "Nyx",
     "title": "The Shadow That Drinks",
+    "quote": "I remember being you. You won't remember being anything.",
     "description": "A shadow that learned to wear a person. She consumes memories like wine and leaves behind empty husks. The Compact employs her because she's too dangerous to leave unsupervised.",
     "resource_type": "CHAOS",
     "backstory": "Nyx was a Bloodshade that consumed enough memories to remember what it was like to be human. Now she walks in a stolen body, trying to understand why people fear the dark. Her Bloodshade companion isn't a pet—it's her original form, following behind like a loyal shadow, waiting for her to give up this 'being solid' experiment. She joined the Compact because they offered something no one else could: a way to stay human. For now. Each mission completed, each monster purified, feeds the binding that keeps her from dissolving back into hungry shadow. But the hunger never stops. It just learns manners.",
@@ -214,6 +242,14 @@
     "base_resistance": 14,
     "base_speed": 14,
     "base_luck": 14,
+    "base_stats": {
+      "strength": 12,
+      "dexterity": 14,
+      "constitution": 10,
+      "intelligence": 14,
+      "wisdom": 8,
+      "charisma": 16
+    },
     "hp_growth": 0.5,
     "mp_growth": 0.7,
     "attack_growth": 0.6,
@@ -228,13 +264,13 @@
       "memory_drain",
       "shadow_step"
     ],
-    "learnable_skills": {
-      "5": "borrowed_skill",
-      "10": "void_touched",
-      "15": "identity_crisis",
-      "20": "consumption",
-      "25": "becoming_real"
-    },
+    "learnable_skills_list": [
+      { "level": 5, "skill_id": "borrowed_skill" },
+      { "level": 10, "skill_id": "void_touched" },
+      { "level": 15, "skill_id": "identity_crisis" },
+      { "level": 20, "skill_id": "consumption" },
+      { "level": 25, "skill_id": "becoming_real" }
+    ],
     "ultimate_skill": "the_hunger_remembers",
     "combat_description": "Versatile hybrid who steals enemy abilities and uses them herself. Can shift between damage, healing, and control roles mid-combat. Unpredictable—both to enemies and allies.",
     "preferred_targets": "random"

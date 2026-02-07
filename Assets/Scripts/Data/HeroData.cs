@@ -211,11 +211,10 @@ namespace VeilBreakers.Data
         public string GetLearnableSkillAtLevel(int level)
         {
             if (learnable_skills_list == null) return null;
-            
-            string levelKey = level.ToString();
+
             for (int i = 0; i < learnable_skills_list.Count; i++)
             {
-                if (learnable_skills_list[i].level == levelKey)
+                if (learnable_skills_list[i].level == level)
                 {
                     return learnable_skills_list[i].skill_id;
                 }
@@ -245,7 +244,7 @@ namespace VeilBreakers.Data
     [Serializable]
     public class LearnableSkillEntry
     {
-        public string level;
+        public int level;
         public string skill_id;
     }
     

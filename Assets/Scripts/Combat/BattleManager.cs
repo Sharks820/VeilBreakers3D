@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using VeilBreakers.Core;
 using VeilBreakers.Data;
@@ -22,6 +21,7 @@ namespace VeilBreakers.Combat
         [Header("Combatants")]
         [SerializeField] private Combatant _player; // The human player's character
         [SerializeField] private Combatant _currentTarget; // Currently targeted enemy
+        [SerializeField] private Combatant _activeAlly; // Currently selected allied monster
         [SerializeField] private List<Combatant> _playerParty = new List<Combatant>();
         [SerializeField] private List<Combatant> _enemyParty = new List<Combatant>();
         [SerializeField] private List<Combatant> _backupMonsters = new List<Combatant>();
@@ -34,6 +34,7 @@ namespace VeilBreakers.Combat
         public BattleState State => _state;
         public Combatant Player => _player;
         public Combatant CurrentTarget => _currentTarget;
+        public Combatant ActiveAlly => _activeAlly;
         public IReadOnlyList<Combatant> PlayerParty => _playerParty;
         public IReadOnlyList<Combatant> EnemyParty => _enemyParty;
         public SynergySystem.SynergyTier SynergyTier => _currentSynergyTier;
@@ -47,6 +48,7 @@ namespace VeilBreakers.Combat
         public event Action<Combatant> OnCombatantDeath;
         public event Action<SynergySystem.SynergyTier> OnSynergyChanged;
         public event Action<Combatant> OnTargetChanged;
+        public event Action<Combatant> OnActiveAllyChanged;
 
         // Track death event handlers for proper cleanup
         private Dictionary<Combatant, Action> _deathHandlers = new Dictionary<Combatant, Action>();
@@ -129,10 +131,15 @@ namespace VeilBreakers.Combat
             // Calculate initial synergy
             RecalculateSynergy();
 
+            // Default ally selection to the first living non-player party member.
+            SelectFirstLivingAlly();
+
             _state = BattleState.PLAYER_TURN; // Real-time, so this just means "active"
             OnBattleStart?.Invoke();
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log($"[BattleManager] Battle started! Synergy: {_currentSynergyTier}");
+#endif
         }
 
         /// <summary>
@@ -145,6 +152,59 @@ namespace VeilBreakers.Combat
 
             _currentTarget = target;
             OnTargetChanged?.Invoke(_currentTarget);
+        }
+
+        /// <summary>
+        /// Set active ally by reference.
+        /// </summary>
+        public void SetActiveAlly(Combatant ally)
+        {
+            if (ally == _activeAlly) return;
+            if (!IsSelectableAlly(ally)) return;
+
+            _activeAlly = ally;
+            OnActiveAllyChanged?.Invoke(_activeAlly);
+        }
+
+        /// <summary>
+        /// Select the next living ally (non-player) in party order.
+        /// </summary>
+        public bool SelectNextAlly()
+        {
+            return SelectAdjacentAlly(1);
+        }
+
+        /// <summary>
+        /// Select the previous living ally (non-player) in party order.
+        /// </summary>
+        public bool SelectPreviousAlly()
+        {
+            return SelectAdjacentAlly(-1);
+        }
+
+        /// <summary>
+        /// Select ally by visible ally index (0 = first non-player living ally).
+        /// </summary>
+        public bool SelectAllyByVisibleIndex(int visibleIndex)
+        {
+            if (visibleIndex < 0) return false;
+
+            int found = 0;
+            for (int i = 0; i < _playerParty.Count; i++)
+            {
+                var c = _playerParty[i];
+                if (!IsSelectableAlly(c)) continue;
+
+                if (found == visibleIndex)
+                {
+                    SetActiveAlly(c);
+                    return true;
+                }
+
+                found++;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -203,7 +263,9 @@ namespace VeilBreakers.Combat
             // Check MP cost
             if (!user.UseMp(skillData.mp_cost))
             {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
                 Debug.Log($"[BattleManager] Not enough MP for {ability.skillId}");
+#endif
                 return;
             }
 
@@ -236,7 +298,9 @@ namespace VeilBreakers.Combat
                     break;
             }
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log($"[BattleManager] {user.DisplayName} used {skillData.display_name}");
+#endif
         }
 
         /// <summary>
@@ -289,13 +353,7 @@ namespace VeilBreakers.Combat
         /// </summary>
         private void ExecuteDebuff(Combatant caster, Combatant target, SkillData skill)
         {
-            // Check for guard intercept on debuffs too
-            var interceptor = GetGuardInterceptor(target);
-            if (interceptor != null)
-            {
-                target = interceptor;
-            }
-
+            // Debuffs bypass guards - guards only intercept damage, not status effects
             ApplySkillStatusEffects(caster, target, skill);
             EventBus.DebuffApplied(target.gameObject, skill.skill_id);
         }
@@ -317,15 +375,19 @@ namespace VeilBreakers.Combat
         /// </summary>
         private void ExecuteUltimate(Combatant caster, Combatant target, SkillData skill)
         {
-            // Ultimates can be attack, heal, buff, or debuff based on their effects
+            // Perform guard interception BEFORE attack so status effects also hit the redirected target
+            var interceptor = GetGuardInterceptor(target);
+            var damageTarget = interceptor ?? target;
+
             if (skill.base_power > 0 && skill.GetDamageType() != DamageType.NONE)
             {
-                // Ultimate with damage component
-                ExecuteAttack(caster, target, skill);
+                // Ultimate with damage component - pass damageTarget (ExecuteAttack will re-check guard,
+                // but since interceptor is already guarding damageTarget, it won't double-redirect)
+                ExecuteAttack(caster, damageTarget, skill);
             }
 
-            // Apply any status effects
-            ApplySkillStatusEffects(caster, target, skill);
+            // Status effects from ultimates should also hit the redirected target
+            ApplySkillStatusEffects(caster, damageTarget, skill);
 
             // Fire ultimate event
             EventBus.UltimateUsed(caster.gameObject, skill.skill_id);
@@ -406,12 +468,30 @@ namespace VeilBreakers.Combat
             if (activeIndex < 0 || activeIndex >= _playerParty.Count) return false;
             if (backupIndex < 0 || backupIndex >= _backupMonsters.Count) return false;
 
-            var temp = _playerParty[activeIndex];
+            var oldCombatant = _playerParty[activeIndex];
             _playerParty[activeIndex] = _backupMonsters[backupIndex];
-            _backupMonsters[backupIndex] = temp;
+            _backupMonsters[backupIndex] = oldCombatant;
+
+            // Unsubscribe old combatant's death handler
+            if (oldCombatant != null && _deathHandlers.TryGetValue(oldCombatant, out var oldHandler))
+            {
+                oldCombatant.OnDeath -= oldHandler;
+                _deathHandlers.Remove(oldCombatant);
+            }
+
+            // Subscribe new combatant's death handler
+            var newCombatant = _playerParty[activeIndex];
+            if (newCombatant != null)
+            {
+                var c = newCombatant; // Capture for closure
+                Action newHandler = () => HandleCombatantDeath(c);
+                newCombatant.OnDeath += newHandler;
+                _deathHandlers[newCombatant] = newHandler;
+            }
 
             // Recalculate synergy
             RecalculateSynergy();
+            EnsureActiveAllyValid();
 
             return true;
         }
@@ -439,7 +519,9 @@ namespace VeilBreakers.Combat
             if (oldTier != _currentSynergyTier)
             {
                 OnSynergyChanged?.Invoke(_currentSynergyTier);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
                 Debug.Log($"[BattleManager] Synergy changed: {oldTier} -> {_currentSynergyTier}");
+#endif
             }
         }
 
@@ -450,6 +532,10 @@ namespace VeilBreakers.Combat
         {
             OnCombatantDeath?.Invoke(combatant);
             RecalculateSynergy();
+            if (combatant == _activeAlly)
+            {
+                EnsureActiveAllyValid();
+            }
         }
 
         /// <summary>
@@ -503,9 +589,67 @@ namespace VeilBreakers.Combat
                 }
             }
             _deathHandlers.Clear();
+            _activeAlly = null;
 
             OnBattleEnd?.Invoke();
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log($"[BattleManager] Battle ended: {endState}");
+#endif
+        }
+
+        private bool SelectAdjacentAlly(int direction)
+        {
+            if (_playerParty == null || _playerParty.Count == 0) return false;
+
+            int currentIndex = _playerParty.IndexOf(_activeAlly);
+            if (currentIndex < 0)
+            {
+                SelectFirstLivingAlly();
+                return _activeAlly != null;
+            }
+
+            int total = _playerParty.Count;
+            int scanIndex = currentIndex;
+            for (int hops = 0; hops < total; hops++)
+            {
+                scanIndex = (scanIndex + direction + total) % total;
+                var candidate = _playerParty[scanIndex];
+                if (!IsSelectableAlly(candidate)) continue;
+
+                SetActiveAlly(candidate);
+                return true;
+            }
+
+            return false;
+        }
+
+        private void SelectFirstLivingAlly()
+        {
+            _activeAlly = null;
+            for (int i = 0; i < _playerParty.Count; i++)
+            {
+                var c = _playerParty[i];
+                if (!IsSelectableAlly(c)) continue;
+
+                _activeAlly = c;
+                break;
+            }
+
+            OnActiveAllyChanged?.Invoke(_activeAlly);
+        }
+
+        private void EnsureActiveAllyValid()
+        {
+            if (IsSelectableAlly(_activeAlly)) return;
+            SelectFirstLivingAlly();
+        }
+
+        private bool IsSelectableAlly(Combatant combatant)
+        {
+            return combatant != null
+                   && combatant.IsAlive
+                   && combatant != _player
+                   && _playerParty.Contains(combatant);
         }
     }
 }

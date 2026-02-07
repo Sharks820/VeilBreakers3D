@@ -153,7 +153,7 @@ namespace VeilBreakers.Managers
                 SaveData data = JsonUtility.FromJson<SaveData>(json);
 
                 // 9. Validate
-                if (data == null || !data.Validate())
+                if (data == null || !data.ValidateAndRepair())
                 {
                     Debug.LogError("[SaveFileHandler] Save data validation failed");
                     return null;

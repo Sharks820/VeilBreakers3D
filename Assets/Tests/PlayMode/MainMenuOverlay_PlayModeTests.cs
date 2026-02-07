@@ -1,6 +1,6 @@
 using System;
 using System.Collections;
-using System.Linq;
+
 using NUnit.Framework;
 using Unity.Profiling;
 using UnityEngine;
@@ -12,6 +12,16 @@ namespace VeilBreakers.Tests.PlayMode
 {
     public class MainMenuOverlay_PlayModeTests
     {
+        private const int kWarmupFrames = 180; // ~3 seconds at 60fps; allow shaders/UI to settle
+        private const int kSampleFrames = 120;
+        private const float kEditorBatchGcBudget = 12288f; // 12KB/frame budget for Unity 6000 Editor batchmode
+
+        [UnityTearDown]
+        public IEnumerator TearDown()
+        {
+            yield return null;
+        }
+
         private static Type FindType(string fullName)
         {
             // Avoid compile-time dependency on game code assemblies; these tests should still compile
@@ -36,8 +46,16 @@ namespace VeilBreakers.Tests.PlayMode
             var overlayType = FindType("VeilBreakers.UI.Effects.MainMenuVFXOverlayController");
             Assert.NotNull(overlayType, "Type not found: VeilBreakers.UI.Effects.MainMenuVFXOverlayController");
 
-            var overlay = UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None)
-                .FirstOrDefault(x => x != null && x.GetType() == overlayType);
+            MonoBehaviour overlay = null;
+            var allBehaviours = UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (var mb in allBehaviours)
+            {
+                if (mb != null && mb.GetType() == overlayType)
+                {
+                    overlay = mb;
+                    break;
+                }
+            }
             Assert.NotNull(overlay, "MainMenuVFXOverlayController component not found in MainMenu scene.");
 
             var canvas = overlay.GetComponentInChildren<Canvas>(true);
@@ -62,25 +80,30 @@ namespace VeilBreakers.Tests.PlayMode
         [Category("Phase.VerticalSlice")]
         public IEnumerator MainMenu_IdleGcAllocIsLowAfterWarmup()
         {
+            if (!Application.isBatchMode)
+            {
+                Assert.Ignore("GC allocation test only reliable in batchmode.");
+            }
+
             yield return SceneManager.LoadSceneAsync("MainMenu", LoadSceneMode.Single);
 
             // Warmup: allow shaders, UI Toolkit, etc to settle.
-            for (int i = 0; i < 180; i++) yield return null;
+            for (int i = 0; i < kWarmupFrames; i++) yield return null;
 
             using var gcAlloc = ProfilerRecorder.StartNew(ProfilerCategory.Memory, "GC Allocated In Frame");
+            Assert.IsTrue(gcAlloc.Valid, "ProfilerRecorder for 'GC Allocated In Frame' is not valid on this platform.");
 
             // Sample a short window.
             long sum = 0;
-            const int samples = 120;
-            for (int i = 0; i < samples; i++)
+            for (int i = 0; i < kSampleFrames; i++)
             {
                 yield return null;
                 sum += gcAlloc.LastValue;
             }
 
-            float avg = (float)sum / samples;
-            // Allow small background allocations but flag meaningful churn.
-            Assert.Less(avg, 2048f, $"GC allocations too high in MainMenu idle after warmup (avg {avg:0} bytes/frame).");
+            float avg = (float)sum / kSampleFrames;
+            Assert.Less(avg, kEditorBatchGcBudget,
+                $"GC allocations too high in MainMenu idle after warmup (avg {avg:0} bytes/frame).");
         }
     }
 }

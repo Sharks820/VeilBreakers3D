@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using VeilBreakers.Data;
 
@@ -11,6 +12,12 @@ namespace VeilBreakers.Core
     [CreateAssetMenu(fileName = "GameDataAssets", menuName = "VeilBreakers/Data/GameDataAssets")]
     public class GameDataAssets : ScriptableObject
     {
+        private const string kDataAssetResourcePath = "Data/GameDataAssets";
+        private static readonly string[] kMonsterJsonCandidates = { "Data/monsters", "monsters" };
+        private static readonly string[] kSkillsJsonCandidates = { "Data/skills", "skills" };
+        private static readonly string[] kHeroesJsonCandidates = { "Data/heroes", "heroes" };
+        private static readonly string[] kItemsJsonCandidates = { "Data/items", "items" };
+
         private static GameDataAssets _instance;
 
         /// <summary>
@@ -23,12 +30,7 @@ namespace VeilBreakers.Core
             {
                 if (_instance == null)
                 {
-                    // Fallback to Resources.Load for backwards compatibility
-                    _instance = Resources.Load<GameDataAssets>("Data/GameDataAssets");
-                    if (_instance == null)
-                    {
-                        Debug.LogError("[GameDataAssets] GameDataAssets not found! Create via Assets > Create > VeilBreakers > Data > GameDataAssets");
-                    }
+                    _instance = LoadOrCreateInstance();
                 }
                 return _instance;
             }
@@ -41,6 +43,75 @@ namespace VeilBreakers.Core
         public static void Initialize(GameDataAssets instance)
         {
             _instance = instance;
+            EnsureRequiredJsonAssets(_instance);
+        }
+
+        private static GameDataAssets LoadOrCreateInstance()
+        {
+            var assets = Resources.Load<GameDataAssets>(kDataAssetResourcePath);
+            if (assets == null)
+            {
+                assets = CreateInstance<GameDataAssets>();
+                assets.hideFlags = HideFlags.DontUnloadUnusedAsset;
+                Debug.LogWarning("[GameDataAssets] Data/GameDataAssets not found. Using runtime fallback from Resources/Data/*.json.");
+            }
+
+            EnsureRequiredJsonAssets(assets);
+            return assets;
+        }
+
+        private static void EnsureRequiredJsonAssets(GameDataAssets assets)
+        {
+            if (assets == null)
+            {
+                return;
+            }
+
+            bool resolvedAny = false;
+            assets._monstersJson = ResolveJsonAsset(assets._monstersJson, "monsters", kMonsterJsonCandidates, ref resolvedAny);
+            assets._skillsJson = ResolveJsonAsset(assets._skillsJson, "skills", kSkillsJsonCandidates, ref resolvedAny);
+            assets._heroesJson = ResolveJsonAsset(assets._heroesJson, "heroes", kHeroesJsonCandidates, ref resolvedAny);
+            assets._itemsJson = ResolveJsonAsset(assets._itemsJson, "items", kItemsJsonCandidates, ref resolvedAny);
+
+            if (HasAllRequiredJsonAssets(assets))
+            {
+                if (resolvedAny)
+                {
+                    Debug.LogWarning("[GameDataAssets] Filled missing JSON references from Resources.");
+                }
+                return;
+            }
+
+            Debug.LogError("[GameDataAssets] Required JSON assets are missing. Expected Resources/Data/monsters, skills, heroes, and items.");
+        }
+
+        private static bool HasAllRequiredJsonAssets(GameDataAssets assets)
+        {
+            return assets._monstersJson != null &&
+                   assets._skillsJson != null &&
+                   assets._heroesJson != null &&
+                   assets._itemsJson != null;
+        }
+
+        private static TextAsset ResolveJsonAsset(TextAsset current, string label, string[] candidatePaths, ref bool resolvedAny)
+        {
+            if (current != null)
+            {
+                return current;
+            }
+
+            for (int i = 0; i < candidatePaths.Length; i++)
+            {
+                var asset = Resources.Load<TextAsset>(candidatePaths[i]);
+                if (asset != null)
+                {
+                    resolvedAny = true;
+                    return asset;
+                }
+            }
+
+            Debug.LogError($"[GameDataAssets] Could not find {label}.json in Resources.");
+            return null;
         }
 
         // =============================================================================
@@ -65,6 +136,6 @@ namespace VeilBreakers.Core
         [Header("Status Effects")]
         [SerializeField] private StatusEffectData[] _statusEffects;
 
-        public StatusEffectData[] StatusEffects => _statusEffects;
+        public IReadOnlyList<StatusEffectData> StatusEffects => _statusEffects;
     }
 }

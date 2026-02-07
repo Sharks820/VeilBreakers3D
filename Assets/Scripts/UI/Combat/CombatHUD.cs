@@ -57,6 +57,7 @@ namespace VeilBreakers.UI.Combat
         private Combatant[] _enemies;
         private Combatant _currentTarget;
         private int _targetIndex = 0;
+        private int _selectedAllyIndex = -1;
         private bool _isInitialized = false;
 
         // =============================================================================
@@ -65,6 +66,7 @@ namespace VeilBreakers.UI.Combat
 
         public Combatant Player => _player;
         public Combatant CurrentTarget => _currentTarget;
+        public int SelectedAllyIndex => _selectedAllyIndex;
         public bool IsInitialized => _isInitialized;
         public CombatUIConfig Config => _uiConfig;
 
@@ -75,6 +77,7 @@ namespace VeilBreakers.UI.Combat
         public event Action<int> OnSkillActivated;          // Skill slot index
         public event Action<int> OnAllyUltimateTriggered;   // Ally index
         public event Action<Combatant> OnTargetChanged;
+        public event Action<int, Combatant> OnSelectedAllyChanged;
         public event Action OnCaptureRequested;
 
         // =============================================================================
@@ -83,6 +86,7 @@ namespace VeilBreakers.UI.Combat
 
         private void Awake()
         {
+            _isQuitting = false; // Reset for Editor play mode re-entry
             if (_instance != null && _instance != this)
             {
                 Destroy(gameObject);
@@ -93,7 +97,7 @@ namespace VeilBreakers.UI.Combat
 
         private void Start()
         {
-            SubscribeToEvents();
+            // Events are now subscribed at the end of Initialize() to ensure state is set first.
         }
 
         private void OnDestroy()
@@ -149,7 +153,12 @@ namespace VeilBreakers.UI.Combat
                 SetTarget(_enemies[0]);
             }
 
+            // Default ally selection and sync with BattleManager.
+            SelectFirstAliveAlly();
+            SyncBattleManagerActiveAlly();
+
             _isInitialized = true;
+            SubscribeToEvents();
             SetVisible(true);
 
             Debug.Log($"[CombatHUD] Initialized with {_allies.Length} allies and {_enemies.Length} enemies");
@@ -160,11 +169,27 @@ namespace VeilBreakers.UI.Combat
         /// </summary>
         public void Cleanup()
         {
+            // Unbind ally panels from combatant events before clearing references
+            if (_allyPanels != null)
+            {
+                foreach (var panel in _allyPanels)
+                {
+                    if (panel != null) panel.Cleanup();
+                }
+            }
+
+            // Unsubscribe from BattleManager ally change events
+            if (BattleManager.HasInstance)
+            {
+                BattleManager.Instance.OnActiveAllyChanged -= OnBattleManagerAllyChanged;
+            }
+
             _player = null;
             _allies = Array.Empty<Combatant>();
             _enemies = Array.Empty<Combatant>();
             _currentTarget = null;
             _targetIndex = 0;
+            _selectedAllyIndex = -1;
             _isInitialized = false;
 
             SetVisible(false);
@@ -212,6 +237,9 @@ namespace VeilBreakers.UI.Combat
                     return;
                 }
             } while (_targetIndex != startIndex);
+
+            // If no valid target found after full cycle, clear the stale reference
+            SetTarget(null);
         }
 
         /// <summary>
@@ -231,6 +259,9 @@ namespace VeilBreakers.UI.Combat
                     return;
                 }
             } while (_targetIndex != startIndex);
+
+            // If no valid target found after full cycle, clear the stale reference
+            SetTarget(null);
         }
 
         /// <summary>
@@ -264,6 +295,33 @@ namespace VeilBreakers.UI.Combat
             {
                 _allyPanels[allyIndex].SetUltimateReady(ready);
             }
+        }
+
+        /// <summary>
+        /// Cycle ally selection to next available ally.
+        /// </summary>
+        public void CycleAllyNext()
+        {
+            SelectAdjacentAlly(1);
+        }
+
+        /// <summary>
+        /// Cycle ally selection to previous available ally.
+        /// </summary>
+        public void CycleAllyPrevious()
+        {
+            SelectAdjacentAlly(-1);
+        }
+
+        /// <summary>
+        /// Select ally panel by index.
+        /// </summary>
+        public void SelectAllyByIndex(int allyIndex)
+        {
+            if (_allies == null || allyIndex < 0 || allyIndex >= _allies.Length) return;
+            if (_allies[allyIndex] == null || !_allies[allyIndex].IsAlive) return;
+
+            SetSelectedAllyIndex(allyIndex);
         }
 
         /// <summary>
@@ -301,6 +359,11 @@ namespace VeilBreakers.UI.Combat
         {
             if (_allyPanels == null) return;
 
+            if (_allies.Length > _allyPanels.Count)
+            {
+                Debug.LogWarning($"[CombatHUD] More allies ({_allies.Length}) than ally panels ({_allyPanels.Count}). Some allies will not have UI.");
+            }
+
             for (int i = 0; i < _allyPanels.Count; i++)
             {
                 if (_allyPanels[i] != null)
@@ -316,6 +379,8 @@ namespace VeilBreakers.UI.Combat
                     }
                 }
             }
+
+            UpdateAllyPanelSelectionVisuals();
         }
 
         // =============================================================================
@@ -335,6 +400,12 @@ namespace VeilBreakers.UI.Combat
             else if (InputManager.Instance.GetActionDown(InputManager.GameAction.TargetPrev))
             {
                 CycleTargetPrevious();
+            }
+
+            // Cycle selected allied monster.
+            if (InputManager.Instance.GetActionDown(InputManager.GameAction.CycleAlly))
+            {
+                CycleAllyNext();
             }
         }
 
@@ -374,6 +445,12 @@ namespace VeilBreakers.UI.Combat
                 _playerPanel.OnPlayerDeath += HandlePlayerDeath;
                 _playerPanel.OnLowHP += HandleLowHP;
             }
+
+            // Bidirectional sync: listen for BattleManager ally changes (e.g. from AI or swap)
+            if (BattleManager.HasInstance)
+            {
+                BattleManager.Instance.OnActiveAllyChanged += OnBattleManagerAllyChanged;
+            }
         }
 
         private void UnsubscribeFromEvents()
@@ -403,6 +480,12 @@ namespace VeilBreakers.UI.Combat
             {
                 _playerPanel.OnPlayerDeath -= HandlePlayerDeath;
                 _playerPanel.OnLowHP -= HandleLowHP;
+            }
+
+            // Unsubscribe from BattleManager ally changes
+            if (BattleManager.HasInstance)
+            {
+                BattleManager.Instance.OnActiveAllyChanged -= OnBattleManagerAllyChanged;
             }
         }
 
@@ -435,6 +518,103 @@ namespace VeilBreakers.UI.Combat
         {
             Debug.Log("[CombatHUD] Player HP is low!");
             // Could trigger warning effects
+        }
+
+        private void OnBattleManagerAllyChanged(Combatant newAlly)
+        {
+            if (_allies == null) return;
+            for (int i = 0; i < _allies.Length; i++)
+            {
+                if (_allies[i] == newAlly)
+                {
+                    _selectedAllyIndex = i;
+                    UpdateAllyPanelSelectionVisuals();
+                    return;
+                }
+            }
+        }
+
+        private void SelectFirstAliveAlly()
+        {
+            _selectedAllyIndex = -1;
+            if (_allies == null) return;
+
+            for (int i = 0; i < _allies.Length; i++)
+            {
+                if (_allies[i] != null && _allies[i].IsAlive)
+                {
+                    _selectedAllyIndex = i;
+                    break;
+                }
+            }
+
+            UpdateAllyPanelSelectionVisuals();
+        }
+
+        private void SelectAdjacentAlly(int direction)
+        {
+            if (_allies == null || _allies.Length == 0) return;
+
+            if (_selectedAllyIndex < 0 || _selectedAllyIndex >= _allies.Length)
+            {
+                SelectFirstAliveAlly();
+                SyncBattleManagerActiveAlly();
+                return;
+            }
+
+            int total = _allies.Length;
+            int scanIndex = _selectedAllyIndex;
+            for (int hops = 0; hops < total; hops++)
+            {
+                scanIndex = (scanIndex + direction + total) % total;
+                if (_allies[scanIndex] == null || !_allies[scanIndex].IsAlive) continue;
+
+                SetSelectedAllyIndex(scanIndex);
+                return;
+            }
+        }
+
+        private void SetSelectedAllyIndex(int newIndex)
+        {
+            if (newIndex == _selectedAllyIndex) return;
+
+            _selectedAllyIndex = newIndex;
+            UpdateAllyPanelSelectionVisuals();
+            SyncBattleManagerActiveAlly();
+
+            Combatant selected = (_allies != null && newIndex >= 0 && newIndex < _allies.Length)
+                ? _allies[newIndex]
+                : null;
+            OnSelectedAllyChanged?.Invoke(newIndex, selected);
+        }
+
+        private void UpdateAllyPanelSelectionVisuals()
+        {
+            if (_allyPanels == null) return;
+
+            for (int i = 0; i < _allyPanels.Count; i++)
+            {
+                var panel = _allyPanels[i];
+                if (panel == null) continue;
+
+                bool shouldSelect = i == _selectedAllyIndex
+                    && _allies != null
+                    && i < _allies.Length
+                    && _allies[i] != null
+                    && _allies[i].IsAlive;
+                panel.SetSelected(shouldSelect);
+            }
+        }
+
+        private void SyncBattleManagerActiveAlly()
+        {
+            if (!BattleManager.HasInstance || _allies == null) return;
+            if (_selectedAllyIndex < 0 || _selectedAllyIndex >= _allies.Length) return;
+
+            var ally = _allies[_selectedAllyIndex];
+            if (ally == null || !ally.IsAlive) return;
+
+            BattleManager.Instance.SetActiveAlly(ally);
         }
     }
 }

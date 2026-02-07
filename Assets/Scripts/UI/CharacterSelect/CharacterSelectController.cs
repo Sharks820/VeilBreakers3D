@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
 using VeilBreakers.Data;
+using VeilBreakers.Managers;
 using VeilBreakers.UI.Core;
 
 namespace VeilBreakers.UI.CharacterSelect
@@ -25,8 +26,10 @@ namespace VeilBreakers.UI.CharacterSelect
         private const string kMainMenuScene = "MainMenu";
         private const string kGameScene = "Overworld";
         private const int kMaxStats = 20; // Max D&D stat value for bar display
-        private const int kMaxAbilities = 3;
+        private const int kMaxAbilities = 5;
         private const string kSelectedHeroPref = "SelectedHero";
+        private const string kStarterTownLocation = "StarterTown";
+        private static readonly string[] kStatKeys = { "str", "dex", "con", "int", "wis", "cha" };
 
         // =============================================================================
         // SERIALIZED FIELDS
@@ -50,6 +53,10 @@ namespace VeilBreakers.UI.CharacterSelect
         private Label _heroPath;
         private Label _heroRole;
         private Label _heroResource;
+        private Label _starterStatHp;
+        private Label _starterStatAtk;
+        private Label _starterStatDef;
+        private Label _starterStatSpd;
 
         // Monster info
         private VisualElement _monsterThumbnail;
@@ -59,6 +66,7 @@ namespace VeilBreakers.UI.CharacterSelect
         // Stats panel
         private VisualElement _statsPanel;
         private readonly VisualElement[] _statFills = new VisualElement[6];
+        private readonly VisualElement[] _statRows = new VisualElement[6];
         private readonly Label[] _statValues = new Label[6];
         private readonly Label[] _abilityNames = new Label[kMaxAbilities];
         private readonly Label[] _abilityDescs = new Label[kMaxAbilities];
@@ -72,11 +80,19 @@ namespace VeilBreakers.UI.CharacterSelect
         private Label _embarkLabel;
         private Button _btnBack;
         private Button _btnNeutralToggle;
+        private Button _btnPrevHero;
+        private Button _btnNextHero;
+        private Button _btnRotateModelLeft;
+        private Button _btnRotateModelRight;
+        private Label _heroIndexIndicator;
 
         // Overlays
         private VisualElement _screenFade;
         private VisualElement _vfxOverlay;
         private VisualElement _heroStageRender;
+        private VisualElement _infoPanel;
+        private VisualElement _carouselStrip;
+        private VisualElement _heroCycleHud;
 
         // Environment
         private VisualElement _envLayerColor;
@@ -94,8 +110,11 @@ namespace VeilBreakers.UI.CharacterSelect
         private Coroutine _statsCoroutine;
         private Coroutine _quoteCoroutine;
         private Camera _cachedCamera;
+        private bool _runtimeFallbackUIBuilt;
+        private bool _readabilityFallbackEnabled;
 
         // Sub-controllers (added in later phases)
+        private Coroutine _initCoroutine;
         private HeroStageController _heroStage;
         private EnvironmentController _environment;
         private VeilTearTransition _veilTear;
@@ -106,23 +125,34 @@ namespace VeilBreakers.UI.CharacterSelect
         // CACHED ALLOCATIONS
         // =============================================================================
 
-        private static readonly WaitForSeconds Wait01 = new WaitForSeconds(0.1f);
-        private static readonly WaitForSeconds Wait02 = new WaitForSeconds(0.2f);
-        private static readonly WaitForSeconds Wait03 = new WaitForSeconds(0.3f);
-        private static readonly WaitForSeconds Wait05 = new WaitForSeconds(0.5f);
-        private static readonly WaitForSeconds Wait10 = new WaitForSeconds(1.0f);
+        private static readonly WaitForSeconds kWait01 = new WaitForSeconds(0.1f);
+        private static readonly WaitForSeconds kWait02 = new WaitForSeconds(0.2f);
+        private static readonly WaitForSeconds kWait03 = new WaitForSeconds(0.3f);
+        private static readonly WaitForSeconds kWait05 = new WaitForSeconds(0.5f);
+        private static readonly WaitForSeconds kWait10 = new WaitForSeconds(1.0f);
 
         // Pre-baked number strings to avoid int.ToString() allocations
-        private static readonly string[] NumberStrings = new string[21];
+        private static readonly string[] kNumberStrings = new string[21];
 
         static CharacterSelectController()
         {
             for (int i = 0; i <= 20; i++)
-                NumberStrings[i] = i.ToString();
+                kNumberStrings[i] = i.ToString();
         }
+
+        // Cached text elements for readability fallback (populated once after UI init)
+        private List<TextElement> _cachedTextElements;
+        private List<Label> _cachedLabels;
+
+        // Reusable buffer for GetDisplayStats to avoid allocation per call
+        private readonly int[] _displayStatsBuf = new int[6];
 
         // Event handler cache for proper unregistration (sized dynamically to match carousel slots)
         private EventCallback<ClickEvent>[] _slotClickHandlers;
+        private static Font _fallbackUIFont;
+
+        // Static cache for FormatSkillName to avoid repeated string allocations
+        private static readonly Dictionary<string, string> _formattedSkillNames = new();
 
         // =============================================================================
         // PROPERTIES
@@ -146,12 +176,14 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void Start()
         {
-            StartCoroutine(InitializeWhenReady());
+            EnsureCoreManagers();
+            _initCoroutine = StartCoroutine(InitializeWhenReady());
         }
 
         private void OnDestroy()
         {
             _isDestroyed = true;
+            if (_initCoroutine != null) StopCoroutine(_initCoroutine);
             if (_subControllerHandler != null) OnHeroChanged -= _subControllerHandler;
             UnsubscribeInput();
             CleanupEventHandlers();
@@ -164,9 +196,24 @@ namespace VeilBreakers.UI.CharacterSelect
         private IEnumerator InitializeWhenReady()
         {
             // Wait for GameDatabase to finish loading
+            float waitSeconds = 0f;
+            const float maxWaitSeconds = 15f;
             while (GameDatabase.Instance == null || !GameDatabase.Instance.IsLoaded)
             {
+                waitSeconds += Time.unscaledDeltaTime;
+                if (waitSeconds >= maxWaitSeconds)
+                {
+                    Debug.LogError("[CharacterSelect] Timed out waiting for GameDatabase to load.");
+                    yield break;
+                }
+
                 yield return null;
+            }
+
+            if (GameDatabase.Instance.LoadFailed)
+            {
+                Debug.LogError($"[CharacterSelect] GameDatabase reported load failure: {GameDatabase.Instance.LastLoadError}");
+                yield break;
             }
 
             _heroes = GameDatabase.Instance.GetAllHeroes();
@@ -183,6 +230,11 @@ namespace VeilBreakers.UI.CharacterSelect
             SetupEventHandlers();
             SubscribeInput();
             InitializeSubControllers();
+            _statsVisible = true;
+            _statsPanel?.RemoveFromClassList("hidden");
+            _statsPanel?.AddToClassList("visible");
+            EnsureCriticalUIVisible();
+            StartCoroutine(VisibilityFailsafe());
 
             // Check for previously selected hero
             string lastSelected = PlayerPrefs.GetString(kSelectedHeroPref, "");
@@ -215,6 +267,27 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             var doc = GetComponent<UIDocument>();
             _root = doc.rootVisualElement;
+            QueryUIElements();
+            _cachedTextElements = _root.Query<TextElement>().ToList();
+            _cachedLabels = _root.Query<Label>().ToList();
+
+            if (NeedsRuntimeFallbackUI())
+            {
+                Debug.LogWarning("[CharacterSelect] Critical UI nodes missing from CharacterSelect UXML. Building runtime fallback UI.");
+                BuildRuntimeFallbackUI();
+                QueryUIElements(); // Re-query after fallback UI is built
+                _cachedTextElements = _root.Query<TextElement>().ToList();
+                _cachedLabels = _root.Query<Label>().ToList();
+                _readabilityFallbackEnabled = true;
+            }
+
+            ApplyStaticTextDefaults();
+            EnsureTextReadability();
+        }
+
+        private void QueryUIElements()
+        {
+            if (_root == null) return;
 
             // Info panel
             _heroName = _root.Q<Label>("hero-name");
@@ -223,6 +296,10 @@ namespace VeilBreakers.UI.CharacterSelect
             _heroPath = _root.Q<Label>("hero-path");
             _heroRole = _root.Q<Label>("hero-role");
             _heroResource = _root.Q<Label>("hero-resource");
+            _starterStatHp = _root.Q<Label>("starter-stat-hp");
+            _starterStatAtk = _root.Q<Label>("starter-stat-atk");
+            _starterStatDef = _root.Q<Label>("starter-stat-def");
+            _starterStatSpd = _root.Q<Label>("starter-stat-spd");
 
             // Monster info
             _monsterThumbnail = _root.Q("monster-thumbnail");
@@ -231,11 +308,11 @@ namespace VeilBreakers.UI.CharacterSelect
 
             // Stats panel
             _statsPanel = _root.Q("stats-panel");
-            string[] statKeys = { "str", "dex", "con", "int", "wis", "cha" };
-            for (int i = 0; i < statKeys.Length; i++)
+            for (int i = 0; i < kStatKeys.Length; i++)
             {
-                _statFills[i] = _root.Q($"stat-fill-{statKeys[i]}");
-                _statValues[i] = _root.Q<Label>($"stat-val-{statKeys[i]}");
+                _statRows[i] = _root.Q($"stat-row-{kStatKeys[i]}");
+                _statFills[i] = _root.Q($"stat-fill-{kStatKeys[i]}");
+                _statValues[i] = _root.Q<Label>($"stat-val-{kStatKeys[i]}");
             }
             for (int i = 0; i < kMaxAbilities; i++)
             {
@@ -245,6 +322,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             // Carousel — discover slots dynamically
             _carouselTrack = _root.Q("carousel-track");
+            _carouselSlots.Clear();
             for (int i = 0; ; i++)
             {
                 var slot = _root.Q($"carousel-slot-{i}");
@@ -258,12 +336,544 @@ namespace VeilBreakers.UI.CharacterSelect
             _embarkLabel = _root.Q<Label>("embark-label");
             _btnBack = _root.Q<Button>("btn-back");
             _btnNeutralToggle = _root.Q<Button>("btn-neutral-toggle");
+            _btnPrevHero = _root.Q<Button>("btn-prev-hero");
+            _btnNextHero = _root.Q<Button>("btn-next-hero");
+            _btnRotateModelLeft = _root.Q<Button>("btn-rotate-model-left");
+            _btnRotateModelRight = _root.Q<Button>("btn-rotate-model-right");
+            _heroIndexIndicator = _root.Q<Label>("hero-index-indicator");
+            EnsureRuntimeControlsVisible();
+            EnsureHeroCycleButtonText(_btnPrevHero, "<", "Previous Hero (A / Left Arrow)");
+            EnsureHeroCycleButtonText(_btnNextHero, ">", "Next Hero (D / Right Arrow)");
 
             // Overlays
             _screenFade = _root.Q("screen-fade");
             _vfxOverlay = _root.Q("vfx-overlay");
             _heroStageRender = _root.Q("hero-stage-render");
             _envLayerColor = _root.Q("env-layer-color");
+            _infoPanel = _root.Q("info-panel");
+            _carouselStrip = _root.Q("carousel-strip");
+            _heroCycleHud = _root.Q("hero-cycle-hud");
+        }
+
+        private bool NeedsRuntimeFallbackUI()
+        {
+            if (_root == null || _runtimeFallbackUIBuilt) return false;
+
+            return _heroStageRender == null
+                || _vfxOverlay == null
+                || _heroName == null
+                || _statsPanel == null
+                || _btnEmbark == null
+                || _btnBack == null
+                || _carouselTrack == null
+                || _carouselSlots.Count == 0;
+        }
+
+        private void BuildRuntimeFallbackUI()
+        {
+            if (_root == null) return;
+
+            _runtimeFallbackUIBuilt = true;
+            _root.style.flexGrow = 1f;
+            _root.style.width = new StyleLength(new Length(100f, LengthUnit.Percent));
+            _root.style.height = new StyleLength(new Length(100f, LengthUnit.Percent));
+
+            var environmentContainer = EnsureElement(_root, "environment-container");
+            environmentContainer.style.position = Position.Absolute;
+            environmentContainer.style.left = 0f;
+            environmentContainer.style.top = 0f;
+            environmentContainer.style.right = 0f;
+            environmentContainer.style.bottom = 0f;
+            var envBase = EnsureElement(environmentContainer, "env-layer-base");
+            var envColor = EnsureElement(environmentContainer, "env-layer-color");
+            var envVignette = EnsureElement(environmentContainer, "env-vignette");
+            envBase.style.position = Position.Absolute;
+            envBase.style.left = 0f;
+            envBase.style.top = 0f;
+            envBase.style.right = 0f;
+            envBase.style.bottom = 0f;
+            envBase.style.backgroundColor = new Color(0.04f, 0.03f, 0.06f, 1f);
+            envColor.style.position = Position.Absolute;
+            envColor.style.left = 0f;
+            envColor.style.top = 0f;
+            envColor.style.right = 0f;
+            envColor.style.bottom = 0f;
+            envVignette.style.position = Position.Absolute;
+            envVignette.style.left = 0f;
+            envVignette.style.top = 0f;
+            envVignette.style.right = 0f;
+            envVignette.style.bottom = 0f;
+
+            var heroStage = EnsureElement(_root, "hero-stage");
+            heroStage.style.position = Position.Absolute;
+            heroStage.style.left = Length.Percent(25f);
+            heroStage.style.top = Length.Percent(5f);
+            heroStage.style.width = Length.Percent(50f);
+            heroStage.style.height = Length.Percent(70f);
+            heroStage.style.overflow = Overflow.Hidden;
+
+            var heroStageRender = EnsureElement(heroStage, "hero-stage-render");
+            heroStageRender.style.width = new StyleLength(new Length(100f, LengthUnit.Percent));
+            heroStageRender.style.height = new StyleLength(new Length(100f, LengthUnit.Percent));
+            var vfxOverlay = EnsureElement(heroStage, "vfx-overlay");
+            vfxOverlay.style.position = Position.Absolute;
+            vfxOverlay.style.left = 0f;
+            vfxOverlay.style.top = 0f;
+            vfxOverlay.style.right = 0f;
+            vfxOverlay.style.bottom = 0f;
+            vfxOverlay.pickingMode = PickingMode.Ignore;
+
+            var infoPanel = EnsureElement(_root, "info-panel");
+            ApplyFallbackPanelStyle(infoPanel, false);
+            EnsureLabel(infoPanel, "hero-name", "VEX");
+            EnsureLabel(infoPanel, "hero-title", "THE WARDEN");
+            EnsureLabel(infoPanel, "hero-quote", "");
+            EnsureLabel(infoPanel, "hero-path", "IRONBOUND");
+            EnsureLabel(infoPanel, "hero-role", "TANK");
+            EnsureLabel(infoPanel, "hero-resource", "GUARD");
+            EnsureElement(infoPanel, "monster-thumbnail");
+            EnsureLabel(infoPanel, "monster-name", "Skitter-Teeth");
+            EnsureLabel(infoPanel, "monster-brand", "IRON");
+
+            var statsPanel = EnsureElement(_root, "stats-panel");
+            ApplyFallbackPanelStyle(statsPanel, true);
+
+            for (int i = 0; i < kStatKeys.Length; i++)
+            {
+                string key = kStatKeys[i];
+                var row = EnsureElement(statsPanel, $"stat-row-{key}");
+                row.style.flexDirection = FlexDirection.Row;
+                row.style.alignItems = Align.Center;
+                row.style.marginBottom = 8f;
+
+                var track = EnsureElement(row, $"stat-track-{key}");
+                track.style.flexGrow = 1f;
+                track.style.height = 6f;
+                track.style.marginLeft = 8f;
+                track.style.marginRight = 8f;
+                track.style.backgroundColor = new Color(1f, 1f, 1f, 0.18f);
+
+                var fill = EnsureElement(track, $"stat-fill-{key}");
+                fill.style.height = new StyleLength(new Length(100f, LengthUnit.Percent));
+                fill.style.width = Length.Percent(50f);
+                fill.style.backgroundColor = new Color(0.88f, 0.55f, 0.32f, 0.95f);
+
+                EnsureLabel(row, $"stat-val-{key}", "10");
+            }
+
+            for (int i = 0; i < kMaxAbilities; i++)
+            {
+                var abilityRow = EnsureElement(statsPanel, $"ability-{i}");
+                abilityRow.style.marginBottom = 6f;
+                abilityRow.style.paddingLeft = 8f;
+                abilityRow.style.paddingRight = 8f;
+                abilityRow.style.paddingTop = 6f;
+                abilityRow.style.paddingBottom = 6f;
+                abilityRow.style.backgroundColor = new Color(1f, 1f, 1f, 0.08f);
+                EnsureLabel(abilityRow, $"ability-name-{i}", "");
+                EnsureLabel(abilityRow, $"ability-desc-{i}", "");
+            }
+
+            var carouselStrip = EnsureElement(_root, "carousel-strip");
+            carouselStrip.style.position = Position.Absolute;
+            carouselStrip.style.left = 0f;
+            carouselStrip.style.right = 0f;
+            carouselStrip.style.bottom = 24f;
+            carouselStrip.style.height = 160f;
+            carouselStrip.style.flexDirection = FlexDirection.Row;
+            carouselStrip.style.justifyContent = Justify.Center;
+            carouselStrip.style.alignItems = Align.Center;
+
+            var carouselTrack = EnsureElement(carouselStrip, "carousel-track");
+            carouselTrack.style.flexDirection = FlexDirection.Row;
+            carouselTrack.style.alignItems = Align.Center;
+            for (int i = 0; i < 4; i++)
+            {
+                var slot = EnsureElement(carouselTrack, $"carousel-slot-{i}");
+                slot.style.width = 112f;
+                slot.style.height = 130f;
+                slot.style.marginLeft = 6f;
+                slot.style.marginRight = 6f;
+                slot.style.backgroundColor = new Color(0.09f, 0.08f, 0.12f, 0.85f);
+                slot.style.alignItems = Align.Center;
+                slot.style.justifyContent = Justify.Center;
+                slot.style.borderTopWidth = 1f;
+                slot.style.borderBottomWidth = 1f;
+                slot.style.borderLeftWidth = 1f;
+                slot.style.borderRightWidth = 1f;
+                slot.style.borderTopColor = new Color(1f, 1f, 1f, 0.15f);
+                slot.style.borderBottomColor = new Color(1f, 1f, 1f, 0.15f);
+                slot.style.borderLeftColor = new Color(1f, 1f, 1f, 0.15f);
+                slot.style.borderRightColor = new Color(1f, 1f, 1f, 0.15f);
+                EnsureLabel(slot, $"slot-name-{i}", $"HERO {i + 1}");
+            }
+
+            var cycleHud = EnsureElement(_root, "hero-cycle-hud");
+            cycleHud.style.position = Position.Absolute;
+            cycleHud.style.left = Length.Percent(50f);
+            cycleHud.style.bottom = 286f;
+            cycleHud.style.width = 320f;
+            cycleHud.style.height = 36f;
+            cycleHud.style.marginLeft = -160f;
+            cycleHud.style.flexDirection = FlexDirection.Row;
+            cycleHud.style.justifyContent = Justify.Center;
+            cycleHud.style.alignItems = Align.Center;
+
+            var prev = EnsureButton(cycleHud, "btn-prev-hero");
+            prev.text = "<";
+            prev.style.width = 42f;
+            prev.style.height = 30f;
+            prev.style.marginRight = 10f;
+
+            EnsureLabel(cycleHud, "hero-index-indicator", "HERO 1 / 4");
+
+            var next = EnsureButton(cycleHud, "btn-next-hero");
+            next.text = ">";
+            next.style.width = 42f;
+            next.style.height = 30f;
+            next.style.marginLeft = 10f;
+
+            var embark = EnsureButton(_root, "btn-embark");
+            embark.style.position = Position.Absolute;
+            embark.style.left = Length.Percent(50f);
+            embark.style.bottom = 206f;
+            embark.style.width = 320f;
+            embark.style.height = 64f;
+            embark.style.marginLeft = -160f;
+            embark.style.backgroundColor = new Color(0.1f, 0.08f, 0.12f, 0.98f);
+            embark.style.borderTopWidth = 1f;
+            embark.style.borderBottomWidth = 1f;
+            embark.style.borderLeftWidth = 1f;
+            embark.style.borderRightWidth = 1f;
+            embark.style.borderTopColor = new Color(1f, 1f, 1f, 0.2f);
+            embark.style.borderBottomColor = new Color(1f, 1f, 1f, 0.2f);
+            embark.style.borderLeftColor = new Color(1f, 1f, 1f, 0.2f);
+            embark.style.borderRightColor = new Color(1f, 1f, 1f, 0.2f);
+            EnsureLabel(embark, "embark-label", "EMBARK AS VEX");
+
+            var back = EnsureButton(_root, "btn-back");
+            back.text = "BACK";
+            back.style.position = Position.Absolute;
+            back.style.left = 40f;
+            back.style.top = 36f;
+
+            var neutral = EnsureButton(_root, "btn-neutral-toggle");
+            neutral.text = "NEUTRAL BG";
+            neutral.style.position = Position.Absolute;
+            neutral.style.right = 40f;
+            neutral.style.top = 36f;
+            neutral.style.display = DisplayStyle.None;
+
+            var screenFade = EnsureElement(_root, "screen-fade");
+            screenFade.style.position = Position.Absolute;
+            screenFade.style.left = 0f;
+            screenFade.style.top = 0f;
+            screenFade.style.right = 0f;
+            screenFade.style.bottom = 0f;
+            screenFade.style.backgroundColor = Color.black;
+            screenFade.style.opacity = 0f;
+            screenFade.pickingMode = PickingMode.Ignore;
+        }
+
+        private static VisualElement EnsureElement(VisualElement parent, string name)
+        {
+            var element = parent.Q<VisualElement>(name);
+            if (element == null)
+            {
+                element = new VisualElement { name = name };
+                parent.Add(element);
+            }
+            return element;
+        }
+
+        private static Label EnsureLabel(VisualElement parent, string name, string text)
+        {
+            var label = parent.Q<Label>(name);
+            if (label == null)
+            {
+                label = new Label { name = name };
+                parent.Add(label);
+            }
+            label.text = text ?? string.Empty;
+            return label;
+        }
+
+        private static Button EnsureButton(VisualElement parent, string name)
+        {
+            var button = parent.Q<Button>(name);
+            if (button == null)
+            {
+                button = new Button { name = name };
+                parent.Add(button);
+            }
+            return button;
+        }
+
+        private static void ApplyFallbackPanelStyle(VisualElement panel, bool right)
+        {
+            panel.style.position = Position.Absolute;
+            panel.style.top = 80f;
+            if (right)
+            {
+                panel.style.right = 40f;
+                panel.style.left = StyleKeyword.Null;
+            }
+            else
+            {
+                panel.style.left = 40f;
+                panel.style.right = StyleKeyword.Null;
+            }
+
+            panel.style.width = 300f;
+            panel.style.paddingTop = 16f;
+            panel.style.paddingBottom = 16f;
+            panel.style.paddingLeft = 16f;
+            panel.style.paddingRight = 16f;
+            panel.style.backgroundColor = new Color(0.06f, 0.06f, 0.09f, 0.92f);
+            panel.style.borderTopWidth = 1f;
+            panel.style.borderBottomWidth = 1f;
+            panel.style.borderLeftWidth = 1f;
+            panel.style.borderRightWidth = 1f;
+            panel.style.borderTopColor = new Color(1f, 1f, 1f, 0.22f);
+            panel.style.borderBottomColor = new Color(1f, 1f, 1f, 0.22f);
+            panel.style.borderLeftColor = new Color(1f, 1f, 1f, 0.22f);
+            panel.style.borderRightColor = new Color(1f, 1f, 1f, 0.22f);
+        }
+
+        private void ApplyReadabilityFallbackStyles()
+        {
+            if (_root == null || !_readabilityFallbackEnabled) return;
+
+            Color textColor = new Color(0.94f, 0.9f, 0.84f, 1f);
+            _root.style.color = textColor;
+
+            ApplyPanelReadability(_infoPanel);
+            ApplyPanelReadability(_statsPanel);
+            ApplyPanelReadability(_carouselStrip);
+            ApplyPanelReadability(_heroCycleHud);
+            ApplyButtonReadability(_btnEmbark);
+            ApplyButtonReadability(_btnBack);
+            ApplyButtonReadability(_btnPrevHero);
+            ApplyButtonReadability(_btnNextHero);
+
+            var labels = _cachedLabels ?? _root.Query<Label>().ToList();
+            foreach (var label in labels)
+            {
+                Color c = label.resolvedStyle.color;
+                if (c.a < 0.25f || (c.r + c.g + c.b) < 0.45f)
+                {
+                    label.style.color = textColor;
+                }
+            }
+        }
+
+        private static void ApplyPanelReadability(VisualElement panel)
+        {
+            if (panel == null) return;
+            if (panel.resolvedStyle.backgroundColor.a > 0.05f) return;
+
+            panel.style.backgroundColor = new Color(0.06f, 0.06f, 0.09f, 0.9f);
+            panel.style.borderTopWidth = 1f;
+            panel.style.borderBottomWidth = 1f;
+            panel.style.borderLeftWidth = 1f;
+            panel.style.borderRightWidth = 1f;
+            panel.style.borderTopColor = new Color(1f, 1f, 1f, 0.16f);
+            panel.style.borderBottomColor = new Color(1f, 1f, 1f, 0.16f);
+            panel.style.borderLeftColor = new Color(1f, 1f, 1f, 0.16f);
+            panel.style.borderRightColor = new Color(1f, 1f, 1f, 0.16f);
+        }
+
+        private static void ApplyButtonReadability(Button button)
+        {
+            if (button == null) return;
+            if (button.resolvedStyle.backgroundColor.a > 0.05f) return;
+
+            button.style.backgroundColor = new Color(0.08f, 0.08f, 0.11f, 0.95f);
+            button.style.borderTopWidth = 1f;
+            button.style.borderBottomWidth = 1f;
+            button.style.borderLeftWidth = 1f;
+            button.style.borderRightWidth = 1f;
+            button.style.borderTopColor = new Color(1f, 1f, 1f, 0.2f);
+            button.style.borderBottomColor = new Color(1f, 1f, 1f, 0.2f);
+            button.style.borderLeftColor = new Color(1f, 1f, 1f, 0.2f);
+            button.style.borderRightColor = new Color(1f, 1f, 1f, 0.2f);
+        }
+
+        private static void EnsureHeroCycleButtonText(Button button, string fallbackText, string tooltip)
+        {
+            if (button == null) return;
+
+            button.tooltip = tooltip;
+
+            var arrowLabel = button.Q<Label>(className: "hero-cycle-arrow") ?? button.Q<Label>();
+            if (arrowLabel != null)
+            {
+                if (string.IsNullOrWhiteSpace(arrowLabel.text))
+                {
+                    arrowLabel.text = fallbackText;
+                }
+
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(button.text))
+            {
+                button.text = fallbackText;
+            }
+        }
+
+        private void EnsureRuntimeControlsVisible()
+        {
+            if (_root == null) return;
+
+            // Hero cycle controls: force a visible overlay near top-center.
+            var cycleHud = _heroCycleHud ?? EnsureElement(_root, "hero-cycle-hud");
+            cycleHud.style.position = Position.Absolute;
+            cycleHud.style.left = Length.Percent(50f);
+            cycleHud.style.top = 30f;
+            cycleHud.style.width = 420f;
+            cycleHud.style.height = 46f;
+            cycleHud.style.marginLeft = -210f;
+            cycleHud.style.display = DisplayStyle.Flex;
+            cycleHud.style.opacity = 1f;
+            cycleHud.style.flexDirection = FlexDirection.Row;
+            cycleHud.style.justifyContent = Justify.Center;
+            cycleHud.style.alignItems = Align.Center;
+            cycleHud.style.backgroundColor = new Color(0.05f, 0.05f, 0.08f, 0.9f);
+            cycleHud.style.borderTopWidth = 1f;
+            cycleHud.style.borderBottomWidth = 1f;
+            cycleHud.style.borderLeftWidth = 1f;
+            cycleHud.style.borderRightWidth = 1f;
+            cycleHud.style.borderTopColor = new Color(1f, 1f, 1f, 0.2f);
+            cycleHud.style.borderBottomColor = new Color(1f, 1f, 1f, 0.2f);
+            cycleHud.style.borderLeftColor = new Color(1f, 1f, 1f, 0.2f);
+            cycleHud.style.borderRightColor = new Color(1f, 1f, 1f, 0.2f);
+            cycleHud.style.borderTopLeftRadius = 6f;
+            cycleHud.style.borderTopRightRadius = 6f;
+            cycleHud.style.borderBottomLeftRadius = 6f;
+            cycleHud.style.borderBottomRightRadius = 6f;
+
+            _btnPrevHero ??= EnsureButton(cycleHud, "btn-prev-hero");
+            _btnNextHero ??= EnsureButton(cycleHud, "btn-next-hero");
+            _heroIndexIndicator ??= EnsureLabel(cycleHud, "hero-index-indicator", "HERO 1 / 4");
+
+            ApplyArrowButtonStyle(_btnPrevHero, "<");
+            ApplyArrowButtonStyle(_btnNextHero, ">");
+
+            _heroIndexIndicator.style.minWidth = 220f;
+            _heroIndexIndicator.style.unityTextAlign = TextAnchor.MiddleCenter;
+            _heroIndexIndicator.style.fontSize = 13f;
+            _heroIndexIndicator.style.color = new Color(0.94f, 0.9f, 0.84f, 1f);
+
+            var carousel = _carouselStrip ?? EnsureElement(_root, "carousel-strip");
+            carousel.style.position = Position.Absolute;
+            carousel.style.left = 0f;
+            carousel.style.right = 0f;
+            carousel.style.bottom = 24f;
+            carousel.style.height = 156f;
+            carousel.style.display = DisplayStyle.Flex;
+            carousel.style.opacity = 1f;
+            carousel.style.alignItems = Align.Center;
+            carousel.style.justifyContent = Justify.Center;
+
+            if (_btnEmbark != null)
+            {
+                _btnEmbark.style.position = Position.Absolute;
+                _btnEmbark.style.left = Length.Percent(50f);
+                _btnEmbark.style.marginLeft = -170f;
+                _btnEmbark.style.bottom = 184f;
+                _btnEmbark.style.width = 340f;
+                _btnEmbark.style.height = 68f;
+                _btnEmbark.style.display = DisplayStyle.Flex;
+                _btnEmbark.style.opacity = 1f;
+            }
+
+            // Model rotation controls: force visible inside hero stage.
+            var stage = _root.Q<VisualElement>("hero-stage");
+            if (stage != null)
+            {
+                _btnRotateModelLeft ??= EnsureButton(stage, "btn-rotate-model-left");
+                _btnRotateModelRight ??= EnsureButton(stage, "btn-rotate-model-right");
+
+                ApplyRoundRotateButtonStyle(_btnRotateModelLeft, "<", leftSide: true);
+                ApplyRoundRotateButtonStyle(_btnRotateModelRight, ">", leftSide: false);
+            }
+        }
+
+        private static void ApplyArrowButtonStyle(Button button, string arrowText)
+        {
+            if (button == null) return;
+
+            button.text = arrowText;
+            button.style.display = DisplayStyle.Flex;
+            button.style.opacity = 1f;
+            button.style.width = 44f;
+            button.style.height = 34f;
+            button.style.marginLeft = 10f;
+            button.style.marginRight = 10f;
+            button.style.unityTextAlign = TextAnchor.MiddleCenter;
+            button.style.fontSize = 18f;
+            button.style.unityFontStyleAndWeight = FontStyle.Bold;
+            button.style.color = new Color(0.95f, 0.9f, 0.84f, 1f);
+            button.style.backgroundColor = new Color(0.09f, 0.08f, 0.13f, 0.95f);
+            button.style.borderTopWidth = 1f;
+            button.style.borderBottomWidth = 1f;
+            button.style.borderLeftWidth = 1f;
+            button.style.borderRightWidth = 1f;
+            button.style.borderTopColor = new Color(1f, 1f, 1f, 0.25f);
+            button.style.borderBottomColor = new Color(1f, 1f, 1f, 0.25f);
+            button.style.borderLeftColor = new Color(1f, 1f, 1f, 0.25f);
+            button.style.borderRightColor = new Color(1f, 1f, 1f, 0.25f);
+        }
+
+        private static void ApplyRoundRotateButtonStyle(Button button, string arrowText, bool leftSide)
+        {
+            if (button == null) return;
+
+            button.text = arrowText;
+            button.style.position = Position.Absolute;
+            button.style.top = Length.Percent(50f);
+            button.style.marginTop = -24f;
+            button.style.left = leftSide ? 12f : StyleKeyword.Null;
+            button.style.right = leftSide ? StyleKeyword.Null : 12f;
+            button.style.width = 48f;
+            button.style.height = 48f;
+            button.style.unityTextAlign = TextAnchor.MiddleCenter;
+            button.style.fontSize = 22f;
+            button.style.unityFontStyleAndWeight = FontStyle.Bold;
+            button.style.color = new Color(0.95f, 0.9f, 0.84f, 1f);
+            button.style.backgroundColor = new Color(0.08f, 0.07f, 0.11f, 0.9f);
+            button.style.borderTopWidth = 1f;
+            button.style.borderBottomWidth = 1f;
+            button.style.borderLeftWidth = 1f;
+            button.style.borderRightWidth = 1f;
+            button.style.borderTopColor = new Color(1f, 1f, 1f, 0.25f);
+            button.style.borderBottomColor = new Color(1f, 1f, 1f, 0.25f);
+            button.style.borderLeftColor = new Color(1f, 1f, 1f, 0.25f);
+            button.style.borderRightColor = new Color(1f, 1f, 1f, 0.25f);
+            button.style.borderTopLeftRadius = 24f;
+            button.style.borderTopRightRadius = 24f;
+            button.style.borderBottomLeftRadius = 24f;
+            button.style.borderBottomRightRadius = 24f;
+            button.style.display = DisplayStyle.Flex;
+            button.style.opacity = 1f;
+        }
+
+        private void TryEnableReadabilityFallback()
+        {
+            if (_readabilityFallbackEnabled || _runtimeFallbackUIBuilt) return;
+            if (_heroName == null) return;
+
+            Color heroNameColor = _heroName.resolvedStyle.color;
+            bool darkOrInvisibleText = heroNameColor.a < 0.2f || (heroNameColor.r + heroNameColor.g + heroNameColor.b) < 0.45f;
+
+            bool panelLooksUnstyled = _infoPanel != null && _infoPanel.resolvedStyle.backgroundColor.a < 0.05f;
+
+            if (darkOrInvisibleText || panelLooksUnstyled)
+            {
+                _readabilityFallbackEnabled = true;
+                Debug.LogWarning("[CharacterSelect] Readability fallback enabled (detected unstyled/low-contrast UI).");
+            }
         }
 
         private void SetupEventHandlers()
@@ -271,6 +881,10 @@ namespace VeilBreakers.UI.CharacterSelect
             _btnBack?.RegisterCallback<ClickEvent>(OnBackClicked);
             _btnEmbark?.RegisterCallback<ClickEvent>(OnEmbarkClicked);
             _btnNeutralToggle?.RegisterCallback<ClickEvent>(OnNeutralToggleClicked);
+            _btnPrevHero?.RegisterCallback<ClickEvent>(OnPrevHeroClicked);
+            _btnNextHero?.RegisterCallback<ClickEvent>(OnNextHeroClicked);
+            _btnRotateModelLeft?.RegisterCallback<ClickEvent>(OnRotateModelLeftClicked);
+            _btnRotateModelRight?.RegisterCallback<ClickEvent>(OnRotateModelRightClicked);
 
             // Carousel slot click handlers (cached for unregistration)
             for (int i = 0; i < _carouselSlots.Count; i++)
@@ -288,32 +902,29 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (_root == null) return;
 
-            try
-            {
-                _btnBack?.UnregisterCallback<ClickEvent>(OnBackClicked);
-                _btnEmbark?.UnregisterCallback<ClickEvent>(OnEmbarkClicked);
-                _btnNeutralToggle?.UnregisterCallback<ClickEvent>(OnNeutralToggleClicked);
+            _btnBack?.UnregisterCallback<ClickEvent>(OnBackClicked);
+            _btnEmbark?.UnregisterCallback<ClickEvent>(OnEmbarkClicked);
+            _btnNeutralToggle?.UnregisterCallback<ClickEvent>(OnNeutralToggleClicked);
+            _btnPrevHero?.UnregisterCallback<ClickEvent>(OnPrevHeroClicked);
+            _btnNextHero?.UnregisterCallback<ClickEvent>(OnNextHeroClicked);
+            _btnRotateModelLeft?.UnregisterCallback<ClickEvent>(OnRotateModelLeftClicked);
+            _btnRotateModelRight?.UnregisterCallback<ClickEvent>(OnRotateModelRightClicked);
 
-                if (_slotClickHandlers != null)
+            if (_slotClickHandlers != null)
+            {
+                for (int i = 0; i < _carouselSlots.Count && i < _slotClickHandlers.Length; i++)
                 {
-                    for (int i = 0; i < _carouselSlots.Count && i < _slotClickHandlers.Length; i++)
-                    {
-                        if (_slotClickHandlers[i] != null)
-                            _carouselSlots[i].UnregisterCallback(_slotClickHandlers[i]);
-                    }
+                    if (_slotClickHandlers[i] != null)
+                        _carouselSlots[i]?.UnregisterCallback(_slotClickHandlers[i]);
                 }
+            }
 
-                _root.UnregisterCallback<KeyDownEvent>(OnKeyDown);
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning($"[CharacterSelect] Cleanup error: {ex.Message}");
-            }
+            _root.UnregisterCallback<KeyDownEvent>(OnKeyDown);
         }
 
         private void InitializeSubControllers()
         {
-            // Add sub-controller components
+            // Add sub-controller components (runtime-added; [SerializeField] fields use code defaults)
             _heroStage = gameObject.AddComponent<HeroStageController>();
             _heroStage.Initialize(_heroStageRender);
 
@@ -383,6 +994,16 @@ namespace VeilBreakers.UI.CharacterSelect
                     ToggleStatsPanel();
                     evt.StopPropagation();
                     break;
+                case KeyCode.LeftArrow:
+                case KeyCode.A:
+                    SelectPreviousHero();
+                    evt.StopPropagation();
+                    break;
+                case KeyCode.RightArrow:
+                case KeyCode.D:
+                    SelectNextHero();
+                    evt.StopPropagation();
+                    break;
             }
         }
 
@@ -438,7 +1059,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _veilTear?.Play(heroColor);
 
             // Brief pause for transition flash
-            yield return Wait02;
+            yield return kWait02;
 
             if (_isDestroyed) yield break;
 
@@ -457,13 +1078,13 @@ namespace VeilBreakers.UI.CharacterSelect
             }
 
             // Delayed quote fade-in
-            yield return Wait03;
+            yield return kWait03;
             if (!_isDestroyed)
             {
                 _quoteCoroutine = StartCoroutine(FadeInQuote());
             }
 
-            yield return Wait02;
+            yield return kWait02;
             _isAnimating = false;
         }
 
@@ -488,6 +1109,7 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_heroPath != null) _heroPath.text = hero.GetPrimaryPath().ToString();
             if (_heroRole != null) _heroRole.text = hero.role?.ToUpper() ?? "";
             if (_heroResource != null) _heroResource.text = hero.resource_type?.ToUpper() ?? "";
+            ApplyStarterStats(hero);
 
             // Monster info
             ApplyMonsterData(hero.starter_monster_id);
@@ -503,6 +1125,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             // Abilities
             ApplyAbilities(hero);
+            EnsureTextReadability();
         }
 
         private void ApplyMonsterData(string monsterId)
@@ -514,6 +1137,16 @@ namespace VeilBreakers.UI.CharacterSelect
 
             if (_monsterName != null) _monsterName.text = monster.display_name ?? "";
             if (_monsterBrand != null) _monsterBrand.text = monster.GetPrimaryBrand().ToString();
+        }
+
+        private void ApplyStarterStats(HeroData hero)
+        {
+            if (hero == null) return;
+
+            if (_starterStatHp != null) _starterStatHp.text = hero.base_hp.ToString();
+            if (_starterStatAtk != null) _starterStatAtk.text = hero.base_attack.ToString();
+            if (_starterStatDef != null) _starterStatDef.text = hero.base_defense.ToString();
+            if (_starterStatSpd != null) _starterStatSpd.text = hero.base_speed.ToString();
         }
 
         private void ApplyHeroColor(HeroData hero)
@@ -529,16 +1162,8 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void ApplyStatsImmediate(HeroData hero)
         {
-            if (hero.base_stats == null) return;
-
-            int[] stats = {
-                hero.base_stats.strength,
-                hero.base_stats.dexterity,
-                hero.base_stats.constitution,
-                hero.base_stats.intelligence,
-                hero.base_stats.wisdom,
-                hero.base_stats.charisma
-            };
+            int[] stats = GetDisplayStats(hero);
+            ApplyStatsTheme(hero, stats);
 
             for (int i = 0; i < 6; i++)
             {
@@ -548,7 +1173,66 @@ namespace VeilBreakers.UI.CharacterSelect
                 if (_statFills[i] != null)
                     _statFills[i].style.width = new StyleLength(new Length(pct, LengthUnit.Percent));
                 if (_statValues[i] != null)
-                    _statValues[i].text = val <= 20 ? NumberStrings[val] : val.ToString();
+                    _statValues[i].text = val <= 20 ? kNumberStrings[val] : val.ToString();
+            }
+        }
+
+        private int[] GetDisplayStats(HeroData hero)
+        {
+            if (hero?.base_stats != null)
+            {
+                _displayStatsBuf[0] = hero.base_stats.strength;
+                _displayStatsBuf[1] = hero.base_stats.dexterity;
+                _displayStatsBuf[2] = hero.base_stats.constitution;
+                _displayStatsBuf[3] = hero.base_stats.intelligence;
+                _displayStatsBuf[4] = hero.base_stats.wisdom;
+                _displayStatsBuf[5] = hero.base_stats.charisma;
+                return _displayStatsBuf;
+            }
+
+            // Fallback mapping if base_stats is absent in source data.
+            _displayStatsBuf[0] = Mathf.Clamp(8 + Mathf.RoundToInt(((hero?.base_attack ?? 10) - 10) * 0.35f), 1, kMaxStats);
+            _displayStatsBuf[1] = Mathf.Clamp(8 + Mathf.RoundToInt(((hero?.base_speed ?? 10) - 10) * 0.50f), 1, kMaxStats);
+            _displayStatsBuf[2] = Mathf.Clamp(8 + Mathf.RoundToInt(((hero?.base_defense ?? 10) - 10) * 0.35f), 1, kMaxStats);
+            _displayStatsBuf[3] = Mathf.Clamp(8 + Mathf.RoundToInt(((hero?.base_magic ?? 10) - 10) * 0.40f), 1, kMaxStats);
+            _displayStatsBuf[4] = Mathf.Clamp(8 + Mathf.RoundToInt(((hero?.base_resistance ?? 10) - 10) * 0.40f), 1, kMaxStats);
+            _displayStatsBuf[5] = Mathf.Clamp(8 + Mathf.RoundToInt(((hero?.base_luck ?? 10) - 10) * 0.45f), 1, kMaxStats);
+            return _displayStatsBuf;
+        }
+
+        private void ApplyStatsTheme(HeroData hero, int[] stats)
+        {
+            Color baseColor = hero?.color_palette != null ? hero.color_palette.ToColor() : new Color(0.95f, 0.5f, 0.2f);
+
+            int highestIndex = 0;
+            int highestValue = int.MinValue;
+            for (int i = 0; i < stats.Length; i++)
+            {
+                if (stats[i] > highestValue)
+                {
+                    highestValue = stats[i];
+                    highestIndex = i;
+                }
+            }
+
+            for (int i = 0; i < 6; i++)
+            {
+                if (_statRows[i] != null)
+                {
+                    _statRows[i].RemoveFromClassList("stat-row-primary");
+                    if (i == highestIndex)
+                    {
+                        _statRows[i].AddToClassList("stat-row-primary");
+                    }
+                }
+
+                if (_statFills[i] != null)
+                {
+                    float brighten = Mathf.Lerp(0.18f, 0.42f, i / 5f);
+                    Color fillColor = Color.Lerp(baseColor, Color.white, brighten);
+                    fillColor.a = 0.95f;
+                    _statFills[i].style.backgroundColor = fillColor;
+                }
             }
         }
 
@@ -592,6 +1276,18 @@ namespace VeilBreakers.UI.CharacterSelect
                     _carouselSlots[i].RemoveFromClassList("selected");
                 }
             }
+
+            UpdateHeroNavigationIndicator();
+        }
+
+        private void UpdateHeroNavigationIndicator()
+        {
+            if (_heroIndexIndicator == null || _heroes == null || _heroes.Count == 0) return;
+            int heroNum = _currentIndex + 1;
+            int heroCount = _heroes.Count;
+            string numStr = heroNum <= 20 ? kNumberStrings[heroNum] : heroNum.ToString();
+            string countStr = heroCount <= 20 ? kNumberStrings[heroCount] : heroCount.ToString();
+            _heroIndexIndicator.text = string.Concat("HERO ", numStr, " / ", countStr, "   [A/D or <-/->]");
         }
 
         // =============================================================================
@@ -624,16 +1320,10 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private IEnumerator AnimateStats(HeroData hero)
         {
-            if (hero?.base_stats == null) yield break;
+            if (hero == null) yield break;
 
-            int[] stats = {
-                hero.base_stats.strength,
-                hero.base_stats.dexterity,
-                hero.base_stats.constitution,
-                hero.base_stats.intelligence,
-                hero.base_stats.wisdom,
-                hero.base_stats.charisma
-            };
+            int[] stats = GetDisplayStats(hero);
+            ApplyStatsTheme(hero, stats);
 
             float duration = 0.6f;
             float elapsed = 0f;
@@ -644,7 +1334,7 @@ namespace VeilBreakers.UI.CharacterSelect
                 if (_statFills[i] != null)
                     _statFills[i].style.width = new StyleLength(new Length(0, LengthUnit.Percent));
                 if (_statValues[i] != null)
-                    _statValues[i].text = NumberStrings[0];
+                    _statValues[i].text = kNumberStrings[0];
             }
 
             while (elapsed < duration)
@@ -662,7 +1352,7 @@ namespace VeilBreakers.UI.CharacterSelect
                     if (_statFills[i] != null)
                         _statFills[i].style.width = new StyleLength(new Length(pct, LengthUnit.Percent));
                     if (_statValues[i] != null)
-                        _statValues[i].text = displayVal <= 20 ? NumberStrings[displayVal] : displayVal.ToString();
+                        _statValues[i].text = displayVal <= 20 ? kNumberStrings[displayVal] : displayVal.ToString();
                 }
 
                 yield return null;
@@ -679,6 +1369,10 @@ namespace VeilBreakers.UI.CharacterSelect
         private void OnBackClicked(ClickEvent evt) => OnBack();
         private void OnEmbarkClicked(ClickEvent evt) => OnEmbark();
         private void OnNeutralToggleClicked(ClickEvent evt) => _environment?.ToggleNeutral();
+        private void OnPrevHeroClicked(ClickEvent evt) => SelectPreviousHero();
+        private void OnNextHeroClicked(ClickEvent evt) => SelectNextHero();
+        private void OnRotateModelLeftClicked(ClickEvent evt) => _heroStage?.RotateByStep(-1f);
+        private void OnRotateModelRightClicked(ClickEvent evt) => _heroStage?.RotateByStep(1f);
 
         private void OnBack()
         {
@@ -711,8 +1405,15 @@ namespace VeilBreakers.UI.CharacterSelect
             // Save selection
             GameManager.Instance?.SelectHero(hero.hero_id);
             PlayerPrefs.SetString(kSelectedHeroPref, hero.hero_id);
+            PlayerPrefs.Save();
 
-            // Navigate to game
+            StartCoroutine(StartNewGameFlow(hero));
+        }
+
+        private IEnumerator StartNewGameFlow(HeroData hero)
+        {
+            yield return StartCoroutine(CreateOrRotateNewGameSave(hero));
+
             if (ScreenTransition.Instance != null)
             {
                 ScreenTransition.Instance.Transition(
@@ -725,12 +1426,55 @@ namespace VeilBreakers.UI.CharacterSelect
             }
         }
 
+        private IEnumerator CreateOrRotateNewGameSave(HeroData hero)
+        {
+            if (!SaveManager.HasInstance || hero == null)
+            {
+                yield break;
+            }
+
+            var saveManager = SaveManager.Instance;
+            var slotTask = saveManager.GetBestNewGameSlotAsync();
+            while (!slotTask.IsCompleted)
+            {
+                yield return null;
+            }
+
+            if (slotTask.IsFaulted || slotTask.IsCanceled)
+            {
+                Debug.LogWarning("[CharacterSelect] Failed to resolve save slot for new game.");
+                yield break;
+            }
+
+            int slot = slotTask.Result;
+            string heroName = string.IsNullOrEmpty(hero.display_name) ? hero.hero_id : hero.display_name;
+
+            var createTask = saveManager.CreateNewSaveAsync(slot, hero.hero_id, heroName, hero.GetPrimaryPath());
+            while (!createTask.IsCompleted)
+            {
+                yield return null;
+            }
+
+            if (createTask.IsFaulted || createTask.IsCanceled || !createTask.Result)
+            {
+                Debug.LogWarning($"[CharacterSelect] Failed to create new save in slot {slot}.");
+                yield break;
+            }
+
+            saveManager.SetCurrentLocation(kStarterTownLocation);
+            var saveTask = saveManager.SaveAsync(slot);
+            while (!saveTask.IsCompleted)
+            {
+                yield return null;
+            }
+        }
+
         private IEnumerator FadeAndNavigate(string sceneName)
         {
             _screenFade?.RemoveFromClassList("hidden");
             _screenFade?.AddToClassList("active");
 
-            yield return Wait10;
+            yield return kWait10;
 
             if (!_isDestroyed && !string.IsNullOrEmpty(sceneName))
             {
@@ -747,39 +1491,162 @@ namespace VeilBreakers.UI.CharacterSelect
             // Start with screen fade active
             _screenFade?.AddToClassList("active");
 
-            yield return Wait02;
+            yield return kWait02;
             if (_isDestroyed) yield break;
 
             // Fade screen in
             _screenFade?.RemoveFromClassList("active");
 
-            yield return Wait03;
+            yield return kWait03;
             if (_isDestroyed) yield break;
 
             // Stagger in UI elements
             var anim = UIAnimationController.Instance;
             if (anim != null)
             {
-                var infoPanel = _root?.Q("info-panel");
-                if (infoPanel != null) anim.FadeSlideIn(infoPanel, UIAnimationController.SlideDirection.Left, duration: 0.4f);
+                if (_infoPanel != null) anim.FadeSlideIn(_infoPanel, UIAnimationController.SlideDirection.Left, duration: 0.4f);
 
-                yield return Wait02;
+                yield return kWait02;
                 if (_isDestroyed) yield break;
 
-                var carousel = _root?.Q("carousel-strip");
-                if (carousel != null) anim.FadeSlideIn(carousel, UIAnimationController.SlideDirection.Down, duration: 0.4f);
+                if (_carouselStrip != null) anim.FadeSlideIn(_carouselStrip, UIAnimationController.SlideDirection.Down, duration: 0.4f);
 
-                yield return Wait01;
+                yield return kWait01;
                 if (_isDestroyed) yield break;
 
                 if (_btnEmbark != null) anim.FadeIn(_btnEmbark, 0.3f);
             }
+            else
+            {
+                EnsureCriticalUIVisible();
+            }
 
             // Quote fade-in
-            yield return Wait03;
+            yield return kWait03;
             if (!_isDestroyed)
             {
                 _quoteCoroutine = StartCoroutine(FadeInQuote());
+            }
+        }
+
+        private IEnumerator VisibilityFailsafe()
+        {
+            yield return null;
+            if (_isDestroyed) yield break;
+            EnsureCriticalUIVisible();
+            TryEnableReadabilityFallback();
+            ApplyReadabilityFallbackStyles();
+
+            yield return kWait03;
+            if (_isDestroyed) yield break;
+            EnsureCriticalUIVisible();
+            TryEnableReadabilityFallback();
+            ApplyReadabilityFallbackStyles();
+
+            yield return kWait10;
+            if (_isDestroyed) yield break;
+            EnsureCriticalUIVisible();
+            TryEnableReadabilityFallback();
+            ApplyReadabilityFallbackStyles();
+        }
+
+        private void EnsureCriticalUIVisible()
+        {
+            ForceVisible(_infoPanel);
+            ForceVisible(_statsPanel);
+            ForceVisible(_carouselStrip);
+            ForceVisible(_heroCycleHud);
+            ForceVisible(_btnPrevHero);
+            ForceVisible(_btnNextHero);
+            ForceVisible(_btnRotateModelLeft);
+            ForceVisible(_btnRotateModelRight);
+            ForceVisible(_btnEmbark);
+
+            var currentHero = CurrentHero;
+            if (currentHero != null && _heroName != null && string.IsNullOrWhiteSpace(_heroName.text))
+            {
+                ApplyHeroData(currentHero);
+                UpdateHeroNavigationIndicator();
+            }
+            else
+            {
+                ApplyStaticTextDefaults();
+            }
+
+            EnsureTextReadability();
+
+            _screenFade?.RemoveFromClassList("active");
+            if (_readabilityFallbackEnabled)
+            {
+                ApplyReadabilityFallbackStyles();
+            }
+        }
+
+        private static void ForceVisible(VisualElement element)
+        {
+            if (element == null) return;
+            element.RemoveFromClassList("hidden");
+            element.AddToClassList("visible");
+            element.style.display = DisplayStyle.Flex;
+            element.style.opacity = 1f;
+            element.style.translate = new Translate(0f, 0f);
+        }
+
+        private void EnsureTextReadability()
+        {
+            if (_root == null) return;
+
+            if (_fallbackUIFont == null)
+            {
+                _fallbackUIFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            }
+
+            Color fallbackTextColor = new Color(0.94f, 0.9f, 0.84f, 1f);
+            var textElements = _cachedTextElements ?? _root.Query<TextElement>().ToList();
+            foreach (var textElement in textElements)
+            {
+                if (textElement == null) continue;
+
+                textElement.style.display = DisplayStyle.Flex;
+                textElement.style.opacity = 1f;
+                textElement.style.visibility = Visibility.Visible;
+                textElement.style.color = fallbackTextColor;
+                if (_fallbackUIFont != null)
+                {
+                    textElement.style.unityFont = _fallbackUIFont;
+                }
+                if (textElement.resolvedStyle.fontSize < 9f)
+                {
+                    textElement.style.fontSize = 12f;
+                }
+            }
+        }
+
+        private void ApplyStaticTextDefaults()
+        {
+            if (_heroName != null && string.IsNullOrWhiteSpace(_heroName.text)) _heroName.text = "VEX";
+            if (_heroTitle != null && string.IsNullOrWhiteSpace(_heroTitle.text)) _heroTitle.text = "THE WARDEN";
+            if (_heroPath != null && string.IsNullOrWhiteSpace(_heroPath.text)) _heroPath.text = "IRONBOUND";
+            if (_heroRole != null && string.IsNullOrWhiteSpace(_heroRole.text)) _heroRole.text = "TANK";
+            if (_heroResource != null && string.IsNullOrWhiteSpace(_heroResource.text)) _heroResource.text = "GUARD";
+            if (_monsterName != null && string.IsNullOrWhiteSpace(_monsterName.text)) _monsterName.text = "Skitter-Teeth";
+            if (_monsterBrand != null && string.IsNullOrWhiteSpace(_monsterBrand.text)) _monsterBrand.text = "IRON";
+            if (_starterStatHp != null && string.IsNullOrWhiteSpace(_starterStatHp.text)) _starterStatHp.text = "68";
+            if (_starterStatAtk != null && string.IsNullOrWhiteSpace(_starterStatAtk.text)) _starterStatAtk.text = "10";
+            if (_starterStatDef != null && string.IsNullOrWhiteSpace(_starterStatDef.text)) _starterStatDef.text = "20";
+            if (_starterStatSpd != null && string.IsNullOrWhiteSpace(_starterStatSpd.text)) _starterStatSpd.text = "5";
+            if (_embarkLabel != null && string.IsNullOrWhiteSpace(_embarkLabel.text)) _embarkLabel.text = "EMBARK AS VEX";
+            if (_heroIndexIndicator != null && string.IsNullOrWhiteSpace(_heroIndexIndicator.text))
+            {
+                _heroIndexIndicator.text = "HERO 1 / 4   [A/D or <-/->]";
+            }
+
+            for (int i = 0; i < _statValues.Length; i++)
+            {
+                if (_statValues[i] != null && string.IsNullOrWhiteSpace(_statValues[i].text))
+                {
+                    _statValues[i].text = "10";
+                }
             }
         }
 
@@ -824,10 +1691,13 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private static string FormatSkillName(string rawName)
         {
-            if (string.IsNullOrEmpty(rawName)) return "";
+            if (string.IsNullOrEmpty(rawName)) return string.Empty;
+            if (_formattedSkillNames.TryGetValue(rawName, out var cached)) return cached;
             // Convert "shadow_strike" -> "Shadow Strike"
-            return System.Globalization.CultureInfo.InvariantCulture.TextInfo
+            var formatted = System.Globalization.CultureInfo.InvariantCulture.TextInfo
                 .ToTitleCase(rawName.Replace("_", " "));
+            _formattedSkillNames[rawName] = formatted;
+            return formatted;
         }
 
         private void PlaySFX(AudioClip clip, float volume = 1f)
@@ -836,6 +1706,24 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_cachedCamera == null) _cachedCamera = Camera.main;
             if (_cachedCamera != null)
                 AudioSource.PlayClipAtPoint(clip, _cachedCamera.transform.position, volume);
+        }
+
+        private void EnsureCoreManagers()
+        {
+            EnsureSingleton<GameManager>("[GameManager]");
+            EnsureSingleton<GameDatabase>("[GameDatabase]");
+            EnsureSingleton<InputManager>("[InputManager]");
+            EnsureSingleton<SaveManager>("[SaveManager]");
+            EnsureSingleton<AutoSaveManager>("[AutoSaveManager]");
+        }
+
+        private static void EnsureSingleton<T>(string objectName) where T : SingletonMonoBehaviour<T>
+        {
+            if (!SingletonMonoBehaviour<T>.HasInstance)
+            {
+                var go = new GameObject(objectName);
+                go.AddComponent<T>();
+            }
         }
     }
 }

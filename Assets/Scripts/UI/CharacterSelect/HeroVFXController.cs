@@ -22,15 +22,15 @@ namespace VeilBreakers.UI.CharacterSelect
         // =============================================================================
 
         [Header("Particle Counts")]
-        [SerializeField] private int _particleCount = 35;
+        [SerializeField] private int _particleCount = 72;
 
         [Header("Speed")]
         [SerializeField] private float _speedMin = 8f;
-        [SerializeField] private float _speedMax = 25f;
+        [SerializeField] private float _speedMax = 40f;
 
         [Header("Size")]
-        [SerializeField] private float _sizeMin = 2f;
-        [SerializeField] private float _sizeMax = 5f;
+        [SerializeField] private float _sizeMin = 4f;
+        [SerializeField] private float _sizeMax = 10f;
 
         // =============================================================================
         // STATE
@@ -43,6 +43,12 @@ namespace VeilBreakers.UI.CharacterSelect
         private bool _isDestroyed;
         private bool _isRunning;
         private Coroutine _animationCoroutine;
+        private float _overlayWidth = 640f;
+        private float _overlayHeight = 360f;
+
+        private const float kMinOverlayWidth = 320f;
+        private const float kMinOverlayHeight = 180f;
+        private const float kEdgePadding = 10f;
 
         // =============================================================================
         // PARTICLE STATE
@@ -75,12 +81,12 @@ namespace VeilBreakers.UI.CharacterSelect
             public float FlickerIntensity;
         }
 
-        private static readonly Dictionary<string, VFXProfile> Profiles = new Dictionary<string, VFXProfile>(System.StringComparer.OrdinalIgnoreCase)
+        private static readonly Dictionary<string, VFXProfile> kProfiles = new Dictionary<string, VFXProfile>(System.StringComparer.OrdinalIgnoreCase)
         {
             ["vex"] = new VFXProfile
             {
-                ColorA = new Color(1f, 0.55f, 0.1f, 0.85f),   // Hot ember orange
-                ColorB = new Color(1f, 0.25f, 0f, 0.5f),       // Deep red
+                ColorA = new Color(1f, 0.62f, 0.2f, 1f),       // Hot ember orange
+                ColorB = new Color(1f, 0.3f, 0.05f, 0.8f),     // Deep red
                 SpeedMultiplier = 1f,
                 DriftX = 0.3f,
                 DriftY = 1f, // Rise up
@@ -88,8 +94,8 @@ namespace VeilBreakers.UI.CharacterSelect
             },
             ["seraphina"] = new VFXProfile
             {
-                ColorA = new Color(0.4f, 0.9f, 0.3f, 0.7f),   // Nature green
-                ColorB = new Color(0.85f, 0.8f, 0.2f, 0.4f),   // Golden pollen
+                ColorA = new Color(0.45f, 0.95f, 0.35f, 0.95f), // Nature green
+                ColorB = new Color(0.95f, 0.88f, 0.35f, 0.7f),  // Golden pollen
                 SpeedMultiplier = 0.7f,
                 DriftX = 0.5f,
                 DriftY = 0.3f, // Gentle float
@@ -97,18 +103,18 @@ namespace VeilBreakers.UI.CharacterSelect
             },
             ["orion"] = new VFXProfile
             {
-                ColorA = new Color(0.4f, 0.6f, 1f, 0.9f),     // Electric blue
-                ColorB = new Color(0.8f, 0.9f, 1f, 0.6f),     // White-blue
-                SpeedMultiplier = 1.5f,
+                ColorA = new Color(0.55f, 0.72f, 1f, 1f),     // Electric blue
+                ColorB = new Color(0.9f, 0.95f, 1f, 0.85f),   // White-blue
+                SpeedMultiplier = 1.7f,
                 DriftX = 0.8f,
                 DriftY = 0.2f, // Erratic
                 FlickerIntensity = 0.9f // Sparky
             },
             ["nyx"] = new VFXProfile
             {
-                ColorA = new Color(0.5f, 0.2f, 0.8f, 0.6f),   // Shadow purple
-                ColorB = new Color(0.15f, 0.05f, 0.2f, 0.35f), // Deep void
-                SpeedMultiplier = 0.5f,
+                ColorA = new Color(0.75f, 0.2f, 0.38f, 0.92f),  // Void crimson
+                ColorB = new Color(0.24f, 0.05f, 0.1f, 0.7f),   // Deep abyss red
+                SpeedMultiplier = 0.65f,
                 DriftX = 0.2f,
                 DriftY = -0.5f, // Sink down
                 FlickerIntensity = 0.4f
@@ -122,12 +128,62 @@ namespace VeilBreakers.UI.CharacterSelect
         public void Initialize(VisualElement vfxOverlay)
         {
             _vfxOverlay = vfxOverlay;
+            if (_vfxOverlay != null)
+            {
+                _vfxOverlay.style.position = Position.Absolute;
+                _vfxOverlay.style.left = 0;
+                _vfxOverlay.style.top = 0;
+                _vfxOverlay.style.right = 0;
+                _vfxOverlay.style.bottom = 0;
+                _vfxOverlay.style.width = Length.Percent(100f);
+                _vfxOverlay.style.height = Length.Percent(100f);
+                _vfxOverlay.style.opacity = 1f;
+                _vfxOverlay.style.display = DisplayStyle.Flex;
+                _vfxOverlay.style.overflow = Overflow.Hidden;
+                _vfxOverlay.pickingMode = PickingMode.Ignore;
+                _vfxOverlay.RegisterCallback<GeometryChangedEvent>(OnOverlayGeometryChanged);
+                UpdateOverlayBounds();
+            }
         }
 
         private void OnDestroy()
         {
             _isDestroyed = true;
+            if (_vfxOverlay != null)
+            {
+                _vfxOverlay.UnregisterCallback<GeometryChangedEvent>(OnOverlayGeometryChanged);
+            }
             ClearParticles();
+        }
+
+        private void OnOverlayGeometryChanged(GeometryChangedEvent evt)
+        {
+            UpdateOverlayBounds();
+        }
+
+        private void UpdateOverlayBounds()
+        {
+            if (_vfxOverlay == null) return;
+
+            float width = _vfxOverlay.contentRect.width;
+            float height = _vfxOverlay.contentRect.height;
+
+            if ((width < 1f || height < 1f) && _vfxOverlay.parent != null)
+            {
+                var parentRect = _vfxOverlay.parent.contentRect;
+                width = Mathf.Max(width, parentRect.width);
+                height = Mathf.Max(height, parentRect.height);
+            }
+
+            if (width < 1f || height < 1f)
+            {
+                var worldRect = _vfxOverlay.worldBound;
+                width = Mathf.Max(width, worldRect.width);
+                height = Mathf.Max(height, worldRect.height);
+            }
+
+            _overlayWidth = Mathf.Max(kMinOverlayWidth, width);
+            _overlayHeight = Mathf.Max(kMinOverlayHeight, height);
         }
 
         // =============================================================================
@@ -149,7 +205,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             ClearParticles();
 
-            if (!Profiles.TryGetValue(heroId, out var profile))
+            if (!kProfiles.TryGetValue(heroId, out var profile))
             {
                 // Unknown hero - use hero color as fallback
                 Color c = hero.color_palette != null ? hero.color_palette.ToColor() : Color.white;
@@ -174,6 +230,8 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void SpawnParticles(VFXProfile profile)
         {
+            UpdateOverlayBounds();
+
             for (int i = 0; i < _particleCount; i++)
             {
                 var particle = new VisualElement();
@@ -192,12 +250,20 @@ namespace VeilBreakers.UI.CharacterSelect
                 particle.style.borderBottomLeftRadius = size * 0.5f;
                 particle.style.borderBottomRightRadius = size * 0.5f;
                 particle.style.backgroundColor = color;
+                particle.style.borderTopWidth = 1;
+                particle.style.borderBottomWidth = 1;
+                particle.style.borderLeftWidth = 1;
+                particle.style.borderRightWidth = 1;
+                particle.style.borderTopColor = new Color(1f, 1f, 1f, 0.18f);
+                particle.style.borderBottomColor = new Color(1f, 1f, 1f, 0.18f);
+                particle.style.borderLeftColor = new Color(1f, 1f, 1f, 0.18f);
+                particle.style.borderRightColor = new Color(1f, 1f, 1f, 0.18f);
 
-                float x = Random.Range(5f, 95f); // % of parent width
-                float y = Random.Range(10f, 90f);
+                float x = Random.Range(kEdgePadding, _overlayWidth - kEdgePadding);
+                float y = Random.Range(kEdgePadding, _overlayHeight - kEdgePadding);
 
-                particle.style.left = new Length(x, LengthUnit.Percent);
-                particle.style.top = new Length(y, LengthUnit.Percent);
+                particle.style.left = x;
+                particle.style.top = y;
                 particle.style.opacity = 0; // Start invisible
 
                 _vfxOverlay.Add(particle);
@@ -207,7 +273,7 @@ namespace VeilBreakers.UI.CharacterSelect
                 {
                     X = x,
                     Y = y,
-                    SpeedX = Random.Range(-_speedMax, _speedMax) * profile.SpeedMultiplier * profile.DriftX,
+                    SpeedX = Random.Range(-_speedMax, _speedMax) * profile.SpeedMultiplier * (0.4f + profile.DriftX),
                     SpeedY = Random.Range(_speedMin, _speedMax) * profile.SpeedMultiplier * profile.DriftY * -1f,
                     Size = size,
                     Lifetime = Random.Range(0f, lifetime), // Stagger start
@@ -216,6 +282,31 @@ namespace VeilBreakers.UI.CharacterSelect
                     FlickerSpeed = Random.Range(1f, 3f)
                 });
             }
+        }
+
+        private void RespawnParticle(ref ParticleState state, VFXProfile profile)
+        {
+            state.Lifetime = 0f;
+            state.X = Random.Range(kEdgePadding, _overlayWidth - kEdgePadding);
+
+            if (profile.DriftY > 0f)
+            {
+                state.Y = Random.Range(_overlayHeight * 0.35f, _overlayHeight - kEdgePadding);
+            }
+            else if (profile.DriftY < 0f)
+            {
+                state.Y = Random.Range(kEdgePadding, _overlayHeight * 0.65f);
+            }
+            else
+            {
+                state.Y = Random.Range(kEdgePadding, _overlayHeight - kEdgePadding);
+            }
+
+            state.SpeedX = Random.Range(-_speedMax, _speedMax) * profile.SpeedMultiplier * (0.4f + profile.DriftX);
+            state.SpeedY = Random.Range(_speedMin, _speedMax) * profile.SpeedMultiplier * profile.DriftY * -1f;
+            state.MaxLifetime = Random.Range(1.5f, 4f);
+            state.FlickerPhase = Random.Range(0f, Mathf.PI * 2f);
+            state.FlickerSpeed = Random.Range(1f, 3f);
         }
 
         private void ClearParticles()
@@ -240,31 +331,26 @@ namespace VeilBreakers.UI.CharacterSelect
             while (_isRunning && !_isDestroyed)
             {
                 float dt = Time.unscaledDeltaTime;
+                // Bounds are updated via GeometryChangedEvent callback; no need to poll here.
 
                 for (int i = 0; i < _particles.Count; i++)
                 {
                     var state = _states[i];
                     state.Lifetime += dt;
 
-                    // Respawn if expired
-                    if (state.Lifetime >= state.MaxLifetime)
-                    {
-                        state.Lifetime = 0f;
-                        state.X = Random.Range(5f, 95f);
-                        state.Y = profile.DriftY > 0 ? Random.Range(70f, 95f) : Random.Range(5f, 30f);
-                        state.SpeedX = Random.Range(-_speedMax, _speedMax) * profile.SpeedMultiplier * profile.DriftX;
-                        state.SpeedY = Random.Range(_speedMin, _speedMax) * profile.SpeedMultiplier * profile.DriftY * -1f;
-                        state.MaxLifetime = Random.Range(1.5f, 4f);
-                        state.FlickerPhase = Random.Range(0f, Mathf.PI * 2f);
-                    }
-
                     // Move
-                    state.X += state.SpeedX * dt * 0.1f; // Scale down since we're in percent
-                    state.Y += state.SpeedY * dt * 0.1f;
+                    state.X += state.SpeedX * dt;
+                    state.Y += state.SpeedY * dt;
 
-                    // Wrap horizontally
-                    if (state.X < -5f) state.X = 105f;
-                    if (state.X > 105f) state.X = -5f;
+                    bool outsideOverlay =
+                        state.X < -kEdgePadding ||
+                        state.X > _overlayWidth + kEdgePadding ||
+                        state.Y < -kEdgePadding ||
+                        state.Y > _overlayHeight + kEdgePadding;
+                    if (state.Lifetime >= state.MaxLifetime || outsideOverlay)
+                    {
+                        RespawnParticle(ref state, profile);
+                    }
 
                     // Age-based alpha (fade in, hold, fade out)
                     float lifeT = state.Lifetime / state.MaxLifetime;
@@ -277,13 +363,14 @@ namespace VeilBreakers.UI.CharacterSelect
                     float flicker = 1f - profile.FlickerIntensity * 0.5f *
                         (1f + Mathf.Sin(Time.time * state.FlickerSpeed + state.FlickerPhase));
                     alpha *= flicker;
+                    alpha *= 0.9f;
 
                     _states[i] = state;
 
                     // Apply
                     var particle = _particles[i];
-                    particle.style.left = new Length(state.X, LengthUnit.Percent);
-                    particle.style.top = new Length(state.Y, LengthUnit.Percent);
+                    particle.style.left = state.X;
+                    particle.style.top = state.Y;
                     particle.style.opacity = Mathf.Clamp01(alpha);
                 }
 

@@ -1,11 +1,12 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using VeilBreakers.Combat;
-using VeilBreakers.Data;
 using VeilBreakers.Core;
+using VeilBreakers.Data;
 
 namespace VeilBreakers.UI.Combat
 {
@@ -14,10 +15,6 @@ namespace VeilBreakers.UI.Combat
     /// </summary>
     public class AllyPanelController : MonoBehaviour
     {
-        // =============================================================================
-        // CONFIGURATION
-        // =============================================================================
-
         [Header("Components")]
         [SerializeField] private TextMeshProUGUI _nameLabel;
         [SerializeField] private Image _portraitImage;
@@ -36,61 +33,38 @@ namespace VeilBreakers.UI.Combat
         [SerializeField] private int _maxStatusIcons = 4;
         [SerializeField] private int _skillCount = 4; // Skills 1-3 + Ultimate
         [SerializeField] private Color _backgroundColor = new Color(0f, 0f, 0f, 0.5f);
+        [SerializeField] private Color _selectedBackgroundColor = new Color(0.12f, 0.10f, 0.04f, 0.78f);
 
         [Header("Ultimate Glow")]
         [SerializeField] private Color _ultimateReadyColor = new Color(1f, 0.84f, 0f, 1f);
         [SerializeField] private Color _normalBorderColor = new Color(0.3f, 0.3f, 0.3f, 1f);
+        [SerializeField] private Color _selectedBorderColor = new Color(1f, 0.60f, 0.20f, 1f);
         [SerializeField] private float _glowPulseDuration = 2f;
 
-        // =============================================================================
-        // STATE
-        // =============================================================================
-
         private Combatant _ally;
-        private readonly System.Collections.Generic.List<GameObject> _statusIcons =
-            new System.Collections.Generic.List<GameObject>();
-        private readonly System.Collections.Generic.List<SkillSlotController> _skillSlots =
-            new System.Collections.Generic.List<SkillSlotController>();
-        private bool _isUltimateReady = false;
+        private readonly List<GameObject> _statusIcons = new List<GameObject>();
+        private readonly List<SkillSlotController> _skillSlots = new List<SkillSlotController>();
+        private bool _isUltimateReady;
+        private bool _isSelected;
         private Coroutine _glowCoroutine;
-
-        // =============================================================================
-        // PROPERTIES
-        // =============================================================================
 
         public int AllyIndex => _allyIndex;
         public Combatant Ally => _ally;
         public bool IsUltimateReady => _isUltimateReady;
-
-        // =============================================================================
-        // EVENTS
-        // =============================================================================
+        public bool IsSelected => _isSelected;
 
         public event Action<int> OnUltimateTriggered; // AllyIndex
         public event Action<int> OnAllyDeath;
 
-        // =============================================================================
-        // UNITY LIFECYCLE
-        // =============================================================================
-
         private void Awake()
         {
-            if (_panelBackground != null)
-            {
-                _panelBackground.color = _backgroundColor;
-            }
-
-            if (_portraitBorder != null)
-            {
-                _portraitBorder.color = _normalBorderColor;
-            }
+            ApplyVisualState();
         }
 
         private void Update()
         {
-            if (!InputManager.HasInstance) return;
+            if (!InputManager.HasInstance || !_isUltimateReady) return;
 
-            // Ally1-Ally3 triggers ally ultimates
             InputManager.GameAction action = _allyIndex switch
             {
                 0 => InputManager.GameAction.Ally1,
@@ -99,7 +73,7 @@ namespace VeilBreakers.UI.Combat
                 _ => (InputManager.GameAction)(-1)
             };
 
-            if (action != (InputManager.GameAction)(-1) && InputManager.Instance.GetActionDown(action) && _isUltimateReady)
+            if (action != (InputManager.GameAction)(-1) && InputManager.Instance.GetActionDown(action))
             {
                 TriggerUltimate();
             }
@@ -111,12 +85,9 @@ namespace VeilBreakers.UI.Combat
             if (_glowCoroutine != null)
             {
                 StopCoroutine(_glowCoroutine);
+                _glowCoroutine = null;
             }
         }
-
-        // =============================================================================
-        // PUBLIC API
-        // =============================================================================
 
         /// <summary>
         /// Initialize with ally data.
@@ -134,26 +105,19 @@ namespace VeilBreakers.UI.Combat
                 return;
             }
 
-            // Set initial values
             UpdateName(_ally.DisplayName);
             UpdateHP(_ally.CurrentHp, _ally.MaxHp, false);
 
-            // Bind events
             _ally.OnHpChanged += HandleHPChanged;
             _ally.OnDeath += HandleDeath;
 
-            // Initialize skill slots
             InitializeSkillSlots();
-
-            // Update status effects
             RefreshStatusEffects();
 
             SetVisible(true);
+            ApplyVisualState();
         }
 
-        /// <summary>
-        /// Set the portrait sprite.
-        /// </summary>
         public void SetPortrait(Sprite portrait)
         {
             if (_portraitImage != null)
@@ -162,9 +126,6 @@ namespace VeilBreakers.UI.Combat
             }
         }
 
-        /// <summary>
-        /// Update HP display.
-        /// </summary>
         public void UpdateHP(int current, int max, bool animate = true)
         {
             if (_hpBar != null)
@@ -174,9 +135,6 @@ namespace VeilBreakers.UI.Combat
             }
         }
 
-        /// <summary>
-        /// Update name display.
-        /// </summary>
         public void UpdateName(string name)
         {
             if (_nameLabel != null)
@@ -185,9 +143,6 @@ namespace VeilBreakers.UI.Combat
             }
         }
 
-        /// <summary>
-        /// Refresh status effect icons.
-        /// </summary>
         public void RefreshStatusEffects()
         {
             ClearStatusIcons();
@@ -204,9 +159,6 @@ namespace VeilBreakers.UI.Combat
             }
         }
 
-        /// <summary>
-        /// Update skill cooldown display.
-        /// </summary>
         public void UpdateSkillCooldown(int skillIndex, float remaining, float total)
         {
             if (skillIndex >= 0 && skillIndex < _skillSlots.Count)
@@ -215,9 +167,6 @@ namespace VeilBreakers.UI.Combat
             }
         }
 
-        /// <summary>
-        /// Set ultimate ready state.
-        /// </summary>
         public void SetUltimateReady(bool ready)
         {
             if (_isUltimateReady == ready) return;
@@ -233,7 +182,6 @@ namespace VeilBreakers.UI.Combat
                 StopUltimateGlow();
             }
 
-            // Update ultimate skill slot
             if (_skillSlots.Count > 0)
             {
                 var ultimateSlot = _skillSlots[_skillSlots.Count - 1];
@@ -248,30 +196,23 @@ namespace VeilBreakers.UI.Combat
             }
         }
 
-        /// <summary>
-        /// Trigger the ally's ultimate.
-        /// </summary>
         public void TriggerUltimate()
         {
             if (!_isUltimateReady) return;
-
             OnUltimateTriggered?.Invoke(_allyIndex);
-
-            // The combat system will handle actual ultimate execution
-            // and call SetUltimateReady(false) + set cooldown
         }
 
-        /// <summary>
-        /// Show or hide the panel.
-        /// </summary>
+        public void SetSelected(bool selected)
+        {
+            if (_isSelected == selected) return;
+            _isSelected = selected;
+            ApplyVisualState();
+        }
+
         public void SetVisible(bool visible)
         {
             gameObject.SetActive(visible);
         }
-
-        // =============================================================================
-        // SKILL SLOTS
-        // =============================================================================
 
         private void InitializeSkillSlots()
         {
@@ -279,273 +220,160 @@ namespace VeilBreakers.UI.Combat
 
             if (_skillIconContainer == null || _skillIconPrefab == null) return;
 
-            // Skills: 1, 2, 3, Ultimate (4 total for allies)
-            // Allies don't show Basic Attack or Defend (always available)
             for (int i = 0; i < _skillCount; i++)
             {
                 var slotObj = Instantiate(_skillIconPrefab, _skillIconContainer);
                 if (slotObj == null) continue;
 
                 var slot = slotObj.GetComponent<SkillSlotController>();
+                if (slot == null) continue;
+
+                bool isUltimate = i == _skillCount - 1;
+                slot.Initialize(i, isUltimate);
+                _skillSlots.Add(slot);
+            }
+        }
+
+        private void ClearSkillSlots()
+        {
+            for (int i = 0; i < _skillSlots.Count; i++)
+            {
+                var slot = _skillSlots[i];
                 if (slot != null)
                 {
-                    bool isUltimate = (i == _skillCount - 1);
-                    string display = isUltimate ? "\u2605" : (i + 1).ToString(); // Star for ultimate
-
-                                        slot.Initialize(i, isUltimate);
-
-                                        _skillSlots.Add(slot);
-
-                                    }
-
-                                }
-
-                            }
-
-                    
-
-                            private void ClearSkillSlots()
-
-                            {
-
-                                foreach (var slot in _skillSlots)
-
-                                {
-
-                                    if (slot != null)
-
-                                    {
-
-                                        Destroy(slot.gameObject);
-
-                                    }
-
-                                }
-
-                                _skillSlots.Clear();
-
-                            }
-
-                    
-
-                            // =============================================================================
-
-                            // STATUS ICONS
-
-                            // =============================================================================
-
-                    
-
-                            private void AddStatusIcon(StatusEffectType effectType)
-
-                            {
-
-                                if (_statusIconPrefab == null || _statusIconContainer == null) return;
-
-                    
-
-                                var iconObj = Instantiate(_statusIconPrefab, _statusIconContainer);
-
-                                _statusIcons.Add(iconObj);
-
-                    
-
-                                var iconImage = iconObj.GetComponent<Image>();
-
-                                if (iconImage != null)
-
-                                {
-
-                                    bool isBuff = IsBuff(effectType);
-
-                                    iconImage.color = isBuff
-
-                                        ? new Color(0.2f, 0.8f, 0.2f, 1f)
-
-                                        : new Color(0.8f, 0.2f, 0.2f, 1f);
-
-                                }
-
-                            }
-
-                    
-
-                            private void ClearStatusIcons()
-
-                            {
-
-                                foreach (var icon in _statusIcons)
-
-                                {
-
-                                    if (icon != null)
-
-                                    {
-
-                                        Destroy(icon);
-
-                                    }
-
-                                }
-
-                                _statusIcons.Clear();
-
-                            }
-
-                    
-
-                            // =============================================================================
-
-                            // ULTIMATE GLOW
-
-                            // =============================================================================
-
-                    
-
-                            private void StartUltimateGlow()
-
-                            {
-
-                                if (_glowCoroutine != null)
-
-                                {
-
-                                    StopCoroutine(_glowCoroutine);
-
-                                }
-
-                                _glowCoroutine = StartCoroutine(UltimateGlowCoroutine());
-
-                            }
-
-                    
-
-                            private void StopUltimateGlow()
-
-                            {
-
-                                if (_glowCoroutine != null)
-
-                                {
-
-                                    StopCoroutine(_glowCoroutine);
-
-                                    _glowCoroutine = null;
-
-                                }
-
-                    
-
-                                if (_portraitBorder != null)
-
-                                {
-
-                                    _portraitBorder.color = _normalBorderColor;
-
-                                }
-
-                            }
-
-                    
-
-                            private IEnumerator UltimateGlowCoroutine()
-
-                            {
-
-                                while (_isUltimateReady)
-
-                                {
-
-                                    float t = (Mathf.Sin(Time.time * Mathf.PI * 2f / _glowPulseDuration) + 1f) / 2f;
-
-                                    Color glowColor = Color.Lerp(_normalBorderColor, _ultimateReadyColor, t);
-
-                    
-
-                                    if (_portraitBorder != null)
-
-                                    {
-
-                                        _portraitBorder.color = glowColor;
-
-                                    }
-
-                    
-
-                                    yield return null;
-
-                                }
-
-                            }
-
-                    
-
-                            // =============================================================================
-
-                            // EVENT HANDLERS
-
-                            // =============================================================================
-
-                    
-
-                            private void HandleHPChanged(int current, int max)
-
-                            {
-
-                                UpdateHP(current, max, true);
-
-                            }
-
-                    
-
-                            private void HandleDeath()
-
-                            {
-
-                                OnAllyDeath?.Invoke(_allyIndex);
-
-                            }
-
-                    
-
-                            // =============================================================================
-
-                            // HELPERS
-
-                            // =============================================================================
-
-                    
-
-                            private void UnbindAlly()
-
-                            {
-
-                                if (_ally != null)
-
-                                {
-
-                                    _ally.OnHpChanged -= HandleHPChanged;
-
-                                    _ally.OnDeath -= HandleDeath;
-
-                                }
-
-                                _ally = null;
-
-                            }
-
-                    
-
-                            private bool IsBuff(StatusEffectType effectType)
-
-                            {
-
-                                int value = (int)effectType;
-
-                                return value >= 30 && value < 80;
-
-                            }
-
-                        }
-
-                    }
+                    Destroy(slot.gameObject);
+                }
+            }
+            _skillSlots.Clear();
+        }
+
+        private void AddStatusIcon(StatusEffectType effectType)
+        {
+            if (_statusIconPrefab == null || _statusIconContainer == null) return;
+
+            var iconObj = Instantiate(_statusIconPrefab, _statusIconContainer);
+            _statusIcons.Add(iconObj);
+
+            var iconImage = iconObj.GetComponent<Image>();
+            if (iconImage != null)
+            {
+                bool isBuff = IsBuff(effectType);
+                iconImage.color = isBuff
+                    ? new Color(0.2f, 0.8f, 0.2f, 1f)
+                    : new Color(0.8f, 0.2f, 0.2f, 1f);
+            }
+        }
+
+        private void ClearStatusIcons()
+        {
+            for (int i = 0; i < _statusIcons.Count; i++)
+            {
+                var icon = _statusIcons[i];
+                if (icon != null)
+                {
+                    Destroy(icon);
+                }
+            }
+            _statusIcons.Clear();
+        }
+
+        private void StartUltimateGlow()
+        {
+            if (_glowCoroutine != null)
+            {
+                StopCoroutine(_glowCoroutine);
+            }
+            _glowCoroutine = StartCoroutine(UltimateGlowCoroutine());
+        }
+
+        private void StopUltimateGlow()
+        {
+            if (_glowCoroutine != null)
+            {
+                StopCoroutine(_glowCoroutine);
+                _glowCoroutine = null;
+            }
+
+            ApplyVisualState();
+        }
+
+        private IEnumerator UltimateGlowCoroutine()
+        {
+            while (_isUltimateReady)
+            {
+                float t = (Mathf.Sin(Time.time * Mathf.PI * 2f / _glowPulseDuration) + 1f) * 0.5f;
+                Color baseBorder = _isSelected ? _selectedBorderColor : _normalBorderColor;
+                Color glowColor = Color.Lerp(baseBorder, _ultimateReadyColor, t);
+
+                if (_portraitBorder != null)
+                {
+                    _portraitBorder.color = glowColor;
+                }
+
+                yield return null;
+            }
+        }
+
+        private void ApplyVisualState()
+        {
+            if (_panelBackground != null)
+            {
+                _panelBackground.color = _isSelected ? _selectedBackgroundColor : _backgroundColor;
+            }
+
+            if (_portraitBorder != null && !_isUltimateReady)
+            {
+                _portraitBorder.color = _isSelected ? _selectedBorderColor : _normalBorderColor;
+            }
+        }
+
+        private void HandleHPChanged(int current, int max)
+        {
+            UpdateHP(current, max, true);
+        }
+
+        private void HandleDeath()
+        {
+            OnAllyDeath?.Invoke(_allyIndex);
+        }
+
+        /// <summary>
+        /// Public cleanup for CombatHUD to call when combat ends.
+        /// Unbinds from combatant events and clears references.
+        /// </summary>
+        public void Cleanup()
+        {
+            UnbindAlly();
+            ClearStatusIcons();
+            ClearSkillSlots();
+            _isUltimateReady = false;
+            _isSelected = false;
+            if (_glowCoroutine != null)
+            {
+                StopCoroutine(_glowCoroutine);
+                _glowCoroutine = null;
+            }
+        }
+
+        private void UnbindAlly()
+        {
+            if (_ally != null)
+            {
+                _ally.OnHpChanged -= HandleHPChanged;
+                _ally.OnDeath -= HandleDeath;
+            }
+            _ally = null;
+        }
+
+        // Buff range boundaries matching StatusEffectType enum layout:
+        // Buffs span ATTACK_UP(30) through UNDYING(72), debuffs start at ATTACK_DOWN(80)
+        private const int kBuffRangeStart = (int)StatusEffectType.ATTACK_UP;   // 30
+        private const int kBuffRangeEnd = (int)StatusEffectType.ATTACK_DOWN;   // 80
+
+        private static bool IsBuff(StatusEffectType effectType)
+        {
+            int value = (int)effectType;
+            return value >= kBuffRangeStart && value < kBuffRangeEnd;
+        }
+    }
+}

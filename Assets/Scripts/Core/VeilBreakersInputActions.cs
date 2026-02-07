@@ -788,7 +788,7 @@ namespace VeilBreakers.Core
                 {
                     ""name"": ""ShiftTab"",
                     ""id"": ""f0e12330-e3a1-4354-9447-08709426f443"",
-                    ""path"": ""ButtonWithModifier"",
+                    ""path"": ""ButtonWithOneModifier"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",

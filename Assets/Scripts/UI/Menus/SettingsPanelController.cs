@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
 using VeilBreakers.UI.Controls;
+using VeilBreakers.UI.Core;
 
 namespace VeilBreakers.UI.Menus
 {
@@ -104,6 +105,13 @@ namespace VeilBreakers.UI.Menus
         private bool _initialized = false;
         private VisualElement _confirmationDialog;
 
+        private enum ConfirmationDialogMode
+        {
+            None,
+            CloseUnsaved,
+            ApplyAndClose
+        }
+
         // =============================================================================
         // EVENTS
         // =============================================================================
@@ -187,19 +195,25 @@ namespace VeilBreakers.UI.Menus
             {
                 _uiDocument = GetComponent<UIDocument>();
             }
-
-            _currentSettings = new SettingsData();
-            _pendingSettings = new SettingsData();
         }
 
         private void OnEnable()
         {
-            // Skip auto-initialization if we're being initialized externally via Initialize()
-            // MainMenuBootstrap calls Initialize() right after AddComponent, which would cause double-init
-            if (_initialized) return;
+            // Only rebind events if already initialized by Bootstrap
+            if (_initialized)
+            {
+                BindEvents();
+                return;
+            }
 
-            // Only auto-initialize if we have our own UIDocument assigned
-            if (_uiDocument != null || GetComponent<UIDocument>() != null)
+            // Auto-initialize only when the settings panel is already present in the document.
+            // MainMenuBootstrap adds this component before/around overlay injection.
+            // If we initialize too early here, tab queries fail and callbacks are never bound.
+            var doc = _uiDocument ?? GetComponent<UIDocument>();
+            var root = doc?.rootVisualElement;
+            bool hasSettingsPanel = root?.Q<VisualElement>("settings-panel") != null;
+
+            if (hasSettingsPanel)
             {
                 InitializeUI();
                 LoadSettings();
@@ -230,6 +244,10 @@ namespace VeilBreakers.UI.Menus
                 ErrorLogger.Error("SettingsPanelController: UIDocument is null!");
                 return;
             }
+
+            // Ensure settings data exists (may not have been created if Awake was skipped)
+            _currentSettings ??= new SettingsData();
+            _pendingSettings ??= new SettingsData();
 
             _root = _uiDocument.rootVisualElement;
             _settingsPanel = _root.Q<VisualElement>("settings-panel");
@@ -294,6 +312,7 @@ namespace VeilBreakers.UI.Menus
         {
             _availableResolutions = new List<Resolution>();
             var choices = new List<string>();
+            var seen = new HashSet<string>();
 
             foreach (var res in Screen.resolutions)
             {
@@ -301,7 +320,7 @@ namespace VeilBreakers.UI.Menus
                 if (res.width >= 1280 && res.height >= 720)
                 {
                     string resString = $"{res.width} x {res.height}";
-                    if (!choices.Contains(resString))
+                    if (seen.Add(resString))
                     {
                         choices.Add(resString);
                         _availableResolutions.Add(res);
@@ -400,7 +419,16 @@ namespace VeilBreakers.UI.Menus
 
         private void OnCloseClicked(ClickEvent evt) => Close();
         private void OnResetClicked(ClickEvent evt) => ResetToDefaults();
-        private void OnApplyClicked(ClickEvent evt) => ApplySettings();
+        private void OnApplyClicked(ClickEvent evt)
+        {
+            if (!HasUnsavedChanges())
+            {
+                ForceClose();
+                return;
+            }
+
+            ShowConfirmationDialog(ConfirmationDialogMode.ApplyAndClose);
+        }
         private void OnTabAudioClicked(ClickEvent evt) => ShowTab(0);
         private void OnTabGraphicsClicked(ClickEvent evt) => ShowTab(1);
         private void OnTabControlsClicked(ClickEvent evt) => ShowTab(2);
@@ -534,6 +562,11 @@ namespace VeilBreakers.UI.Menus
 
         private void LoadSettings()
         {
+            if (_availableResolutions == null || _availableResolutions.Count == 0)
+            {
+                PopulateResolutions();
+            }
+
             _currentSettings.masterVolume = PlayerPrefs.GetFloat(kPrefMasterVolume, 0.8f);
             _currentSettings.musicVolume = PlayerPrefs.GetFloat(kPrefMusicVolume, 0.7f);
             _currentSettings.sfxVolume = PlayerPrefs.GetFloat(kPrefSFXVolume, 0.8f);
@@ -541,7 +574,8 @@ namespace VeilBreakers.UI.Menus
             _currentSettings.muteAll = PlayerPrefs.GetInt(kPrefMuteAll, 0) == 1;
 
             _currentSettings.resolutionIndex = PlayerPrefs.GetInt(kPrefResolution, GetCurrentResolutionIndex());
-            _currentSettings.fullscreenMode = PlayerPrefs.GetInt(kPrefFullscreen, (int)Screen.fullScreenMode);
+            int fullscreenPref = PlayerPrefs.GetInt(kPrefFullscreen, GetDefaultFullscreenModeIndex());
+            _currentSettings.fullscreenMode = Mathf.Clamp(fullscreenPref, 0, 2);
             _currentSettings.qualityLevel = PlayerPrefs.GetInt(kPrefQuality, QualitySettings.GetQualityLevel());
             _currentSettings.vsync = PlayerPrefs.GetInt(kPrefVSync, QualitySettings.vSyncCount > 0 ? 1 : 0) == 1;
             _currentSettings.showFPS = PlayerPrefs.GetInt(kPrefShowFPS, 0) == 1;
@@ -560,6 +594,11 @@ namespace VeilBreakers.UI.Menus
 
         private int GetCurrentResolutionIndex()
         {
+            if (_availableResolutions == null || _availableResolutions.Count == 0)
+            {
+                return 0;
+            }
+
             var current = Screen.currentResolution;
             for (int i = 0; i < _availableResolutions.Count; i++)
             {
@@ -621,11 +660,17 @@ namespace VeilBreakers.UI.Menus
             }
             _dropdownFullscreen?.SetValueWithoutNotify(GetFullscreenModeString(_currentSettings.fullscreenMode));
             if (_dropdownFullscreen != null)
-                _dropdownFullscreen.index = Mathf.Clamp(_currentSettings.fullscreenMode, 0, Math.Max(0, _dropdownFullscreen.choices?.Count - 1 ?? 0));
+            {
+                int maxFullscreenIndex = (_dropdownFullscreen.choices?.Count ?? 1) - 1;
+                _dropdownFullscreen.index = Mathf.Clamp(_currentSettings.fullscreenMode, 0, Mathf.Max(0, maxFullscreenIndex));
+            }
 
             _dropdownQuality?.SetValueWithoutNotify(GetQualityString(_currentSettings.qualityLevel));
             if (_dropdownQuality != null)
-                _dropdownQuality.index = Mathf.Clamp(_currentSettings.qualityLevel, 0, Math.Max(0, _dropdownQuality.choices?.Count - 1 ?? 0));
+            {
+                int maxQualityIndex = (_dropdownQuality.choices?.Count ?? 1) - 1;
+                _dropdownQuality.index = Mathf.Clamp(_currentSettings.qualityLevel, 0, Mathf.Max(0, maxQualityIndex));
+            }
             _toggleVSync?.SetValueWithoutNotify(_currentSettings.vsync);
             _toggleFPS?.SetValueWithoutNotify(_currentSettings.showFPS);
 
@@ -660,6 +705,29 @@ namespace VeilBreakers.UI.Menus
                 1 => "Windowed",
                 2 => "Borderless",
                 _ => "Fullscreen"
+            };
+        }
+
+        private static int GetDefaultFullscreenModeIndex()
+        {
+            return Screen.fullScreenMode switch
+            {
+                FullScreenMode.ExclusiveFullScreen => 0,
+                FullScreenMode.Windowed => 1,
+                FullScreenMode.FullScreenWindow => 2,
+                FullScreenMode.MaximizedWindow => 2,
+                _ => 0
+            };
+        }
+
+        private static FullScreenMode ResolveFullscreenMode(int modeIndex)
+        {
+            return modeIndex switch
+            {
+                0 => FullScreenMode.ExclusiveFullScreen,
+                1 => FullScreenMode.Windowed,
+                2 => FullScreenMode.FullScreenWindow,
+                _ => FullScreenMode.FullScreenWindow
             };
         }
 
@@ -732,16 +800,10 @@ namespace VeilBreakers.UI.Menus
                 return;
 
             // Resolution
-            if (_currentSettings.resolutionIndex < _availableResolutions.Count)
+            if (_currentSettings.resolutionIndex >= 0 && _currentSettings.resolutionIndex < _availableResolutions.Count)
             {
                 var res = _availableResolutions[_currentSettings.resolutionIndex];
-                var mode = _currentSettings.fullscreenMode switch
-                {
-                    0 => FullScreenMode.ExclusiveFullScreen,
-                    1 => FullScreenMode.Windowed,
-                    2 => FullScreenMode.FullScreenWindow,
-                    _ => FullScreenMode.FullScreenWindow
-                };
+                var mode = ResolveFullscreenMode(_currentSettings.fullscreenMode);
                 Screen.SetResolution(res.width, res.height, mode);
             }
 
@@ -789,11 +851,128 @@ namespace VeilBreakers.UI.Menus
 
         private void ResetToDefaults()
         {
-            _currentSettings = new SettingsData();
-            _pendingSettings = _currentSettings.Clone();
-            UpdateUIFromSettings();
-            ApplySettings();
-            ErrorLogger.UI("Settings reset to defaults");
+            // Show a lightweight confirmation before resetting
+            if (_confirmationDialog != null)
+            {
+                _confirmationDialog.RemoveFromHierarchy();
+                _confirmationDialog = null;
+            }
+
+            _confirmationDialog = new VisualElement();
+            _confirmationDialog.name = "confirmation-dialog-overlay";
+            _confirmationDialog.style.position = Position.Absolute;
+            _confirmationDialog.style.left = 0;
+            _confirmationDialog.style.top = 0;
+            _confirmationDialog.style.right = 0;
+            _confirmationDialog.style.bottom = 0;
+            _confirmationDialog.style.backgroundColor = new Color(0, 0, 0, 0.7f);
+            _confirmationDialog.style.justifyContent = Justify.Center;
+            _confirmationDialog.style.alignItems = Align.Center;
+
+            var dialogBox = new VisualElement();
+            dialogBox.style.backgroundColor = new Color(0.08f, 0.06f, 0.1f, 1f);
+            dialogBox.style.borderTopWidth = 2;
+            dialogBox.style.borderBottomWidth = 2;
+            dialogBox.style.borderLeftWidth = 2;
+            dialogBox.style.borderRightWidth = 2;
+            dialogBox.style.borderTopColor = new Color(0.85f, 0.4f, 0.12f, 1f);
+            dialogBox.style.borderBottomColor = new Color(0.85f, 0.4f, 0.12f, 1f);
+            dialogBox.style.borderLeftColor = new Color(0.85f, 0.4f, 0.12f, 1f);
+            dialogBox.style.borderRightColor = new Color(0.85f, 0.4f, 0.12f, 1f);
+            dialogBox.style.borderTopLeftRadius = 8;
+            dialogBox.style.borderTopRightRadius = 8;
+            dialogBox.style.borderBottomLeftRadius = 8;
+            dialogBox.style.borderBottomRightRadius = 8;
+            dialogBox.style.paddingTop = 24;
+            dialogBox.style.paddingBottom = 24;
+            dialogBox.style.paddingLeft = 32;
+            dialogBox.style.paddingRight = 32;
+            dialogBox.style.minWidth = 350;
+
+            var title = new Label("RESET TO DEFAULTS");
+            title.style.fontSize = 18;
+            title.style.color = new Color(0.92f, 0.88f, 0.84f, 1f);
+            title.style.unityFontStyleAndWeight = FontStyle.Bold;
+            title.style.letterSpacing = 3;
+            title.style.unityTextAlign = TextAnchor.MiddleCenter;
+            title.style.marginBottom = 16;
+            dialogBox.Add(title);
+
+            var message = new Label("Are you sure you want to reset all settings to their defaults?");
+            message.style.fontSize = 14;
+            message.style.color = new Color(0.65f, 0.6f, 0.56f, 1f);
+            message.style.marginBottom = 24;
+            message.style.unityTextAlign = TextAnchor.MiddleCenter;
+            message.style.whiteSpace = WhiteSpace.Normal;
+            dialogBox.Add(message);
+
+            var buttonContainer = new VisualElement();
+            buttonContainer.style.flexDirection = FlexDirection.Row;
+            buttonContainer.style.justifyContent = Justify.Center;
+
+            var btnCancel = new Button(HideConfirmationDialog);
+            btnCancel.text = "CANCEL";
+            btnCancel.style.backgroundColor = Color.clear;
+            btnCancel.style.color = new Color(0.47f, 0.43f, 0.39f, 1f);
+            btnCancel.style.borderTopWidth = 1;
+            btnCancel.style.borderBottomWidth = 1;
+            btnCancel.style.borderLeftWidth = 1;
+            btnCancel.style.borderRightWidth = 1;
+            btnCancel.style.borderTopColor = new Color(0.24f, 0.2f, 0.29f, 0.3f);
+            btnCancel.style.borderBottomColor = new Color(0.24f, 0.2f, 0.29f, 0.3f);
+            btnCancel.style.borderLeftColor = new Color(0.24f, 0.2f, 0.29f, 0.3f);
+            btnCancel.style.borderRightColor = new Color(0.24f, 0.2f, 0.29f, 0.3f);
+            btnCancel.style.borderTopLeftRadius = 4;
+            btnCancel.style.borderTopRightRadius = 4;
+            btnCancel.style.borderBottomLeftRadius = 4;
+            btnCancel.style.borderBottomRightRadius = 4;
+            btnCancel.style.paddingTop = 10;
+            btnCancel.style.paddingBottom = 10;
+            btnCancel.style.paddingLeft = 24;
+            btnCancel.style.paddingRight = 24;
+            btnCancel.style.fontSize = 13;
+            btnCancel.style.letterSpacing = 1;
+            buttonContainer.Add(btnCancel);
+
+            var btnConfirm = new Button(() =>
+            {
+                HideConfirmationDialog();
+                _currentSettings = new SettingsData();
+                _pendingSettings = _currentSettings.Clone();
+                UpdateUIFromSettings();
+                ApplySettings();
+                ErrorLogger.UI("Settings reset to defaults");
+            });
+            btnConfirm.text = "RESET";
+            btnConfirm.style.backgroundColor = new Color(0.85f, 0.4f, 0.12f, 1f);
+            btnConfirm.style.color = new Color(0.92f, 0.88f, 0.84f, 1f);
+            btnConfirm.style.borderTopWidth = 2;
+            btnConfirm.style.borderBottomWidth = 2;
+            btnConfirm.style.borderLeftWidth = 2;
+            btnConfirm.style.borderRightWidth = 2;
+            btnConfirm.style.borderTopColor = new Color(1.0f, 0.55f, 0.2f, 1f);
+            btnConfirm.style.borderBottomColor = new Color(1.0f, 0.55f, 0.2f, 1f);
+            btnConfirm.style.borderLeftColor = new Color(1.0f, 0.55f, 0.2f, 1f);
+            btnConfirm.style.borderRightColor = new Color(1.0f, 0.55f, 0.2f, 1f);
+            btnConfirm.style.borderTopLeftRadius = 4;
+            btnConfirm.style.borderTopRightRadius = 4;
+            btnConfirm.style.borderBottomLeftRadius = 4;
+            btnConfirm.style.borderBottomRightRadius = 4;
+            btnConfirm.style.paddingTop = 10;
+            btnConfirm.style.paddingBottom = 10;
+            btnConfirm.style.paddingLeft = 24;
+            btnConfirm.style.paddingRight = 24;
+            btnConfirm.style.marginLeft = 12;
+            btnConfirm.style.fontSize = 13;
+            btnConfirm.style.letterSpacing = 1;
+            btnConfirm.style.unityFontStyleAndWeight = FontStyle.Bold;
+            buttonContainer.Add(btnConfirm);
+
+            dialogBox.Add(buttonContainer);
+            _confirmationDialog.Add(dialogBox);
+            _root.Add(_confirmationDialog);
+            _confirmationDialog.BringToFront();
+            _settingsPanel?.SetEnabled(false);
         }
 
         // =============================================================================
@@ -802,6 +981,15 @@ namespace VeilBreakers.UI.Menus
 
         public void Show()
         {
+            if (!_initialized)
+            {
+                InitializeUI();
+                if (!_initialized)
+                {
+                    return;
+                }
+            }
+
             // When used as overlay (via Initialize), don't touch gameObject
             // MainMenuBootstrap handles overlay visibility
             if (_root != null)
@@ -828,7 +1016,7 @@ namespace VeilBreakers.UI.Menus
             // Check for unsaved changes
             if (HasUnsavedChanges())
             {
-                ShowConfirmationDialog();
+                ShowConfirmationDialog(ConfirmationDialogMode.CloseUnsaved);
                 return;
             }
 
@@ -851,7 +1039,27 @@ namespace VeilBreakers.UI.Menus
             // Fire the close event - MainMenuBootstrap handles the visual transition
             // Don't deactivate the GameObject or hide elements here, as that would
             // bypass the animation and potentially hide the entire main menu
-            OnSettingsClosed?.Invoke();
+            if (OnSettingsClosed != null)
+            {
+                OnSettingsClosed.Invoke();
+            }
+            else
+            {
+                Hide();
+            }
+        }
+
+        private void SaveAndCloseFromDialog()
+        {
+            ApplySettings();
+            ForceClose();
+        }
+
+        private void DiscardAndCloseFromDialog()
+        {
+            _pendingSettings = _currentSettings.Clone();
+            UpdateUIFromSettings();
+            ForceClose();
         }
 
         /// <summary>
@@ -894,13 +1102,12 @@ namespace VeilBreakers.UI.Menus
         /// <summary>
         /// Show a confirmation dialog for unsaved changes.
         /// </summary>
-        private void ShowConfirmationDialog()
+        private void ShowConfirmationDialog(ConfirmationDialogMode mode)
         {
             if (_confirmationDialog != null)
             {
-                _confirmationDialog.style.display = DisplayStyle.Flex;
-                _settingsPanel?.SetEnabled(false);
-                return;
+                _confirmationDialog.RemoveFromHierarchy();
+                _confirmationDialog = null;
             }
 
             // Create the confirmation dialog
@@ -936,18 +1143,67 @@ namespace VeilBreakers.UI.Menus
             dialogBox.style.paddingRight = 32;
             dialogBox.style.minWidth = 350;
 
+            var headerRow = new VisualElement();
+            headerRow.style.flexDirection = FlexDirection.Row;
+            headerRow.style.justifyContent = Justify.Center;
+            headerRow.style.alignItems = Align.Center;
+            headerRow.style.marginBottom = 16;
+            headerRow.style.position = Position.Relative;
+            headerRow.style.width = Length.Percent(100);
+
             // Title
-            var title = new Label("UNSAVED CHANGES");
+            var title = new Label(mode == ConfirmationDialogMode.ApplyAndClose ? "CONFIRM CHANGES" : "UNSAVED CHANGES");
             title.style.fontSize = 18;
             title.style.color = new Color(0.92f, 0.88f, 0.84f, 1f);
             title.style.unityFontStyleAndWeight = FontStyle.Bold;
             title.style.letterSpacing = 3;
-            title.style.marginBottom = 16;
             title.style.unityTextAlign = TextAnchor.MiddleCenter;
-            dialogBox.Add(title);
+            headerRow.Add(title);
+
+            var btnDismiss = new Button(HideConfirmationDialog);
+            btnDismiss.text = "X";
+            btnDismiss.style.width = 30;
+            btnDismiss.style.height = 30;
+            btnDismiss.style.minWidth = 30;
+            btnDismiss.style.backgroundColor = Color.clear;
+            btnDismiss.style.color = new Color(0.92f, 0.88f, 0.84f, 1f);
+            btnDismiss.style.borderTopWidth = 1;
+            btnDismiss.style.borderBottomWidth = 1;
+            btnDismiss.style.borderLeftWidth = 1;
+            btnDismiss.style.borderRightWidth = 1;
+            btnDismiss.style.borderTopColor = new Color(0.24f, 0.2f, 0.29f, 0.6f);
+            btnDismiss.style.borderBottomColor = new Color(0.24f, 0.2f, 0.29f, 0.6f);
+            btnDismiss.style.borderLeftColor = new Color(0.24f, 0.2f, 0.29f, 0.6f);
+            btnDismiss.style.borderRightColor = new Color(0.24f, 0.2f, 0.29f, 0.6f);
+            btnDismiss.style.borderTopLeftRadius = 4;
+            btnDismiss.style.borderTopRightRadius = 4;
+            btnDismiss.style.borderBottomLeftRadius = 4;
+            btnDismiss.style.borderBottomRightRadius = 4;
+            btnDismiss.style.unityFontStyleAndWeight = FontStyle.Bold;
+            btnDismiss.style.unityTextAlign = TextAnchor.MiddleCenter;
+            btnDismiss.style.paddingLeft = 0;
+            btnDismiss.style.paddingRight = 0;
+            btnDismiss.style.paddingTop = 0;
+            btnDismiss.style.paddingBottom = 0;
+            btnDismiss.style.marginLeft = 0;
+            btnDismiss.style.marginRight = 0;
+            btnDismiss.style.marginTop = 0;
+            btnDismiss.style.marginBottom = 0;
+            btnDismiss.style.letterSpacing = 0;
+            btnDismiss.style.justifyContent = Justify.Center;
+            btnDismiss.style.alignItems = Align.Center;
+            btnDismiss.style.position = Position.Absolute;
+            btnDismiss.style.right = 0;
+            btnDismiss.style.top = 0;
+            headerRow.Add(btnDismiss);
+
+            dialogBox.Add(headerRow);
 
             // Message
-            var message = new Label("You have unsaved changes.\nIf you close without saving, your changes will be reverted.");
+            var messageText = mode == ConfirmationDialogMode.ApplyAndClose
+                ? "Apply these settings now?\nYou can cancel or close this dialog."
+                : "You have unsaved changes.\nIf you close without saving, your changes will be reverted.";
+            var message = new Label(messageText);
             message.style.fontSize = 14;
             message.style.color = new Color(0.65f, 0.6f, 0.56f, 1f);
             message.style.marginBottom = 24;
@@ -960,69 +1216,34 @@ namespace VeilBreakers.UI.Menus
             buttonContainer.style.flexDirection = FlexDirection.Row;
             buttonContainer.style.justifyContent = Justify.Center;
 
-            // Save button
-            var btnSave = new Button(() => {
-                ApplySettings();
-                ForceClose();
-            });
-            btnSave.text = "SAVE";
-            btnSave.style.backgroundColor = new Color(0.85f, 0.4f, 0.12f, 1f);
-            btnSave.style.color = new Color(0.92f, 0.88f, 0.84f, 1f);
-            btnSave.style.borderTopWidth = 2;
-            btnSave.style.borderBottomWidth = 2;
-            btnSave.style.borderLeftWidth = 2;
-            btnSave.style.borderRightWidth = 2;
-            btnSave.style.borderTopColor = new Color(1.0f, 0.55f, 0.2f, 1f);
-            btnSave.style.borderBottomColor = new Color(1.0f, 0.55f, 0.2f, 1f);
-            btnSave.style.borderLeftColor = new Color(1.0f, 0.55f, 0.2f, 1f);
-            btnSave.style.borderRightColor = new Color(1.0f, 0.55f, 0.2f, 1f);
-            btnSave.style.borderTopLeftRadius = 4;
-            btnSave.style.borderTopRightRadius = 4;
-            btnSave.style.borderBottomLeftRadius = 4;
-            btnSave.style.borderBottomRightRadius = 4;
-            btnSave.style.paddingTop = 10;
-            btnSave.style.paddingBottom = 10;
-            btnSave.style.paddingLeft = 24;
-            btnSave.style.paddingRight = 24;
-            btnSave.style.marginRight = 12;
-            btnSave.style.fontSize = 13;
-            btnSave.style.letterSpacing = 1;
-            btnSave.style.unityFontStyleAndWeight = FontStyle.Bold;
-            buttonContainer.Add(btnSave);
-
-            // Discard button
-            var btnDiscard = new Button(() => {
-                _pendingSettings = _currentSettings.Clone();
-                ForceClose();
-            });
-            btnDiscard.text = "DISCARD";
-            btnDiscard.style.backgroundColor = Color.clear;
-            btnDiscard.style.color = new Color(0.47f, 0.43f, 0.39f, 1f);
-            btnDiscard.style.borderTopWidth = 1;
-            btnDiscard.style.borderBottomWidth = 1;
-            btnDiscard.style.borderLeftWidth = 1;
-            btnDiscard.style.borderRightWidth = 1;
-            btnDiscard.style.borderTopColor = new Color(0.85f, 0.4f, 0.12f, 0.3f);
-            btnDiscard.style.borderBottomColor = new Color(0.85f, 0.4f, 0.12f, 0.3f);
-            btnDiscard.style.borderLeftColor = new Color(0.85f, 0.4f, 0.12f, 0.3f);
-            btnDiscard.style.borderRightColor = new Color(0.85f, 0.4f, 0.12f, 0.3f);
-            btnDiscard.style.borderTopLeftRadius = 4;
-            btnDiscard.style.borderTopRightRadius = 4;
-            btnDiscard.style.borderBottomLeftRadius = 4;
-            btnDiscard.style.borderBottomRightRadius = 4;
-            btnDiscard.style.paddingTop = 10;
-            btnDiscard.style.paddingBottom = 10;
-            btnDiscard.style.paddingLeft = 24;
-            btnDiscard.style.paddingRight = 24;
-            btnDiscard.style.marginRight = 12;
-            btnDiscard.style.fontSize = 13;
-            btnDiscard.style.letterSpacing = 1;
-            buttonContainer.Add(btnDiscard);
+            // Save and close button
+            var btnSaveAndClose = new Button(SaveAndCloseFromDialog);
+            btnSaveAndClose.text = "SAVE & CLOSE";
+            btnSaveAndClose.style.backgroundColor = new Color(0.85f, 0.4f, 0.12f, 1f);
+            btnSaveAndClose.style.color = new Color(0.92f, 0.88f, 0.84f, 1f);
+            btnSaveAndClose.style.borderTopWidth = 2;
+            btnSaveAndClose.style.borderBottomWidth = 2;
+            btnSaveAndClose.style.borderLeftWidth = 2;
+            btnSaveAndClose.style.borderRightWidth = 2;
+            btnSaveAndClose.style.borderTopColor = new Color(1.0f, 0.55f, 0.2f, 1f);
+            btnSaveAndClose.style.borderBottomColor = new Color(1.0f, 0.55f, 0.2f, 1f);
+            btnSaveAndClose.style.borderLeftColor = new Color(1.0f, 0.55f, 0.2f, 1f);
+            btnSaveAndClose.style.borderRightColor = new Color(1.0f, 0.55f, 0.2f, 1f);
+            btnSaveAndClose.style.borderTopLeftRadius = 4;
+            btnSaveAndClose.style.borderTopRightRadius = 4;
+            btnSaveAndClose.style.borderBottomLeftRadius = 4;
+            btnSaveAndClose.style.borderBottomRightRadius = 4;
+            btnSaveAndClose.style.paddingTop = 10;
+            btnSaveAndClose.style.paddingBottom = 10;
+            btnSaveAndClose.style.paddingLeft = 24;
+            btnSaveAndClose.style.paddingRight = 24;
+            btnSaveAndClose.style.marginLeft = 12;
+            btnSaveAndClose.style.fontSize = 13;
+            btnSaveAndClose.style.letterSpacing = 1;
+            btnSaveAndClose.style.unityFontStyleAndWeight = FontStyle.Bold;
 
             // Cancel button
-            var btnCancel = new Button(() => {
-                HideConfirmationDialog();
-            });
+            var btnCancel = new Button(HideConfirmationDialog);
             btnCancel.text = "CANCEL";
             btnCancel.style.backgroundColor = Color.clear;
             btnCancel.style.color = new Color(0.47f, 0.43f, 0.39f, 1f);
@@ -1046,6 +1267,35 @@ namespace VeilBreakers.UI.Menus
             btnCancel.style.letterSpacing = 1;
             buttonContainer.Add(btnCancel);
 
+            if (mode == ConfirmationDialogMode.CloseUnsaved)
+            {
+                var btnDiscard = new Button(DiscardAndCloseFromDialog);
+                btnDiscard.text = "DISCARD";
+                btnDiscard.style.backgroundColor = Color.clear;
+                btnDiscard.style.color = new Color(0.47f, 0.43f, 0.39f, 1f);
+                btnDiscard.style.borderTopWidth = 1;
+                btnDiscard.style.borderBottomWidth = 1;
+                btnDiscard.style.borderLeftWidth = 1;
+                btnDiscard.style.borderRightWidth = 1;
+                btnDiscard.style.borderTopColor = new Color(0.85f, 0.4f, 0.12f, 0.3f);
+                btnDiscard.style.borderBottomColor = new Color(0.85f, 0.4f, 0.12f, 0.3f);
+                btnDiscard.style.borderLeftColor = new Color(0.85f, 0.4f, 0.12f, 0.3f);
+                btnDiscard.style.borderRightColor = new Color(0.85f, 0.4f, 0.12f, 0.3f);
+                btnDiscard.style.borderTopLeftRadius = 4;
+                btnDiscard.style.borderTopRightRadius = 4;
+                btnDiscard.style.borderBottomLeftRadius = 4;
+                btnDiscard.style.borderBottomRightRadius = 4;
+                btnDiscard.style.paddingTop = 10;
+                btnDiscard.style.paddingBottom = 10;
+                btnDiscard.style.paddingLeft = 24;
+                btnDiscard.style.paddingRight = 24;
+                btnDiscard.style.marginLeft = 12;
+                btnDiscard.style.fontSize = 13;
+                btnDiscard.style.letterSpacing = 1;
+                buttonContainer.Add(btnDiscard);
+            }
+
+            buttonContainer.Add(btnSaveAndClose);
             dialogBox.Add(buttonContainer);
             _confirmationDialog.Add(dialogBox);
 
@@ -1062,7 +1312,8 @@ namespace VeilBreakers.UI.Menus
         {
             if (_confirmationDialog != null)
             {
-                _confirmationDialog.style.display = DisplayStyle.None;
+                _confirmationDialog.RemoveFromHierarchy();
+                _confirmationDialog = null;
                 _settingsPanel?.SetEnabled(true);
             }
         }
@@ -1176,6 +1427,10 @@ namespace VeilBreakers.UI.Menus
 
     }
 
+}
+
+namespace VeilBreakers.UI.Core
+{
     // =============================================================================
     // EXTENSION METHODS
     // =============================================================================

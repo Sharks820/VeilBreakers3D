@@ -543,7 +543,7 @@
                 {
                     "name": "",
                     "id": "f0e12330-e3a1-4354-9447-08709426f42f",
-                    "path": "<Keyboard>/tab",
+                    "path": "<Keyboard>/i",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -664,7 +664,7 @@
                 {
                     "name": "",
                     "id": "f0e12330-e3a1-4354-9447-08709426f43a",
-                    "path": "<Keyboard>/tab",
+                    "path": "<Keyboard>/x",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -675,7 +675,7 @@
                 {
                     "name": "",
                     "id": "f0e12330-e3a1-4354-9447-08709426f43b",
-                    "path": "<Gamepad>/leftShoulder",
+                    "path": "<Gamepad>/select",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -763,7 +763,7 @@
                 {
                     "name": "ShiftTab",
                     "id": "f0e12330-e3a1-4354-9447-08709426f443",
-                    "path": "ButtonWithModifier",
+                    "path": "ButtonWithOneModifier",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -807,7 +807,7 @@
                 {
                     "name": "",
                     "id": "f0e12330-e3a1-4354-9447-08709426f447",
-                    "path": "<Keyboard>/q",
+                    "path": "<Keyboard>/z",
                     "interactions": "",
                     "processors": "",
                     "groups": "",

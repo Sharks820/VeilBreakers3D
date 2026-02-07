@@ -11,10 +11,10 @@ namespace VeilBreakers.Combat
     public static class DamageCalculator
     {
         // Constants
-        private const float VARIANCE_MIN = 0.9f;
-        private const float VARIANCE_MAX = 1.1f;
-        private const float CRIT_MULTIPLIER = 1.5f;
-        private const float BASE_CRIT_CHANCE = 0.05f;
+        private const float kVarianceMin = 0.9f;
+        private const float kVarianceMax = 1.1f;
+        private const float kCritMultiplier = 1.5f;
+        private const float kBaseCritChance = 0.05f;
 
         /// <summary>
         /// Calculate damage for an attack
@@ -24,7 +24,8 @@ namespace VeilBreakers.Combat
             Combatant defender,
             int basePower,
             DamageType damageType,
-            SynergySystem.SynergyTier synergyTier = SynergySystem.SynergyTier.NEUTRAL)
+            SynergySystem.SynergyTier synergyTier = SynergySystem.SynergyTier.NEUTRAL,
+            SynergySystem.SynergyTier defenderSynergyTier = SynergySystem.SynergyTier.NEUTRAL)
         {
             var result = new DamageResult();
 
@@ -52,30 +53,57 @@ namespace VeilBreakers.Combat
 
             float damage = basePower * statRatio;
 
+            // Attacker damage multiplier (buffs/debuffs on the attacker)
+            damage *= attacker.DamageMultiplier;
+
             // Brand effectiveness
             result.brandMultiplier = BrandSystem.GetEffectiveness(attacker.Brand, defender.Brand);
             damage *= result.brandMultiplier;
 
-            // Synergy bonus
+            // Attacker synergy damage bonus
             result.synergyMultiplier = SynergySystem.GetDamageBonus(synergyTier);
             damage *= result.synergyMultiplier;
 
+            // Defender synergy defense bonus (reduces incoming damage)
+            float defenderSynergyDefense = SynergySystem.GetDefenseBonus(defenderSynergyTier);
+            damage /= defenderSynergyDefense;
+
+            // Corruption modifiers (affects both attacker output and defender resistance)
+            float attackerCorruptionMod = GetCorruptionModifier(attacker.Corruption);
+            float defenderCorruptionMod = GetCorruptionModifier(defender.Corruption);
+            damage *= (1f + attackerCorruptionMod);
+            damage /= (1f + defenderCorruptionMod);
+
             // Variance
-            result.variance = Random.Range(VARIANCE_MIN, VARIANCE_MAX);
+            result.variance = Random.Range(kVarianceMin, kVarianceMax);
             damage *= result.variance;
 
             // Critical hit
-            float critChance = BASE_CRIT_CHANCE; // TODO: Add luck stat influence
+            float critChance = kBaseCritChance; // TODO: Add luck stat influence
             result.isCritical = Random.value < critChance;
             if (result.isCritical)
             {
-                damage *= CRIT_MULTIPLIER;
+                damage *= kCritMultiplier;
             }
 
             result.finalDamage = Mathf.RoundToInt(damage);
             result.finalDamage = Mathf.Max(1, result.finalDamage); // Minimum 1 damage
 
             return result;
+        }
+
+        /// <summary>
+        /// Get stat modifier based on corruption level.
+        /// ASCENDED (0-10%): +25%, Purified (11-25%): +10%, Unstable (26-50%): +0%,
+        /// Corrupted (51-75%): -10%, Abyssal (76-100%): -20%
+        /// </summary>
+        private static float GetCorruptionModifier(float corruption)
+        {
+            if (corruption <= 10f) return 0.25f;       // ASCENDED
+            if (corruption <= 25f) return 0.10f;       // Purified
+            if (corruption <= 50f) return 0f;           // Unstable
+            if (corruption <= 75f) return -0.10f;      // Corrupted
+            return -0.20f;                              // Abyssal
         }
 
         /// <summary>
@@ -89,7 +117,7 @@ namespace VeilBreakers.Combat
             }
 
             float healing = basePower * (1f + healer.Magic * 0.01f);
-            healing *= Random.Range(VARIANCE_MIN, VARIANCE_MAX);
+            healing *= Random.Range(kVarianceMin, kVarianceMax);
             return Mathf.RoundToInt(healing);
         }
     }

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/UI/Styles/CharacterSelect.uss" />
-    <Style src="project://database/Assets/UI/Styles/VeilBreakersTheme.uss" />
 
     <!-- ================================================================== -->
     <!-- ENVIRONMENT BACKGROUND                                              -->
@@ -19,19 +18,20 @@
 
     <ui:VisualElement name="hero-stage" class="hero-stage">
         <ui:VisualElement name="hero-stage-render" class="hero-stage-render" />
+        <ui:VisualElement name="vfx-overlay" class="vfx-overlay" />
+        <ui:Button name="btn-rotate-model-left" class="model-rotate-btn model-rotate-left">
+            <ui:Label text="&lt;" class="model-rotate-arrow" />
+        </ui:Button>
+        <ui:Button name="btn-rotate-model-right" class="model-rotate-btn model-rotate-right">
+            <ui:Label text="&gt;" class="model-rotate-arrow" />
+        </ui:Button>
     </ui:VisualElement>
-
-    <!-- ================================================================== -->
-    <!-- VFX OVERLAY                                                         -->
-    <!-- ================================================================== -->
-
-    <ui:VisualElement name="vfx-overlay" class="vfx-overlay" />
 
     <!-- ================================================================== -->
     <!-- VEIL TEAR TRANSITION                                                -->
     <!-- ================================================================== -->
 
-    <ui:VisualElement name="veil-tear-overlay" class="veil-tear-overlay hidden">
+    <ui:VisualElement name="veil-tear-overlay" class="veil-tear-overlay hidden" picking-mode="Ignore">
         <ui:VisualElement name="veil-tear-flash" class="veil-tear-flash" />
         <ui:VisualElement name="veil-tear-crack-left" class="veil-tear-crack" />
         <ui:VisualElement name="veil-tear-crack-right" class="veil-tear-crack" />
@@ -61,6 +61,28 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
+        <ui:VisualElement name="starter-stats" class="starter-stats">
+            <ui:Label text="STARTER STATS" class="section-label" />
+            <ui:VisualElement name="starter-stat-grid" class="starter-stat-grid">
+                <ui:VisualElement class="starter-stat-chip">
+                    <ui:Label text="HP" class="starter-stat-key" />
+                    <ui:Label name="starter-stat-hp" text="0" class="starter-stat-val" />
+                </ui:VisualElement>
+                <ui:VisualElement class="starter-stat-chip">
+                    <ui:Label text="ATK" class="starter-stat-key" />
+                    <ui:Label name="starter-stat-atk" text="0" class="starter-stat-val" />
+                </ui:VisualElement>
+                <ui:VisualElement class="starter-stat-chip">
+                    <ui:Label text="DEF" class="starter-stat-key" />
+                    <ui:Label name="starter-stat-def" text="0" class="starter-stat-val" />
+                </ui:VisualElement>
+                <ui:VisualElement class="starter-stat-chip">
+                    <ui:Label text="SPD" class="starter-stat-key" />
+                    <ui:Label name="starter-stat-spd" text="0" class="starter-stat-val" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
         <!-- Starter Monster Info -->
         <ui:VisualElement name="monster-info" class="monster-info">
             <ui:Label text="STARTER COMPANION" class="section-label" />
@@ -78,7 +100,7 @@
     <!-- RIGHT STATS PANEL (Tab to toggle)                                   -->
     <!-- ================================================================== -->
 
-    <ui:VisualElement name="stats-panel" class="stats-panel glass-panel hidden">
+    <ui:VisualElement name="stats-panel" class="stats-panel glass-panel visible">
         <ui:Label text="ATTRIBUTES" class="section-label" />
 
         <ui:VisualElement name="stat-bars" class="stat-bars">
@@ -147,6 +169,14 @@
                 <ui:Label name="ability-name-2" text="" class="ability-name" />
                 <ui:Label name="ability-desc-2" text="" class="ability-desc" />
             </ui:VisualElement>
+            <ui:VisualElement name="ability-3" class="ability-row">
+                <ui:Label name="ability-name-3" text="" class="ability-name" />
+                <ui:Label name="ability-desc-3" text="" class="ability-desc" />
+            </ui:VisualElement>
+            <ui:VisualElement name="ability-4" class="ability-row">
+                <ui:Label name="ability-name-4" text="" class="ability-name" />
+                <ui:Label name="ability-desc-4" text="" class="ability-desc" />
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 
@@ -185,6 +215,16 @@
         </ui:VisualElement>
     </ui:VisualElement>
 
+    <ui:VisualElement name="hero-cycle-hud" class="hero-cycle-hud">
+        <ui:Button name="btn-prev-hero" class="hero-cycle-btn">
+            <ui:Label text="&lt;" class="hero-cycle-arrow" />
+        </ui:Button>
+        <ui:Label name="hero-index-indicator" text="HERO 1 / 4" class="hero-index-indicator" />
+        <ui:Button name="btn-next-hero" class="hero-cycle-btn">
+            <ui:Label text="&gt;" class="hero-cycle-arrow" />
+        </ui:Button>
+    </ui:VisualElement>
+
     <!-- ================================================================== -->
     <!-- EMBARK BUTTON                                                       -->
     <!-- ================================================================== -->
@@ -212,6 +252,6 @@
     <!-- SCREEN FADE                                                         -->
     <!-- ================================================================== -->
 
-    <ui:VisualElement name="screen-fade" class="screen-fade" />
+    <ui:VisualElement name="screen-fade" class="screen-fade" picking-mode="Ignore" />
 
 </ui:UXML>

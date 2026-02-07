@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **SINGLE SOURCE OF TRUTH** | Version: **v4.64** | Last updated: 2026-02-03
+> **SINGLE SOURCE OF TRUTH** | Version: **v4.65** | Last updated: 2026-02-06
 
 ---
 
@@ -13,7 +13,7 @@
 | Combat Style | Dragon Age: Inquisition action-forward |
 | Art Style | Dark Fantasy Horror |
 | GitHub | Sharks820/VeilBreakers3D |
-| Branch | `backup/pre-unity6` |
+| Branch | `master` |
 | Canonical Path | `C:\Users\Conner\OneDrive\Documents\VeilBreakers3DCurrent` |
 | Local Backup | `C:\Users\Conner\VeilBreakers3DCurrent_BACKUP` |
 | Archive | `C:\Users\Conner\Archive\VeilBreakers_Archive_2026-02-01` |
@@ -157,12 +157,21 @@ namespace VeilBreakers.Combat
 
 | Screen | Controller | Status |
 |--------|------------|--------|
-| Main Menu | MainMenuController.cs | ✅ |
+| Main Menu | MainMenuController.cs + TitleScreenVFX + MoltenButtonVFX | ✅ AAA (video bg, lightning, music) |
 | Settings | SettingsPanelController.cs | ✅ |
-| Character Select | CharacterSelectController.cs | ✅ |
+| Character Select | CharacterSelectController.cs (BG3-inspired redesign) | ✅ AAA |
 | Inventory | InventoryController.cs | ✅ |
 | Monster Collection | MonsterCollectionController.cs | ✅ |
 | VERA Dialogue | VERADialogueController.cs | ✅ |
+
+### Character Select System (BG3-Inspired) - NEW Feb 2026
+5-component cinematic character selection:
+- `CharacterSelectController.cs` - Orchestrator
+- `HeroStageController.cs` - Hero management and animation
+- `EnvironmentController.cs` - Themed backgrounds per hero
+- `HeroVFXController.cs` - Per-hero visual effects
+- `VeilTearTransition.cs` - Scene transition effects
+- Design doc: `Docs/plans/2026-02-05-character-select-redesign.md`
 
 **USS Classes:** `.vb-` (core), `.menu-`, `.dialogue-`, `.vera-`, `.inventory-`, `.monster-`, `.rarity-`, `.corruption-`
 
@@ -218,20 +227,21 @@ To ensure maximum efficiency and prevent technical debt, development is divided 
 
 ---
 
-## Current Status (Unity 6.3 AAA Upgrade)
+## Current Status (AAA UI + Infrastructure)
 
-- **UI System:** 100% Optimized, AAA button transitions, animated bars, screen transitions.
-- **Core Systems:** Modernized (Input System, URP-ready manifest, ThemeManager v6 APIs).
-- **AAA Features Added:**
-  - AnimatedBar control (ghost damage/heal effect)
-  - ScreenTransition singleton (smooth scene fades)
-  - ParallaxBackground (layered menu depth)
-  - MenuVFXController (ambient particles, corruption wisps)
-  - ButtonVFXHelper (ripples, glow, press effects)
-  - Unity6SetupWizard (auto-configure GPU Resident Drawer, Forward+)
-  - **TitleScreenVFX** (floating embers, ash particles, spark bursts)
-- **USS Enhancements:** 150+ new lines - button transitions, parallax layers, VFX containers.
-- **Next:** Open in Unity 6.3, run Quick Setup wizard, test visual features.
+- **Main Menu:** AAA-quality with video background, lightning overlay, music, molten button VFX, ember/ash particles
+- **Character Select:** BG3-inspired cinematic redesign with 5-component architecture (4 heroes + mystery slot)
+- **Core Systems:** Modernized (Input System, URP-ready, ThemeManager v6 APIs)
+- **CI/CD:** Unity PR CI via GitHub Actions (`.github/workflows/unity-ci.yml`)
+- **Git Workflow:** Formalized branch model (master/develop/feature/fix/release/hotfix) - see `Docs/plans/GIT_WORKFLOW_AAA.md`
+- **GitHub Templates:** PR template, bug report, feature request issue templates
+- **Monster Redesign:** v2 specs complete, v1 data archived
+- **AAA Features:**
+  - TitleScreenVFX (embers, ash, sparks, smoke, lightning, video bg)
+  - MoltenButtonVFX (art-style buttons with hover/press effects)
+  - AnimatedBar, ScreenTransition, ParallaxBackground
+  - VfxTextureImportPostprocessor (auto-import settings for VFX textures)
+- **Next:** 3D model integration, combat system with 3D, monster redesign implementation
 
 ---
 
@@ -337,7 +347,11 @@ Scenario (2D concept) → Tripo (2D→3D + auto-rig) → Cascadeur (physics anim
 | Hero Design | Docs/plans/2026-01-19-hero-character-design.md |
 | Implementation | Docs/plans/2026-01-19-implementation-strategy.md |
 | Migration | Docs/MIGRATION_PLAN.md |
-| Character Select | Docs/plans/2026-01-27-character-select-design.md |
+| Character Select (v1) | Docs/plans/2026-01-27-character-select-design.md |
+| Character Select (v2 BG3) | Docs/plans/2026-02-05-character-select-redesign.md |
+| Monster Redesign v2 | Docs/MonsterRedesign_Specification_v2.md |
+| Monster Skills v3 | Docs/MonsterSkill_Specification_v3.md |
+| Git Workflow | Docs/plans/GIT_WORKFLOW_AAA.md |
 | Unity 6 Prep | Docs/UNITY6_PREP.md |
 | Unity 6 Migration | Docs/plans/2026-02-01-unity6-migration.md |
 
@@ -345,19 +359,17 @@ Scenario (2D concept) → Tripo (2D→3D + auto-rig) → Cascadeur (physics anim
 
 ## Current Status
 
-- **UI System:** Complete (all 6 screens)
+- **UI System:** Complete (all 6 screens) - Main Menu + Character Select at AAA quality
 - **Core Systems:** Implemented (Brand, Synergy, Corruption, EventBus, InputManager)
 - **Combat:** Framework ready, needs 3D integration
-- **Title Screen:** Monster art with transparent PNG, VFX effects
+- **Main Menu:** AAA - video bg, lightning, embers/ash/sparks VFX, molten buttons, music
+- **Character Select:** BG3-inspired cinematic redesign (5-component system, 4 heroes + mystery slot)
+- **Monster Redesign:** v2 specifications complete, v1 data archived, implementation pending
 - **Migration:** 100% complete per `Docs/MIGRATION_PLAN.md`
-- **Unity 6 Prep:** ✅ COMPLETE - Ready for Unity 6 upgrade
-  - New Input System: VeilBreakersInputActions + InputManager wrapper
-  - URP 17.0.3 installed and configured
-  - Zero legacy Input.* calls remaining
-  - All deprecated APIs migrated (FindFirstObjectByType)
-  - Performance optimizations: cached WaitForSeconds, StyleColor tokens
-  - GameDatabase race condition fixed with async wait
-- **Next:** Migrate legacy Input.* calls to InputManager, then Unity 6 upgrade
+- **Unity 6 Prep:** ✅ COMPLETE - Running on Unity 6.3
+- **CI/CD:** GitHub Actions Unity CI on PRs
+- **Git Workflow:** Formalized (master/develop/feature branches)
+- **Next:** 3D model integration, combat system 3D, monster redesign implementation
 
 ---
 
