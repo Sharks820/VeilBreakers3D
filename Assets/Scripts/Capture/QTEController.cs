@@ -80,6 +80,7 @@ namespace VeilBreakers.Capture
 
         // Coroutine tracking
         private Coroutine _resetCoroutine;
+        private int _lastCountdownTick = -1;
 
         // =============================================================================
         // EVENTS
@@ -157,6 +158,7 @@ namespace VeilBreakers.Capture
             _barPosition = 0f;
             _barMovingRight = true;
             _result = QTEResult.MISS;
+            _lastCountdownTick = -1;
 
             // Randomize target position slightly for variety
             _targetPosition = UnityEngine.Random.Range(0.35f, 0.65f);
@@ -207,10 +209,11 @@ namespace VeilBreakers.Capture
         {
             _countdownTime -= Time.unscaledDeltaTime;
 
-            // Fire countdown ticks (3, 2, 1)
+            // Fire countdown ticks (3, 2, 1) - only once per tick value
             int tick = Mathf.CeilToInt(_countdownTime);
-            if (tick > 0 && tick <= 3)
+            if (tick > 0 && tick <= 3 && tick != _lastCountdownTick)
             {
+                _lastCountdownTick = tick;
                 OnCountdownTick?.Invoke(tick);
             }
 

@@ -117,21 +117,14 @@ namespace VeilBreakers.Audio
         {
             value = Mathf.Clamp01(value);
 
-            switch (paramName.ToLower())
-            {
-                case "intensity":
-                    _targetIntensity = value;
-                    break;
-                case "tension":
-                    _targetTension = value;
-                    break;
-                case "lowhealth":
-                    _targetLowHealth = value;
-                    break;
-                case "bossphase":
-                    _targetBossPhase = value;
-                    break;
-            }
+            if (string.Equals(paramName, "intensity", System.StringComparison.OrdinalIgnoreCase))
+                _targetIntensity = value;
+            else if (string.Equals(paramName, "tension", System.StringComparison.OrdinalIgnoreCase))
+                _targetTension = value;
+            else if (string.Equals(paramName, "lowhealth", System.StringComparison.OrdinalIgnoreCase))
+                _targetLowHealth = value;
+            else if (string.Equals(paramName, "bossphase", System.StringComparison.OrdinalIgnoreCase))
+                _targetBossPhase = value;
         }
 
         /// <summary>
@@ -141,21 +134,14 @@ namespace VeilBreakers.Audio
         {
             value = Mathf.Clamp01(value);
 
-            switch (paramName.ToLower())
-            {
-                case "intensity":
-                    _intensityParam = _targetIntensity = value;
-                    break;
-                case "tension":
-                    _tensionParam = _targetTension = value;
-                    break;
-                case "lowhealth":
-                    _lowHealthParam = _targetLowHealth = value;
-                    break;
-                case "bossphase":
-                    _bossPhaseParam = _targetBossPhase = value;
-                    break;
-            }
+            if (string.Equals(paramName, "intensity", System.StringComparison.OrdinalIgnoreCase))
+                _intensityParam = _targetIntensity = value;
+            else if (string.Equals(paramName, "tension", System.StringComparison.OrdinalIgnoreCase))
+                _tensionParam = _targetTension = value;
+            else if (string.Equals(paramName, "lowhealth", System.StringComparison.OrdinalIgnoreCase))
+                _lowHealthParam = _targetLowHealth = value;
+            else if (string.Equals(paramName, "bossphase", System.StringComparison.OrdinalIgnoreCase))
+                _bossPhaseParam = _targetBossPhase = value;
 
             ApplyParameter(paramName, value);
         }

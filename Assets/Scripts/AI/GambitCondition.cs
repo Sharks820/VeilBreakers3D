@@ -829,12 +829,12 @@ namespace VeilBreakers.AI
             float mpPercent = self.MpPercent;
 
             // If MP is low, only use abilities on critical moments
-            if (mpPercent < 0.2f) // Below 20%
+            if (mpPercent < 20f) // Below 20%
                 return true;
 
             // If the ability would use more than 25% of remaining MP, consider conserving
             float mpRatio = (float)abilityCost / self.CurrentMp;
-            if (mpRatio > 0.25f && mpPercent < 0.5f)
+            if (mpRatio > 0.25f && mpPercent < 50f)
                 return true;
 
             return false;

@@ -356,6 +356,9 @@ namespace VeilBreakers.Audio
         private float _currentTension = 0f;
         private int _enemiesInRange = 0;
 
+        // Cached layer mask to avoid string-to-hash lookup every frame
+        private int _enemyLayerMask;
+
         // Pre-allocated for overlap check
         private Collider[] _overlapResults = new Collider[32];
 
@@ -369,6 +372,11 @@ namespace VeilBreakers.Audio
         // =============================================================================
         // UNITY LIFECYCLE
         // =============================================================================
+
+        private void Start()
+        {
+            _enemyLayerMask = LayerMask.GetMask("Enemy");
+        }
 
         private void Update()
         {
@@ -385,7 +393,7 @@ namespace VeilBreakers.Audio
                 transform.position,
                 _detectionRadius,
                 _overlapResults,
-                LayerMask.GetMask("Enemy")
+                _enemyLayerMask
             );
 
             _enemiesInRange = 0;

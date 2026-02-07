@@ -317,6 +317,24 @@ namespace VeilBreakers.Managers
             OnSettingsChanged?.Invoke(_settings);
         }
 
+        public void SetHealthBars(bool enabled)
+        {
+            _settings.HealthBars = enabled;
+            OnSettingsChanged?.Invoke(_settings);
+        }
+
+        public void SetTutorialTips(bool enabled)
+        {
+            _settings.TutorialTips = enabled;
+            OnSettingsChanged?.Invoke(_settings);
+        }
+
+        public void SetDifficulty(int level)
+        {
+            _settings.Difficulty = Mathf.Clamp(level, 0, 3);
+            OnSettingsChanged?.Invoke(_settings);
+        }
+
         // General
         public void SetLanguage(string languageCode)
         {
@@ -426,6 +444,11 @@ namespace VeilBreakers.Managers
         public float UIScale = 1f;
         public float TextSize = 1f;
         public bool DamageNumbers = true;
+        public bool HealthBars = true;
+        public bool TutorialTips = true;
+
+        // Gameplay
+        public int Difficulty = 1;  // 0=Story, 1=Normal, 2=Hard, 3=Nightmare
 
         // General
         public string Language = "en";

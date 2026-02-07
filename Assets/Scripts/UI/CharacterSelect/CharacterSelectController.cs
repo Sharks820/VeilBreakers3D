@@ -22,8 +22,8 @@ namespace VeilBreakers.UI.CharacterSelect
         // CONSTANTS
         // =============================================================================
 
-        private const string kMainMenuScene = "TitleScreen";
-        private const string kGameScene = "MainGame";
+        private const string kMainMenuScene = "MainMenu";
+        private const string kGameScene = "Overworld";
         private const int kMaxStats = 20; // Max D&D stat value for bar display
         private const int kMaxAbilities = 3;
         private const string kSelectedHeroPref = "SelectedHero";

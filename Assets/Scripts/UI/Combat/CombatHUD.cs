@@ -351,11 +351,14 @@ namespace VeilBreakers.UI.Combat
             }
 
             // Ally panel events
-            foreach (var panel in _allyPanels)
+            if (_allyPanels != null)
             {
-                if (panel != null)
+                foreach (var panel in _allyPanels)
                 {
-                    panel.OnUltimateTriggered += HandleAllyUltimateTriggered;
+                    if (panel != null)
+                    {
+                        panel.OnUltimateTriggered += HandleAllyUltimateTriggered;
+                    }
                 }
             }
 
@@ -380,11 +383,14 @@ namespace VeilBreakers.UI.Combat
                 _skillBar.OnSkillActivated -= HandleSkillActivated;
             }
 
-            foreach (var panel in _allyPanels)
+            if (_allyPanels != null)
             {
-                if (panel != null)
+                foreach (var panel in _allyPanels)
                 {
-                    panel.OnUltimateTriggered -= HandleAllyUltimateTriggered;
+                    if (panel != null)
+                    {
+                        panel.OnUltimateTriggered -= HandleAllyUltimateTriggered;
+                    }
                 }
             }
 

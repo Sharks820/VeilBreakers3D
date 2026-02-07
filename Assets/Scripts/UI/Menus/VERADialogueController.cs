@@ -58,6 +58,14 @@ namespace VeilBreakers.UI.Menus
         // Glitch characters for text corruption
         private static readonly char[] GlitchChars = { '!', '@', '#', '$', '%', '^', '&', '*', '/', '\\', '|', '~', '`' };
 
+        // Cached WaitForSeconds to avoid per-character allocation in typewriter coroutine
+        private WaitForSeconds _waitGlitchChar;
+        private WaitForSeconds _waitPunctuation;
+        private WaitForSeconds _waitComma;
+        private WaitForSeconds _waitTypeSpeed;
+        private WaitForSeconds _waitGlitchedTypeSpeed;
+        private WaitForSeconds _waitGlitchPulse;
+
         // =============================================================================
         // UI ELEMENTS
         // =============================================================================
@@ -102,6 +110,14 @@ namespace VeilBreakers.UI.Menus
             {
                 _uiDocument = GetComponent<UIDocument>();
             }
+
+            // Cache WaitForSeconds to avoid per-character GC allocations in typewriter
+            _waitGlitchChar = new WaitForSeconds(0.03f);
+            _waitPunctuation = new WaitForSeconds(_punctuationPause);
+            _waitComma = new WaitForSeconds(_punctuationPause * 0.5f);
+            _waitTypeSpeed = new WaitForSeconds(_baseTypeSpeed);
+            _waitGlitchedTypeSpeed = new WaitForSeconds(_glitchedTypeSpeed);
+            _waitGlitchPulse = new WaitForSeconds(0.1f);
         }
 
         private void OnEnable()
@@ -371,7 +387,7 @@ namespace VeilBreakers.UI.Menus
                 _glitchOverlay.style.display = DisplayStyle.Flex;
             }
 
-            yield return new WaitForSeconds(0.1f);
+            yield return _waitGlitchPulse;
 
             if (_glitchOverlay != null && !_isGlitched)
             {
@@ -489,7 +505,7 @@ namespace VeilBreakers.UI.Menus
                     _displayedTextBuilder.Append(glitchChar);
                     UpdateDisplayedText();
 
-                    yield return new WaitForSeconds(0.03f);
+                    yield return _waitGlitchChar;
 
                     // Replace with correct char (defensive check for empty builder)
                     if (_displayedTextBuilder.Length > 0)
@@ -513,15 +529,15 @@ namespace VeilBreakers.UI.Menus
                 // Pause for punctuation
                 if (c == '.' || c == '!' || c == '?')
                 {
-                    yield return new WaitForSeconds(_punctuationPause);
+                    yield return _waitPunctuation;
                 }
                 else if (c == ',')
                 {
-                    yield return new WaitForSeconds(_punctuationPause * 0.5f);
+                    yield return _waitComma;
                 }
                 else
                 {
-                    yield return new WaitForSeconds(typeSpeed);
+                    yield return _isGlitched ? _waitGlitchedTypeSpeed : _waitTypeSpeed;
                 }
             }
 

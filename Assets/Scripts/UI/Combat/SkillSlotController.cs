@@ -60,6 +60,9 @@ namespace VeilBreakers.UI.Combat
         private float _cooldownTotal = 0f;
         private float _cooldownRemaining = 0f;
         private int _cachedCooldownValue = -1;
+        private int _cachedCooldownTenths = -1;
+        // Pre-baked strings for sub-second cooldown display to avoid per-frame ToString allocation
+        private static readonly string[] _tenthsStrings = { "0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1.0" };
         private bool _isUltimate = false;
         private bool _isGlowing = false;
         private Coroutine _glowCoroutine;
@@ -299,9 +302,13 @@ namespace VeilBreakers.UI.Combat
                     }
                     else
                     {
-                        // This still causes allocation, but it's only for the final second of the cooldown.
-                        // A zero-allocation solution would require a more complex string building/caching strategy.
-                        _cooldownText.text = _cooldownRemaining.ToString("F1");
+                        // Zero-allocation sub-second display using pre-baked lookup table
+                        int tenths = Mathf.Clamp((int)(_cooldownRemaining * 10f), 0, 10);
+                        if (_cachedCooldownTenths != tenths)
+                        {
+                            _cooldownText.text = _tenthsStrings[tenths];
+                            _cachedCooldownTenths = tenths;
+                        }
                     }
                 }
                 else

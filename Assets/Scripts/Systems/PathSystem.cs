@@ -22,12 +22,18 @@ namespace VeilBreakers.Systems
         // PATH STAT BONUSES
         // =============================================================================
 
+        // Reusable dictionary to avoid allocation per call - NOT thread safe
+        [System.ThreadStatic] private static Dictionary<Stat, float> _bonusBuffer;
+
         /// <summary>
-        /// Get primary stat bonus for a path at given level
+        /// Get primary stat bonus for a path at given level.
+        /// WARNING: Returns a shared buffer - do not cache the reference across calls.
         /// </summary>
         public static Dictionary<Stat, float> GetPathBonuses(Path path, float pathLevel)
         {
-            var bonuses = new Dictionary<Stat, float>();
+            if (_bonusBuffer == null) _bonusBuffer = new Dictionary<Stat, float>(5);
+            _bonusBuffer.Clear();
+            var bonuses = _bonusBuffer;
             float multiplier = Mathf.Clamp(pathLevel * PATH_BONUS_PER_LEVEL, 0f, 0.5f);
 
             switch (path)

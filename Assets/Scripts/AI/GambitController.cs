@@ -396,16 +396,15 @@ namespace VeilBreakers.AI
 
         private void OnUnitDefeated(string unitId)
         {
-            // Track kills for momentum (SAVAGE brand)
-            if (_personality.tracksMomentum)
+            // Guard against race condition: OnEnable subscribes before Start initializes _personality
+            if (_personality == null || !_personality.tracksMomentum) return;
+
+            // Check if we caused the kill using damage attribution
+            if (DidWeCauseKill(unitId))
             {
-                // Check if we caused the kill using damage attribution
-                if (DidWeCauseKill(unitId))
-                {
-                    _killCount++;
-                    _lastKillTime = Time.time;
-                    Debug.Log($"[GambitController] {_combatant.DisplayName} kill streak: {_killCount}");
-                }
+                _killCount++;
+                _lastKillTime = Time.time;
+                Debug.Log($"[GambitController] {_combatant.DisplayName} kill streak: {_killCount}");
             }
         }
 

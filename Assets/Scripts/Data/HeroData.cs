@@ -152,26 +152,20 @@ namespace VeilBreakers.Data
 
         public HeroRole GetRole()
         {
-            return role?.ToLower() switch
-            {
-                "tank" => HeroRole.TANK,
-                "dps" => HeroRole.DPS,
-                "support" => HeroRole.SUPPORT,
-                "hybrid" => HeroRole.HYBRID,
-                _ => HeroRole.HYBRID
-            };
+            if (string.Equals(role, "tank", StringComparison.OrdinalIgnoreCase)) return HeroRole.TANK;
+            if (string.Equals(role, "dps", StringComparison.OrdinalIgnoreCase)) return HeroRole.DPS;
+            if (string.Equals(role, "support", StringComparison.OrdinalIgnoreCase)) return HeroRole.SUPPORT;
+            if (string.Equals(role, "hybrid", StringComparison.OrdinalIgnoreCase)) return HeroRole.HYBRID;
+            return HeroRole.HYBRID;
         }
 
         public ResourceType GetResourceType()
         {
-            return resource_type?.ToUpper() switch
-            {
-                "MANA" => ResourceType.MANA,
-                "GUARD" => ResourceType.GUARD,
-                "FURY" => ResourceType.FURY,
-                "CHAOS" => ResourceType.CHAOS,
-                _ => ResourceType.MANA
-            };
+            if (string.Equals(resource_type, "MANA", StringComparison.OrdinalIgnoreCase)) return ResourceType.MANA;
+            if (string.Equals(resource_type, "GUARD", StringComparison.OrdinalIgnoreCase)) return ResourceType.GUARD;
+            if (string.Equals(resource_type, "FURY", StringComparison.OrdinalIgnoreCase)) return ResourceType.FURY;
+            if (string.Equals(resource_type, "CHAOS", StringComparison.OrdinalIgnoreCase)) return ResourceType.CHAOS;
+            return ResourceType.MANA;
         }
 
         /// <summary>

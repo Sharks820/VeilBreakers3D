@@ -104,6 +104,8 @@ namespace VeilBreakers.Audio
         public void UnsubscribeFromBattleEvents()
         {
             if (!_isSubscribed) return;
+            _isSubscribed = false;
+
             if (BattleManager.Instance == null) return;
 
             BattleManager.Instance.OnBattleStart -= HandleBattleStart;
@@ -111,8 +113,6 @@ namespace VeilBreakers.Audio
             BattleManager.Instance.OnDamageDealt -= HandleDamageDealt;
             BattleManager.Instance.OnHealApplied -= HandleHealApplied;
             BattleManager.Instance.OnCombatantDeath -= HandleCombatantDeath;
-
-            _isSubscribed = false;
         }
 
         /// <summary>
@@ -253,17 +253,17 @@ namespace VeilBreakers.Audio
             var player = BattleManager.Instance.Player;
             if (player == null) return;
 
-            float currentHealthPercent = player.HealthPercent;
+            float currentHealthPercent = player.HealthPercent / 100f; // Convert 0-100 to 0-1 for audio
 
             // Only update if changed significantly
             if (Mathf.Abs(currentHealthPercent - _lastPlayerHealthPercent) > 0.01f)
             {
                 _lastPlayerHealthPercent = currentHealthPercent;
 
-                // Update low health audio
+                // Update low health audio (expects 0-1)
                 LowHealthAudio.Instance?.UpdateHealth(currentHealthPercent);
 
-                // Update music
+                // Update music (expects 0-1)
                 MusicManager.Instance?.UpdatePlayerHealth(currentHealthPercent);
             }
         }
@@ -288,7 +288,7 @@ namespace VeilBreakers.Audio
             // Guard against null or empty enemy list
             if (enemies == null || enemies.Count == 0) return;
 
-            float healthFactor = player != null ? 1f - player.HealthPercent : 0f;
+            float healthFactor = player != null ? 1f - player.HealthPercent / 100f : 0f;
 
             // Count alive enemies without LINQ allocation
             int aliveCount = 0;

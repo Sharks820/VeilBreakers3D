@@ -61,7 +61,8 @@ namespace VeilBreakers.Systems
             // Check for weak brands (anti-synergy)
             if (PathWeakBrands.TryGetValue(championPath, out var weakBrands))
             {
-                for (int i = 0; i < count; i++)
+                int safeCount = Mathf.Min(count, partyBrands.Length);
+                for (int i = 0; i < safeCount; i++)
                 {
                     if (weakBrands.Contains(partyBrands[i]))
                         return SynergyTier.ANTI;
@@ -72,7 +73,8 @@ namespace VeilBreakers.Systems
             int matchCount = 0;
             if (PathSynergyBrands.TryGetValue(championPath, out var strongBrands))
             {
-                for (int i = 0; i < count; i++)
+                int safeCount = Mathf.Min(count, partyBrands.Length);
+                for (int i = 0; i < safeCount; i++)
                 {
                     if (strongBrands.Contains(partyBrands[i]))
                         matchCount++;
