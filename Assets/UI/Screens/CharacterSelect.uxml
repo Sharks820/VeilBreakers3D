@@ -6,24 +6,24 @@
     <!-- ENVIRONMENT BACKGROUND                                              -->
     <!-- ================================================================== -->
 
-    <ui:VisualElement name="environment-container" class="environment-container">
-        <ui:VisualElement name="env-layer-base" class="env-layer env-layer-base" />
-        <ui:VisualElement name="env-layer-color" class="env-layer env-layer-color" />
-        <ui:VisualElement name="env-vignette" class="env-layer env-vignette" />
+    <ui:VisualElement name="environment-container" class="vb-environment-container">
+        <ui:VisualElement name="env-layer-base" class="vb-env-layer vb-env-layer-base" />
+        <ui:VisualElement name="env-layer-color" class="vb-env-layer vb-env-layer-color" />
+        <ui:VisualElement name="env-vignette" class="vb-env-layer vb-env-vignette" />
     </ui:VisualElement>
 
     <!-- ================================================================== -->
     <!-- HERO STAGE (3D RenderTexture target)                                -->
     <!-- ================================================================== -->
 
-    <ui:VisualElement name="hero-stage" class="hero-stage">
-        <ui:VisualElement name="hero-stage-render" class="hero-stage-render" />
-        <ui:VisualElement name="vfx-overlay" class="vfx-overlay" />
-        <ui:Button name="btn-rotate-model-left" class="model-rotate-btn model-rotate-left">
-            <ui:Label text="&lt;" class="model-rotate-arrow" />
+    <ui:VisualElement name="hero-stage" class="vb-hero-stage">
+        <ui:VisualElement name="hero-stage-render" class="vb-hero-stage-render" />
+        <ui:VisualElement name="vfx-overlay" class="vb-vfx-overlay" />
+        <ui:Button name="btn-rotate-model-left" class="vb-model-rotate-btn vb-model-rotate-left">
+            <ui:Label text="&lt;" class="vb-model-rotate-arrow" />
         </ui:Button>
-        <ui:Button name="btn-rotate-model-right" class="model-rotate-btn model-rotate-right">
-            <ui:Label text="&gt;" class="model-rotate-arrow" />
+        <ui:Button name="btn-rotate-model-right" class="vb-model-rotate-btn vb-model-rotate-right">
+            <ui:Label text="&gt;" class="vb-model-rotate-arrow" />
         </ui:Button>
     </ui:VisualElement>
 
@@ -31,66 +31,66 @@
     <!-- VEIL TEAR TRANSITION                                                -->
     <!-- ================================================================== -->
 
-    <ui:VisualElement name="veil-tear-overlay" class="veil-tear-overlay hidden" picking-mode="Ignore">
-        <ui:VisualElement name="veil-tear-flash" class="veil-tear-flash" />
-        <ui:VisualElement name="veil-tear-crack-left" class="veil-tear-crack" />
-        <ui:VisualElement name="veil-tear-crack-right" class="veil-tear-crack" />
+    <ui:VisualElement name="veil-tear-overlay" class="vb-veil-tear-overlay hidden" picking-mode="Ignore">
+        <ui:VisualElement name="veil-tear-flash" class="vb-veil-tear-flash" />
+        <ui:VisualElement name="veil-tear-crack-left" class="vb-veil-tear-crack" />
+        <ui:VisualElement name="veil-tear-crack-right" class="vb-veil-tear-crack" />
     </ui:VisualElement>
 
     <!-- ================================================================== -->
     <!-- LEFT INFO PANEL                                                     -->
     <!-- ================================================================== -->
 
-    <ui:VisualElement name="info-panel" class="info-panel glass-panel">
-        <ui:Label name="hero-name" text="VEX" class="hero-name" />
-        <ui:Label name="hero-title" text="THE WARDEN" class="hero-title" />
-        <ui:Label name="hero-quote" text="" class="hero-quote" />
+    <ui:VisualElement name="info-panel" class="vb-info-panel vb-glass-panel">
+        <ui:Label name="hero-name" text="VEX" class="vb-hero-name" />
+        <ui:Label name="hero-title" text="THE WARDEN" class="vb-hero-title" />
+        <ui:Label name="hero-quote" text="" class="vb-hero-quote" />
 
-        <ui:VisualElement name="hero-details" class="hero-details">
-            <ui:VisualElement name="detail-path" class="detail-row">
-                <ui:Label text="PATH" class="detail-label" />
-                <ui:Label name="hero-path" text="IRONBOUND" class="detail-value" />
+        <ui:VisualElement name="hero-details" class="vb-hero-details">
+            <ui:VisualElement name="detail-path" class="vb-detail-row">
+                <ui:Label text="PATH" class="vb-detail-label" />
+                <ui:Label name="hero-path" text="IRONBOUND" class="vb-detail-value" />
             </ui:VisualElement>
-            <ui:VisualElement name="detail-role" class="detail-row">
-                <ui:Label text="ROLE" class="detail-label" />
-                <ui:Label name="hero-role" text="TANK" class="detail-value" />
+            <ui:VisualElement name="detail-role" class="vb-detail-row">
+                <ui:Label text="ROLE" class="vb-detail-label" />
+                <ui:Label name="hero-role" text="TANK" class="vb-detail-value" />
             </ui:VisualElement>
-            <ui:VisualElement name="detail-resource" class="detail-row">
-                <ui:Label text="RESOURCE" class="detail-label" />
-                <ui:Label name="hero-resource" text="GUARD" class="detail-value" />
+            <ui:VisualElement name="detail-resource" class="vb-detail-row">
+                <ui:Label text="RESOURCE" class="vb-detail-label" />
+                <ui:Label name="hero-resource" text="GUARD" class="vb-detail-value" />
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <ui:VisualElement name="starter-stats" class="starter-stats">
-            <ui:Label text="STARTER STATS" class="section-label" />
-            <ui:VisualElement name="starter-stat-grid" class="starter-stat-grid">
-                <ui:VisualElement class="starter-stat-chip">
-                    <ui:Label text="HP" class="starter-stat-key" />
-                    <ui:Label name="starter-stat-hp" text="0" class="starter-stat-val" />
+        <ui:VisualElement name="starter-stats" class="vb-starter-stats">
+            <ui:Label text="STARTER STATS" class="vb-section-label" />
+            <ui:VisualElement name="starter-stat-grid" class="vb-starter-stat-grid">
+                <ui:VisualElement class="vb-starter-stat-chip">
+                    <ui:Label text="HP" class="vb-starter-stat-key" />
+                    <ui:Label name="starter-stat-hp" text="0" class="vb-starter-stat-val" />
                 </ui:VisualElement>
-                <ui:VisualElement class="starter-stat-chip">
-                    <ui:Label text="ATK" class="starter-stat-key" />
-                    <ui:Label name="starter-stat-atk" text="0" class="starter-stat-val" />
+                <ui:VisualElement class="vb-starter-stat-chip">
+                    <ui:Label text="ATK" class="vb-starter-stat-key" />
+                    <ui:Label name="starter-stat-atk" text="0" class="vb-starter-stat-val" />
                 </ui:VisualElement>
-                <ui:VisualElement class="starter-stat-chip">
-                    <ui:Label text="DEF" class="starter-stat-key" />
-                    <ui:Label name="starter-stat-def" text="0" class="starter-stat-val" />
+                <ui:VisualElement class="vb-starter-stat-chip">
+                    <ui:Label text="DEF" class="vb-starter-stat-key" />
+                    <ui:Label name="starter-stat-def" text="0" class="vb-starter-stat-val" />
                 </ui:VisualElement>
-                <ui:VisualElement class="starter-stat-chip">
-                    <ui:Label text="SPD" class="starter-stat-key" />
-                    <ui:Label name="starter-stat-spd" text="0" class="starter-stat-val" />
+                <ui:VisualElement class="vb-starter-stat-chip">
+                    <ui:Label text="SPD" class="vb-starter-stat-key" />
+                    <ui:Label name="starter-stat-spd" text="0" class="vb-starter-stat-val" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
 
         <!-- Starter Monster Info -->
-        <ui:VisualElement name="monster-info" class="monster-info">
-            <ui:Label text="STARTER COMPANION" class="section-label" />
-            <ui:VisualElement name="monster-card" class="monster-card">
-                <ui:VisualElement name="monster-thumbnail" class="monster-thumbnail" />
-                <ui:VisualElement name="monster-text" class="monster-text">
-                    <ui:Label name="monster-name" text="Ironjaw" class="monster-name" />
-                    <ui:Label name="monster-brand" text="IRON" class="monster-brand" />
+        <ui:VisualElement name="monster-info" class="vb-monster-info">
+            <ui:Label text="STARTER COMPANION" class="vb-section-label" />
+            <ui:VisualElement name="monster-card" class="vb-monster-card">
+                <ui:VisualElement name="monster-thumbnail" class="vb-monster-thumbnail" />
+                <ui:VisualElement name="monster-text" class="vb-monster-text">
+                    <ui:Label name="monster-name" text="Ironjaw" class="vb-monster-name" />
+                    <ui:Label name="monster-brand" text="IRON" class="vb-monster-brand" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
@@ -100,82 +100,82 @@
     <!-- RIGHT STATS PANEL (Tab to toggle)                                   -->
     <!-- ================================================================== -->
 
-    <ui:VisualElement name="stats-panel" class="stats-panel glass-panel visible">
-        <ui:Label text="ATTRIBUTES" class="section-label" />
+    <ui:VisualElement name="stats-panel" class="vb-stats-panel vb-glass-panel visible">
+        <ui:Label text="ATTRIBUTES" class="vb-section-label" />
 
-        <ui:VisualElement name="stat-bars" class="stat-bars">
+        <ui:VisualElement name="stat-bars" class="vb-stat-bars">
             <!-- STR -->
-            <ui:VisualElement name="stat-row-str" class="stat-row">
-                <ui:Label text="STR" class="stat-label" />
-                <ui:VisualElement class="stat-bar-track">
-                    <ui:VisualElement name="stat-fill-str" class="stat-bar-fill" />
+            <ui:VisualElement name="stat-row-str" class="vb-stat-row">
+                <ui:Label text="STR" class="vb-stat-label" />
+                <ui:VisualElement class="vb-stat-bar-track">
+                    <ui:VisualElement name="stat-fill-str" class="vb-stat-bar-fill" />
                 </ui:VisualElement>
-                <ui:Label name="stat-val-str" text="0" class="stat-value" />
+                <ui:Label name="stat-val-str" text="0" class="vb-stat-value" />
             </ui:VisualElement>
             <!-- DEX -->
-            <ui:VisualElement name="stat-row-dex" class="stat-row">
-                <ui:Label text="DEX" class="stat-label" />
-                <ui:VisualElement class="stat-bar-track">
-                    <ui:VisualElement name="stat-fill-dex" class="stat-bar-fill" />
+            <ui:VisualElement name="stat-row-dex" class="vb-stat-row">
+                <ui:Label text="DEX" class="vb-stat-label" />
+                <ui:VisualElement class="vb-stat-bar-track">
+                    <ui:VisualElement name="stat-fill-dex" class="vb-stat-bar-fill" />
                 </ui:VisualElement>
-                <ui:Label name="stat-val-dex" text="0" class="stat-value" />
+                <ui:Label name="stat-val-dex" text="0" class="vb-stat-value" />
             </ui:VisualElement>
             <!-- CON -->
-            <ui:VisualElement name="stat-row-con" class="stat-row">
-                <ui:Label text="CON" class="stat-label" />
-                <ui:VisualElement class="stat-bar-track">
-                    <ui:VisualElement name="stat-fill-con" class="stat-bar-fill" />
+            <ui:VisualElement name="stat-row-con" class="vb-stat-row">
+                <ui:Label text="CON" class="vb-stat-label" />
+                <ui:VisualElement class="vb-stat-bar-track">
+                    <ui:VisualElement name="stat-fill-con" class="vb-stat-bar-fill" />
                 </ui:VisualElement>
-                <ui:Label name="stat-val-con" text="0" class="stat-value" />
+                <ui:Label name="stat-val-con" text="0" class="vb-stat-value" />
             </ui:VisualElement>
             <!-- INT -->
-            <ui:VisualElement name="stat-row-int" class="stat-row">
-                <ui:Label text="INT" class="stat-label" />
-                <ui:VisualElement class="stat-bar-track">
-                    <ui:VisualElement name="stat-fill-int" class="stat-bar-fill" />
+            <ui:VisualElement name="stat-row-int" class="vb-stat-row">
+                <ui:Label text="INT" class="vb-stat-label" />
+                <ui:VisualElement class="vb-stat-bar-track">
+                    <ui:VisualElement name="stat-fill-int" class="vb-stat-bar-fill" />
                 </ui:VisualElement>
-                <ui:Label name="stat-val-int" text="0" class="stat-value" />
+                <ui:Label name="stat-val-int" text="0" class="vb-stat-value" />
             </ui:VisualElement>
             <!-- WIS -->
-            <ui:VisualElement name="stat-row-wis" class="stat-row">
-                <ui:Label text="WIS" class="stat-label" />
-                <ui:VisualElement class="stat-bar-track">
-                    <ui:VisualElement name="stat-fill-wis" class="stat-bar-fill" />
+            <ui:VisualElement name="stat-row-wis" class="vb-stat-row">
+                <ui:Label text="WIS" class="vb-stat-label" />
+                <ui:VisualElement class="vb-stat-bar-track">
+                    <ui:VisualElement name="stat-fill-wis" class="vb-stat-bar-fill" />
                 </ui:VisualElement>
-                <ui:Label name="stat-val-wis" text="0" class="stat-value" />
+                <ui:Label name="stat-val-wis" text="0" class="vb-stat-value" />
             </ui:VisualElement>
             <!-- CHA -->
-            <ui:VisualElement name="stat-row-cha" class="stat-row">
-                <ui:Label text="CHA" class="stat-label" />
-                <ui:VisualElement class="stat-bar-track">
-                    <ui:VisualElement name="stat-fill-cha" class="stat-bar-fill" />
+            <ui:VisualElement name="stat-row-cha" class="vb-stat-row">
+                <ui:Label text="CHA" class="vb-stat-label" />
+                <ui:VisualElement class="vb-stat-bar-track">
+                    <ui:VisualElement name="stat-fill-cha" class="vb-stat-bar-fill" />
                 </ui:VisualElement>
-                <ui:Label name="stat-val-cha" text="0" class="stat-value" />
+                <ui:Label name="stat-val-cha" text="0" class="vb-stat-value" />
             </ui:VisualElement>
         </ui:VisualElement>
 
         <!-- Abilities -->
-        <ui:Label text="ABILITIES" class="section-label" />
-        <ui:VisualElement name="ability-list" class="ability-list">
-            <ui:VisualElement name="ability-0" class="ability-row">
-                <ui:Label name="ability-name-0" text="" class="ability-name" />
-                <ui:Label name="ability-desc-0" text="" class="ability-desc" />
+        <ui:Label text="ABILITIES" class="vb-section-label" />
+        <ui:VisualElement name="ability-list" class="vb-ability-list">
+            <ui:VisualElement name="ability-0" class="vb-ability-row">
+                <ui:Label name="ability-name-0" text="" class="vb-ability-name" />
+                <ui:Label name="ability-desc-0" text="" class="vb-ability-desc" />
             </ui:VisualElement>
-            <ui:VisualElement name="ability-1" class="ability-row">
-                <ui:Label name="ability-name-1" text="" class="ability-name" />
-                <ui:Label name="ability-desc-1" text="" class="ability-desc" />
+            <ui:VisualElement name="ability-1" class="vb-ability-row">
+                <ui:Label name="ability-name-1" text="" class="vb-ability-name" />
+                <ui:Label name="ability-desc-1" text="" class="vb-ability-desc" />
             </ui:VisualElement>
-            <ui:VisualElement name="ability-2" class="ability-row">
-                <ui:Label name="ability-name-2" text="" class="ability-name" />
-                <ui:Label name="ability-desc-2" text="" class="ability-desc" />
+            <ui:VisualElement name="ability-2" class="vb-ability-row">
+                <ui:Label name="ability-name-2" text="" class="vb-ability-name" />
+                <ui:Label name="ability-desc-2" text="" class="vb-ability-desc" />
             </ui:VisualElement>
-            <ui:VisualElement name="ability-3" class="ability-row">
-                <ui:Label name="ability-name-3" text="" class="ability-name" />
-                <ui:Label name="ability-desc-3" text="" class="ability-desc" />
+            <ui:VisualElement name="ability-3" class="vb-ability-row">
+                <ui:Label name="ability-name-3" text="" class="vb-ability-name" />
+                <ui:Label name="ability-desc-3" text="" class="vb-ability-desc" />
             </ui:VisualElement>
-            <ui:VisualElement name="ability-4" class="ability-row">
-                <ui:Label name="ability-name-4" text="" class="ability-name" />
-                <ui:Label name="ability-desc-4" text="" class="ability-desc" />
+            <ui:VisualElement name="ability-4" class="vb-ability-row">
+                <ui:Label name="ability-name-4" text="" class="vb-ability-name" />
+                <ui:Label name="ability-desc-4" text="" class="vb-ability-desc" />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
@@ -184,44 +184,44 @@
     <!-- CAROUSEL STRIP (Bottom)                                             -->
     <!-- ================================================================== -->
 
-    <ui:VisualElement name="carousel-strip" class="carousel-strip">
-        <ui:VisualElement name="carousel-track" class="carousel-track">
+    <ui:VisualElement name="carousel-strip" class="vb-carousel-strip">
+        <ui:VisualElement name="carousel-track" class="vb-carousel-track">
             <!-- Hero slots populated by CharacterSelectController -->
-            <ui:VisualElement name="carousel-slot-0" class="carousel-slot selected" data-hero="vex">
-                <ui:VisualElement class="slot-portrait" />
-                <ui:VisualElement class="slot-glow" />
-                <ui:Label text="VEX" class="slot-name" />
+            <ui:VisualElement name="carousel-slot-0" class="vb-carousel-slot selected" data-hero="vex">
+                <ui:VisualElement class="vb-slot-portrait" />
+                <ui:VisualElement class="vb-slot-glow" />
+                <ui:Label text="VEX" class="vb-slot-name" />
             </ui:VisualElement>
-            <ui:VisualElement name="carousel-slot-1" class="carousel-slot" data-hero="seraphina">
-                <ui:VisualElement class="slot-portrait" />
-                <ui:VisualElement class="slot-glow" />
-                <ui:Label text="SERAPHINA" class="slot-name" />
+            <ui:VisualElement name="carousel-slot-1" class="vb-carousel-slot" data-hero="seraphina">
+                <ui:VisualElement class="vb-slot-portrait" />
+                <ui:VisualElement class="vb-slot-glow" />
+                <ui:Label text="SERAPHINA" class="vb-slot-name" />
             </ui:VisualElement>
-            <ui:VisualElement name="carousel-slot-2" class="carousel-slot" data-hero="orion">
-                <ui:VisualElement class="slot-portrait" />
-                <ui:VisualElement class="slot-glow" />
-                <ui:Label text="ORION" class="slot-name" />
+            <ui:VisualElement name="carousel-slot-2" class="vb-carousel-slot" data-hero="orion">
+                <ui:VisualElement class="vb-slot-portrait" />
+                <ui:VisualElement class="vb-slot-glow" />
+                <ui:Label text="ORION" class="vb-slot-name" />
             </ui:VisualElement>
-            <ui:VisualElement name="carousel-slot-3" class="carousel-slot" data-hero="nyx">
-                <ui:VisualElement class="slot-portrait" />
-                <ui:VisualElement class="slot-glow" />
-                <ui:Label text="NYX" class="slot-name" />
+            <ui:VisualElement name="carousel-slot-3" class="vb-carousel-slot" data-hero="nyx">
+                <ui:VisualElement class="vb-slot-portrait" />
+                <ui:VisualElement class="vb-slot-glow" />
+                <ui:Label text="NYX" class="vb-slot-name" />
             </ui:VisualElement>
             <!-- Teaser slot -->
-            <ui:VisualElement name="carousel-slot-teaser" class="carousel-slot teaser">
-                <ui:Label text="?" class="slot-teaser-mark" />
-                <ui:Label text="COMING SOON" class="slot-name teaser-name" />
+            <ui:VisualElement name="carousel-slot-teaser" class="vb-carousel-slot teaser">
+                <ui:Label text="?" class="vb-slot-teaser-mark" />
+                <ui:Label text="COMING SOON" class="vb-slot-name vb-teaser-name" />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 
-    <ui:VisualElement name="hero-cycle-hud" class="hero-cycle-hud">
-        <ui:Button name="btn-prev-hero" class="hero-cycle-btn">
-            <ui:Label text="&lt;" class="hero-cycle-arrow" />
+    <ui:VisualElement name="hero-cycle-hud" class="vb-hero-cycle-hud">
+        <ui:Button name="btn-prev-hero" class="vb-hero-cycle-btn">
+            <ui:Label text="&lt;" class="vb-hero-cycle-arrow" />
         </ui:Button>
-        <ui:Label name="hero-index-indicator" text="HERO 1 / 4" class="hero-index-indicator" />
-        <ui:Button name="btn-next-hero" class="hero-cycle-btn">
-            <ui:Label text="&gt;" class="hero-cycle-arrow" />
+        <ui:Label name="hero-index-indicator" text="HERO 1 / 4" class="vb-hero-index-indicator" />
+        <ui:Button name="btn-next-hero" class="vb-hero-cycle-btn">
+            <ui:Label text="&gt;" class="vb-hero-cycle-arrow" />
         </ui:Button>
     </ui:VisualElement>
 
@@ -229,29 +229,29 @@
     <!-- EMBARK BUTTON                                                       -->
     <!-- ================================================================== -->
 
-    <ui:Button name="btn-embark" class="embark-btn">
-        <ui:VisualElement class="embark-glow" />
-        <ui:Label name="embark-label" text="EMBARK AS VEX" class="embark-label" />
-        <ui:Label text="Begin Your Journey" class="embark-sub" />
+    <ui:Button name="btn-embark" class="vb-embark-btn">
+        <ui:VisualElement class="vb-embark-glow" />
+        <ui:Label name="embark-label" text="EMBARK AS VEX" class="vb-embark-label" />
+        <ui:Label text="Begin Your Journey" class="vb-embark-sub" />
     </ui:Button>
 
     <!-- ================================================================== -->
     <!-- NAVIGATION                                                          -->
     <!-- ================================================================== -->
 
-    <ui:Button name="btn-back" class="nav-btn back-btn">
-        <ui:VisualElement class="back-arrow" />
-        <ui:Label text="BACK" class="nav-label" />
+    <ui:Button name="btn-back" class="vb-nav-btn vb-back-btn">
+        <ui:VisualElement class="vb-back-arrow" />
+        <ui:Label text="BACK" class="vb-nav-label" />
     </ui:Button>
 
-    <ui:Button name="btn-neutral-toggle" class="nav-btn neutral-btn hidden">
-        <ui:Label text="NEUTRAL BG" class="nav-label" />
+    <ui:Button name="btn-neutral-toggle" class="vb-nav-btn vb-neutral-btn hidden">
+        <ui:Label text="NEUTRAL BG" class="vb-nav-label" />
     </ui:Button>
 
     <!-- ================================================================== -->
     <!-- SCREEN FADE                                                         -->
     <!-- ================================================================== -->
 
-    <ui:VisualElement name="screen-fade" class="screen-fade" picking-mode="Ignore" />
+    <ui:VisualElement name="screen-fade" class="vb-screen-fade" picking-mode="Ignore" />
 
 </ui:UXML>
