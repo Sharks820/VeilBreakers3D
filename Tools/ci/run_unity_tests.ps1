@@ -30,7 +30,6 @@ $logFile = Join-Path $logsDir ("unity_tests_{0}_{1}.log" -f $Platform, (Get-Date
 $args = @(
   "-batchmode",
   "-nographics",
-  "-quit",
   "-projectPath", $ProjectPath,
   "-runTests",
   "-testPlatform", $Platform,
@@ -54,10 +53,10 @@ if ($exitCode -ne 0) {
   throw "Unity Test Runner failed (exit $exitCode). See log: $logFile"
 }
 
-# Unity can return 0 while still writing logs/results slightly later.
+# Unity can return/exit before results are fully flushed to disk.
 $sw = [Diagnostics.Stopwatch]::StartNew()
-while (($sw.Elapsed.TotalSeconds -lt 20) -and (-not (Test-Path $logFile))) { Start-Sleep -Milliseconds 200 }
-while (($sw.Elapsed.TotalSeconds -lt 20) -and (-not (Test-Path $resultFile))) { Start-Sleep -Milliseconds 200 }
+while (($sw.Elapsed.TotalSeconds -lt 90) -and (-not (Test-Path $logFile))) { Start-Sleep -Milliseconds 200 }
+while (($sw.Elapsed.TotalSeconds -lt 120) -and (-not (Test-Path $resultFile))) { Start-Sleep -Milliseconds 200 }
 
 if (-not (Test-Path $logFile)) {
   throw "Unity did not create the expected log file: $logFile"

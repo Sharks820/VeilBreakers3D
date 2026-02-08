@@ -20,6 +20,10 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             { "vex", "vex_medieval_knight" }
         };
+        private static readonly Dictionary<string, float> kHeroFacingYawById = new Dictionary<string, float>
+        {
+            { "vex", 270f }
+        };
 
         // =============================================================================
         // CONFIGURATION
@@ -32,7 +36,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         [Header("Camera")]
         [SerializeField] private Vector3 _cameraPosition = new Vector3(0f, 1.05f, -3f);
-        [SerializeField] private Vector3 _cameraLookAt = new Vector3(0f, 0.25f, 0f);
+        [SerializeField] private Vector3 _cameraLookAt = new Vector3(0f, 0.1f, 0f);
         [SerializeField] private float _cameraFOV = 22f;
         [SerializeField] private float _minZoom = -4.5f;
         [SerializeField] private float _maxZoom = -1.5f;
@@ -40,9 +44,10 @@ namespace VeilBreakers.UI.CharacterSelect
         [SerializeField] private float _framingPadding = 0.95f;
         [SerializeField] private float _framingMinDistance = 0.8f;
         [SerializeField] private float _framingMaxDistance = 3.8f;
+        [SerializeField, Range(0f, 0.8f)] private float _framingLookTargetBias = 0.48f;
 
         [Header("Model Positions")]
-        [SerializeField] private Vector3 _heroPosition = new Vector3(0f, -1.45f, 0f);
+        [SerializeField] private Vector3 _heroPosition = new Vector3(0f, -2.35f, 0f);
         [SerializeField] private Vector3 _monsterPosition = new Vector3(0.7f, 0f, 0.3f);
         [SerializeField] private float _heroScale = 1.4f;
         [SerializeField] private float _monsterScale = 0.5f;
@@ -54,7 +59,7 @@ namespace VeilBreakers.UI.CharacterSelect
         [SerializeField] private float _autoOrbitSpeed = 5f;
         [SerializeField] private float _idleBeforeOrbit = 3f;
         [SerializeField] private float _rotateStepDegrees = 20f;
-        [SerializeField] private float _initialFacingYaw = -90f;
+        [SerializeField] private float _initialFacingYaw = 270f;
 
         [Header("Animation")]
         [SerializeField] private float _spawnDuration = 0.5f;
@@ -71,12 +76,16 @@ namespace VeilBreakers.UI.CharacterSelect
         private GameObject _currentHeroModel;
         private GameObject _currentMonsterModel;
         private Light _stageLight;
+        private Light _fillLight;
+        private Light _rimLight;
+        private Light _faceLight;
         private VisualElement _renderTarget;
 
         private bool _isDragging;
         private float _currentYRotation;
         private float _idleTimer;
         private float _currentZoom;
+        private Vector3 _cameraOrbitBasePosition;
         private bool _isDestroyed;
         private Coroutine _transitionCoroutine;
 
@@ -161,6 +170,7 @@ namespace VeilBreakers.UI.CharacterSelect
             camObj.transform.SetParent(transform); // Not under stageRoot so rotation doesn't affect it
             camObj.transform.localPosition = _cameraPosition;
             _currentZoom = _cameraPosition.z;
+            _cameraOrbitBasePosition = camObj.transform.localPosition;
 
             _stageCamera = camObj.AddComponent<Camera>();
             _stageCamera.targetTexture = _renderTexture;
@@ -179,9 +189,41 @@ namespace VeilBreakers.UI.CharacterSelect
             lightObj.transform.LookAt(Vector3.zero);
             _stageLight = lightObj.AddComponent<Light>();
             _stageLight.type = LightType.Directional;
-            _stageLight.intensity = 1.2f;
-            _stageLight.color = new Color(0.95f, 0.9f, 1f);
+            _stageLight.intensity = 1.6f;
+            _stageLight.color = new Color(1f, 0.97f, 0.93f);
             _stageLight.cullingMask = 1 << _renderLayer;
+
+            var fillObj = new GameObject("StageFillLight");
+            fillObj.transform.SetParent(transform);
+            fillObj.transform.localPosition = new Vector3(-1.2f, 1.35f, -0.7f);
+            fillObj.transform.LookAt(Vector3.zero);
+            _fillLight = fillObj.AddComponent<Light>();
+            _fillLight.type = LightType.Directional;
+            _fillLight.intensity = 0.8f;
+            _fillLight.color = new Color(0.82f, 0.9f, 1f);
+            _fillLight.cullingMask = 1 << _renderLayer;
+
+            var rimObj = new GameObject("StageRimLight");
+            rimObj.transform.SetParent(transform);
+            rimObj.transform.localPosition = new Vector3(0.2f, 1.7f, 1.4f);
+            rimObj.transform.LookAt(Vector3.zero);
+            _rimLight = rimObj.AddComponent<Light>();
+            _rimLight.type = LightType.Directional;
+            _rimLight.intensity = 0.55f;
+            _rimLight.color = new Color(0.72f, 0.81f, 1f);
+            _rimLight.cullingMask = 1 << _renderLayer;
+
+            var faceObj = new GameObject("StageFaceLight");
+            faceObj.transform.SetParent(transform);
+            faceObj.transform.localPosition = new Vector3(0f, 1.45f, -1.15f);
+            faceObj.transform.LookAt(new Vector3(0f, 1.18f, 0f));
+            _faceLight = faceObj.AddComponent<Light>();
+            _faceLight.type = LightType.Spot;
+            _faceLight.intensity = 2.0f;
+            _faceLight.spotAngle = 46f;
+            _faceLight.range = 7f;
+            _faceLight.color = new Color(1f, 0.96f, 0.9f);
+            _faceLight.cullingMask = 1 << _renderLayer;
 
             // Apply render texture to UI element
             ApplyRenderTexture();
@@ -203,6 +245,9 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_stageCamera != null) Destroy(_stageCamera.gameObject);
             if (_stageRoot != null) Destroy(_stageRoot);
             if (_stageLight != null) Destroy(_stageLight.gameObject);
+            if (_fillLight != null) Destroy(_fillLight.gameObject);
+            if (_rimLight != null) Destroy(_rimLight.gameObject);
+            if (_faceLight != null) Destroy(_faceLight.gameObject);
 
             if (_heroMaterial != null) Destroy(_heroMaterial);
             if (_monsterMaterial != null) Destroy(_monsterMaterial);
@@ -222,6 +267,10 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (_renderTarget == null) return;
 
+            _renderTarget.UnregisterCallback<PointerDownEvent>(OnPointerDown);
+            _renderTarget.UnregisterCallback<PointerMoveEvent>(OnPointerMove);
+            _renderTarget.UnregisterCallback<PointerUpEvent>(OnPointerUp);
+            _renderTarget.UnregisterCallback<WheelEvent>(OnWheel);
             _renderTarget.RegisterCallback<PointerDownEvent>(OnPointerDown);
             _renderTarget.RegisterCallback<PointerMoveEvent>(OnPointerMove);
             _renderTarget.RegisterCallback<PointerUpEvent>(OnPointerUp);
@@ -258,7 +307,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _currentZoom += evt.delta.y * _zoomSpeed;
             _currentZoom = Mathf.Clamp(_currentZoom, _minZoom, _maxZoom);
             _stageCamera.transform.localPosition = new Vector3(
-                _cameraPosition.x, _cameraPosition.y, _currentZoom);
+                _cameraOrbitBasePosition.x, _cameraOrbitBasePosition.y, _currentZoom);
             _idleTimer = 0;
         }
 
@@ -272,6 +321,12 @@ namespace VeilBreakers.UI.CharacterSelect
         public void ShowHero(HeroData hero)
         {
             if (_isDestroyed || hero == null) return;
+
+            if (_stageRoot == null || _stageCamera == null)
+            {
+                CreateStage();
+                SetupInteraction();
+            }
 
             if (_transitionCoroutine != null) StopCoroutine(_transitionCoroutine);
 
@@ -346,6 +401,12 @@ namespace VeilBreakers.UI.CharacterSelect
 
             if (_isDestroyed) yield break;
 
+            // Reset rotation to a forward-facing pose for imported models.
+            _currentYRotation = ResolveFacingYaw(hero);
+            _idleTimer = 0f;
+            if (_stageRoot != null)
+                _stageRoot.transform.localRotation = Quaternion.Euler(0f, _currentYRotation, 0f);
+
             FitCameraToCurrentHero();
 
             if (_showCompanionPlaceholder)
@@ -358,12 +419,6 @@ namespace VeilBreakers.UI.CharacterSelect
                 _currentMonsterModel = CreatePlaceholderMonster(heroColor);
                 yield return StartCoroutine(AnimateSpawn(_currentMonsterModel, _monsterMaterial));
             }
-
-            // Reset rotation to a forward-facing pose for imported models.
-            _currentYRotation = _initialFacingYaw;
-            _idleTimer = 0f;
-            if (_stageRoot != null)
-                _stageRoot.transform.localRotation = Quaternion.Euler(0f, _currentYRotation, 0f);
         }
 
         private GameObject TryCreateHeroModel(HeroData hero)
@@ -400,6 +455,17 @@ namespace VeilBreakers.UI.CharacterSelect
 
             PositionModelOnStage(model);
             return model;
+        }
+
+        private float ResolveFacingYaw(HeroData hero)
+        {
+            if (hero == null || string.IsNullOrWhiteSpace(hero.hero_id))
+            {
+                return _initialFacingYaw;
+            }
+
+            string heroId = hero.hero_id.Trim().ToLowerInvariant();
+            return kHeroFacingYawById.TryGetValue(heroId, out float yaw) ? yaw : _initialFacingYaw;
         }
 
         private static GameObject LoadHeroPrefab(string resourceName)
@@ -526,7 +592,9 @@ namespace VeilBreakers.UI.CharacterSelect
                 return;
             }
 
-            Vector3 desiredAnchor = new Vector3(_heroPosition.x, _heroPosition.y, _heroPosition.z);
+            Vector3 desiredAnchor = _stageRoot != null
+                ? _stageRoot.transform.TransformPoint(_heroPosition)
+                : _heroPosition;
             Vector3 currentAnchor = new Vector3(bounds.center.x, bounds.min.y, bounds.center.z);
             model.transform.position += desiredAnchor - currentAnchor;
         }
@@ -559,14 +627,15 @@ namespace VeilBreakers.UI.CharacterSelect
             distance *= 0.58f;
             distance = Mathf.Clamp(distance, _framingMinDistance, _framingMaxDistance);
 
-            // Bias focus toward upper torso so the full character sits lower in frame.
-            Vector3 lookTarget = bounds.center + Vector3.up * (bounds.size.y * 0.34f);
+            // Push look target toward upper body so hero appears lower and more centered.
+            Vector3 lookTarget = bounds.center + Vector3.up * (bounds.size.y * _framingLookTargetBias);
             float yOffset = _cameraPosition.y - _cameraLookAt.y;
             Vector3 camPosition = new Vector3(lookTarget.x + _cameraPosition.x, lookTarget.y + yOffset, lookTarget.z - distance);
 
             _stageCamera.transform.position = camPosition;
             _stageCamera.transform.LookAt(lookTarget);
-            _currentZoom = _stageCamera.transform.localPosition.z;
+            _cameraOrbitBasePosition = _stageCamera.transform.localPosition;
+            _currentZoom = _cameraOrbitBasePosition.z;
         }
 
         private static bool TryGetModelBounds(GameObject model, out Bounds combinedBounds, Renderer[] cachedRenderers = null)

@@ -19,6 +19,9 @@ namespace VeilBreakers.UI.CharacterSelect
     [RequireComponent(typeof(UIDocument))]
     public class CharacterSelectController : MonoBehaviour
     {
+        private const string kChevronLeft = "\u2039";
+        private const string kChevronRight = "\u203A";
+
         // =============================================================================
         // CONSTANTS
         // =============================================================================
@@ -96,6 +99,10 @@ namespace VeilBreakers.UI.CharacterSelect
         private Button _btnNextHero;
         private Button _btnRotateModelLeft;
         private Button _btnRotateModelRight;
+        private Button _btnPrevHeroFallback;
+        private Button _btnNextHeroFallback;
+        private Button _btnRotateModelLeftFallback;
+        private Button _btnRotateModelRightFallback;
         private Label _heroIndexIndicator;
 
         // Overlays
@@ -118,6 +125,9 @@ namespace VeilBreakers.UI.CharacterSelect
         private bool _isAnimating;
         private bool _isDestroyed;
         private bool _statsVisible;
+        private bool _eventHandlersBound;
+        private bool _inputSubscribed;
+        private float _nextNavVisualRefreshTime;
         private Coroutine _switchCoroutine;
         private Coroutine _statsCoroutine;
         private Coroutine _quoteCoroutine;
@@ -353,10 +363,15 @@ namespace VeilBreakers.UI.CharacterSelect
             _btnNextHero = _root.Q<Button>("btn-next-hero");
             _btnRotateModelLeft = _root.Q<Button>("btn-rotate-model-left");
             _btnRotateModelRight = _root.Q<Button>("btn-rotate-model-right");
+            _btnPrevHeroFallback = _root.Q<Button>("btn-prev-hero-fallback");
+            _btnNextHeroFallback = _root.Q<Button>("btn-next-hero-fallback");
+            _btnRotateModelLeftFallback = _root.Q<Button>("btn-rotate-model-left-fallback");
+            _btnRotateModelRightFallback = _root.Q<Button>("btn-rotate-model-right-fallback");
             _heroIndexIndicator = _root.Q<Label>("hero-index-indicator");
             EnsureRuntimeControlsVisible();
-            EnsureHeroCycleButtonText(_btnPrevHero, "<", "Previous Hero (A / Left Arrow)");
-            EnsureHeroCycleButtonText(_btnNextHero, ">", "Next Hero (D / Right Arrow)");
+            EnsureHeroCycleButtonText(_btnPrevHero, "PREV", "Previous Hero (A / Left Arrow)");
+            EnsureHeroCycleButtonText(_btnNextHero, "NEXT", "Next Hero (D / Right Arrow)");
+            EnforceAbilityReadability();
 
             // Overlays
             _screenFade = _root.Q("screen-fade");
@@ -725,14 +740,30 @@ namespace VeilBreakers.UI.CharacterSelect
                 {
                     arrowLabel.text = fallbackText;
                 }
-
-                return;
             }
+            // Hard fallback: always set button.text so arrows remain visible even if nested labels fail.
+            button.text = fallbackText;
+            PrepareButtonForText(button);
+        }
 
-            if (string.IsNullOrWhiteSpace(button.text))
+        private static void SetButtonLabel(Button button, string text)
+        {
+            if (button == null) return;
+
+            var label = button.Q<Label>(className: "vb-hero-cycle-arrow")
+                        ?? button.Q<Label>(className: "vb-model-rotate-arrow")
+                        ?? button.Q<Label>(className: "vb-nav-label")
+                        ?? button.Q<Label>();
+            if (label == null)
             {
-                button.text = fallbackText;
+                label = new Label();
+                label.AddToClassList("vb-nav-label");
+                button.Add(label);
             }
+
+            label.enableRichText = false;
+            label.text = text ?? string.Empty;
+            button.text = string.Empty;
         }
 
         private void EnsureRuntimeControlsVisible()
@@ -766,6 +797,7 @@ namespace VeilBreakers.UI.CharacterSelect
             cycleHud.style.borderTopRightRadius = 6f;
             cycleHud.style.borderBottomLeftRadius = 6f;
             cycleHud.style.borderBottomRightRadius = 6f;
+            cycleHud.BringToFront();
 
             _btnPrevHero ??= EnsureButton(cycleHud, "btn-prev-hero");
             _btnNextHero ??= EnsureButton(cycleHud, "btn-next-hero");
@@ -803,7 +835,18 @@ namespace VeilBreakers.UI.CharacterSelect
             }
 
             // Model rotation controls: force visible inside hero stage.
-            var stage = _root.Q<VisualElement>("hero-stage");
+            var stage = _root.Q<VisualElement>("hero-stage") ?? _heroStageRender?.parent;
+            if (stage == null && _root != null)
+            {
+                stage = EnsureElement(_root, "hero-stage");
+                stage.style.position = Position.Absolute;
+                stage.style.left = Length.Percent(25f);
+                stage.style.top = Length.Percent(11f);
+                stage.style.width = Length.Percent(50f);
+                stage.style.height = Length.Percent(66f);
+                stage.style.overflow = Overflow.Hidden;
+            }
+
             if (stage != null)
             {
                 _btnRotateModelLeft ??= EnsureButton(stage, "btn-rotate-model-left");
@@ -811,22 +854,105 @@ namespace VeilBreakers.UI.CharacterSelect
 
                 ApplyRoundRotateButtonStyle(_btnRotateModelLeft, "<", leftSide: true);
                 ApplyRoundRotateButtonStyle(_btnRotateModelRight, ">", leftSide: false);
+                _btnRotateModelLeft.BringToFront();
+                _btnRotateModelRight.BringToFront();
             }
+
+            _btnNeutralToggle ??= EnsureButton(_root, "btn-neutral-toggle");
+            _btnNeutralToggle.RemoveFromClassList("hidden");
+            _btnNeutralToggle.style.position = Position.Absolute;
+            _btnNeutralToggle.style.right = 40f;
+            _btnNeutralToggle.style.top = 36f;
+            _btnNeutralToggle.style.display = DisplayStyle.Flex;
+            _btnNeutralToggle.style.opacity = 1f;
+            ApplyButtonReadability(_btnNeutralToggle);
+            _btnNeutralToggle.BringToFront();
+            RefreshNeutralToggleButtonText();
+
+            EnsureFallbackNavigationOverlay(stage);
+        }
+
+        private void EnsureFallbackNavigationOverlay(VisualElement stage)
+        {
+            if (_root == null) return;
+
+            var navOverlay = EnsureElement(_root, "hero-nav-overlay");
+            navOverlay.style.position = Position.Absolute;
+            navOverlay.style.left = 0f;
+            navOverlay.style.right = 0f;
+            navOverlay.style.top = 0f;
+            navOverlay.style.bottom = 0f;
+            navOverlay.style.display = DisplayStyle.Flex;
+            navOverlay.pickingMode = PickingMode.Ignore;
+            navOverlay.BringToFront();
+
+            _btnPrevHeroFallback ??= EnsureButton(navOverlay, "btn-prev-hero-fallback");
+            _btnNextHeroFallback ??= EnsureButton(navOverlay, "btn-next-hero-fallback");
+            _btnRotateModelLeftFallback ??= EnsureButton(navOverlay, "btn-rotate-model-left-fallback");
+            _btnRotateModelRightFallback ??= EnsureButton(navOverlay, "btn-rotate-model-right-fallback");
+
+            ApplyFallbackNavButtonStyle(_btnPrevHeroFallback, "PREV HERO", 36f, null, 236f, null, 180f);
+            ApplyFallbackNavButtonStyle(_btnNextHeroFallback, "NEXT HERO", null, 36f, 236f, null, 180f);
+            ApplyFallbackNavButtonStyle(_btnRotateModelLeftFallback, "ROTATE L", 40f, null, null, 50f, 150f, -40f);
+            ApplyFallbackNavButtonStyle(_btnRotateModelRightFallback, "ROTATE R", null, 40f, null, 50f, 150f, -40f);
+        }
+
+        private static void ApplyFallbackNavButtonStyle(
+            Button button,
+            string text,
+            float? left = null,
+            float? right = null,
+            float? bottom = null,
+            float? topPercent = null,
+            float? width = null,
+            float? marginTop = null)
+        {
+            if (button == null) return;
+
+            button.text = text;
+            button.style.position = Position.Absolute;
+            button.style.left = left.HasValue ? left.Value : StyleKeyword.Null;
+            button.style.right = right.HasValue ? right.Value : StyleKeyword.Null;
+            button.style.bottom = bottom.HasValue ? bottom.Value : StyleKeyword.Null;
+            button.style.top = topPercent.HasValue ? Length.Percent(topPercent.Value) : StyleKeyword.Null;
+            button.style.marginTop = marginTop.HasValue ? marginTop.Value : 0f;
+            button.style.width = width ?? 170f;
+            button.style.height = 48f;
+            button.style.display = DisplayStyle.Flex;
+            button.style.opacity = 1f;
+            button.style.unityTextAlign = TextAnchor.MiddleCenter;
+            button.style.fontSize = 14f;
+            button.style.unityFontStyleAndWeight = FontStyle.Bold;
+            button.style.color = new Color(0.97f, 0.93f, 0.86f, 1f);
+            button.style.backgroundColor = new Color(0.07f, 0.07f, 0.11f, 0.9f);
+            button.style.borderTopWidth = 1f;
+            button.style.borderBottomWidth = 1f;
+            button.style.borderLeftWidth = 1f;
+            button.style.borderRightWidth = 1f;
+            button.style.borderTopColor = new Color(1f, 1f, 1f, 0.28f);
+            button.style.borderBottomColor = new Color(1f, 1f, 1f, 0.28f);
+            button.style.borderLeftColor = new Color(1f, 1f, 1f, 0.28f);
+            button.style.borderRightColor = new Color(1f, 1f, 1f, 0.28f);
+            button.style.borderTopLeftRadius = 5f;
+            button.style.borderTopRightRadius = 5f;
+            button.style.borderBottomLeftRadius = 5f;
+            button.style.borderBottomRightRadius = 5f;
         }
 
         private static void ApplyArrowButtonStyle(Button button, string arrowText)
         {
             if (button == null) return;
 
-            button.text = arrowText;
+            button.text = arrowText == "<" ? "PREV" : "NEXT";
+            PrepareButtonForText(button);
             button.style.display = DisplayStyle.Flex;
             button.style.opacity = 1f;
-            button.style.width = 44f;
-            button.style.height = 34f;
+            button.style.width = 112f;
+            button.style.height = 42f;
             button.style.marginLeft = 10f;
             button.style.marginRight = 10f;
             button.style.unityTextAlign = TextAnchor.MiddleCenter;
-            button.style.fontSize = 18f;
+            button.style.fontSize = 16f;
             button.style.unityFontStyleAndWeight = FontStyle.Bold;
             button.style.color = new Color(0.95f, 0.9f, 0.84f, 1f);
             button.style.backgroundColor = new Color(0.09f, 0.08f, 0.13f, 0.95f);
@@ -838,22 +964,25 @@ namespace VeilBreakers.UI.CharacterSelect
             button.style.borderBottomColor = new Color(1f, 1f, 1f, 0.25f);
             button.style.borderLeftColor = new Color(1f, 1f, 1f, 0.25f);
             button.style.borderRightColor = new Color(1f, 1f, 1f, 0.25f);
+            button.tooltip = arrowText == "<" ? "Previous hero" : "Next hero";
+            EnsureChevronIcon(button, arrowText != "<", "vb-button-chevron");
         }
 
         private static void ApplyRoundRotateButtonStyle(Button button, string arrowText, bool leftSide)
         {
             if (button == null) return;
 
-            button.text = arrowText;
+            button.text = leftSide ? "L" : "R";
+            PrepareButtonForText(button);
             button.style.position = Position.Absolute;
             button.style.top = Length.Percent(50f);
-            button.style.marginTop = -24f;
-            button.style.left = leftSide ? 12f : StyleKeyword.Null;
-            button.style.right = leftSide ? StyleKeyword.Null : 12f;
-            button.style.width = 48f;
-            button.style.height = 48f;
+            button.style.marginTop = -18f;
+            button.style.left = leftSide ? 16f : StyleKeyword.Null;
+            button.style.right = leftSide ? StyleKeyword.Null : 16f;
+            button.style.width = 56f;
+            button.style.height = 56f;
             button.style.unityTextAlign = TextAnchor.MiddleCenter;
-            button.style.fontSize = 22f;
+            button.style.fontSize = 24f;
             button.style.unityFontStyleAndWeight = FontStyle.Bold;
             button.style.color = new Color(0.95f, 0.9f, 0.84f, 1f);
             button.style.backgroundColor = new Color(0.08f, 0.07f, 0.11f, 0.9f);
@@ -865,12 +994,89 @@ namespace VeilBreakers.UI.CharacterSelect
             button.style.borderBottomColor = new Color(1f, 1f, 1f, 0.25f);
             button.style.borderLeftColor = new Color(1f, 1f, 1f, 0.25f);
             button.style.borderRightColor = new Color(1f, 1f, 1f, 0.25f);
-            button.style.borderTopLeftRadius = 24f;
-            button.style.borderTopRightRadius = 24f;
-            button.style.borderBottomLeftRadius = 24f;
-            button.style.borderBottomRightRadius = 24f;
+            button.style.borderTopLeftRadius = 28f;
+            button.style.borderTopRightRadius = 28f;
+            button.style.borderBottomLeftRadius = 28f;
+            button.style.borderBottomRightRadius = 28f;
             button.style.display = DisplayStyle.Flex;
             button.style.opacity = 1f;
+            button.tooltip = leftSide ? "Rotate model left" : "Rotate model right";
+            EnsureChevronIcon(button, !leftSide, "vb-rotate-chevron");
+        }
+
+        private static void PrepareButtonForText(Button button)
+        {
+            if (button == null) return;
+
+            var label = button.Q<Label>();
+            if (label != null)
+            {
+                label.enableRichText = false;
+                label.style.color = new Color(0.95f, 0.9f, 0.84f, 1f);
+                label.style.unityFontStyleAndWeight = FontStyle.Bold;
+                label.style.fontSize = 15f;
+            }
+        }
+
+        private static void EnsureArrowLabelStyle(Button button, string preferredClass, int fontSize)
+        {
+            if (button == null) return;
+
+            var arrowLabel = button.Q<Label>(className: preferredClass) ?? button.Q<Label>();
+            if (arrowLabel == null)
+            {
+                arrowLabel = new Label();
+                arrowLabel.AddToClassList(preferredClass);
+                button.Add(arrowLabel);
+            }
+            else
+            {
+                arrowLabel.AddToClassList(preferredClass);
+            }
+
+            arrowLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+            arrowLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
+            arrowLabel.style.fontSize = fontSize;
+            arrowLabel.style.color = new Color(0.98f, 0.94f, 0.86f, 1f);
+            arrowLabel.style.opacity = 1f;
+            arrowLabel.enableRichText = false;
+            arrowLabel.BringToFront();
+        }
+
+        private static void EnsureChevronIcon(Button button, bool rightFacing, string className)
+        {
+            if (button == null) return;
+
+            var icon = button.Q<VisualElement>(className: className);
+            if (icon == null)
+            {
+                icon = new VisualElement();
+                icon.AddToClassList(className);
+                button.Add(icon);
+            }
+
+            icon.pickingMode = PickingMode.Ignore;
+            icon.style.position = Position.Absolute;
+            icon.style.left = Length.Percent(50f);
+            icon.style.top = Length.Percent(50f);
+            icon.style.marginLeft = -7f;
+            icon.style.marginTop = -7f;
+            icon.style.width = 14f;
+            icon.style.height = 14f;
+            icon.style.borderTopWidth = 2f;
+            icon.style.borderRightWidth = rightFacing ? 2f : 0f;
+            icon.style.borderBottomWidth = 0f;
+            icon.style.borderLeftWidth = rightFacing ? 0f : 2f;
+            icon.style.borderTopColor = new Color(0.98f, 0.94f, 0.86f, 1f);
+            icon.style.borderRightColor = new Color(0.98f, 0.94f, 0.86f, 1f);
+            icon.style.borderBottomColor = StyleKeyword.Null;
+            icon.style.borderLeftColor = new Color(0.98f, 0.94f, 0.86f, 1f);
+            icon.style.rotate = new Rotate(new Angle(rightFacing ? 45f : -45f));
+            icon.style.left = Length.Percent(50f);
+            icon.style.top = Length.Percent(50f);
+            icon.style.marginLeft = rightFacing ? 28f : -42f;
+            icon.style.marginTop = -7f;
+            icon.BringToFront();
         }
 
         private void TryEnableReadabilityFallback()
@@ -892,6 +1098,8 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void SetupEventHandlers()
         {
+            if (_eventHandlersBound) return;
+
             _btnBack?.RegisterCallback<ClickEvent>(OnBackClicked);
             _btnEmbark?.RegisterCallback<ClickEvent>(OnEmbarkClicked);
             _btnNeutralToggle?.RegisterCallback<ClickEvent>(OnNeutralToggleClicked);
@@ -899,6 +1107,10 @@ namespace VeilBreakers.UI.CharacterSelect
             _btnNextHero?.RegisterCallback<ClickEvent>(OnNextHeroClicked);
             _btnRotateModelLeft?.RegisterCallback<ClickEvent>(OnRotateModelLeftClicked);
             _btnRotateModelRight?.RegisterCallback<ClickEvent>(OnRotateModelRightClicked);
+            _btnPrevHeroFallback?.RegisterCallback<ClickEvent>(OnPrevHeroClicked);
+            _btnNextHeroFallback?.RegisterCallback<ClickEvent>(OnNextHeroClicked);
+            _btnRotateModelLeftFallback?.RegisterCallback<ClickEvent>(OnRotateModelLeftClicked);
+            _btnRotateModelRightFallback?.RegisterCallback<ClickEvent>(OnRotateModelRightClicked);
 
             // Carousel slot click handlers (cached for unregistration)
             for (int i = 0; i < _carouselSlots.Count; i++)
@@ -910,11 +1122,12 @@ namespace VeilBreakers.UI.CharacterSelect
 
             // Tab key for stats panel toggle
             _root?.RegisterCallback<KeyDownEvent>(OnKeyDown);
+            _eventHandlersBound = true;
         }
 
         private void CleanupEventHandlers()
         {
-            if (_root == null) return;
+            if (!_eventHandlersBound) return;
 
             _btnBack?.UnregisterCallback<ClickEvent>(OnBackClicked);
             _btnEmbark?.UnregisterCallback<ClickEvent>(OnEmbarkClicked);
@@ -923,6 +1136,10 @@ namespace VeilBreakers.UI.CharacterSelect
             _btnNextHero?.UnregisterCallback<ClickEvent>(OnNextHeroClicked);
             _btnRotateModelLeft?.UnregisterCallback<ClickEvent>(OnRotateModelLeftClicked);
             _btnRotateModelRight?.UnregisterCallback<ClickEvent>(OnRotateModelRightClicked);
+            _btnPrevHeroFallback?.UnregisterCallback<ClickEvent>(OnPrevHeroClicked);
+            _btnNextHeroFallback?.UnregisterCallback<ClickEvent>(OnNextHeroClicked);
+            _btnRotateModelLeftFallback?.UnregisterCallback<ClickEvent>(OnRotateModelLeftClicked);
+            _btnRotateModelRightFallback?.UnregisterCallback<ClickEvent>(OnRotateModelRightClicked);
 
             if (_slotClickHandlers != null)
             {
@@ -933,22 +1150,23 @@ namespace VeilBreakers.UI.CharacterSelect
                 }
             }
 
-            _root.UnregisterCallback<KeyDownEvent>(OnKeyDown);
+            _root?.UnregisterCallback<KeyDownEvent>(OnKeyDown);
+            _eventHandlersBound = false;
         }
 
         private void InitializeSubControllers()
         {
             // Add sub-controller components (runtime-added; [SerializeField] fields use code defaults)
-            _heroStage = gameObject.AddComponent<HeroStageController>();
+            _heroStage = GetComponent<HeroStageController>() ?? gameObject.AddComponent<HeroStageController>();
             _heroStage.Initialize(_heroStageRender);
 
-            _environment = gameObject.AddComponent<EnvironmentController>();
+            _environment = GetComponent<EnvironmentController>() ?? gameObject.AddComponent<EnvironmentController>();
             _environment.Initialize(_root);
 
-            _veilTear = gameObject.AddComponent<VeilTearTransition>();
+            _veilTear = GetComponent<VeilTearTransition>() ?? gameObject.AddComponent<VeilTearTransition>();
             _veilTear.Initialize(_root);
 
-            _heroVFX = gameObject.AddComponent<HeroVFXController>();
+            _heroVFX = GetComponent<HeroVFXController>() ?? gameObject.AddComponent<HeroVFXController>();
             _heroVFX.Initialize(_vfxOverlay);
 
             // Wire OnHeroChanged to sub-controllers (cached for unsubscription)
@@ -959,6 +1177,8 @@ namespace VeilBreakers.UI.CharacterSelect
                 _heroVFX?.SetHero(hero);
             };
             OnHeroChanged += _subControllerHandler;
+
+            RefreshNeutralToggleButtonText();
         }
 
         // =============================================================================
@@ -967,14 +1187,37 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void SubscribeInput()
         {
+            if (_inputSubscribed) return;
+
             if (InputManager.Instance != null)
+            {
                 InputManager.Instance.OnActionTriggered += OnInputAction;
+                _inputSubscribed = true;
+            }
         }
 
         private void UnsubscribeInput()
         {
+            if (!_inputSubscribed) return;
+
             if (InputManager.Instance != null)
+            {
                 InputManager.Instance.OnActionTriggered -= OnInputAction;
+            }
+
+            _inputSubscribed = false;
+        }
+
+        private void LateUpdate()
+        {
+            if (_isDestroyed) return;
+            if (!_inputSubscribed) SubscribeInput();
+
+            if (Time.unscaledTime >= _nextNavVisualRefreshTime)
+            {
+                EnsureNavigationButtonVisuals();
+                _nextNavVisualRefreshTime = Time.unscaledTime + 0.33f;
+            }
         }
 
         private void OnInputAction(InputManager.GameAction action)
@@ -1001,6 +1244,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private void OnKeyDown(KeyDownEvent evt)
         {
             if (_isAnimating || _isDestroyed) return;
+            if (evt.target is TextField) return;
 
             switch (evt.keyCode)
             {
@@ -1036,6 +1280,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             // Cancel any in-progress switch
             if (_switchCoroutine != null) StopCoroutine(_switchCoroutine);
+            _isAnimating = true;
             _switchCoroutine = StartCoroutine(HeroSwitchSequence(prevIndex, _currentIndex));
         }
 
@@ -1059,47 +1304,62 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private IEnumerator HeroSwitchSequence(int fromIndex, int toIndex)
         {
-            _isAnimating = true;
-            var hero = _heroes[toIndex];
-
-            PlaySFX(_switchSFX, 0.5f);
-
-            // Cancel quote animation if running
-            if (_quoteCoroutine != null) StopCoroutine(_quoteCoroutine);
-            if (_heroQuote != null) _heroQuote.style.opacity = 0;
-
-            // Trigger veil tear transition (if available)
-            Color heroColor = hero.color_palette != null ? hero.color_palette.ToColor() : Color.white;
-            _veilTear?.Play(heroColor);
-
-            // Brief pause for transition flash
-            yield return kWait02;
-
-            if (_isDestroyed) yield break;
-
-            // Update all data
-            ApplyHeroData(hero);
-            UpdateCarouselSelection(toIndex);
-
-            // Notify sub-controllers
-            OnHeroChanged?.Invoke(hero);
-
-            // Animate stats if panel is visible
-            if (_statsVisible)
+            try
             {
-                if (_statsCoroutine != null) StopCoroutine(_statsCoroutine);
-                _statsCoroutine = StartCoroutine(AnimateStats(hero));
-            }
+                if (_heroes == null || toIndex < 0 || toIndex >= _heroes.Count)
+                {
+                    yield break;
+                }
 
-            // Delayed quote fade-in
-            yield return kWait03;
-            if (!_isDestroyed)
+                var hero = _heroes[toIndex];
+                if (hero == null)
+                {
+                    yield break;
+                }
+
+                PlaySFX(_switchSFX, 0.5f);
+
+                // Cancel quote animation if running
+                if (_quoteCoroutine != null) StopCoroutine(_quoteCoroutine);
+                if (_heroQuote != null) _heroQuote.style.opacity = 0;
+
+                // Trigger veil tear transition (if available)
+                Color heroColor = hero.color_palette != null ? hero.color_palette.ToColor() : Color.white;
+                _veilTear?.Play(heroColor);
+
+                // Brief pause for transition flash
+                yield return kWait02;
+
+                if (_isDestroyed) yield break;
+
+                // Update all data
+                ApplyHeroData(hero);
+                UpdateCarouselSelection(toIndex);
+
+                // Notify sub-controllers
+                OnHeroChanged?.Invoke(hero);
+
+                // Animate stats if panel is visible
+                if (_statsVisible)
+                {
+                    if (_statsCoroutine != null) StopCoroutine(_statsCoroutine);
+                    _statsCoroutine = StartCoroutine(AnimateStats(hero));
+                }
+
+                // Delayed quote fade-in
+                yield return kWait03;
+                if (!_isDestroyed)
+                {
+                    _quoteCoroutine = StartCoroutine(FadeInQuote());
+                }
+
+                yield return kWait02;
+            }
+            finally
             {
-                _quoteCoroutine = StartCoroutine(FadeInQuote());
+                _switchCoroutine = null;
+                _isAnimating = false;
             }
-
-            yield return kWait02;
-            _isAnimating = false;
         }
 
         // =============================================================================
@@ -1139,18 +1399,33 @@ namespace VeilBreakers.UI.CharacterSelect
 
             // Abilities
             ApplyAbilities(hero);
+            EnforceAbilityReadability();
             EnsureTextReadability();
         }
 
         private void ApplyMonsterData(string monsterId)
         {
-            if (string.IsNullOrEmpty(monsterId)) return;
+            if (string.IsNullOrEmpty(monsterId))
+            {
+                ClearMonsterData();
+                return;
+            }
 
             var monster = GameDatabase.Instance?.GetMonster(monsterId);
-            if (monster == null) return;
+            if (monster == null)
+            {
+                ClearMonsterData();
+                return;
+            }
 
             if (_monsterName != null) _monsterName.text = monster.display_name ?? "";
             if (_monsterBrand != null) _monsterBrand.text = monster.GetPrimaryBrand().ToString();
+        }
+
+        private void ClearMonsterData()
+        {
+            if (_monsterName != null) _monsterName.text = "Unknown";
+            if (_monsterBrand != null) _monsterBrand.text = "N/A";
         }
 
         private void ApplyStarterStats(HeroData hero)
@@ -1312,17 +1587,54 @@ namespace VeilBreakers.UI.CharacterSelect
             }
         }
 
+        private void EnforceAbilityReadability()
+        {
+            for (int i = 0; i < kMaxAbilities; i++)
+            {
+                if (_abilityRows[i] != null)
+                {
+                    _abilityRows[i].style.backgroundColor = new Color(0.1f, 0.1f, 0.14f, 0.96f);
+                    _abilityRows[i].style.borderTopColor = new Color(1f, 1f, 1f, 0.24f);
+                    _abilityRows[i].style.borderBottomColor = new Color(1f, 1f, 1f, 0.24f);
+                    _abilityRows[i].style.borderLeftColor = new Color(1f, 1f, 1f, 0.24f);
+                    _abilityRows[i].style.borderRightColor = new Color(1f, 1f, 1f, 0.24f);
+                    _abilityRows[i].style.paddingTop = 10f;
+                    _abilityRows[i].style.paddingBottom = 10f;
+                }
+
+                if (_abilityNames[i] != null)
+                {
+                    _abilityNames[i].style.fontSize = 14f;
+                    _abilityNames[i].style.unityFontStyleAndWeight = FontStyle.Bold;
+                    _abilityNames[i].style.color = new Color(0.98f, 0.95f, 0.88f, 1f);
+                }
+
+                if (_abilityDescs[i] != null)
+                {
+                    _abilityDescs[i].style.fontSize = 12f;
+                    _abilityDescs[i].style.color = new Color(0.92f, 0.9f, 0.84f, 0.98f);
+                    _abilityDescs[i].style.unityTextAlign = TextAnchor.UpperLeft;
+                }
+            }
+        }
+
         // =============================================================================
         // CAROUSEL
         // =============================================================================
 
         private void UpdateCarouselSelection(int activeIndex)
         {
-            if (activeIndex < 0 || activeIndex >= _carouselSlots.Count) return;
+            if (_carouselSlots == null || _carouselSlots.Count == 0)
+            {
+                UpdateHeroNavigationIndicator();
+                return;
+            }
+
+            int clampedIndex = Mathf.Clamp(activeIndex, 0, _carouselSlots.Count - 1);
 
             for (int i = 0; i < _carouselSlots.Count; i++)
             {
-                if (i == activeIndex)
+                if (i == clampedIndex)
                 {
                     _carouselSlots[i].AddToClassList("selected");
                     // Punch animation
@@ -1426,7 +1738,11 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void OnBackClicked(ClickEvent evt) => OnBack();
         private void OnEmbarkClicked(ClickEvent evt) => OnEmbark();
-        private void OnNeutralToggleClicked(ClickEvent evt) => _environment?.ToggleNeutral();
+        private void OnNeutralToggleClicked(ClickEvent evt)
+        {
+            _environment?.ToggleNeutral();
+            RefreshNeutralToggleButtonText();
+        }
         private void OnPrevHeroClicked(ClickEvent evt) => SelectPreviousHero();
         private void OnNextHeroClicked(ClickEvent evt) => SelectNextHero();
         private void OnRotateModelLeftClicked(ClickEvent evt) => _heroStage?.RotateByStep(-1f);
@@ -1435,6 +1751,10 @@ namespace VeilBreakers.UI.CharacterSelect
         private void OnBack()
         {
             if (_isAnimating || _isDestroyed) return;
+            _isAnimating = true;
+            _btnBack?.SetEnabled(false);
+            _btnEmbark?.SetEnabled(false);
+            UnsubscribeInput();
 
             PlaySFX(_cancelSFX, 0.5f);
 
@@ -1614,6 +1934,7 @@ namespace VeilBreakers.UI.CharacterSelect
             ForceVisible(_statsPanel);
             ForceVisible(_carouselStrip);
             ForceVisible(_heroCycleHud);
+            ForceVisible(_btnNeutralToggle);
             ForceVisible(_btnPrevHero);
             ForceVisible(_btnNextHero);
             ForceVisible(_btnRotateModelLeft);
@@ -1637,6 +1958,60 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_readabilityFallbackEnabled)
             {
                 ApplyReadabilityFallbackStyles();
+            }
+
+            RefreshNeutralToggleButtonText();
+        }
+
+        private void RefreshNeutralToggleButtonText()
+        {
+            if (_btnNeutralToggle == null) return;
+
+            bool neutralEnabled = _environment != null && _environment.IsNeutralMode;
+            SetButtonLabel(_btnNeutralToggle, neutralEnabled ? "NEUTRAL BG: ON" : "NEUTRAL BG: OFF");
+            _btnNeutralToggle.tooltip = neutralEnabled ? "Switch to hero color tint." : "Switch to neutral background.";
+        }
+
+        private void EnsureNavigationButtonVisuals()
+        {
+            if (_btnPrevHero != null)
+            {
+                ApplyArrowButtonStyle(_btnPrevHero, "<");
+            }
+
+            if (_btnNextHero != null)
+            {
+                ApplyArrowButtonStyle(_btnNextHero, ">");
+            }
+
+            if (_btnRotateModelLeft != null)
+            {
+                ApplyRoundRotateButtonStyle(_btnRotateModelLeft, "<", leftSide: true);
+            }
+
+            if (_btnRotateModelRight != null)
+            {
+                ApplyRoundRotateButtonStyle(_btnRotateModelRight, ">", leftSide: false);
+            }
+
+            if (_btnPrevHeroFallback != null)
+            {
+                ApplyFallbackNavButtonStyle(_btnPrevHeroFallback, "PREV HERO", 36f, null, 236f, null, 170f);
+            }
+
+            if (_btnNextHeroFallback != null)
+            {
+                ApplyFallbackNavButtonStyle(_btnNextHeroFallback, "NEXT HERO", null, 36f, 236f, null, 170f);
+            }
+
+            if (_btnRotateModelLeftFallback != null)
+            {
+                ApplyFallbackNavButtonStyle(_btnRotateModelLeftFallback, "ROTATE L", 40f, null, null, 50f, 150f, -40f);
+            }
+
+            if (_btnRotateModelRightFallback != null)
+            {
+                ApplyFallbackNavButtonStyle(_btnRotateModelRightFallback, "ROTATE R", null, 40f, null, 50f, 150f, -40f);
             }
         }
 
@@ -1761,9 +2136,23 @@ namespace VeilBreakers.UI.CharacterSelect
         private void PlaySFX(AudioClip clip, float volume = 1f)
         {
             if (clip == null) return;
+
+            float effectiveVolume = volume;
+            if (SettingsManager.HasInstance)
+            {
+                var settings = SettingsManager.Instance.Settings;
+                if (settings != null)
+                {
+                    if (settings.MuteAll) return;
+                    effectiveVolume *= Mathf.Clamp01(settings.MasterVolume) * Mathf.Clamp01(settings.SFXVolume);
+                }
+            }
+
+            if (effectiveVolume <= 0.001f) return;
+
             if (_cachedCamera == null) _cachedCamera = Camera.main;
             if (_cachedCamera != null)
-                AudioSource.PlayClipAtPoint(clip, _cachedCamera.transform.position, volume);
+                AudioSource.PlayClipAtPoint(clip, _cachedCamera.transform.position, effectiveVolume);
         }
 
         private void EnsureCoreManagers()

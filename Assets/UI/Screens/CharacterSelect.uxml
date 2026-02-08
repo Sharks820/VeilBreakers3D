@@ -19,11 +19,11 @@
     <ui:VisualElement name="hero-stage" class="vb-hero-stage">
         <ui:VisualElement name="hero-stage-render" class="vb-hero-stage-render" />
         <ui:VisualElement name="vfx-overlay" class="vb-vfx-overlay" />
-        <ui:Button name="btn-rotate-model-left" class="vb-model-rotate-btn vb-model-rotate-left">
-            <ui:Label text="&lt;" class="vb-model-rotate-arrow" />
+        <ui:Button name="btn-rotate-model-left" text="L" class="vb-model-rotate-btn vb-model-rotate-left">
+            <ui:Label text="L" class="vb-model-rotate-arrow" />
         </ui:Button>
-        <ui:Button name="btn-rotate-model-right" class="vb-model-rotate-btn vb-model-rotate-right">
-            <ui:Label text="&gt;" class="vb-model-rotate-arrow" />
+        <ui:Button name="btn-rotate-model-right" text="R" class="vb-model-rotate-btn vb-model-rotate-right">
+            <ui:Label text="R" class="vb-model-rotate-arrow" />
         </ui:Button>
     </ui:VisualElement>
 
@@ -216,12 +216,12 @@
     </ui:VisualElement>
 
     <ui:VisualElement name="hero-cycle-hud" class="vb-hero-cycle-hud">
-        <ui:Button name="btn-prev-hero" class="vb-hero-cycle-btn">
-            <ui:Label text="&lt;" class="vb-hero-cycle-arrow" />
+        <ui:Button name="btn-prev-hero" text="PREV" class="vb-hero-cycle-btn">
+            <ui:Label text="PREV" class="vb-hero-cycle-arrow" />
         </ui:Button>
         <ui:Label name="hero-index-indicator" text="HERO 1 / 4" class="vb-hero-index-indicator" />
-        <ui:Button name="btn-next-hero" class="vb-hero-cycle-btn">
-            <ui:Label text="&gt;" class="vb-hero-cycle-arrow" />
+        <ui:Button name="btn-next-hero" text="NEXT" class="vb-hero-cycle-btn">
+            <ui:Label text="NEXT" class="vb-hero-cycle-arrow" />
         </ui:Button>
     </ui:VisualElement>
 

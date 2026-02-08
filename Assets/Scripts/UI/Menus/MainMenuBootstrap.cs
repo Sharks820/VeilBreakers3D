@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
+using VeilBreakers.Audio;
 using VeilBreakers.Managers;
 using VeilBreakers.UI.Core;
 // Migrated to use UIAssets for centralized asset references
@@ -80,15 +81,10 @@ namespace VeilBreakers.UI.Menus
 
         private void Start()
         {
-            if (!Application.isBatchMode)
-            {
-                EnsureCriticalManagers();
-            }
-            EnsureOverlayVfx();
-            DisableExpensiveVfxInBatchMode();
             InitializeUI();
             PlayEntranceAnimation();
             SetupEventHandlers();
+            StartCoroutine(DeferredStartupInit());
         }
 
         private void OnDestroy()
@@ -110,8 +106,28 @@ namespace VeilBreakers.UI.Menus
         // INITIALIZATION
         // =============================================================================
 
+        private IEnumerator DeferredStartupInit()
+        {
+            // Allow menu UI to paint before expensive startup systems run.
+            yield return null;
+
+            if (!Application.isBatchMode)
+            {
+                EnsureCriticalManagers();
+            }
+
+            EnsureOverlayVfx();
+            DisableExpensiveVfxInBatchMode();
+        }
+
         private void InitializeUI()
         {
+            if (_uiDocument == null)
+            {
+                Debug.LogError("[MainMenuBootstrap] UIDocument missing on MainMenuBootstrap GameObject.");
+                return;
+            }
+
             _root = _uiDocument.rootVisualElement;
 
             // CRITICAL: Ensure root fills the entire viewport
@@ -343,6 +359,8 @@ namespace VeilBreakers.UI.Menus
 
         private void SetupButtonSounds()
         {
+            if (_root == null) return;
+
             // Add hover/click sounds to all buttons (store delegates for cleanup)
             var allButtons = _root.Query<Button>().ToList();
             foreach (var button in allButtons)
@@ -357,13 +375,21 @@ namespace VeilBreakers.UI.Menus
 
         private void PlaySound(AudioClip clip)
         {
-            if (clip != null)
+            if (clip == null) return;
+            if (!SettingsManager.HasInstance) return;
+
+            float volume = 0.5f;
+            var settings = SettingsManager.Instance.Settings;
+            if (settings != null)
             {
-                // TODO: Use AudioManager when implemented
-                // For now, play at camera position
-                if (_cachedCamera == null) _cachedCamera = Camera.main;
-                AudioSource.PlayClipAtPoint(clip, _cachedCamera?.transform.position ?? Vector3.zero, 0.5f);
+                if (settings.MuteAll) return;
+                volume *= Mathf.Clamp01(settings.MasterVolume) * Mathf.Clamp01(settings.SFXVolume);
             }
+
+            if (volume <= 0.001f) return;
+
+            if (_cachedCamera == null) _cachedCamera = Camera.main;
+            AudioSource.PlayClipAtPoint(clip, _cachedCamera?.transform.position ?? Vector3.zero, volume);
         }
 
         // =============================================================================
@@ -444,6 +470,8 @@ namespace VeilBreakers.UI.Menus
             EnsureSingleton<InputManager>("[InputManager]");
             EnsureSingleton<SaveManager>("[SaveManager]");
             EnsureSingleton<AutoSaveManager>("[AutoSaveManager]");
+            EnsureSingleton<SettingsManager>("[SettingsManager]");
+            EnsureSingleton<AudioManager>("[AudioManager]");
         }
 
         private void EnsureOverlayVfx()

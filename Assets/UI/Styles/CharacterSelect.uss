@@ -81,14 +81,18 @@
 
 .vb-model-rotate-btn {
     position: absolute;
-    width: 46px;
-    height: 46px;
+    width: 56px;
+    height: 56px;
     top: 50%;
-    margin-top: -23px;
+    margin-top: -28px;
     background-color: rgba(12, 10, 18, 0.86);
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.24);
-    border-radius: 23px;
+    border-radius: 28px;
+    color: rgba(244, 236, 224, 1);
+    font-size: 28px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
     align-items: center;
     justify-content: center;
 }
@@ -99,16 +103,16 @@
 }
 
 .vb-model-rotate-left {
-    left: 14px;
+    left: 16px;
 }
 
 .vb-model-rotate-right {
-    right: 14px;
+    right: 16px;
 }
 
 .vb-model-rotate-arrow {
     color: rgba(244, 236, 224, 1);
-    font-size: 22px;
+    font-size: 26px;
     -unity-font-style: bold;
     -unity-text-align: middle-center;
 }
@@ -411,15 +415,15 @@
 }
 
 .vb-ability-row {
-    padding-top: 8px;
+    padding-top: 10px;
     padding-right: 10px;
-    padding-bottom: 8px;
+    padding-bottom: 10px;
     padding-left: 10px;
     margin-bottom: 6px;
-    background-color: rgba(255, 255, 255, 0.08);
+    background-color: rgba(18, 17, 24, 0.96);
     border-radius: 4px;
     border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.28);
 }
 
 .vb-ability-row:hover {
@@ -427,15 +431,17 @@
 }
 
 .vb-ability-name {
-    font-size: 12px;
+    font-size: 14px;
     -unity-font-style: bold;
-    margin-bottom: 2px;
+    margin-bottom: 3px;
     color: rgba(244, 236, 224, 1);
 }
 
 .vb-ability-desc {
-    font-size: 10px;
-    color: rgba(221, 212, 200, 0.9);
+    font-size: 12px;
+    color: rgba(237, 229, 216, 1);
+    white-space: normal;
+    -unity-text-align: upper-left;
 }
 
 /* =============================================================================
@@ -558,14 +564,18 @@
 }
 
 .vb-hero-cycle-btn {
-    width: 40px;
-    height: 32px;
+    width: 64px;
+    height: 40px;
     margin-left: 12px;
     margin-right: 12px;
     background-color: rgba(15, 12, 20, 0.82);
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.2);
     border-radius: 4px;
+    color: rgba(244, 236, 224, 1);
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
     align-items: center;
     justify-content: center;
 }
@@ -576,7 +586,7 @@
 
 .vb-hero-cycle-arrow {
     color: rgba(244, 236, 224, 1);
-    font-size: 16px;
+    font-size: 22px;
     -unity-font-style: bold;
     -unity-text-align: middle-center;
 }

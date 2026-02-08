@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.Video;
+using VeilBreakers.Managers;
 
 namespace VeilBreakers.UI.Core
 {
@@ -67,6 +68,10 @@ namespace VeilBreakers.UI.Core
         [SerializeField, Range(0f, 1f)] private float _musicVolume = 0.7f;
         [SerializeField] private float _musicFadeInDuration = 2f;
         private AudioSource _audioSource;
+        private Coroutine _musicFadeCoroutine;
+        private SettingsManager _settingsManager;
+        private Coroutine _settingsBindCoroutine;
+        private bool _isSettingsBound;
 
         [Header("Lightning (AAA)")]
         [SerializeField] private bool _enableLightning = true;
@@ -149,6 +154,7 @@ namespace VeilBreakers.UI.Core
         private RenderTexture _videoRenderTextureForward;
         private RenderTexture _videoRenderTextureReversed;
         private bool _playingForward = true; // Which direction is currently showing
+        private bool _usePingPongLoop;
         private double _videoLength;
         private bool _isVideoPlaying;
         private string _videoFilePath;
@@ -197,6 +203,11 @@ namespace VeilBreakers.UI.Core
         private readonly List<TransientSmokeParticle> _transientSmokes = new();
         private readonly List<GlowPulse> _glowPulses = new();
         private VisualElement _backgroundElement;
+        private bool _isDestroyed;
+        private bool _initializeQueued;
+        private bool _videoSetupQueued;
+        private Coroutine _deferredInitializeCoroutine;
+        private Coroutine _deferredVideoSetupCoroutine;
 
         private sealed class LightningStrike
         {
@@ -270,12 +281,12 @@ namespace VeilBreakers.UI.Core
             _spawnMarginSides = 0f;
             _spawnMarginBottom = 0f;
 
-            // BOOST particle counts for full-screen coverage
-            _emberCount = 350;       // Lots of embers everywhere
-            _microSparkCount = 120;  // Many micro sparks
-            _ashCount = 50;          // Floating ash across screen
-            _smokeCount = 10;        // Smoke wisps
-            _sparkCount = 25;        // Bright sparks
+            // Keep visual density high but avoid first-frame spikes.
+            _emberCount = Mathf.Clamp(_emberCount, 120, 220);
+            _microSparkCount = Mathf.Clamp(_microSparkCount, 40, 80);
+            _ashCount = Mathf.Clamp(_ashCount, 18, 36);
+            _smokeCount = Mathf.Clamp(_smokeCount, 4, 8);
+            _sparkCount = Mathf.Clamp(_sparkCount, 8, 16);
 
             // Match particle colors to fiery red/orange portal video
             _emberColorCore = new Color(1f, 0.6f, 0.2f, 1f);    // Hot orange-yellow core
@@ -297,6 +308,8 @@ namespace VeilBreakers.UI.Core
             {
                 _uiDocument.rootVisualElement.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
             }
+
+            StartSettingsBinding();
         }
 
         private void LoadTexturesFromResources()
@@ -381,7 +394,14 @@ namespace VeilBreakers.UI.Core
             _audioSource.Play();
 
             // Start fade-in coroutine
-            StartCoroutine(FadeMusicIn());
+            if (_musicFadeCoroutine != null)
+            {
+                StopCoroutine(_musicFadeCoroutine);
+            }
+            _musicFadeCoroutine = StartCoroutine(FadeMusicIn());
+
+            // Apply latest settings immediately after startup fade setup.
+            ApplyMenuMusicFromSettings(_isSettingsBound ? _settingsManager?.Settings : null);
         }
 
         private System.Collections.IEnumerator FadeMusicIn()
@@ -389,23 +409,38 @@ namespace VeilBreakers.UI.Core
             float elapsed = 0f;
             while (elapsed < _musicFadeInDuration)
             {
+                if (_audioSource == null) yield break;
+
                 elapsed += Time.deltaTime;
-                _audioSource.volume = Mathf.Lerp(0f, _musicVolume, elapsed / _musicFadeInDuration);
+                GameSettings settings = _isSettingsBound ? _settingsManager?.Settings : null;
+                bool muteAll = settings != null && settings.MuteAll;
+                float targetVolume = ResolveTargetMusicVolume(settings);
+                _audioSource.mute = muteAll;
+                _audioSource.volume = Mathf.Lerp(0f, targetVolume, elapsed / _musicFadeInDuration);
                 yield return null;
             }
-            _audioSource.volume = _musicVolume;
+
+            if (_audioSource != null)
+            {
+                GameSettings settings = _isSettingsBound ? _settingsManager?.Settings : null;
+                _audioSource.mute = settings != null && settings.MuteAll;
+                _audioSource.volume = ResolveTargetMusicVolume(settings);
+            }
+
+            _musicFadeCoroutine = null;
         }
 
         private void OnGeometryChanged(GeometryChangedEvent evt)
         {
-            if (!_isActive && _vfxContainer == null)
-            {
-                Initialize();
-            }
+            if (_isActive || _vfxContainer != null || _initializeQueued) return;
+
+            _initializeQueued = true;
+            _deferredInitializeCoroutine ??= StartCoroutine(InitializeDeferred());
         }
 
         private void OnEnable()
         {
+            StartSettingsBinding();
             if (_vfxContainer != null)
             {
                 StartVFX();
@@ -415,6 +450,24 @@ namespace VeilBreakers.UI.Core
         private void OnDisable()
         {
             StopVFX();
+        }
+
+        private IEnumerator InitializeDeferred()
+        {
+            // Let UI Toolkit finish initial layout/style pass before heavy VFX creation.
+            yield return null;
+            yield return null;
+
+            if (_isDestroyed || _isActive || _vfxContainer != null)
+            {
+                _initializeQueued = false;
+                _deferredInitializeCoroutine = null;
+                yield break;
+            }
+
+            Initialize();
+            _initializeQueued = false;
+            _deferredInitializeCoroutine = null;
         }
 
         // =============================================================================
@@ -483,9 +536,8 @@ namespace VeilBreakers.UI.Core
         {
             if (host == null) return;
 
-            host.UnregisterCallback<PointerDownEvent>(OnPointerDown);
-            host.UnregisterCallback<MouseMoveEvent>(OnMouseMove);
-            host.UnregisterCallback<MouseLeaveEvent>(OnMouseLeave);
+            UnregisterInteractiveTargets();
+            _host = host;
             host.RegisterCallback<PointerDownEvent>(OnPointerDown);
             host.RegisterCallback<MouseMoveEvent>(OnMouseMove);
             host.RegisterCallback<MouseLeaveEvent>(OnMouseLeave);
@@ -515,6 +567,23 @@ namespace VeilBreakers.UI.Core
                 AddLogoShadow();
                 EnsureLogoGlow();
                 EnsureLogoFxLayer();
+            }
+        }
+
+        private void UnregisterInteractiveTargets()
+        {
+            if (_host != null)
+            {
+                _host.UnregisterCallback<PointerDownEvent>(OnPointerDown);
+                _host.UnregisterCallback<MouseMoveEvent>(OnMouseMove);
+                _host.UnregisterCallback<MouseLeaveEvent>(OnMouseLeave);
+            }
+
+            if (_logoContainer != null)
+            {
+                _logoContainer.UnregisterCallback<MouseEnterEvent>(OnLogoEnter);
+                _logoContainer.UnregisterCallback<MouseLeaveEvent>(OnLogoLeave);
+                _logoContainer.UnregisterCallback<PointerDownEvent>(OnLogoPointerDown);
             }
         }
 
@@ -576,7 +645,11 @@ namespace VeilBreakers.UI.Core
             // Try video background first
             if (_useVideoBackground)
             {
-                SetupVideoBackground();
+                if (!_videoSetupQueued)
+                {
+                    _videoSetupQueued = true;
+                    _deferredVideoSetupCoroutine = StartCoroutine(SetupVideoBackgroundDeferred());
+                }
                 return;
             }
 
@@ -601,6 +674,23 @@ namespace VeilBreakers.UI.Core
             {
                 _backgroundElement.style.backgroundColor = new Color(0f, 0f, 0f, Mathf.Clamp01(_backgroundDarken));
             }
+        }
+
+        private IEnumerator SetupVideoBackgroundDeferred()
+        {
+            // Delay heavy RenderTexture + VideoPlayer setup until after menu first paint.
+            yield return null;
+            yield return new WaitForSecondsRealtime(0.08f);
+
+            _videoSetupQueued = false;
+            _deferredVideoSetupCoroutine = null;
+
+            if (_isDestroyed || _backgroundElement == null || !_useVideoBackground)
+            {
+                yield break;
+            }
+
+            SetupVideoBackground();
         }
 
         private void CreateTopVignette(VisualElement host)
@@ -651,17 +741,13 @@ namespace VeilBreakers.UI.Core
 
         private void SetupVideoBackground()
         {
-            // PING-PONG TECHNIQUE with TWO VIDEOS for seamless looping
-            // Forward video plays to end, then swap to reversed video (which starts at same frame!)
-            // Reversed video plays to its end (original start), then swap back to forward
-            // This creates PERFECT seamless loops - no glitches possible!
-
             // Find forward video file path
             _videoFilePath = System.IO.Path.Combine(Application.streamingAssetsPath, "background_video.mp4");
             if (!System.IO.File.Exists(_videoFilePath))
             {
                 _videoFilePath = System.IO.Path.Combine(Application.dataPath, "Art/UI/MainMenu/background_video.mp4");
             }
+            bool hasForwardFile = System.IO.File.Exists(_videoFilePath);
 
             // Find reversed video file path
             _videoFilePathReversed = System.IO.Path.Combine(Application.streamingAssetsPath, "background_video_reversed.mp4");
@@ -669,8 +755,12 @@ namespace VeilBreakers.UI.Core
             {
                 _videoFilePathReversed = System.IO.Path.Combine(Application.dataPath, "Art/UI/MainMenu/background_video_reversed.mp4");
             }
+            bool hasReversedFile = System.IO.File.Exists(_videoFilePathReversed);
 
-            if (!System.IO.File.Exists(_videoFilePath) && _backgroundVideoClip == null)
+            bool useVideoClipSource = !hasForwardFile && _backgroundVideoClip != null;
+            _usePingPongLoop = !useVideoClipSource && hasForwardFile && hasReversedFile;
+
+            if (!hasForwardFile && _backgroundVideoClip == null)
             {
                 Debug.LogWarning($"[TitleScreenVFX] Video file not found at: {_videoFilePath}");
                 _useVideoBackground = false;
@@ -678,15 +768,34 @@ namespace VeilBreakers.UI.Core
                 return;
             }
 
-            // Create high-quality RenderTextures for both players
+            if (!_usePingPongLoop)
+            {
+                Debug.LogWarning("[TitleScreenVFX] Reversed background video missing; falling back to single-player loop.");
+            }
+
+            // Create render textures
             int rtWidth = Mathf.Max(Screen.width, 1920);
             int rtHeight = Mathf.Max(Screen.height, 1080);
             _videoRenderTextureForward = CreateVideoRenderTexture(rtWidth, rtHeight, "BackgroundVideoRT_Forward");
-            _videoRenderTextureReversed = CreateVideoRenderTexture(rtWidth, rtHeight, "BackgroundVideoRT_Reversed");
+            if (_usePingPongLoop)
+            {
+                _videoRenderTextureReversed = CreateVideoRenderTexture(rtWidth, rtHeight, "BackgroundVideoRT_Reversed");
+            }
 
-            // Create and configure both VideoPlayers
-            _videoPlayerForward = CreateVideoPlayer(_videoRenderTextureForward, _videoFilePath);
-            _videoPlayerReversed = CreateVideoPlayer(_videoRenderTextureReversed, _videoFilePathReversed);
+            // Create and configure players
+            _videoPlayerForward = CreateVideoPlayer(
+                _videoRenderTextureForward,
+                useVideoClipSource ? null : _videoFilePath,
+                useVideoClipSource ? _backgroundVideoClip : null);
+
+            if (_usePingPongLoop)
+            {
+                _videoPlayerReversed = CreateVideoPlayer(_videoRenderTextureReversed, _videoFilePathReversed, null);
+            }
+            else
+            {
+                _videoPlayerReversed = null;
+            }
 
             // Prepare forward player first (it will start playback)
             _videoPlayerForward.prepareCompleted += OnForwardVideoPrepared;
@@ -695,7 +804,9 @@ namespace VeilBreakers.UI.Core
             // Set background to black while video loads
             _backgroundElement.style.backgroundColor = Color.black;
 
-            Debug.Log("[TitleScreenVFX] Ping-Pong dual video setup initiated (forward + reversed)");
+            Debug.Log(_usePingPongLoop
+                ? "[TitleScreenVFX] Ping-pong dual video setup initiated (forward + reversed)."
+                : "[TitleScreenVFX] Single-player video setup initiated.");
         }
 
         private RenderTexture CreateVideoRenderTexture(int width, int height, string name)
@@ -709,7 +820,7 @@ namespace VeilBreakers.UI.Core
             return rt;
         }
 
-        private VideoPlayer CreateVideoPlayer(RenderTexture targetTexture, string videoUrl)
+        private VideoPlayer CreateVideoPlayer(RenderTexture targetTexture, string videoUrl, VideoClip clip)
         {
             // Create a child GameObject to hold the VideoPlayer
             var playerObj = new GameObject(targetTexture.name + "_Player");
@@ -719,15 +830,22 @@ namespace VeilBreakers.UI.Core
             player.playOnAwake = false;
             player.renderMode = VideoRenderMode.RenderTexture;
             player.targetTexture = targetTexture;
-            player.isLooping = false; // We control looping via loopPointReached event
+            player.isLooping = false;
             player.skipOnDrop = false;
             player.playbackSpeed = 1.15f; // Slightly faster for more dynamic feel
             player.audioOutputMode = VideoAudioOutputMode.None;
             player.aspectRatio = VideoAspectRatio.Stretch; // Stretch to fill RenderTexture exactly - no zoom
 
-            // Set source
-            player.source = VideoSource.Url;
-            player.url = videoUrl;
+            if (clip != null)
+            {
+                player.source = VideoSource.VideoClip;
+                player.clip = clip;
+            }
+            else
+            {
+                player.source = VideoSource.Url;
+                player.url = videoUrl;
+            }
 
             return player;
         }
@@ -749,12 +867,19 @@ namespace VeilBreakers.UI.Core
             // Start playing forward video
             vp.Play();
 
-            // Setup event-based ping-pong loop
-            SetupPingPongEvents();
+            if (_usePingPongLoop && _videoPlayerReversed != null)
+            {
+                // Setup event-based ping-pong loop
+                SetupPingPongEvents();
 
-            // Prepare reversed video so it's ready for the swap
-            _videoPlayerReversed.prepareCompleted += OnReversedVideoPrepared;
-            _videoPlayerReversed.Prepare();
+                // Prepare reversed video so it's ready for the swap
+                _videoPlayerReversed.prepareCompleted += OnReversedVideoPrepared;
+                _videoPlayerReversed.Prepare();
+            }
+            else
+            {
+                vp.isLooping = true;
+            }
         }
 
         private void OnReversedVideoPrepared(VideoPlayer vp)
@@ -767,6 +892,8 @@ namespace VeilBreakers.UI.Core
 
         private void SetupPingPongEvents()
         {
+            if (!_usePingPongLoop || _videoPlayerForward == null || _videoPlayerReversed == null) return;
+
             // EVENT-BASED SEAMLESS LOOP
             // When one video finishes, instantly swap texture and start the other
             // The "next" video is always pre-positioned at time=0, no seeking needed
@@ -778,6 +905,12 @@ namespace VeilBreakers.UI.Core
         private void OnForwardVideoEnded(VideoPlayer vp)
         {
             if (!_isVideoPlaying) return;
+            if (!_usePingPongLoop || _videoPlayerReversed == null || _videoRenderTextureReversed == null)
+            {
+                vp.time = 0;
+                vp.Play();
+                return;
+            }
 
             // INSTANT swap - reversed is already paused at time=0
             _backgroundElement.style.backgroundImage = new StyleBackground(Background.FromRenderTexture(_videoRenderTextureReversed));
@@ -792,6 +925,10 @@ namespace VeilBreakers.UI.Core
         private void OnReversedVideoEnded(VideoPlayer vp)
         {
             if (!_isVideoPlaying) return;
+            if (_videoPlayerForward == null || _videoRenderTextureForward == null)
+            {
+                return;
+            }
 
             // INSTANT swap - forward is already paused at time=0
             _backgroundElement.style.backgroundImage = new StyleBackground(Background.FromRenderTexture(_videoRenderTextureForward));
@@ -805,12 +942,39 @@ namespace VeilBreakers.UI.Core
 
         private void OnDestroy()
         {
+            _isDestroyed = true;
+            UnbindSettingsManager();
+            UnregisterInteractiveTargets();
+
+            if (_musicFadeCoroutine != null)
+            {
+                StopCoroutine(_musicFadeCoroutine);
+                _musicFadeCoroutine = null;
+            }
+
+            if (_uiDocument != null && _uiDocument.rootVisualElement != null)
+            {
+                _uiDocument.rootVisualElement.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
+            }
+
+            if (_deferredInitializeCoroutine != null)
+            {
+                StopCoroutine(_deferredInitializeCoroutine);
+                _deferredInitializeCoroutine = null;
+            }
+
+            if (_deferredVideoSetupCoroutine != null)
+            {
+                StopCoroutine(_deferredVideoSetupCoroutine);
+                _deferredVideoSetupCoroutine = null;
+            }
             // Stop video monitoring
             _isVideoPlaying = false;
 
             // Cleanup Forward VideoPlayer
             if (_videoPlayerForward != null)
             {
+                _videoPlayerForward.prepareCompleted -= OnForwardVideoPrepared;
                 _videoPlayerForward.loopPointReached -= OnForwardVideoEnded;
                 _videoPlayerForward.Stop();
                 if (_videoPlayerForward.gameObject != gameObject)
@@ -822,6 +986,7 @@ namespace VeilBreakers.UI.Core
             // Cleanup Reversed VideoPlayer
             if (_videoPlayerReversed != null)
             {
+                _videoPlayerReversed.prepareCompleted -= OnReversedVideoPrepared;
                 _videoPlayerReversed.loopPointReached -= OnReversedVideoEnded;
                 _videoPlayerReversed.Stop();
                 if (_videoPlayerReversed.gameObject != gameObject)
@@ -847,6 +1012,94 @@ namespace VeilBreakers.UI.Core
             {
                 _audioSource.Stop();
             }
+        }
+
+        private void StartSettingsBinding()
+        {
+            TryBindSettingsManager();
+            if (_isSettingsBound || !isActiveAndEnabled) return;
+            if (_settingsBindCoroutine != null) return;
+            _settingsBindCoroutine = StartCoroutine(BindSettingsWhenReady());
+        }
+
+        private IEnumerator BindSettingsWhenReady()
+        {
+            while (!_isDestroyed && !_isSettingsBound)
+            {
+                TryBindSettingsManager();
+                if (_isSettingsBound)
+                {
+                    _settingsBindCoroutine = null;
+                    yield break;
+                }
+
+                yield return new WaitForSecondsRealtime(0.25f);
+            }
+
+            _settingsBindCoroutine = null;
+        }
+
+        private void TryBindSettingsManager()
+        {
+            if (_isSettingsBound || !SettingsManager.HasInstance) return;
+
+            _settingsManager = SettingsManager.Instance;
+            if (_settingsManager == null) return;
+
+            _settingsManager.OnSettingsChanged += OnSettingsChanged;
+            _isSettingsBound = true;
+            ApplyMenuMusicFromSettings(_settingsManager.Settings);
+        }
+
+        private void UnbindSettingsManager()
+        {
+            if (_settingsBindCoroutine != null)
+            {
+                StopCoroutine(_settingsBindCoroutine);
+                _settingsBindCoroutine = null;
+            }
+
+            if (_settingsManager != null)
+            {
+                _settingsManager.OnSettingsChanged -= OnSettingsChanged;
+            }
+
+            _settingsManager = null;
+            _isSettingsBound = false;
+        }
+
+        private void OnSettingsChanged(GameSettings settings)
+        {
+            if (_musicFadeCoroutine != null)
+            {
+                StopCoroutine(_musicFadeCoroutine);
+                _musicFadeCoroutine = null;
+            }
+            ApplyMenuMusicFromSettings(settings);
+        }
+
+        private void ApplyMenuMusicFromSettings(GameSettings settings)
+        {
+            if (_audioSource == null) return;
+
+            bool muteAll = settings != null && settings.MuteAll;
+            _audioSource.mute = muteAll;
+            _audioSource.volume = ResolveTargetMusicVolume(settings);
+        }
+
+        private float ResolveTargetMusicVolume(GameSettings settings)
+        {
+            if (settings == null)
+            {
+                return _musicVolume;
+            }
+
+            if (settings.MuteAll)
+            {
+                return 0f;
+            }
+
+            return Mathf.Clamp01(settings.MasterVolume) * Mathf.Clamp01(settings.MusicVolume);
         }
 
         // Removed logo backplate: it created an obvious rectangle behind the logo.
