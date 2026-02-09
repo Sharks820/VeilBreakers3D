@@ -243,14 +243,6 @@ namespace VeilBreakers.UI.Menus
         // ANIMATION
         // =============================================================================
 
-        private void PlayEntranceAnimation()
-        {
-            _animator = UIAnimationController.Instance;
-            _entranceCoroutine = StartCoroutine(EntranceAnimationSequence());
-            // FAILSAFE: Ensure all content is visible after animations should complete
-            _failsafeCoroutine = StartCoroutine(EnsureVisibilityFailsafe());
-        }
-
         private IEnumerator EnsureVisibilityFailsafe()
         {
             // Wait for all animations to complete (generous timeout)

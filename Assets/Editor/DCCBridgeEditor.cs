@@ -459,10 +459,13 @@ print('VeilBreakers DCC Bridge addon installed successfully!')
             {
                 using (var process = Process.Start(processInfo))
                 {
+                    // Read stderr async to avoid deadlock when both buffers fill
+                    string error = null;
+                    process.ErrorDataReceived += (s, e) => { if (e.Data != null) error += e.Data + "\n"; };
+                    process.BeginErrorReadLine();
                     string output = process.StandardOutput.ReadToEnd();
-                    string error = process.StandardError.ReadToEnd();
                     process.WaitForExit();
-                    
+
                     if (process.ExitCode == 0)
                     {
                         SetStatus($"{operationName} completed successfully!", MessageType.Info);

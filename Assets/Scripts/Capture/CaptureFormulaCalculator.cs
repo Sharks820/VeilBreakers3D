@@ -62,7 +62,8 @@ namespace VeilBreakers.Capture
             result.baseChance = result.itemModifier / 100f;
 
             float totalModifiers = result.hpModifier + result.corruptionModifier +
-                                   result.levelModifier + result.qteModifier;
+                                   result.levelModifier + result.qteModifier +
+                                   result.rarityModifier;
 
             result.finalChance = result.baseChance + totalModifiers;
 

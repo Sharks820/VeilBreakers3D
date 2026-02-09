@@ -72,7 +72,7 @@ namespace VeilBreakers.Combat
             float attackerCorruptionMod = GetCorruptionModifier(attacker.Corruption);
             float defenderCorruptionMod = GetCorruptionModifier(defender.Corruption);
             damage *= (1f + attackerCorruptionMod);
-            damage /= (1f + defenderCorruptionMod);
+            damage *= (1f - defenderCorruptionMod);
 
             // Variance
             result.variance = Random.Range(kVarianceMin, kVarianceMax);

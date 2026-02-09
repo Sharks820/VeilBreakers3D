@@ -381,9 +381,15 @@ namespace VeilBreakers.Combat
 
             if (skill.base_power > 0 && skill.GetDamageType() != DamageType.NONE)
             {
-                // Ultimate with damage component - pass damageTarget (ExecuteAttack will re-check guard,
-                // but since interceptor is already guarding damageTarget, it won't double-redirect)
-                ExecuteAttack(caster, damageTarget, skill);
+                // Calculate and apply damage directly to avoid double guard-check in ExecuteAttack
+                var result = DamageCalculator.Calculate(
+                    caster, damageTarget,
+                    skill.base_power,
+                    skill.GetDamageType(),
+                    _currentSynergyTier
+                );
+                damageTarget.TakeDamage(result.finalDamage, result.isCritical);
+                OnDamageDealt?.Invoke(caster, damageTarget, result);
             }
 
             // Status effects from ultimates should also hit the redirected target

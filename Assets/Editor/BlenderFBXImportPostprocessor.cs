@@ -17,6 +17,9 @@ namespace VeilBreakers.Editor
         private const string kAnimationsPath = "Assets/Resources/Art/3D_Models/Animations/";
         private const string kVfxPath = "Assets/Resources/Art/3D_Models/VFX/";
         
+        // Run after CharacterModelImportPostprocessor (default order 0) to override its settings
+        public override int GetPostprocessOrder() => 100;
+
         private void OnPreprocessModel()
         {
             if (assetPath == null) return;
@@ -298,11 +301,8 @@ namespace VeilBreakers.Editor
                 }
             }
             
-            if (needsRefresh)
-            {
-                // Refresh if needed
-                AssetDatabase.Refresh();
-            }
+            // NOTE: Do NOT call AssetDatabase.Refresh() here - it causes
+            // infinite reimport loops when called inside OnPostprocessAllAssets
         }
         
         private static bool IsBlenderExport(string assetPath)

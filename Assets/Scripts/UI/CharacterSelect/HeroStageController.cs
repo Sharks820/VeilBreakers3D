@@ -42,6 +42,14 @@ namespace VeilBreakers.UI.CharacterSelect
         };
         private static readonly Dictionary<string, Texture2D> kRuntimeFallbackTextureCache = new Dictionary<string, Texture2D>();
 
+        /// <summary>
+        /// Clear the runtime texture cache to free memory (call on scene unload).
+        /// </summary>
+        public static void ClearTextureCache()
+        {
+            kRuntimeFallbackTextureCache.Clear();
+        }
+
         // =============================================================================
         // CONFIGURATION
         // =============================================================================

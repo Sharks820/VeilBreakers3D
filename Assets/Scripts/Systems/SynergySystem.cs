@@ -64,7 +64,7 @@ namespace VeilBreakers.Systems
                 int safeCount = Mathf.Min(count, partyBrands.Length);
                 for (int i = 0; i < safeCount; i++)
                 {
-                    if (weakBrands.Contains(partyBrands[i]))
+                    if (System.Array.IndexOf(weakBrands, partyBrands[i]) >= 0)
                         return SynergyTier.ANTI;
                 }
             }
@@ -76,7 +76,7 @@ namespace VeilBreakers.Systems
                 int safeCount = Mathf.Min(count, partyBrands.Length);
                 for (int i = 0; i < safeCount; i++)
                 {
-                    if (strongBrands.Contains(partyBrands[i]))
+                    if (System.Array.IndexOf(strongBrands, partyBrands[i]) >= 0)
                         matchCount++;
                 }
             }

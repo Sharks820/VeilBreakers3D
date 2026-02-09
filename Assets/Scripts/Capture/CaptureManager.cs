@@ -297,7 +297,10 @@ namespace VeilBreakers.Capture
 
         private void CheckBindThresholds()
         {
-            foreach (var target in _markedTargets)
+            // Copy to buffer to allow safe modification during iteration
+            _iterationBuffer.Clear();
+            _iterationBuffer.AddRange(_markedTargets);
+            foreach (var target in _iterationBuffer)
             {
                 if (target == null || !target.IsAlive || IsBound(target)) continue;
 
@@ -448,7 +451,7 @@ namespace VeilBreakers.Capture
 
             foreach (var ally in _allies)
             {
-                if (ally == null || !ally.IsAlive) continue;
+                if (ally == null || !ally.IsAlive || target == null) continue;
 
                 float sqrDist = (target.transform.position - ally.transform.position).sqrMagnitude;
                 if (sqrDist < nearestSqrDist)
@@ -477,7 +480,7 @@ namespace VeilBreakers.Capture
             }
 
             _inCapturePhase = true;
-            _currentCaptureTarget = _boundMonsters.Count > 0 ? _boundMonsters[0] : null;
+            _currentCaptureTarget = _boundMonsters[0];
             _selectedItem = CaptureItem.NONE;
 
             OnCapturePhaseStarted?.Invoke();
@@ -712,7 +715,10 @@ namespace VeilBreakers.Capture
             if (monster.gameObject != null)
             {
                 // Mark as dead to trigger any death-related cleanup
-                monster.TakeDamage(monster.MaxHP + 1);
+                if (monster.IsAlive)
+                {
+                    monster.TakeDamage(monster.MaxHP + 1);
+                }
 
                 // Disable instead of destroy for object pooling later
                 monster.gameObject.SetActive(false);

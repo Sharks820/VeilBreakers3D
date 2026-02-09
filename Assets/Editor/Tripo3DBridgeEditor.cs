@@ -3,7 +3,7 @@ using UnityEditor;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
-using System.Threading;
+
 
 namespace VeilBreakers.Editor
 {
@@ -167,7 +167,7 @@ namespace VeilBreakers.Editor
         {
             GUIStyle style = new GUIStyle(EditorStyles.label);
             style.normal.textColor = isGood ? Color.green : Color.red;
-            EditorGUILayout.LabelField(isGood ? "✓ " : "✗ " + message, style);
+            EditorGUILayout.LabelField((isGood ? "✓ " : "✗ ") + message, style);
         }
         
         private void DrawActions()
@@ -417,12 +417,15 @@ except Exception as e:
             {
                 using (var process = Process.Start(processInfo))
                 {
+                    // Read stderr async to avoid deadlock when both buffers fill
+                    string error = null;
+                    process.ErrorDataReceived += (s, e) => { if (e.Data != null) error += e.Data + "\n"; };
+                    process.BeginErrorReadLine();
                     string output = process.StandardOutput.ReadToEnd();
-                    string error = process.StandardError.ReadToEnd();
                     process.WaitForExit();
-                    
+
                     UnityEngine.Debug.Log($"[Tripo3D Bridge] {output}");
-                    
+
                     if (process.ExitCode == 0)
                     {
                         SetStatus($"{operationName} completed successfully!", MessageType.Info);
