@@ -1,6 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System;
+using System.IO;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VeilBreakers.Data;
@@ -16,14 +17,30 @@ namespace VeilBreakers.UI.CharacterSelect
     public class HeroStageController : MonoBehaviour
     {
         private const string kHeroModelResourceRoot = "Art/3D_Models/Characters";
-        private static readonly Dictionary<string, string> kHeroModelResourceById = new Dictionary<string, string>
+        private static readonly Dictionary<string, string[]> kHeroModelResourceById = new Dictionary<string, string[]>
         {
-            { "vex", "vex_medieval_knight" }
+            { "vex", new[] { "vex_medieval_knight", "Vex", "Vex_for_mixamo", "Vex_mesh_only" } }
         };
         private static readonly Dictionary<string, float> kHeroFacingYawById = new Dictionary<string, float>
         {
             { "vex", 270f }
         };
+
+        // Animation controller resource paths per hero
+        private const string kAnimControllerResourceRoot = "Art/Animations/Controllers";
+        private static readonly Dictionary<string, string> kHeroAnimControllerById = new Dictionary<string, string>
+        {
+            { "vex", "VexAnimatorController" }
+        };
+        private static readonly Dictionary<string, string> kHeroFallbackTextureById = new Dictionary<string, string>
+        {
+            { "vex", "Art/Textures/Characters/Vex/baseColor" }
+        };
+        private static readonly HashSet<string> kHeroForceTextureFallbackById = new HashSet<string>
+        {
+            "vex"
+        };
+        private static readonly Dictionary<string, Texture2D> kRuntimeFallbackTextureCache = new Dictionary<string, Texture2D>();
 
         // =============================================================================
         // CONFIGURATION
@@ -35,19 +52,19 @@ namespace VeilBreakers.UI.CharacterSelect
         [SerializeField] private int _renderLayer = 31; // Use a high layer to avoid conflicts
 
         [Header("Camera")]
-        [SerializeField] private Vector3 _cameraPosition = new Vector3(0f, 1.05f, -3f);
-        [SerializeField] private Vector3 _cameraLookAt = new Vector3(0f, 0.1f, 0f);
-        [SerializeField] private float _cameraFOV = 22f;
+        [SerializeField] private Vector3 _cameraPosition = new Vector3(0f, 1.2f, -3f);
+        [SerializeField] private Vector3 _cameraLookAt = new Vector3(0f, 0.65f, 0f);
+        [SerializeField] private float _cameraFOV = 24f;
         [SerializeField] private float _minZoom = -4.5f;
         [SerializeField] private float _maxZoom = -1.5f;
         [SerializeField] private float _zoomSpeed = 0.5f;
         [SerializeField] private float _framingPadding = 0.95f;
         [SerializeField] private float _framingMinDistance = 0.8f;
         [SerializeField] private float _framingMaxDistance = 3.8f;
-        [SerializeField, Range(0f, 0.8f)] private float _framingLookTargetBias = 0.48f;
+        [SerializeField, Range(0f, 0.8f)] private float _framingLookTargetBias = 0.35f;
 
         [Header("Model Positions")]
-        [SerializeField] private Vector3 _heroPosition = new Vector3(0f, -2.35f, 0f);
+        [SerializeField] private Vector3 _heroPosition = new Vector3(0f, -2.1f, 0f);
         [SerializeField] private Vector3 _monsterPosition = new Vector3(0.7f, 0f, 0.3f);
         [SerializeField] private float _heroScale = 1.4f;
         [SerializeField] private float _monsterScale = 0.5f;
@@ -79,6 +96,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private Light _fillLight;
         private Light _rimLight;
         private Light _faceLight;
+        private Light _eyeFillLight;
         private VisualElement _renderTarget;
 
         private bool _isDragging;
@@ -97,6 +115,13 @@ namespace VeilBreakers.UI.CharacterSelect
         private Renderer _heroRenderer;
         private Renderer _monsterRenderer;
         private Renderer[] _heroModelRenderers;
+
+        // Animation
+        private Animator _heroAnimator;
+        private float _animIdleTimer;
+        private static readonly int _animIdleTimerHash = Animator.StringToHash("IdleTimer");
+        private static readonly int _animSelectedHash = Animator.StringToHash("Selected");
+        private static readonly int _animIdleStateHash = Animator.StringToHash("Idle");
 
         // Cached WaitForSeconds
         private WaitForSeconds _monsterDelayWait;
@@ -145,6 +170,22 @@ namespace VeilBreakers.UI.CharacterSelect
                 {
                     _currentYRotation += _autoOrbitSpeed * Time.deltaTime;
                     _stageRoot.transform.localRotation = Quaternion.Euler(0f, _currentYRotation, 0f);
+                }
+            }
+
+            // Drive animator IdleTimer for idle variant transitions
+            if (_heroAnimator != null && _heroAnimator.runtimeAnimatorController != null)
+            {
+                _animIdleTimer += Time.deltaTime;
+                _heroAnimator.SetFloat(_animIdleTimerHash, _animIdleTimer);
+
+                // Reset when the animator transitions back to Idle (variant finished)
+                var stateInfo = _heroAnimator.GetCurrentAnimatorStateInfo(0);
+                if (stateInfo.IsName("Idle") && _animIdleTimer > 1f)
+                {
+                    // Only reset if we already passed the threshold (variant played and returned)
+                    if (_animIdleTimer > 12f)
+                        _animIdleTimer = 0f;
                 }
             }
         }
@@ -215,15 +256,29 @@ namespace VeilBreakers.UI.CharacterSelect
 
             var faceObj = new GameObject("StageFaceLight");
             faceObj.transform.SetParent(transform);
-            faceObj.transform.localPosition = new Vector3(0f, 1.45f, -1.15f);
-            faceObj.transform.LookAt(new Vector3(0f, 1.18f, 0f));
+            faceObj.transform.localPosition = new Vector3(0.15f, 1.6f, -1.4f);
+            faceObj.transform.LookAt(new Vector3(0f, 1.3f, 0f));
             _faceLight = faceObj.AddComponent<Light>();
             _faceLight.type = LightType.Spot;
-            _faceLight.intensity = 2.0f;
-            _faceLight.spotAngle = 46f;
-            _faceLight.range = 7f;
+            _faceLight.intensity = 3.2f;
+            _faceLight.spotAngle = 60f;
+            _faceLight.range = 8f;
             _faceLight.color = new Color(1f, 0.96f, 0.9f);
             _faceLight.cullingMask = 1 << _renderLayer;
+            _faceLight.shadows = LightShadows.None;
+
+            var eyeFillObj = new GameObject("StageEyeFillLight");
+            eyeFillObj.transform.SetParent(transform);
+            eyeFillObj.transform.localPosition = new Vector3(0f, 1.45f, -1.1f);
+            eyeFillObj.transform.LookAt(new Vector3(0f, 1.35f, 0f));
+            _eyeFillLight = eyeFillObj.AddComponent<Light>();
+            _eyeFillLight.type = LightType.Spot;
+            _eyeFillLight.intensity = 1.8f;
+            _eyeFillLight.spotAngle = 70f;
+            _eyeFillLight.range = 7f;
+            _eyeFillLight.color = new Color(1f, 0.99f, 0.96f);
+            _eyeFillLight.cullingMask = 1 << _renderLayer;
+            _eyeFillLight.shadows = LightShadows.None;
 
             // Apply render texture to UI element
             ApplyRenderTexture();
@@ -248,6 +303,7 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_fillLight != null) Destroy(_fillLight.gameObject);
             if (_rimLight != null) Destroy(_rimLight.gameObject);
             if (_faceLight != null) Destroy(_faceLight.gameObject);
+            if (_eyeFillLight != null) Destroy(_eyeFillLight.gameObject);
 
             if (_heroMaterial != null) Destroy(_heroMaterial);
             if (_monsterMaterial != null) Destroy(_monsterMaterial);
@@ -393,20 +449,30 @@ namespace VeilBreakers.UI.CharacterSelect
             }
             else
             {
-                _heroMaterial = null;
-                _heroRenderer = null; // Imported models may use shared materials; do not alpha-fade them.
                 _heroModelRenderers = _currentHeroModel.GetComponentsInChildren<Renderer>(true);
-                yield return StartCoroutine(AnimateSpawn(_currentHeroModel, null));
+                if (_heroMaterial == null)
+                {
+                    _heroRenderer = null; // Imported models keep authored materials as-is.
+                }
+                else if (_heroModelRenderers != null && _heroModelRenderers.Length > 0)
+                {
+                    _heroRenderer = _heroModelRenderers[0];
+                }
+
+                yield return StartCoroutine(AnimateSpawn(_currentHeroModel, _heroMaterial));
             }
 
             if (_isDestroyed) yield break;
 
-            // Reset rotation to a forward-facing pose for imported models.
-            _currentYRotation = ResolveFacingYaw(hero);
+            FitCameraToCurrentHero();
+
+            // Reset rotation to face the camera on spawn, then re-fit framing after rotation.
+            _currentYRotation = ResolveFacingYaw(hero, _currentHeroModel);
             _idleTimer = 0f;
             if (_stageRoot != null)
+            {
                 _stageRoot.transform.localRotation = Quaternion.Euler(0f, _currentYRotation, 0f);
-
+            }
             FitCameraToCurrentHero();
 
             if (_showCompanionPlaceholder)
@@ -429,15 +495,28 @@ namespace VeilBreakers.UI.CharacterSelect
             }
 
             string heroId = hero.hero_id.Trim().ToLowerInvariant();
-            if (!kHeroModelResourceById.TryGetValue(heroId, out string resourceName))
+            if (!kHeroModelResourceById.TryGetValue(heroId, out string[] resourceNames)
+                || resourceNames == null
+                || resourceNames.Length == 0)
             {
                 return null;
             }
 
-            var prefab = LoadHeroPrefab(resourceName);
+            GameObject prefab = null;
+            string resolvedResourceName = null;
+            for (int i = 0; i < resourceNames.Length; i++)
+            {
+                prefab = LoadHeroPrefab(resourceNames[i]);
+                if (prefab != null)
+                {
+                    resolvedResourceName = resourceNames[i];
+                    break;
+                }
+            }
+
             if (prefab == null)
             {
-                Debug.LogWarning($"[HeroStage] Missing model resource for hero '{heroId}' at {kHeroModelResourceRoot}/{resourceName}.");
+                Debug.LogWarning($"[HeroStage] Missing model resource for hero '{heroId}' under {kHeroModelResourceRoot}.");
                 return null;
             }
 
@@ -454,18 +533,76 @@ namespace VeilBreakers.UI.CharacterSelect
             }
 
             PositionModelOnStage(model);
+            EnsureModelHasMaterials(model, heroId);
+            SetupAnimator(model, heroId, resolvedResourceName);
             return model;
         }
 
-        private float ResolveFacingYaw(HeroData hero)
+        private float ResolveFacingYaw(HeroData hero, GameObject model)
         {
             if (hero == null || string.IsNullOrWhiteSpace(hero.hero_id))
             {
+                if (TryResolveAutoFacingYaw(model, out float defaultAutoYaw))
+                {
+                    return defaultAutoYaw;
+                }
+
                 return _initialFacingYaw;
             }
 
             string heroId = hero.hero_id.Trim().ToLowerInvariant();
-            return kHeroFacingYawById.TryGetValue(heroId, out float yaw) ? yaw : _initialFacingYaw;
+            if (kHeroFacingYawById.TryGetValue(heroId, out float yaw))
+            {
+                return yaw;
+            }
+
+            if (TryResolveAutoFacingYaw(model, out float autoYaw))
+            {
+                return autoYaw;
+            }
+
+            return _initialFacingYaw;
+        }
+
+        private bool TryResolveAutoFacingYaw(GameObject model, out float yaw)
+        {
+            yaw = _initialFacingYaw;
+            if (model == null || _stageRoot == null || _stageCamera == null)
+            {
+                return false;
+            }
+
+            Transform facingTransform = model.transform;
+            var animator = model.GetComponentInChildren<Animator>();
+            if (animator != null && animator.avatar != null && animator.avatar.isHuman)
+            {
+                var hips = animator.GetBoneTransform(HumanBodyBones.Hips);
+                if (hips != null)
+                {
+                    facingTransform = hips;
+                }
+            }
+            else
+            {
+                var skinnedRenderer = model.GetComponentInChildren<SkinnedMeshRenderer>();
+                if (skinnedRenderer != null && skinnedRenderer.rootBone != null)
+                {
+                    facingTransform = skinnedRenderer.rootBone;
+                }
+            }
+
+            Vector3 sourceForward = Vector3.ProjectOnPlane(facingTransform.forward, Vector3.up);
+            Vector3 desiredForward = Vector3.ProjectOnPlane(-_stageCamera.transform.forward, Vector3.up);
+            if (sourceForward.sqrMagnitude < 0.0001f || desiredForward.sqrMagnitude < 0.0001f)
+            {
+                return false;
+            }
+
+            sourceForward.Normalize();
+            desiredForward.Normalize();
+            float deltaYaw = Vector3.SignedAngle(sourceForward, desiredForward, Vector3.up);
+            yaw = Mathf.Repeat(_stageRoot.transform.localEulerAngles.y + deltaYaw, 360f);
+            return true;
         }
 
         private static GameObject LoadHeroPrefab(string resourceName)
@@ -520,6 +657,8 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 $"Assets/Resources/{kHeroModelResourceRoot}/{normalizedName}.glb",
                 $"Assets/Resources/{kHeroModelResourceRoot}/{normalizedName}.gltf",
+                $"Assets/Resources/{kHeroModelResourceRoot}/{normalizedName}.fbx",
+                $"Assets/Resources/{kHeroModelResourceRoot}/{normalizedName}.blend",
                 $"Assets/Resources/{kHeroModelResourceRoot}/{normalizedName}.prefab"
             };
 
@@ -597,6 +736,335 @@ namespace VeilBreakers.UI.CharacterSelect
                 : _heroPosition;
             Vector3 currentAnchor = new Vector3(bounds.center.x, bounds.min.y, bounds.center.z);
             model.transform.position += desiredAnchor - currentAnchor;
+        }
+
+        /// <summary>
+        /// Checks if the model's renderers have valid materials with textures.
+        /// If the model appears untextured (default white), applies a stylized
+        /// dark metallic fallback material so it looks presentable.
+        /// </summary>
+        private void EnsureModelHasMaterials(GameObject model, string heroId)
+        {
+            if (model == null) return;
+
+            var renderers = model.GetComponentsInChildren<Renderer>(true);
+            if (renderers == null || renderers.Length == 0) return;
+            bool forceFallback = !string.IsNullOrWhiteSpace(heroId) && kHeroForceTextureFallbackById.Contains(heroId);
+
+            bool hasAnyMaterialSlot = false;
+            bool needsFallbackMaterial = false;
+
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                var r = renderers[i];
+                if (r == null || r.sharedMaterials == null) continue;
+
+                for (int m = 0; m < r.sharedMaterials.Length; m++)
+                {
+                    var mat = r.sharedMaterials[m];
+                    if (mat == null)
+                    {
+                        continue;
+                    }
+
+                    hasAnyMaterialSlot = true;
+                    if (!HasAnyAssignedTexture(mat))
+                    {
+                        needsFallbackMaterial = true;
+                        break;
+                    }
+                }
+
+                if (needsFallbackMaterial)
+                {
+                    break;
+                }
+            }
+
+            if (!hasAnyMaterialSlot || (!needsFallbackMaterial && !forceFallback)) return;
+
+            Texture2D fallbackTexture = LoadFallbackTexture(heroId);
+            if (fallbackTexture == null)
+            {
+                Debug.LogWarning($"[HeroStage] '{heroId}' appears untextured and no fallback texture is configured.");
+            }
+            else
+            {
+                Debug.Log($"[HeroStage] Applying extracted fallback texture for '{heroId}'.");
+            }
+
+            var fallbackMat = CreateHeroFallbackMaterial(fallbackTexture);
+            if (fallbackMat == null) return;
+
+            _heroMaterial = fallbackMat;
+            _heroRenderer = renderers[0];
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                var renderer = renderers[i];
+                if (renderer == null) continue;
+
+                var sharedMaterials = renderer.sharedMaterials;
+                bool updated = false;
+                for (int m = 0; m < sharedMaterials.Length; m++)
+                {
+                    if (forceFallback || sharedMaterials[m] == null || !HasAnyAssignedTexture(sharedMaterials[m]))
+                    {
+                        sharedMaterials[m] = fallbackMat;
+                        updated = true;
+                    }
+                }
+
+                if (updated)
+                {
+                    renderer.sharedMaterials = sharedMaterials;
+                }
+            }
+        }
+
+        private static Texture2D LoadFallbackTexture(string heroId)
+        {
+            if (string.IsNullOrWhiteSpace(heroId)) return null;
+            if (!kHeroFallbackTextureById.TryGetValue(heroId, out string texturePath) || string.IsNullOrWhiteSpace(texturePath))
+            {
+                return null;
+            }
+
+            texturePath = texturePath.Trim();
+            string normalizedPath = texturePath.Replace("\\", "/");
+            string pathWithoutExtension = System.IO.Path.ChangeExtension(normalizedPath, null)?.Replace("\\", "/") ?? normalizedPath;
+
+            Texture2D texture = Resources.Load<Texture2D>(normalizedPath);
+            if (texture != null)
+            {
+                return texture;
+            }
+
+            texture = Resources.Load<Texture2D>(pathWithoutExtension);
+            if (texture != null)
+            {
+                return texture;
+            }
+
+            string[] extensions = { ".png", ".jpg", ".jpeg", ".tga" };
+#if UNITY_EDITOR
+            for (int i = 0; i < extensions.Length; i++)
+            {
+                string assetPath = $"Assets/Resources/{pathWithoutExtension}{extensions[i]}";
+                texture = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(assetPath);
+                if (texture != null)
+                {
+                    return texture;
+                }
+            }
+#endif
+
+            string[] absoluteCandidates = new string[extensions.Length];
+            for (int i = 0; i < extensions.Length; i++)
+            {
+                absoluteCandidates[i] = System.IO.Path.Combine(Application.dataPath, "Resources", $"{pathWithoutExtension}{extensions[i]}");
+            }
+
+            for (int i = 0; i < absoluteCandidates.Length; i++)
+            {
+                string absolutePath = absoluteCandidates[i];
+                if (!File.Exists(absolutePath))
+                {
+                    continue;
+                }
+
+                if (kRuntimeFallbackTextureCache.TryGetValue(absolutePath, out var cachedTexture) && cachedTexture != null)
+                {
+                    return cachedTexture;
+                }
+
+                try
+                {
+                    byte[] bytes = File.ReadAllBytes(absolutePath);
+                    if (bytes == null || bytes.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    var runtimeTexture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+                    runtimeTexture.name = $"{heroId}_fallback_texture";
+                    if (runtimeTexture.LoadImage(bytes, false))
+                    {
+                        kRuntimeFallbackTextureCache[absolutePath] = runtimeTexture;
+                        return runtimeTexture;
+                    }
+                    UnityEngine.Object.Destroy(runtimeTexture);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning($"[HeroStage] Failed loading fallback texture at '{absolutePath}': {ex.Message}");
+                }
+            }
+
+            return null;
+        }
+
+        private static bool HasAnyAssignedTexture(Material mat)
+        {
+            if (mat == null) return false;
+
+            if (mat.HasProperty("_BaseMap") && mat.GetTexture("_BaseMap") != null) return true;
+            if (mat.HasProperty("_MainTex") && mat.GetTexture("_MainTex") != null) return true;
+            if (mat.HasProperty("_MetallicGlossMap") && mat.GetTexture("_MetallicGlossMap") != null) return true;
+            if (mat.HasProperty("_BumpMap") && mat.GetTexture("_BumpMap") != null) return true;
+            if (mat.HasProperty("_OcclusionMap") && mat.GetTexture("_OcclusionMap") != null) return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// Creates a dark metallic material that looks presentable as a placeholder.
+        /// </summary>
+        private static Material CreateHeroFallbackMaterial(Texture2D baseTexture = null)
+        {
+            bool usingScriptablePipeline = UnityEngine.Rendering.GraphicsSettings.currentRenderPipeline != null;
+            Shader shader = null;
+
+            if (usingScriptablePipeline)
+            {
+                shader = Shader.Find("Universal Render Pipeline/Lit");
+            }
+            if (shader == null)
+            {
+                shader = Shader.Find("Standard");
+            }
+            if (shader == null) return null;
+
+            var mat = new Material(shader);
+            // Keep albedo neutral so fallback texture stays readable.
+            Color baseColor = Color.white;
+
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor("_BaseColor", baseColor);
+            if (mat.HasProperty("_Color"))
+                mat.SetColor("_Color", baseColor);
+            if (baseTexture != null)
+            {
+                if (mat.HasProperty("_BaseMap"))
+                    mat.SetTexture("_BaseMap", baseTexture);
+                if (mat.HasProperty("_MainTex"))
+                    mat.SetTexture("_MainTex", baseTexture);
+            }
+
+            // Keep fallback physically plausible but readable for character preview.
+            if (mat.HasProperty("_Metallic"))
+                mat.SetFloat("_Metallic", 0.1f);
+            if (mat.HasProperty("_Smoothness"))
+                mat.SetFloat("_Smoothness", 0.3f);
+            if (mat.HasProperty("_GlossMapScale"))
+                mat.SetFloat("_GlossMapScale", 0.3f);
+
+            return mat;
+        }
+
+        /// <summary>
+        /// Configures an Animator component on the hero model for idle/select animations.
+        /// Loads a RuntimeAnimatorController from Resources if available.
+        /// </summary>
+        private void SetupAnimator(GameObject model, string heroId, string resolvedResourceName)
+        {
+            _heroAnimator = null;
+            _animIdleTimer = 0f;
+
+            if (model == null) return;
+
+            // Check if model already has an Animator (from the FBX import)
+            var animator = model.GetComponentInChildren<Animator>();
+            if (animator == null)
+            {
+                animator = model.AddComponent<Animator>();
+            }
+
+            if (animator.avatar == null)
+            {
+                animator.avatar = LoadHeroAvatar(resolvedResourceName, heroId);
+            }
+
+            animator.applyRootMotion = false;
+            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+
+            // Try to load a hero-specific animator controller
+            if (kHeroAnimControllerById.TryGetValue(heroId, out string controllerName))
+            {
+                string path = $"{kAnimControllerResourceRoot}/{controllerName}";
+                var controller = Resources.Load<RuntimeAnimatorController>(path);
+                if (controller != null)
+                {
+                    animator.runtimeAnimatorController = controller;
+                    _heroAnimator = animator;
+
+                    _heroAnimator.Rebind();
+                    _heroAnimator.Update(0f);
+                    _heroAnimator.SetBool(_animSelectedHash, false);
+                    _heroAnimator.SetFloat(_animIdleTimerHash, 0f);
+                    if (_heroAnimator.HasState(0, _animIdleStateHash))
+                    {
+                        _heroAnimator.Play(_animIdleStateHash, 0, 0f);
+                    }
+                    _heroAnimator.Update(0f);
+                }
+                else
+                {
+                    Debug.Log($"[HeroStage] No AnimatorController found at Resources/{path}. Hero will be static until controller is created.");
+                }
+            }
+        }
+
+        private Avatar LoadHeroAvatar(string resolvedResourceName, string heroId)
+        {
+            if (!string.IsNullOrWhiteSpace(resolvedResourceName))
+            {
+                var avatar = LoadAvatarByResourceName(resolvedResourceName);
+                if (avatar != null)
+                {
+                    return avatar;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(heroId)) return null;
+            if (!kHeroModelResourceById.TryGetValue(heroId, out var resourceNames) || resourceNames == null)
+            {
+                return null;
+            }
+
+            for (int i = 0; i < resourceNames.Length; i++)
+            {
+                var avatar = LoadAvatarByResourceName(resourceNames[i]);
+                if (avatar != null)
+                {
+                    return avatar;
+                }
+            }
+
+            return null;
+        }
+
+        private static Avatar LoadAvatarByResourceName(string resourceName)
+        {
+            if (string.IsNullOrWhiteSpace(resourceName))
+            {
+                return null;
+            }
+
+            var assets = Resources.LoadAll($"{kHeroModelResourceRoot}/{resourceName.Trim()}");
+            if (assets == null || assets.Length == 0)
+            {
+                return null;
+            }
+
+            for (int i = 0; i < assets.Length; i++)
+            {
+                if (assets[i] is Avatar avatar)
+                {
+                    return avatar;
+                }
+            }
+
+            return null;
         }
 
         private void FitCameraToCurrentHero()

@@ -51,11 +51,10 @@
     left: 25%;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
     border-radius: 14px;
-    border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.09);
-    background-color: rgba(12, 10, 18, 0.62);
+    border-width: 0;
+    background-color: transparent;
 }
 
 .vb-hero-stage-render {
@@ -81,39 +80,74 @@
 
 .vb-model-rotate-btn {
     position: absolute;
-    width: 56px;
-    height: 56px;
+    width: 40px;
+    height: 40px;
     top: 50%;
-    margin-top: -28px;
-    background-color: rgba(12, 10, 18, 0.86);
+    margin-top: -20px;
+    background-color: rgba(12, 10, 18, 0.55);
     border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.24);
-    border-radius: 28px;
-    color: rgba(244, 236, 224, 1);
-    font-size: 28px;
-    -unity-font-style: bold;
-    -unity-text-align: middle-center;
+    border-color: rgba(255, 255, 255, 0.18);
+    border-radius: 20px;
     align-items: center;
     justify-content: center;
+    transition-property: background-color, border-color;
+    transition-duration: 200ms;
 }
 
 .vb-model-rotate-btn:hover {
-    background-color: rgba(25, 22, 34, 0.94);
-    border-color: rgba(255, 255, 255, 0.42);
+    background-color: rgba(25, 22, 34, 0.92);
+    border-color: rgba(255, 255, 255, 0.45);
+}
+
+.vb-model-rotate-btn:active {
+    background-color: rgba(40, 35, 55, 0.95);
+    border-color: rgba(255, 255, 255, 0.6);
 }
 
 .vb-model-rotate-left {
-    left: 16px;
+    left: 8px;
 }
 
 .vb-model-rotate-right {
-    right: 16px;
+    right: 8px;
 }
 
-.vb-model-rotate-arrow {
-    color: rgba(244, 236, 224, 1);
-    font-size: 26px;
-    -unity-font-style: bold;
+/* CSS-drawn rotation arrow icons */
+.vb-rotate-icon {
+    width: 14px;
+    height: 14px;
+    border-top-width: 2px;
+    border-left-width: 2px;
+    border-bottom-width: 0;
+    border-right-width: 0;
+    border-color: rgba(245, 238, 226, 0.8);
+    background-color: transparent;
+}
+
+.vb-rotate-icon-left {
+    rotate: -45deg;
+    margin-left: 3px;
+}
+
+.vb-rotate-icon-right {
+    rotate: 135deg;
+    margin-right: 3px;
+}
+
+.vb-model-rotate-btn:hover .vb-rotate-icon {
+    border-color: rgba(255, 255, 255, 1);
+}
+
+/* DRAG TO ROTATE hint */
+.vb-rotate-hint {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    margin-left: -60px;
+    width: 120px;
+    font-size: 9px;
+    color: rgba(220, 210, 198, 0.4);
+    letter-spacing: 2px;
     -unity-text-align: middle-center;
 }
 
@@ -545,58 +579,75 @@
     font-size: 9px;
 }
 
+/* =============================================================================
+   HERO NAVIGATION (bottom center)
+   ============================================================================= */
+
+.vb-hero-nav-arrow {
+    position: absolute;
+    width: 156px;
+    height: 46px;
+    bottom: 214px;
+    background-color: rgba(12, 10, 18, 0.9);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    align-items: center;
+    justify-content: center;
+    transition-property: background-color, border-color;
+    transition-duration: 200ms;
+}
+
+.vb-hero-nav-arrow:hover {
+    background-color: rgba(25, 20, 38, 0.92);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.vb-hero-nav-arrow:active {
+    background-color: rgba(40, 35, 55, 0.95);
+    border-color: rgba(255, 255, 255, 0.7);
+}
+
+.vb-hero-nav-prev {
+    left: 50%;
+    margin-left: -170px;
+}
+
+.vb-hero-nav-next {
+    left: 50%;
+    margin-left: 14px;
+}
+
+.vb-hero-nav-label {
+    font-size: 12px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+    color: rgba(255, 248, 238, 0.95);
+}
+
+/* HERO INDEX INDICATOR */
 .vb-hero-cycle-hud {
     position: absolute;
     left: 50%;
-    margin-left: -210px;
-    bottom: 236px;
-    width: 420px;
-    height: 42px;
+    margin-left: -140px;
+    bottom: 268px;
+    width: 280px;
+    height: 32px;
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    padding-top: 4px;
-    padding-bottom: 4px;
-    background-color: rgba(8, 7, 12, 0.75);
+    background-color: rgba(8, 7, 12, 0.6);
     border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.14);
-    border-radius: 8px;
-}
-
-.vb-hero-cycle-btn {
-    width: 64px;
-    height: 40px;
-    margin-left: 12px;
-    margin-right: 12px;
-    background-color: rgba(15, 12, 20, 0.82);
-    border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-    color: rgba(244, 236, 224, 1);
-    font-size: 14px;
-    -unity-font-style: bold;
-    -unity-text-align: middle-center;
-    align-items: center;
-    justify-content: center;
-}
-
-.vb-hero-cycle-btn:hover {
-    border-color: rgba(255, 255, 255, 0.45);
-}
-
-.vb-hero-cycle-arrow {
-    color: rgba(244, 236, 224, 1);
-    font-size: 22px;
-    -unity-font-style: bold;
-    -unity-text-align: middle-center;
+    border-color: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
 }
 
 .vb-hero-index-indicator {
     min-width: 250px;
-    color: rgba(234, 224, 212, 0.98);
-    font-size: 11px;
+    color: rgba(234, 224, 212, 0.85);
+    font-size: 10px;
     -unity-font-style: bold;
-    letter-spacing: 1px;
+    letter-spacing: 2px;
     -unity-text-align: middle-center;
 }
 

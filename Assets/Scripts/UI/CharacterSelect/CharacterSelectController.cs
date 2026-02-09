@@ -369,14 +369,18 @@ namespace VeilBreakers.UI.CharacterSelect
             _btnRotateModelRightFallback = _root.Q<Button>("btn-rotate-model-right-fallback");
             _heroIndexIndicator = _root.Q<Label>("hero-index-indicator");
             EnsureRuntimeControlsVisible();
-            EnsureHeroCycleButtonText(_btnPrevHero, "PREV", "Previous Hero (A / Left Arrow)");
-            EnsureHeroCycleButtonText(_btnNextHero, "NEXT", "Next Hero (D / Right Arrow)");
+            SetButtonLabel(_btnPrevHero, "PREVIOUS");
+            SetButtonLabel(_btnNextHero, "NEXT");
+            if (_btnPrevHero != null) _btnPrevHero.tooltip = "Previous Hero (A / Left Arrow)";
+            if (_btnNextHero != null) _btnNextHero.tooltip = "Next Hero (D / Right Arrow)";
             EnforceAbilityReadability();
 
             // Overlays
             _screenFade = _root.Q("screen-fade");
             _vfxOverlay = _root.Q("vfx-overlay");
             _heroStageRender = _root.Q("hero-stage-render");
+            if (_vfxOverlay != null) _vfxOverlay.pickingMode = PickingMode.Ignore;
+            if (_heroStageRender != null) _heroStageRender.pickingMode = PickingMode.Position;
             _envLayerColor = _root.Q("env-layer-color");
             _infoPanel = _root.Q("info-panel");
             _carouselStrip = _root.Q("carousel-strip");
@@ -438,7 +442,7 @@ namespace VeilBreakers.UI.CharacterSelect
             heroStage.style.top = Length.Percent(11f);
             heroStage.style.width = Length.Percent(50f);
             heroStage.style.height = Length.Percent(66f);
-            heroStage.style.overflow = Overflow.Hidden;
+            heroStage.style.overflow = Overflow.Visible;
 
             var heroStageRender = EnsureElement(heroStage, "hero-stage-render");
             heroStageRender.style.width = new StyleLength(new Length(100f, LengthUnit.Percent));
@@ -547,19 +551,18 @@ namespace VeilBreakers.UI.CharacterSelect
             cycleHud.style.justifyContent = Justify.Center;
             cycleHud.style.alignItems = Align.Center;
 
-            var prev = EnsureButton(cycleHud, "btn-prev-hero");
-            prev.text = "<";
-            prev.style.width = 42f;
-            prev.style.height = 30f;
-            prev.style.marginRight = 10f;
+            // Nav arrows are standalone root-level elements (not children of cycleHud)
+            var prev = EnsureButton(_root, "btn-prev-hero");
+            prev.AddToClassList("vb-hero-nav-arrow");
+            prev.AddToClassList("vb-hero-nav-prev");
+            SetButtonLabel(prev, "PREVIOUS");
 
             EnsureLabel(cycleHud, "hero-index-indicator", "HERO 1 / 4");
 
-            var next = EnsureButton(cycleHud, "btn-next-hero");
-            next.text = ">";
-            next.style.width = 42f;
-            next.style.height = 30f;
-            next.style.marginLeft = 10f;
+            var next = EnsureButton(_root, "btn-next-hero");
+            next.AddToClassList("vb-hero-nav-arrow");
+            next.AddToClassList("vb-hero-nav-next");
+            SetButtonLabel(next, "NEXT");
 
             var embark = EnsureButton(_root, "btn-embark");
             embark.style.position = Position.Absolute;
@@ -770,106 +773,224 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (_root == null) return;
 
-            // Hero cycle controls: force a visible overlay near top-center.
+            // Hero cycle HUD: indicator pill only (nav arrows are now standalone elements in UXML)
             var cycleHud = _heroCycleHud ?? EnsureElement(_root, "hero-cycle-hud");
-            cycleHud.style.position = Position.Absolute;
-            cycleHud.style.left = Length.Percent(50f);
-            cycleHud.style.top = StyleKeyword.Null;
-            cycleHud.style.bottom = 236f;
-            cycleHud.style.width = 420f;
-            cycleHud.style.height = 46f;
-            cycleHud.style.marginLeft = -210f;
             cycleHud.style.display = DisplayStyle.Flex;
             cycleHud.style.opacity = 1f;
-            cycleHud.style.flexDirection = FlexDirection.Row;
-            cycleHud.style.justifyContent = Justify.Center;
-            cycleHud.style.alignItems = Align.Center;
-            cycleHud.style.backgroundColor = new Color(0.05f, 0.05f, 0.08f, 0.9f);
-            cycleHud.style.borderTopWidth = 1f;
-            cycleHud.style.borderBottomWidth = 1f;
-            cycleHud.style.borderLeftWidth = 1f;
-            cycleHud.style.borderRightWidth = 1f;
-            cycleHud.style.borderTopColor = new Color(1f, 1f, 1f, 0.2f);
-            cycleHud.style.borderBottomColor = new Color(1f, 1f, 1f, 0.2f);
-            cycleHud.style.borderLeftColor = new Color(1f, 1f, 1f, 0.2f);
-            cycleHud.style.borderRightColor = new Color(1f, 1f, 1f, 0.2f);
-            cycleHud.style.borderTopLeftRadius = 6f;
-            cycleHud.style.borderTopRightRadius = 6f;
-            cycleHud.style.borderBottomLeftRadius = 6f;
-            cycleHud.style.borderBottomRightRadius = 6f;
-            cycleHud.BringToFront();
 
-            _btnPrevHero ??= EnsureButton(cycleHud, "btn-prev-hero");
-            _btnNextHero ??= EnsureButton(cycleHud, "btn-next-hero");
+            // Nav arrows are standalone root-level elements; only ensure references are set.
+            _btnPrevHero ??= _root.Q<Button>("btn-prev-hero");
+            _btnNextHero ??= _root.Q<Button>("btn-next-hero");
             _heroIndexIndicator ??= EnsureLabel(cycleHud, "hero-index-indicator", "HERO 1 / 4");
+            EnsureButtonParent(_btnPrevHero, _root);
+            EnsureButtonParent(_btnNextHero, _root);
 
-            ApplyArrowButtonStyle(_btnPrevHero, "<");
-            ApplyArrowButtonStyle(_btnNextHero, ">");
-
-            _heroIndexIndicator.style.minWidth = 220f;
-            _heroIndexIndicator.style.unityTextAlign = TextAnchor.MiddleCenter;
-            _heroIndexIndicator.style.fontSize = 13f;
-            _heroIndexIndicator.style.color = new Color(0.94f, 0.9f, 0.84f, 1f);
+            // Ensure nav arrows are visible (USS handles all positioning/sizing)
+            if (_btnPrevHero != null)
+            {
+                _btnPrevHero.style.display = DisplayStyle.Flex;
+                _btnPrevHero.style.opacity = 1f;
+                _btnPrevHero.tooltip = "Previous hero";
+            }
+            if (_btnNextHero != null)
+            {
+                _btnNextHero.style.display = DisplayStyle.Flex;
+                _btnNextHero.style.opacity = 1f;
+                _btnNextHero.tooltip = "Next hero";
+            }
+            ApplyHeroNavigationLayout();
 
             var carousel = _carouselStrip ?? EnsureElement(_root, "carousel-strip");
-            carousel.style.position = Position.Absolute;
-            carousel.style.left = 0f;
-            carousel.style.right = 0f;
-            carousel.style.bottom = 24f;
-            carousel.style.height = 156f;
             carousel.style.display = DisplayStyle.Flex;
             carousel.style.opacity = 1f;
-            carousel.style.alignItems = Align.Center;
-            carousel.style.justifyContent = Justify.Center;
 
             if (_btnEmbark != null)
             {
-                _btnEmbark.style.position = Position.Absolute;
-                _btnEmbark.style.left = Length.Percent(50f);
-                _btnEmbark.style.marginLeft = -170f;
-                _btnEmbark.style.bottom = 148f;
-                _btnEmbark.style.width = 340f;
-                _btnEmbark.style.height = 68f;
                 _btnEmbark.style.display = DisplayStyle.Flex;
                 _btnEmbark.style.opacity = 1f;
             }
 
-            // Model rotation controls: force visible inside hero stage.
+            // Model rotation controls: USS handles styling; just ensure visible
             var stage = _root.Q<VisualElement>("hero-stage") ?? _heroStageRender?.parent;
-            if (stage == null && _root != null)
-            {
-                stage = EnsureElement(_root, "hero-stage");
-                stage.style.position = Position.Absolute;
-                stage.style.left = Length.Percent(25f);
-                stage.style.top = Length.Percent(11f);
-                stage.style.width = Length.Percent(50f);
-                stage.style.height = Length.Percent(66f);
-                stage.style.overflow = Overflow.Hidden;
-            }
-
             if (stage != null)
             {
-                _btnRotateModelLeft ??= EnsureButton(stage, "btn-rotate-model-left");
-                _btnRotateModelRight ??= EnsureButton(stage, "btn-rotate-model-right");
+                _btnRotateModelLeft ??= stage.Q<Button>("btn-rotate-model-left");
+                _btnRotateModelRight ??= stage.Q<Button>("btn-rotate-model-right");
+                EnsureButtonParent(_btnRotateModelLeft, _root);
+                EnsureButtonParent(_btnRotateModelRight, _root);
+                if (_btnRotateModelLeft != null)
+                {
+                    _btnRotateModelLeft.style.display = DisplayStyle.Flex;
+                    _btnRotateModelLeft.style.opacity = 1f;
+                    _btnRotateModelLeft.BringToFront();
+                }
+                if (_btnRotateModelRight != null)
+                {
+                    _btnRotateModelRight.style.display = DisplayStyle.Flex;
+                    _btnRotateModelRight.style.opacity = 1f;
+                    _btnRotateModelRight.BringToFront();
+                }
 
-                ApplyRoundRotateButtonStyle(_btnRotateModelLeft, "<", leftSide: true);
-                ApplyRoundRotateButtonStyle(_btnRotateModelRight, ">", leftSide: false);
-                _btnRotateModelLeft.BringToFront();
-                _btnRotateModelRight.BringToFront();
+                ApplyRotationButtonLayout(stage);
             }
 
             _btnNeutralToggle ??= EnsureButton(_root, "btn-neutral-toggle");
             _btnNeutralToggle.RemoveFromClassList("hidden");
-            _btnNeutralToggle.style.position = Position.Absolute;
-            _btnNeutralToggle.style.right = 40f;
-            _btnNeutralToggle.style.top = 36f;
             _btnNeutralToggle.style.display = DisplayStyle.Flex;
             _btnNeutralToggle.style.opacity = 1f;
             ApplyButtonReadability(_btnNeutralToggle);
             _btnNeutralToggle.BringToFront();
             RefreshNeutralToggleButtonText();
 
-            EnsureFallbackNavigationOverlay(stage);
+            // Keep runtime fallback nav controls hidden unless explicitly needed.
+            if (_btnPrevHeroFallback != null) _btnPrevHeroFallback.style.display = DisplayStyle.None;
+            if (_btnNextHeroFallback != null) _btnNextHeroFallback.style.display = DisplayStyle.None;
+            if (_btnRotateModelLeftFallback != null) _btnRotateModelLeftFallback.style.display = DisplayStyle.None;
+            if (_btnRotateModelRightFallback != null) _btnRotateModelRightFallback.style.display = DisplayStyle.None;
+        }
+
+        private static void EnsureButtonParent(Button button, VisualElement targetParent)
+        {
+            if (button == null || targetParent == null) return;
+            if (button.parent == targetParent) return;
+
+            button.RemoveFromHierarchy();
+            targetParent.Add(button);
+        }
+
+        private void ApplyHeroNavigationLayout()
+        {
+            float stageLeft;
+            float stageTop;
+            float stageWidth;
+            float stageHeight;
+            bool hasStageRect = TryGetHeroStageRect(out stageLeft, out stageTop, out stageWidth, out stageHeight);
+            float centerX = hasStageRect ? (stageLeft + (stageWidth * 0.5f)) : (_root.resolvedStyle.width * 0.5f);
+            float navTop = hasStageRect ? (stageTop + stageHeight + 14f) : (_root.resolvedStyle.height - 214f);
+
+            if (_btnPrevHero != null)
+            {
+                _btnPrevHero.style.position = Position.Absolute;
+                _btnPrevHero.style.left = centerX - 170f;
+                _btnPrevHero.style.top = navTop;
+                _btnPrevHero.style.bottom = StyleKeyword.Null;
+                _btnPrevHero.style.width = 156f;
+                _btnPrevHero.style.height = 46f;
+                _btnPrevHero.style.marginLeft = 0f;
+                _btnPrevHero.style.zIndex = 1200;
+                _btnPrevHero.style.display = DisplayStyle.Flex;
+                _btnPrevHero.style.opacity = 1f;
+                _btnPrevHero.BringToFront();
+            }
+
+            if (_btnNextHero != null)
+            {
+                _btnNextHero.style.position = Position.Absolute;
+                _btnNextHero.style.left = centerX + 14f;
+                _btnNextHero.style.top = navTop;
+                _btnNextHero.style.bottom = StyleKeyword.Null;
+                _btnNextHero.style.width = 156f;
+                _btnNextHero.style.height = 46f;
+                _btnNextHero.style.marginLeft = 0f;
+                _btnNextHero.style.zIndex = 1200;
+                _btnNextHero.style.display = DisplayStyle.Flex;
+                _btnNextHero.style.opacity = 1f;
+                _btnNextHero.BringToFront();
+            }
+
+            if (_heroCycleHud != null)
+            {
+                _heroCycleHud.style.position = Position.Absolute;
+                _heroCycleHud.style.left = centerX - 140f;
+                _heroCycleHud.style.top = navTop - 40f;
+                _heroCycleHud.style.bottom = StyleKeyword.Null;
+                _heroCycleHud.style.width = 280f;
+                _heroCycleHud.style.height = 32f;
+                _heroCycleHud.style.marginLeft = 0f;
+                _heroCycleHud.style.zIndex = 1190;
+                _heroCycleHud.style.display = DisplayStyle.Flex;
+                _heroCycleHud.style.opacity = 1f;
+                _heroCycleHud.BringToFront();
+            }
+        }
+
+        private void ApplyRotationButtonLayout(VisualElement stage)
+        {
+            if (_root == null) return;
+
+            float stageLeft;
+            float stageTop;
+            float stageWidth;
+            float stageHeight;
+            bool hasStageRect = TryGetHeroStageRect(out stageLeft, out stageTop, out stageWidth, out stageHeight);
+
+            float buttonTop = hasStageRect
+                ? stageTop + (stageHeight * 0.5f) - 20f
+                : (_root.resolvedStyle.height * 0.5f) - 20f;
+            float leftX = hasStageRect
+                ? stageLeft + 8f
+                : (_root.resolvedStyle.width * 0.25f);
+            float rightX = hasStageRect
+                ? stageLeft + stageWidth - 48f
+                : (_root.resolvedStyle.width * 0.75f) - 40f;
+
+            if (_btnRotateModelLeft != null)
+            {
+                _btnRotateModelLeft.style.position = Position.Absolute;
+                _btnRotateModelLeft.style.left = leftX;
+                _btnRotateModelLeft.style.right = StyleKeyword.Null;
+                _btnRotateModelLeft.style.top = buttonTop;
+                _btnRotateModelLeft.style.bottom = StyleKeyword.Null;
+                _btnRotateModelLeft.style.marginTop = 0f;
+                _btnRotateModelLeft.style.width = 40f;
+                _btnRotateModelLeft.style.height = 40f;
+                _btnRotateModelLeft.style.display = DisplayStyle.Flex;
+                _btnRotateModelLeft.style.opacity = 1f;
+                _btnRotateModelLeft.style.zIndex = 1210;
+                _btnRotateModelLeft.BringToFront();
+            }
+
+            if (_btnRotateModelRight != null)
+            {
+                _btnRotateModelRight.style.position = Position.Absolute;
+                _btnRotateModelRight.style.left = rightX;
+                _btnRotateModelRight.style.right = StyleKeyword.Null;
+                _btnRotateModelRight.style.top = buttonTop;
+                _btnRotateModelRight.style.bottom = StyleKeyword.Null;
+                _btnRotateModelRight.style.marginTop = 0f;
+                _btnRotateModelRight.style.width = 40f;
+                _btnRotateModelRight.style.height = 40f;
+                _btnRotateModelRight.style.display = DisplayStyle.Flex;
+                _btnRotateModelRight.style.opacity = 1f;
+                _btnRotateModelRight.style.zIndex = 1210;
+                _btnRotateModelRight.BringToFront();
+            }
+        }
+
+        private bool TryGetHeroStageRect(out float left, out float top, out float width, out float height)
+        {
+            left = 0f;
+            top = 0f;
+            width = 0f;
+            height = 0f;
+
+            var stage = _root?.Q<VisualElement>("hero-stage") ?? _heroStageRender?.parent;
+            if (stage == null)
+            {
+                return false;
+            }
+
+            var rs = stage.resolvedStyle;
+            if (rs.width < 10f || rs.height < 10f)
+            {
+                return false;
+            }
+
+            left = rs.left;
+            top = rs.top;
+            width = rs.width;
+            height = rs.height;
+            return true;
         }
 
         private void EnsureFallbackNavigationOverlay(VisualElement stage)
@@ -1657,7 +1778,7 @@ namespace VeilBreakers.UI.CharacterSelect
             int heroCount = _heroes.Count;
             string numStr = heroNum <= 20 ? kNumberStrings[heroNum] : heroNum.ToString();
             string countStr = heroCount <= 20 ? kNumberStrings[heroCount] : heroCount.ToString();
-            _heroIndexIndicator.text = string.Concat("HERO ", numStr, " / ", countStr, "   [A/D or <-/->]");
+            _heroIndexIndicator.text = string.Concat("HERO ", numStr, " / ", countStr);
         }
 
         // =============================================================================
@@ -1974,44 +2095,30 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void EnsureNavigationButtonVisuals()
         {
+            // Re-assert layout to survive runtime style collisions.
+            ApplyHeroNavigationLayout();
+            var stage = _root?.Q<VisualElement>("hero-stage") ?? _heroStageRender?.parent;
+            ApplyRotationButtonLayout(stage);
+
             if (_btnPrevHero != null)
             {
-                ApplyArrowButtonStyle(_btnPrevHero, "<");
+                _btnPrevHero.style.display = DisplayStyle.Flex;
+                _btnPrevHero.style.opacity = 1f;
             }
-
             if (_btnNextHero != null)
             {
-                ApplyArrowButtonStyle(_btnNextHero, ">");
+                _btnNextHero.style.display = DisplayStyle.Flex;
+                _btnNextHero.style.opacity = 1f;
             }
-
             if (_btnRotateModelLeft != null)
             {
-                ApplyRoundRotateButtonStyle(_btnRotateModelLeft, "<", leftSide: true);
+                _btnRotateModelLeft.style.display = DisplayStyle.Flex;
+                _btnRotateModelLeft.style.opacity = 1f;
             }
-
             if (_btnRotateModelRight != null)
             {
-                ApplyRoundRotateButtonStyle(_btnRotateModelRight, ">", leftSide: false);
-            }
-
-            if (_btnPrevHeroFallback != null)
-            {
-                ApplyFallbackNavButtonStyle(_btnPrevHeroFallback, "PREV HERO", 36f, null, 236f, null, 170f);
-            }
-
-            if (_btnNextHeroFallback != null)
-            {
-                ApplyFallbackNavButtonStyle(_btnNextHeroFallback, "NEXT HERO", null, 36f, 236f, null, 170f);
-            }
-
-            if (_btnRotateModelLeftFallback != null)
-            {
-                ApplyFallbackNavButtonStyle(_btnRotateModelLeftFallback, "ROTATE L", 40f, null, null, 50f, 150f, -40f);
-            }
-
-            if (_btnRotateModelRightFallback != null)
-            {
-                ApplyFallbackNavButtonStyle(_btnRotateModelRightFallback, "ROTATE R", null, 40f, null, 50f, 150f, -40f);
+                _btnRotateModelRight.style.display = DisplayStyle.Flex;
+                _btnRotateModelRight.style.opacity = 1f;
             }
         }
 
@@ -2071,7 +2178,7 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_embarkLabel != null && string.IsNullOrWhiteSpace(_embarkLabel.text)) _embarkLabel.text = "EMBARK AS VEX";
             if (_heroIndexIndicator != null && string.IsNullOrWhiteSpace(_heroIndexIndicator.text))
             {
-                _heroIndexIndicator.text = "HERO 1 / 4   [A/D or <-/->]";
+                _heroIndexIndicator.text = "HERO 1 / 4";
             }
 
             for (int i = 0; i < _statValues.Length; i++)

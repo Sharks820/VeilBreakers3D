@@ -18,13 +18,14 @@
 
     <ui:VisualElement name="hero-stage" class="vb-hero-stage">
         <ui:VisualElement name="hero-stage-render" class="vb-hero-stage-render" />
-        <ui:VisualElement name="vfx-overlay" class="vb-vfx-overlay" />
-        <ui:Button name="btn-rotate-model-left" text="L" class="vb-model-rotate-btn vb-model-rotate-left">
-            <ui:Label text="L" class="vb-model-rotate-arrow" />
+        <ui:VisualElement name="vfx-overlay" class="vb-vfx-overlay" picking-mode="Ignore" />
+        <ui:Button name="btn-rotate-model-left" class="vb-model-rotate-btn vb-model-rotate-left">
+            <ui:VisualElement class="vb-rotate-icon vb-rotate-icon-left" />
         </ui:Button>
-        <ui:Button name="btn-rotate-model-right" text="R" class="vb-model-rotate-btn vb-model-rotate-right">
-            <ui:Label text="R" class="vb-model-rotate-arrow" />
+        <ui:Button name="btn-rotate-model-right" class="vb-model-rotate-btn vb-model-rotate-right">
+            <ui:VisualElement class="vb-rotate-icon vb-rotate-icon-right" />
         </ui:Button>
+        <ui:Label text="DRAG TO ROTATE" class="vb-rotate-hint" />
     </ui:VisualElement>
 
     <!-- ================================================================== -->
@@ -215,14 +216,16 @@
         </ui:VisualElement>
     </ui:VisualElement>
 
+    <!-- LARGE HERO NAVIGATION ARROWS -->
+    <ui:Button name="btn-prev-hero" class="vb-hero-nav-arrow vb-hero-nav-prev">
+        <ui:Label text="PREVIOUS" class="vb-hero-nav-label" />
+    </ui:Button>
+    <ui:Button name="btn-next-hero" class="vb-hero-nav-arrow vb-hero-nav-next">
+        <ui:Label text="NEXT" class="vb-hero-nav-label" />
+    </ui:Button>
+
     <ui:VisualElement name="hero-cycle-hud" class="vb-hero-cycle-hud">
-        <ui:Button name="btn-prev-hero" text="PREV" class="vb-hero-cycle-btn">
-            <ui:Label text="PREV" class="vb-hero-cycle-arrow" />
-        </ui:Button>
         <ui:Label name="hero-index-indicator" text="HERO 1 / 4" class="vb-hero-index-indicator" />
-        <ui:Button name="btn-next-hero" text="NEXT" class="vb-hero-cycle-btn">
-            <ui:Label text="NEXT" class="vb-hero-cycle-arrow" />
-        </ui:Button>
     </ui:VisualElement>
 
     <!-- ================================================================== -->
