@@ -100,3 +100,41 @@ jobs:
           name: test-results-playmode-smoke
           path: artifacts
           if-no-files-found: error
+
+  test-editmode-coverage:
+    name: Test (EditMode + Coverage Gate)
+    runs-on: ubuntu-latest
+    env:
+      COVERAGE_MIN_LINE_PERCENT: "35"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+      - name: Run EditMode Tests With Coverage
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: ${{ secrets.UNITY_SERIAL }}
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          projectPath: .
+          testMode: editmode
+          customParameters: >-
+            -enableCodeCoverage
+            -coverageResultsPath artifacts/Coverage
+            -coverageOptions "generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+Assembly-CSharp,-*.Tests"
+      - name: Enforce Coverage Gate
+        shell: pwsh
+        run: >
+          .\Tools\ci\check_coverage.ps1
+          -CoverageRoot "artifacts"
+          -MinLinePercent $env:COVERAGE_MIN_LINE_PERCENT
+      - name: Upload Coverage Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage-editmode
+          path: artifacts/Coverage
+          if-no-files-found: warn

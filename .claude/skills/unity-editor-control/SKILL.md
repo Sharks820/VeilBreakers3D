@@ -52,7 +52,8 @@ This skill triggers the **mcp-unity** MCP server for direct Unity Editor manipul
 ## MCP Server
 
 **Server**: mcp-unity
-**Package**: @anthropic/mcp-server-unity
+**Package**: `com.gamelovers.mcp-unity` (Unity package)
+**Launcher**: `Tools/mcp/launch-unity-mcp.js` (auto-resolves current PackageCache hash)
 **Requires**: Unity Editor running with MCP bridge enabled
 
 ## Integration Notes

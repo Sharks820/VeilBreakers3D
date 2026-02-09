@@ -1,5 +1,5 @@
 param(
-  [string]$ProjectVersion = "2022.3.62f3"
+  [string]$ProjectVersion = "6000.3.6f1"
 )
 
 $ErrorActionPreference = "Stop"
@@ -11,9 +11,9 @@ if ($env:UNITY_EXE -and (Test-Path $env:UNITY_EXE)) {
 
 $candidates = @(
   "C:\\Program Files\\Unity\\Hub\\Editor\\$ProjectVersion\\Editor\\Unity.exe",
-  "C:\\Program Files\\Unity\\Hub\\Editor\\$ProjectVersion\\Editor\\Unity.exe",
-  "C:\\Program Files\\Unity\\Hub\\Editor\\$ProjectVersion\\Editor\\Unity.exe"
-)
+  "C:\\Program Files\\Unity Hub\\Editor\\$ProjectVersion\\Editor\\Unity.exe",
+  "C:\\Program Files (x86)\\Unity\\Hub\\Editor\\$ProjectVersion\\Editor\\Unity.exe"
+) | Select-Object -Unique
 
 foreach ($p in $candidates) {
   if (Test-Path $p) {

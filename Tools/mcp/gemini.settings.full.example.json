@@ -1,0 +1,48 @@
+{
+  "general": {
+    "enablePromptCompletion": true
+  },
+  "mcpServers": {
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "memory-graph": {
+      "command": "npx",
+      "args": ["-y", "mcp-knowledge-graph", "--memory-path", "C:/Users/Conner/.claude/memory"]
+    },
+    "mcp-unity": {
+      "command": "node",
+      "args": ["Tools/mcp/launch-unity-mcp.js"]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "image-process": {
+      "command": "npx",
+      "args": ["-y", "image-process-mcp-server"]
+    },
+    "notion": {
+      "command": "npx",
+      "args": ["-y", "@notionhq/notion-mcp-server"],
+      "env": {
+        "NOTION_API_KEY": "${NOTION_API_KEY}"
+      }
+    },
+    "blender": {
+      "command": "uvx",
+      "args": ["blender-mcp"],
+      "env": {
+        "BLENDER_PORT": "9876"
+      }
+    }
+  },
+  "_notes": {
+    "profile": "Full profile: includes optional heavy MCPs for Blender/image/notion workflows.",
+    "caution": "Use only when those tools are actively required."
+  }
+}

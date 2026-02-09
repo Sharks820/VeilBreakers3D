@@ -23,7 +23,21 @@ Build an AAA-quality 3D monster RPG using Unity. Quality over speed, but don't o
 - Ask Gemini for second opinions on complex decisions
 - Keep responses focused and concise
 
-## 3. Commit When It Makes Sense
+## 3. Reasoning Budget (Power Without Bloat)
+- **Default mode:** 2-pass reasoning
+  - Pass 1: quick hypothesis from local code/context
+  - Pass 2: targeted verification (tests/logs/docs) before final claims
+- **Deep mode (only when needed):** use `sequential-thinking` if any are true:
+  - High-risk change (data loss, save format, core combat/math)
+  - 3+ interacting systems
+  - Repro is unclear after one focused debug pass
+- **Token guardrails:**
+  - Prefer symbol-level/file-slice reads over full-file dumps
+  - Use at most one external “second-opinion” round (Gemini) per decision
+  - Summarize findings before continuing broad exploration
+- **Stop conditions:** when confidence is high and tests/validation pass, ship instead of over-analyzing
+
+## 4. Commit When It Makes Sense
 - Commit after completing logical units of work
 - Don't interrupt mid-task for arbitrary time-based commits
 - Version updates in VEILBREAKERS.md track progress
@@ -68,7 +82,11 @@ Serena is powerful but **not always needed**. Use your judgment:
 | Complex analysis | `sequential-thinking` | Structured breakdown |
 | Unity Editor control | `mcp-unity` | Direct editor access |
 | Second opinion | Gemini CLI | Different perspective |
-| 3D modeling | Blender MCP | Direct Blender control |
+| 3D modeling session | Blender MCP (optional) | Use only when Blender bridge is active |
+
+### MCP Loading Strategy
+- Default to **core MCP profile** (`.mcp.json`) for best reasoning signal-to-noise.
+- Use **full MCP profile** (`.mcp.full.json`) only for focused tool-heavy sessions (Blender/image/notion).
 
 ## Workflows (Use When Helpful)
 
@@ -194,4 +212,4 @@ namespace VeilBreakers.[Category]
 
 ---
 
-*Configuration v5.0 - Lean, flexible, reasoning-first*
+*Configuration v5.1 - Lean, flexible, reasoning-first + explicit reasoning budget*

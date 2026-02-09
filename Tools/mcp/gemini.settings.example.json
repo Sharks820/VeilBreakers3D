@@ -1,0 +1,31 @@
+{
+  "general": {
+    "enablePromptCompletion": true
+  },
+  "mcpServers": {
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "memory-graph": {
+      "command": "npx",
+      "args": ["-y", "mcp-knowledge-graph", "--memory-path", "C:/Users/Conner/.claude/memory"]
+    },
+    "mcp-unity": {
+      "command": "node",
+      "args": ["Tools/mcp/launch-unity-mcp.js"]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    }
+  },
+  "_notes": {
+    "profile": "Core profile: lean defaults for high reasoning signal and low token/tool overhead.",
+    "full_profile_file": "Tools/mcp/gemini.settings.full.example.json",
+    "setup": "Copy this file to .gemini/settings.json for machine-local Gemini CLI MCP setup."
+  }
+}

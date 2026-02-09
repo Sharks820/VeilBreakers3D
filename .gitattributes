@@ -19,14 +19,15 @@
 *.meta text eol=lf
 
 # Unity serialized assets are YAML text.
-*.unity text eol=lf
-*.prefab text eol=lf
-*.asset text eol=lf
-*.mat text eol=lf
-*.anim text eol=lf
-*.controller text eol=lf
-*.playable text eol=lf
-*.overrideController text eol=lf
+# Uses UnityYAMLMerge (Smart Merge) for semantic conflict resolution.
+*.unity text eol=lf merge=unityyamlmerge
+*.prefab text eol=lf merge=unityyamlmerge
+*.asset text eol=lf merge=unityyamlmerge
+*.mat text eol=lf merge=unityyamlmerge
+*.anim text eol=lf merge=unityyamlmerge
+*.controller text eol=lf merge=unityyamlmerge
+*.playable text eol=lf merge=unityyamlmerge
+*.overrideController text eol=lf merge=unityyamlmerge
 
 # Binary assets
 *.png binary
@@ -47,6 +48,11 @@
 *.avi binary
 *.fbx binary
 *.blend binary
+*.obj binary
+*.glb binary
+*.gltf text eol=lf
+*.stl binary
+*.dae text eol=lf
 *.ttf binary
 *.otf binary
 *.dll binary

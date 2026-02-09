@@ -26,9 +26,7 @@
     "mcp-unity": {
       "type": "stdio",
       "command": "node",
-      "args": [
-        "Tools/mcp/launch-unity-mcp.js"
-      ],
+      "args": ["Tools/mcp/launch-unity-mcp.js"],
       "description": "Unity Editor control - screenshots, scenes, GameObjects, builds, console output, prefabs, components"
     },
     "gemini-cli": {
@@ -48,14 +46,34 @@
         "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
       },
       "description": "GitHub operations - PRs, issues, commits, CI status"
+    },
+    "blender": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["blender-mcp"],
+      "env": {
+        "BLENDER_PORT": "9876"
+      },
+      "description": "3D modeling - create/edit models, scenes, materials, render from Blender"
+    },
+    "image-process": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "image-process-mcp-server"],
+      "description": "Crop, resize, rotate, convert image formats for game assets"
+    },
+    "notion": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@notionhq/notion-mcp-server"],
+      "env": {
+        "NOTION_API_KEY": "${NOTION_API_KEY}"
+      },
+      "description": "Project management - monster database, feature backlog, design docs"
     }
   },
   "_profile": {
-    "name": "core",
-    "purpose": "Lean default for maximum reasoning signal-to-noise and low token/tool overhead.",
-    "full_profile_file": ".mcp.full.json"
-  },
-  "_removed_duplicates": {
-    "_comment": "Removed greptile (paid API path not used). Kept context7 and serena in plugins; serena is also declared here for project-level consistency. Removed figma, figma-local, atlassian. Optional heavy tools moved to .mcp.full.json."
+    "name": "full",
+    "purpose": "Include optional MCPs when actively doing Blender/image/notion tasks."
   }
 }

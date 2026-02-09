@@ -69,7 +69,7 @@ Purpose: capture the current state so a fresh Codex session can continue with fu
 ## MCP setup
 
 - Project MCP config: `.mcp.json`
-  - `mcp-unity` configured as `type: stdio` with package server path.
+  - `mcp-unity` configured as `type: stdio` via `Tools/mcp/launch-unity-mcp.js` (auto-resolves package hash).
   - `gemini-cli` via `npx -y mcp-gemini-cli --allow-npx` (use Gemini CLI OAuth login).
 - Docs: `AGENTS.md`
 
