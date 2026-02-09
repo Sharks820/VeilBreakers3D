@@ -67,6 +67,7 @@ namespace VeilBreakers.UI.Combat
         private bool _isGlowing = false;
         private Coroutine _glowCoroutine;
         private Coroutine _activationFlashCoroutine;
+        private static readonly WaitForSeconds _waitActivationFlash = new WaitForSeconds(0.1f);
         // =============================================================================
         // PROPERTIES
         // =============================================================================
@@ -414,7 +415,7 @@ namespace VeilBreakers.UI.Combat
 
         private IEnumerator ActivationFlash()
         {
-            yield return new WaitForSeconds(0.1f);
+            yield return _waitActivationFlash;
 
             // Return to ready or cooldown state will be set by external system
             if (_currentState == SkillSlotState.IN_USE)

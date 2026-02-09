@@ -16,6 +16,8 @@ namespace VeilBreakers.UI.Core
         // CONFIGURATION
         // =============================================================================
 
+        private const float kTrailOpacityVisible = 0.6f;
+
         [Header("UI Document")]
         [SerializeField] private UIDocument _uiDocument;
 
@@ -388,18 +390,20 @@ namespace VeilBreakers.UI.Core
             float distanceFade = Mathf.Clamp01(distanceToMouse / 300f);
             float opacity = fadeIn * (0.5f + 0.5f * distanceFade);
 
-            // Apply position and opacity
-            particle.Element.style.left = particle.Position.x - particle.Element.resolvedStyle.width / 2f;
-            particle.Element.style.top = particle.Position.y - particle.Element.resolvedStyle.height / 2f;
+            // Apply position via translate (paint-only, skips layout recalc unlike left/top)
+            float halfWidth = particle.Element.resolvedStyle.width / 2f;
+            float halfHeight = particle.Element.resolvedStyle.height / 2f;
+            particle.Element.style.translate = new Translate(particle.Position.x - halfWidth, particle.Position.y - halfHeight);
             particle.Element.style.opacity = opacity;
 
             // Rotate trail to face movement direction
-            if (particle.Velocity.magnitude > 10f)
+            float speed = particle.Velocity.magnitude;
+            if (speed > 10f)
             {
                 float trailAngle = Mathf.Atan2(particle.Velocity.y, particle.Velocity.x) * Mathf.Rad2Deg;
                 particle.TrailElement.style.rotate = new Rotate(trailAngle + 180f);
-                particle.TrailElement.style.width = Mathf.Min(30f, particle.Velocity.magnitude * 0.1f);
-                particle.TrailElement.style.opacity = 0.6f;
+                particle.TrailElement.style.width = Mathf.Min(30f, speed * 0.1f);
+                particle.TrailElement.style.opacity = kTrailOpacityVisible;
             }
             else
             {

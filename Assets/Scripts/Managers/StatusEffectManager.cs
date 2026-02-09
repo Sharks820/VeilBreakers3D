@@ -652,10 +652,13 @@ namespace VeilBreakers.Managers
             _tempTargetList.Clear();
 
             // Copy targets to avoid collection-modified-during-iteration
-            foreach (var target in _effectsByTarget.Keys)
+            // Use explicit enumerator to avoid KeyCollection.Enumerator heap allocation
+            var enumerator = _effectsByTarget.GetEnumerator();
+            while (enumerator.MoveNext())
             {
-                _tempTargetList.Add(target);
+                _tempTargetList.Add(enumerator.Current.Key);
             }
+            enumerator.Dispose();
 
             foreach (var target in _tempTargetList)
             {

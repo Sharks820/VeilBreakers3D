@@ -62,11 +62,8 @@ namespace VeilBreakers.Audio
             UnsubscribeFromBattleEvents();
         }
 
-        private void Update()
-        {
-            // Track player health for low health audio
-            UpdatePlayerHealth();
-        }
+        // Health is now tracked via HandleDamageDealt and HandleHealApplied events
+        // instead of polling every frame in Update.
 
         // =============================================================================
         // EVENT SUBSCRIPTION
@@ -207,8 +204,9 @@ namespace VeilBreakers.Audio
                 AudioManager.Instance.PlayCombatHit(intensity);
             }
 
-            // Update combat intensity based on damage
+            // Update combat intensity and player health audio on damage
             UpdateCombatIntensity();
+            UpdatePlayerHealth();
         }
 
         private void HandleHealApplied(Combatant target, int amount)

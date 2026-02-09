@@ -153,8 +153,8 @@ namespace VeilBreakers.Audio
             if (_preloaded) return;
             if (_playerTransform == null) return;
 
-            float distance = Vector3.Distance(transform.position, _playerTransform.position);
-            if (distance < _preloadDistance)
+            float sqrDist = (transform.position - _playerTransform.position).sqrMagnitude;
+            if (sqrDist < _preloadDistance * _preloadDistance)
             {
                 _preloaded = true;
                 AudioManager.Instance?.OnNPCApproach(_npcId);
@@ -240,10 +240,16 @@ namespace VeilBreakers.Audio
         {
             if (_playerTransform == null) return;
 
-            float distance = Vector3.Distance(transform.position, _playerTransform.position);
+            // Use sqrMagnitude for the range check to avoid square root
+            Vector3 diff = transform.position - _playerTransform.position;
+            float sqrDist = diff.sqrMagnitude;
+            float maxDistSqr = _maxEffectDistance * _maxEffectDistance;
 
-            if (distance <= _maxEffectDistance)
+            if (sqrDist <= maxDistSqr)
             {
+                // Only compute actual distance when in range (needed for InverseLerp)
+                float distance = Mathf.Sqrt(sqrDist);
+
                 if (!_isPlayerInRange)
                 {
                     _isPlayerInRange = true;
@@ -380,6 +386,8 @@ namespace VeilBreakers.Audio
 
         private void Update()
         {
+            // Throttle to ~10Hz - audio tension is a slow-changing value
+            if (Time.frameCount % 6 != 0) return;
             UpdateTension();
         }
 

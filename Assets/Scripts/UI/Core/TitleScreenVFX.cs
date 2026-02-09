@@ -465,9 +465,143 @@ namespace VeilBreakers.UI.Core
                 yield break;
             }
 
-            Initialize();
+            // Run Initialize as a coroutine to stagger element creation across frames
+            yield return StartCoroutine(InitializeStaggered());
             _initializeQueued = false;
             _deferredInitializeCoroutine = null;
+        }
+
+        /// <summary>
+        /// Staggered version of Initialize() that spreads VisualElement creation
+        /// across multiple frames to avoid a massive single-frame layout spike.
+        /// </summary>
+        private IEnumerator InitializeStaggered()
+        {
+            if (_uiDocument == null) yield break;
+
+            var root = _uiDocument.rootVisualElement;
+            var host = root.Q<VisualElement>("menu-root") ?? root;
+
+            // --- Frame 1: Container setup & lightweight layers ---
+            _vfxContainer = new VisualElement();
+            _vfxContainer.name = "title-vfx-container";
+            _vfxContainer.AddToClassList("vfx-container");
+            _vfxContainer.style.position = Position.Absolute;
+            _vfxContainer.style.left = 0;
+            _vfxContainer.style.top = 0;
+            _vfxContainer.style.right = 0;
+            _vfxContainer.style.bottom = 0;
+            _vfxContainer.style.overflow = Overflow.Hidden;
+            _vfxContainer.pickingMode = PickingMode.Ignore;
+
+            InsertBehindMonster(host, _vfxContainer);
+
+            _frontVfxContainer = new VisualElement();
+            _frontVfxContainer.name = "title-front-vfx-container";
+            _frontVfxContainer.style.position = Position.Absolute;
+            _frontVfxContainer.style.left = 0;
+            _frontVfxContainer.style.top = 0;
+            _frontVfxContainer.style.right = 0;
+            _frontVfxContainer.style.bottom = 0;
+            _frontVfxContainer.style.overflow = Overflow.Hidden;
+            _frontVfxContainer.pickingMode = PickingMode.Ignore;
+            InsertInFrontOfMonster(host, _frontVfxContainer);
+
+            _host = host;
+
+            var oldVignette = host.Q<VisualElement>("top-vignette");
+            if (oldVignette != null) oldVignette.RemoveFromHierarchy();
+
+            _screenWidth = host.resolvedStyle.width;
+            _screenHeight = host.resolvedStyle.height;
+
+            if (_screenWidth <= 0) _screenWidth = 1920;
+            if (_screenHeight <= 0) _screenHeight = 1080;
+
+            SetupInteractiveTargets(host);
+            ApplyBackground();
+            CreateTopVignette(host);
+
+            if (_enableAtmosphereGradient)
+            {
+                CreateAtmosphereLayer();
+            }
+
+            if (_enableLightning)
+            {
+                CreateLightningLayer();
+            }
+
+            _smokeLayer = new VisualElement();
+            _smokeLayer.name = "smoke-layer";
+            _smokeLayer.style.position = Position.Absolute;
+            _smokeLayer.style.left = 0;
+            _smokeLayer.style.top = 0;
+            _smokeLayer.style.right = 0;
+            _smokeLayer.style.bottom = 0;
+            _smokeLayer.pickingMode = PickingMode.Ignore;
+            _vfxContainer.Add(_smokeLayer);
+
+            yield return null; // End frame 1
+
+            if (_isDestroyed) yield break;
+
+            // --- Frame 2: Smoke + Ash ---
+            for (int i = 0; i < _smokeCount; i++)
+            {
+                CreateSmoke();
+            }
+            for (int i = 0; i < _ashCount; i++)
+            {
+                CreateAsh();
+            }
+
+            yield return null; // End frame 2
+
+            if (_isDestroyed) yield break;
+
+            // --- Frames 3+: Embers in batches of 30 ---
+            const int kEmberBatch = 30;
+            for (int i = 0; i < _emberCount; i++)
+            {
+                CreateEmber();
+                if ((i + 1) % kEmberBatch == 0 && i + 1 < _emberCount)
+                {
+                    yield return null;
+                    if (_isDestroyed) yield break;
+                }
+            }
+
+            yield return null;
+
+            if (_isDestroyed) yield break;
+
+            // --- Next frame: Micro-sparks + Sparks ---
+            for (int i = 0; i < _microSparkCount; i++)
+            {
+                CreateMicroSpark();
+            }
+            for (int i = 0; i < _sparkCount; i++)
+            {
+                CreateSpark();
+            }
+
+            yield return null;
+
+            if (_isDestroyed) yield break;
+
+            // --- Final frame: Overlays + start ---
+            if (_enableVignette)
+            {
+                CreateVignetteLayer();
+            }
+            if (_enableGrungeOverlay && _grungeTexture != null)
+            {
+                CreateGrungeOverlay();
+            }
+
+            StartVFX();
+            Debug.Log($"[TitleScreenVFX] Staggered VFX init complete: {_emberCount} embers, {_microSparkCount} micro-sparks, {_ashCount} ash, {_smokeCount} smoke, {_sparkCount} sparks");
         }
 
         // =============================================================================

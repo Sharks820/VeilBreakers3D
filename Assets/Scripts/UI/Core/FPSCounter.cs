@@ -14,6 +14,9 @@ namespace VeilBreakers.UI.Menus
         private bool _visible = false;
         private float _deltaTime = 0f;
         private GUIStyle _style;
+        private int _cachedFpsInt = -1;
+        private string _cachedFpsString = "FPS: 0";
+        private static readonly Color _bgColor = new Color(0, 0, 0, 0.5f);
 
         private const string kPrefShowFPS = "Graphics_ShowFPS";
 
@@ -59,17 +62,25 @@ namespace VeilBreakers.UI.Menus
             }
 
             float fps = 1.0f / Mathf.Max(0.0001f, _deltaTime);
+            int fpsInt = (int)fps;
             Color fpsColor = fps >= 55f ? Color.green : fps >= 30f ? Color.yellow : Color.red;
             _style.normal.textColor = fpsColor;
+
+            // Only rebuild string when integer FPS changes
+            if (fpsInt != _cachedFpsInt)
+            {
+                _cachedFpsInt = fpsInt;
+                _cachedFpsString = $"FPS: {fpsInt}";
+            }
 
             Rect rect = new Rect(Screen.width - 120, 4, 116, 28);
 
             // Background
-            GUI.color = new Color(0, 0, 0, 0.5f);
+            GUI.color = _bgColor;
             GUI.DrawTexture(rect, Texture2D.whiteTexture);
             GUI.color = Color.white;
 
-            GUI.Label(rect, $"FPS: {fps:F0}", _style);
+            GUI.Label(rect, _cachedFpsString, _style);
         }
 
         public void SetVisible(bool visible)

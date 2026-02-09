@@ -397,6 +397,7 @@ namespace VeilBreakers.UI.Menus
 
         private IEnumerator GlitchFlickerCoroutine()
         {
+            var waitFlickerRate = new WaitForSeconds(_glitchFlickerRate);
             while (_isGlitched)
             {
                 // Random flicker
@@ -407,7 +408,10 @@ namespace VeilBreakers.UI.Menus
                         _glitchOverlay.style.display = DisplayStyle.Flex;
                     }
 
-                    yield return new WaitForSeconds(UnityEngine.Random.Range(0.05f, 0.15f));
+                    // Manual timer for random-duration wait to avoid per-iteration allocation
+                    float wait = UnityEngine.Random.Range(0.05f, 0.15f);
+                    float elapsed = 0f;
+                    while (elapsed < wait) { elapsed += Time.deltaTime; yield return null; }
 
                     if (_glitchOverlay != null)
                     {
@@ -415,7 +419,7 @@ namespace VeilBreakers.UI.Menus
                     }
                 }
 
-                yield return new WaitForSeconds(_glitchFlickerRate);
+                yield return waitFlickerRate;
             }
         }
 

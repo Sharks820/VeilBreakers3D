@@ -46,6 +46,9 @@ namespace VeilBreakers.Audio
         private bool _isTransitioning = false;
         private bool _isMuted = false;
 
+        // Cached to avoid per-transition allocation
+        private WaitForSeconds _waitStateTransition;
+
         // =============================================================================
         // PROPERTIES
         // =============================================================================
@@ -70,6 +73,7 @@ namespace VeilBreakers.Audio
 
         protected override void OnSingletonAwake()
         {
+            _waitStateTransition = new WaitForSeconds(_stateTransitionDuration);
             StartExplorationMusic();
         }
 
@@ -297,7 +301,7 @@ namespace VeilBreakers.Audio
             ConfigureStateParameters(newState);
 
             // Wait for transition
-            yield return new WaitForSeconds(_stateTransitionDuration);
+            yield return _waitStateTransition;
 
             _currentState = newState;
             _isTransitioning = false;
@@ -344,7 +348,9 @@ namespace VeilBreakers.Audio
 
         private IEnumerator DelayedStateChange(MusicState state, float delay)
         {
-            yield return new WaitForSeconds(delay);
+            // Manual timer for variable delay to avoid per-call allocation
+            float elapsed = 0f;
+            while (elapsed < delay) { elapsed += Time.deltaTime; yield return null; }
             SetMusicState(state);
         }
 

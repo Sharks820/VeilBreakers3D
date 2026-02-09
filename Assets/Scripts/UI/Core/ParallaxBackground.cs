@@ -40,8 +40,10 @@ namespace VeilBreakers.UI.Core
         private readonly List<ParallaxLayer> _layers = new();
         private Vector2 _targetOffset;
         private Vector2 _currentOffset;
+        private Vector2 _previousOffset;
         private Vector2 _screenCenter;
         private bool _isInitialized;
+        private const float kDirtyThreshold = 0.1f;
 
         // =============================================================================
         // UNITY LIFECYCLE
@@ -140,6 +142,12 @@ namespace VeilBreakers.UI.Core
 
             // Smooth interpolation
             _currentOffset = Vector2.Lerp(_currentOffset, _targetOffset, Time.unscaledDeltaTime * _smoothing);
+
+            // Skip style updates if offset hasn't changed meaningfully
+            if (Mathf.Abs(_currentOffset.x - _previousOffset.x) < kDirtyThreshold &&
+                Mathf.Abs(_currentOffset.y - _previousOffset.y) < kDirtyThreshold)
+                return;
+            _previousOffset = _currentOffset;
 
             // Apply to all layers
             foreach (var layer in _layers)

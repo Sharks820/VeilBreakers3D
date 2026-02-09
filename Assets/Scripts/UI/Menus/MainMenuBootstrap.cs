@@ -82,7 +82,9 @@ namespace VeilBreakers.UI.Menus
         private void Start()
         {
             InitializeUI();
-            PlayEntranceAnimation();
+            // NOTE: Entrance animation is handled by MainMenuController.PlayEntranceAnimation()
+            // which has the full AAA elastic/bounce effects. Running both simultaneously
+            // caused visible flickering as two systems fought over the same elements.
             SetupEventHandlers();
             StartCoroutine(DeferredStartupInit());
         }
