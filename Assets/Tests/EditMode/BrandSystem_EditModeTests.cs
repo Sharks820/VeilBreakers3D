@@ -58,10 +58,10 @@ namespace VeilBreakers.Tests.EditMode
         [Test]
         [Category("Suite.Core")]
         [Category("System.Brand")]
-        public void Leech_SuperEffective_Against_Dread_And_Surge()
+        public void Leech_SuperEffective_Against_Savage_And_Ruin()
         {
-            Assert.AreEqual(2.0f, BrandSystem.GetEffectiveness(Brand.LEECH, Brand.DREAD));
-            Assert.AreEqual(2.0f, BrandSystem.GetEffectiveness(Brand.LEECH, Brand.SURGE));
+            Assert.AreEqual(2.0f, BrandSystem.GetEffectiveness(Brand.LEECH, Brand.SAVAGE));
+            Assert.AreEqual(2.0f, BrandSystem.GetEffectiveness(Brand.LEECH, Brand.RUIN));
         }
 
         [Test]
