@@ -19,12 +19,7 @@
     <ui:VisualElement name="hero-stage" class="vb-hero-stage">
         <ui:VisualElement name="hero-stage-render" class="vb-hero-stage-render" />
         <ui:VisualElement name="vfx-overlay" class="vb-vfx-overlay" picking-mode="Ignore" />
-        <ui:Button name="btn-rotate-model-left" class="vb-model-rotate-btn vb-model-rotate-left">
-            <ui:VisualElement class="vb-rotate-icon vb-rotate-icon-left" />
-        </ui:Button>
-        <ui:Button name="btn-rotate-model-right" class="vb-model-rotate-btn vb-model-rotate-right">
-            <ui:VisualElement class="vb-rotate-icon vb-rotate-icon-right" />
-        </ui:Button>
+        <ui:Button name="btn-rotate-model-right" class="vb-model-rotate-btn" />
         <ui:Label text="DRAG TO ROTATE" class="vb-rotate-hint" />
     </ui:VisualElement>
 
@@ -84,14 +79,34 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- Starter Monster Info -->
+        <!-- Starter Companion -->
         <ui:VisualElement name="monster-info" class="vb-monster-info">
             <ui:Label text="STARTER COMPANION" class="vb-section-label" />
-            <ui:VisualElement name="monster-card" class="vb-monster-card">
-                <ui:VisualElement name="monster-thumbnail" class="vb-monster-thumbnail" />
-                <ui:VisualElement name="monster-text" class="vb-monster-text">
-                    <ui:Label name="monster-name" text="Ironjaw" class="vb-monster-name" />
-                    <ui:Label name="monster-brand" text="IRON" class="vb-monster-brand" />
+            <ui:VisualElement name="monster-header" class="vb-monster-header">
+                <ui:VisualElement class="vb-monster-name-row">
+                    <ui:Label name="monster-name" text="Skitter-Teeth" class="vb-monster-name" />
+                    <ui:VisualElement name="monster-brand-badge" class="vb-monster-brand-badge">
+                        <ui:Label name="monster-brand" text="IRON" class="vb-monster-brand" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:Label name="monster-role" text="TANK" class="vb-monster-role" />
+            </ui:VisualElement>
+            <ui:VisualElement name="monster-stat-grid" class="vb-monster-stat-grid">
+                <ui:VisualElement class="vb-monster-stat-chip">
+                    <ui:Label text="HP" class="vb-monster-stat-key" />
+                    <ui:Label name="monster-stat-hp" text="0" class="vb-monster-stat-val" />
+                </ui:VisualElement>
+                <ui:VisualElement class="vb-monster-stat-chip">
+                    <ui:Label text="ATK" class="vb-monster-stat-key" />
+                    <ui:Label name="monster-stat-atk" text="0" class="vb-monster-stat-val" />
+                </ui:VisualElement>
+                <ui:VisualElement class="vb-monster-stat-chip">
+                    <ui:Label text="DEF" class="vb-monster-stat-key" />
+                    <ui:Label name="monster-stat-def" text="0" class="vb-monster-stat-val" />
+                </ui:VisualElement>
+                <ui:VisualElement class="vb-monster-stat-chip">
+                    <ui:Label text="SPD" class="vb-monster-stat-key" />
+                    <ui:Label name="monster-stat-spd" text="0" class="vb-monster-stat-val" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>

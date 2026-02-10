@@ -1,0 +1,20 @@
+{
+  "name": "VeilBreakers.Editor",
+  "rootNamespace": "VeilBreakers.Editor",
+  "references": [
+    "VeilBreakers.Runtime",
+    "Unity.RenderPipelines.Universal.Runtime",
+    "Unity.RenderPipelines.GPUDriven.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

@@ -17,9 +17,14 @@ namespace VeilBreakers.UI.CharacterSelect
     public class HeroStageController : MonoBehaviour
     {
         private const string kHeroModelResourceRoot = "Art/3D_Models/Characters";
+        private const string kMonsterModelResourceRoot = "Art/3D_Models/Monsters";
         private static readonly Dictionary<string, string[]> kHeroModelResourceById = new Dictionary<string, string[]>
         {
             { "vex", new[] { "vex_medieval_knight", "Vex", "Vex_for_mixamo", "Vex_mesh_only" } }
+        };
+        private static readonly Dictionary<string, string[]> kMonsterModelResourceById = new Dictionary<string, string[]>
+        {
+            { "skitter_teeth", new[] { "SkitterTeeth" } }
         };
         private static readonly Dictionary<string, float> kHeroFacingYawById = new Dictionary<string, float>
         {
@@ -73,10 +78,10 @@ namespace VeilBreakers.UI.CharacterSelect
 
         [Header("Model Positions")]
         [SerializeField] private Vector3 _heroPosition = new Vector3(0f, -2.1f, 0f);
-        [SerializeField] private Vector3 _monsterPosition = new Vector3(0.7f, 0f, 0.3f);
+        [SerializeField] private Vector3 _monsterPosition = new Vector3(1.5f, -2.1f, 0.3f);
         [SerializeField] private float _heroScale = 1.4f;
         [SerializeField] private float _monsterScale = 0.5f;
-        [SerializeField] private bool _showCompanionPlaceholder = false;
+        [SerializeField] private bool _showCompanionPlaceholder = true;
 
         [Header("Interaction")]
         [SerializeField] private float _rotationSpeed = 0.3f;
@@ -400,6 +405,9 @@ namespace VeilBreakers.UI.CharacterSelect
             _transitionCoroutine = StartCoroutine(TransitionToHero(hero));
         }
 
+        /// <summary>Current Y-axis rotation in degrees (for syncing UI indicators).</summary>
+        public float CurrentYRotation => _currentYRotation;
+
         public void RotateByStep(float direction)
         {
             if (_isDestroyed || _stageRoot == null) return;
@@ -410,6 +418,15 @@ namespace VeilBreakers.UI.CharacterSelect
             }
 
             _currentYRotation += Mathf.Sign(direction) * _rotateStepDegrees;
+            _stageRoot.transform.localRotation = Quaternion.Euler(0f, _currentYRotation, 0f);
+            _idleTimer = 0f;
+        }
+
+        /// <summary>Rotate by a continuous delta (for drag input from UI).</summary>
+        public void RotateByDelta(float deltaDegrees)
+        {
+            if (_isDestroyed || _stageRoot == null) return;
+            _currentYRotation += deltaDegrees;
             _stageRoot.transform.localRotation = Quaternion.Euler(0f, _currentYRotation, 0f);
             _idleTimer = 0f;
         }
@@ -485,12 +502,14 @@ namespace VeilBreakers.UI.CharacterSelect
 
             if (_showCompanionPlaceholder)
             {
-                // Delay then spawn monster placeholder (sphere)
                 yield return _monsterDelayWait;
-
                 if (_isDestroyed) yield break;
 
-                _currentMonsterModel = CreatePlaceholderMonster(heroColor);
+                _currentMonsterModel = TryCreateMonsterModel(hero.starter_monster_id);
+                if (_currentMonsterModel == null)
+                {
+                    _currentMonsterModel = CreatePlaceholderMonster(heroColor);
+                }
                 yield return StartCoroutine(AnimateSpawn(_currentMonsterModel, _monsterMaterial));
             }
         }
@@ -543,6 +562,52 @@ namespace VeilBreakers.UI.CharacterSelect
             PositionModelOnStage(model);
             EnsureModelHasMaterials(model, heroId);
             SetupAnimator(model, heroId, resolvedResourceName);
+            return model;
+        }
+
+        private GameObject TryCreateMonsterModel(string monsterId)
+        {
+            if (string.IsNullOrWhiteSpace(monsterId)) return null;
+
+            string id = monsterId.Trim().ToLowerInvariant();
+            if (!kMonsterModelResourceById.TryGetValue(id, out string[] resourceNames)
+                || resourceNames == null || resourceNames.Length == 0)
+            {
+                return null;
+            }
+
+            GameObject prefab = null;
+            for (int i = 0; i < resourceNames.Length; i++)
+            {
+                string path = $"{kMonsterModelResourceRoot}/{resourceNames[i]}";
+                prefab = Resources.Load<GameObject>(path);
+                if (prefab != null) break;
+            }
+
+            if (prefab == null)
+            {
+                Debug.LogWarning($"[HeroStage] Missing model resource for monster '{id}' under {kMonsterModelResourceRoot}.");
+                return null;
+            }
+
+            var model = Instantiate(prefab, _stageRoot.transform);
+            model.name = $"Monster_{id}";
+            model.transform.localRotation = Quaternion.identity;
+            SetLayer(model, _renderLayer);
+
+            var colliders = model.GetComponentsInChildren<Collider>(true);
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                if (colliders[i] != null) Destroy(colliders[i]);
+            }
+
+            PositionMonsterOnStage(model);
+
+            // Keep authored materials from the FBX
+            _monsterRenderer = model.GetComponentInChildren<Renderer>();
+            _monsterMaterial = null;
+
+            Debug.Log($"[HeroStage] Loaded monster model '{id}' from Resources.");
             return model;
         }
 
@@ -742,6 +807,43 @@ namespace VeilBreakers.UI.CharacterSelect
             Vector3 desiredAnchor = _stageRoot != null
                 ? _stageRoot.transform.TransformPoint(_heroPosition)
                 : _heroPosition;
+            Vector3 currentAnchor = new Vector3(bounds.center.x, bounds.min.y, bounds.center.z);
+            model.transform.position += desiredAnchor - currentAnchor;
+        }
+
+        /// <summary>
+        /// Positions and scales the monster model beside the hero using bounds-based sizing.
+        /// Targets half the hero's display height and anchors feet to _monsterPosition.
+        /// </summary>
+        private void PositionMonsterOnStage(GameObject model)
+        {
+            if (model == null) return;
+
+            model.transform.localPosition = _monsterPosition;
+            model.transform.localScale = Vector3.one;
+
+            if (!TryGetModelBounds(model, out var bounds))
+            {
+                model.transform.localScale = Vector3.one * _monsterScale;
+                return;
+            }
+
+            // Target half the hero's display height
+            float heroTargetHeight = Mathf.Max(2.2f, 4.2f * _heroScale);
+            float monsterTargetHeight = heroTargetHeight * _monsterScale;
+            float currentHeight = Mathf.Max(0.01f, bounds.size.y);
+            float uniformScale = Mathf.Clamp(monsterTargetHeight / currentHeight, 0.01f, 50f);
+            model.transform.localScale = Vector3.one * uniformScale;
+
+            if (!TryGetModelBounds(model, out bounds))
+            {
+                return;
+            }
+
+            // Anchor the monster's feet to the desired position
+            Vector3 desiredAnchor = _stageRoot != null
+                ? _stageRoot.transform.TransformPoint(_monsterPosition)
+                : _monsterPosition;
             Vector3 currentAnchor = new Vector3(bounds.center.x, bounds.min.y, bounds.center.z);
             model.transform.position += desiredAnchor - currentAnchor;
         }
@@ -1168,9 +1270,8 @@ namespace VeilBreakers.UI.CharacterSelect
             var monster = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             monster.name = "MonsterPlaceholder";
             monster.transform.SetParent(_stageRoot.transform);
-            monster.transform.localPosition = _monsterPosition;
-            monster.transform.localScale = Vector3.one * _monsterScale;
             SetLayer(monster, _renderLayer);
+            PositionMonsterOnStage(monster);
 
             var col = monster.GetComponent<Collider>();
             if (col != null) Destroy(col);

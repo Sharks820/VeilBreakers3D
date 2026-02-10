@@ -73,9 +73,14 @@ namespace VeilBreakers.UI.CharacterSelect
         private Label _starterStatSpd;
 
         // Monster info
-        private VisualElement _monsterThumbnail;
         private Label _monsterName;
         private Label _monsterBrand;
+        private Label _monsterRole;
+        private Label _monsterStatHp;
+        private Label _monsterStatAtk;
+        private Label _monsterStatDef;
+        private Label _monsterStatSpd;
+        private VisualElement _monsterBrandBadge;
 
         // Stats panel
         private VisualElement _statsPanel;
@@ -172,6 +177,14 @@ namespace VeilBreakers.UI.CharacterSelect
         // Event handler cache for proper unregistration (sized dynamically to match carousel slots)
         private EventCallback<ClickEvent>[] _slotClickHandlers;
         private static Font _fallbackUIFont;
+        private static Texture2D _rotateTexCCW;
+        private static Texture2D _rotateTexCW;
+        private static Texture2D _rotateHandleTex;
+
+        // Rotation indicator drag state
+        private VisualElement _rotateArrowHandle;
+        private bool _isRotateDragging;
+        private float _rotateDragLastX;
 
         // Static cache for FormatSkillName to avoid repeated string allocations
         private static readonly Dictionary<string, string> _formattedSkillNames = new();
@@ -324,9 +337,14 @@ namespace VeilBreakers.UI.CharacterSelect
             _starterStatSpd = _root.Q<Label>("starter-stat-spd");
 
             // Monster info
-            _monsterThumbnail = _root.Q("monster-thumbnail");
             _monsterName = _root.Q<Label>("monster-name");
             _monsterBrand = _root.Q<Label>("monster-brand");
+            _monsterRole = _root.Q<Label>("monster-role");
+            _monsterBrandBadge = _root.Q("monster-brand-badge");
+            _monsterStatHp = _root.Q<Label>("monster-stat-hp");
+            _monsterStatAtk = _root.Q<Label>("monster-stat-atk");
+            _monsterStatDef = _root.Q<Label>("monster-stat-def");
+            _monsterStatSpd = _root.Q<Label>("monster-stat-spd");
 
             // Stats panel
             _statsPanel = _root.Q("stats-panel");
@@ -463,9 +481,13 @@ namespace VeilBreakers.UI.CharacterSelect
             EnsureLabel(infoPanel, "hero-path", "IRONBOUND");
             EnsureLabel(infoPanel, "hero-role", "TANK");
             EnsureLabel(infoPanel, "hero-resource", "GUARD");
-            EnsureElement(infoPanel, "monster-thumbnail");
-            EnsureLabel(infoPanel, "monster-name", "Skitter-Teeth");
+            EnsureLabel(infoPanel, "monster-name", "SKITTER-TEETH");
             EnsureLabel(infoPanel, "monster-brand", "IRON");
+            EnsureLabel(infoPanel, "monster-role", "TANK");
+            EnsureLabel(infoPanel, "monster-stat-hp", "50");
+            EnsureLabel(infoPanel, "monster-stat-atk", "12");
+            EnsureLabel(infoPanel, "monster-stat-def", "14");
+            EnsureLabel(infoPanel, "monster-stat-spd", "10");
 
             var statsPanel = EnsureElement(_root, "stats-panel");
             ApplyFallbackPanelStyle(statsPanel, true);
@@ -810,27 +832,25 @@ namespace VeilBreakers.UI.CharacterSelect
                 _btnEmbark.style.opacity = 1f;
             }
 
-            // Model rotation controls: USS handles styling; just ensure visible
+            // Model rotation controls: keep at root level with computed pixel positions
             var stage = _root.Q<VisualElement>("hero-stage") ?? _heroStageRender?.parent;
             if (stage != null)
             {
-                _btnRotateModelLeft ??= stage.Q<Button>("btn-rotate-model-left");
-                _btnRotateModelRight ??= stage.Q<Button>("btn-rotate-model-right");
+                _btnRotateModelLeft ??= _root.Q<Button>("btn-rotate-model-left");
+                _btnRotateModelRight ??= _root.Q<Button>("btn-rotate-model-right");
                 EnsureButtonParent(_btnRotateModelLeft, _root);
                 EnsureButtonParent(_btnRotateModelRight, _root);
+                // Left button is hidden - single rotation indicator only
                 if (_btnRotateModelLeft != null)
                 {
-                    _btnRotateModelLeft.style.display = DisplayStyle.Flex;
-                    _btnRotateModelLeft.style.opacity = 1f;
-                    _btnRotateModelLeft.BringToFront();
+                    _btnRotateModelLeft.style.display = DisplayStyle.None;
+                    _btnRotateModelLeft.style.opacity = 0f;
                 }
                 if (_btnRotateModelRight != null)
                 {
                     _btnRotateModelRight.style.display = DisplayStyle.Flex;
                     _btnRotateModelRight.style.opacity = 1f;
-                    _btnRotateModelRight.BringToFront();
                 }
-
                 ApplyRotationButtonLayout(stage);
             }
 
@@ -860,13 +880,24 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void ApplyHeroNavigationLayout()
         {
-            float stageLeft;
-            float stageTop;
-            float stageWidth;
-            float stageHeight;
-            bool hasStageRect = TryGetHeroStageRect(out stageLeft, out stageTop, out stageWidth, out stageHeight);
-            float centerX = hasStageRect ? (stageLeft + (stageWidth * 0.5f)) : (_root.resolvedStyle.width * 0.5f);
-            float navTop = hasStageRect ? (stageTop + stageHeight + 14f) : (_root.resolvedStyle.height - 214f);
+            if (_root == null) return;
+
+            // Use screen-based fallback for root dimensions
+            float rootW = _root.layout.width;
+            float rootH = _root.layout.height;
+            if (rootW < 10f || rootH < 10f)
+            {
+                rootW = Screen.width;
+                rootH = Screen.height;
+            }
+            if (rootW < 10f || rootH < 10f) return;
+
+            // Compute center from screen dimensions (stage is 50% width, centered at 50%)
+            float centerX = rootW * 0.5f;
+
+            // Nav buttons: near the very bottom of the screen.
+            // rootH - 80 places them 80px from the bottom edge.
+            float navTop = rootH - 80f;
 
             if (_btnPrevHero != null)
             {
@@ -874,10 +905,9 @@ namespace VeilBreakers.UI.CharacterSelect
                 _btnPrevHero.style.left = centerX - 170f;
                 _btnPrevHero.style.top = navTop;
                 _btnPrevHero.style.bottom = StyleKeyword.Null;
+                _btnPrevHero.style.marginLeft = 0f;
                 _btnPrevHero.style.width = 156f;
                 _btnPrevHero.style.height = 46f;
-                _btnPrevHero.style.marginLeft = 0f;
-                _btnPrevHero.style.zIndex = 1200;
                 _btnPrevHero.style.display = DisplayStyle.Flex;
                 _btnPrevHero.style.opacity = 1f;
                 _btnPrevHero.BringToFront();
@@ -889,10 +919,9 @@ namespace VeilBreakers.UI.CharacterSelect
                 _btnNextHero.style.left = centerX + 14f;
                 _btnNextHero.style.top = navTop;
                 _btnNextHero.style.bottom = StyleKeyword.Null;
+                _btnNextHero.style.marginLeft = 0f;
                 _btnNextHero.style.width = 156f;
                 _btnNextHero.style.height = 46f;
-                _btnNextHero.style.marginLeft = 0f;
-                _btnNextHero.style.zIndex = 1200;
                 _btnNextHero.style.display = DisplayStyle.Flex;
                 _btnNextHero.style.opacity = 1f;
                 _btnNextHero.BringToFront();
@@ -904,10 +933,9 @@ namespace VeilBreakers.UI.CharacterSelect
                 _heroCycleHud.style.left = centerX - 140f;
                 _heroCycleHud.style.top = navTop - 40f;
                 _heroCycleHud.style.bottom = StyleKeyword.Null;
+                _heroCycleHud.style.marginLeft = 0f;
                 _heroCycleHud.style.width = 280f;
                 _heroCycleHud.style.height = 32f;
-                _heroCycleHud.style.marginLeft = 0f;
-                _heroCycleHud.style.zIndex = 1190;
                 _heroCycleHud.style.display = DisplayStyle.Flex;
                 _heroCycleHud.style.opacity = 1f;
                 _heroCycleHud.BringToFront();
@@ -918,53 +946,304 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (_root == null) return;
 
-            float stageLeft;
-            float stageTop;
-            float stageWidth;
-            float stageHeight;
-            bool hasStageRect = TryGetHeroStageRect(out stageLeft, out stageTop, out stageWidth, out stageHeight);
+            float rootW = _root.layout.width;
+            float rootH = _root.layout.height;
+            if (rootW < 10f || rootH < 10f)
+            {
+                rootW = Screen.width;
+                rootH = Screen.height;
+            }
+            if (rootW < 10f || rootH < 10f) return;
 
-            float buttonTop = hasStageRect
-                ? stageTop + (stageHeight * 0.5f) - 20f
-                : (_root.resolvedStyle.height * 0.5f) - 20f;
-            float leftX = hasStageRect
-                ? stageLeft + 8f
-                : (_root.resolvedStyle.width * 0.25f);
-            float rightX = hasStageRect
-                ? stageLeft + stageWidth - 48f
-                : (_root.resolvedStyle.width * 0.75f) - 40f;
-
+            // Hide left button - we use a single centered rotation indicator
             if (_btnRotateModelLeft != null)
             {
-                _btnRotateModelLeft.style.position = Position.Absolute;
-                _btnRotateModelLeft.style.left = leftX;
-                _btnRotateModelLeft.style.right = StyleKeyword.Null;
-                _btnRotateModelLeft.style.top = buttonTop;
-                _btnRotateModelLeft.style.bottom = StyleKeyword.Null;
-                _btnRotateModelLeft.style.marginTop = 0f;
-                _btnRotateModelLeft.style.width = 40f;
-                _btnRotateModelLeft.style.height = 40f;
-                _btnRotateModelLeft.style.display = DisplayStyle.Flex;
-                _btnRotateModelLeft.style.opacity = 1f;
-                _btnRotateModelLeft.style.zIndex = 1210;
-                _btnRotateModelLeft.BringToFront();
+                _btnRotateModelLeft.style.display = DisplayStyle.None;
+                _btnRotateModelLeft.style.opacity = 0f;
             }
+
+            // Wide elliptical rotation ring at the character's feet
+            float stageLeft = rootW * 0.25f;
+            float stageTop = rootH * 0.11f;
+            float stageWidth = rootW * 0.50f;
+            float stageHeight = rootH * 0.66f;
+
+            const float arrowW = 170f;
+            const float arrowH = 60f;
+            float stageCenterX = stageLeft + stageWidth * 0.5f;
+            // Position at character's feet (~78% into the stage)
+            float arrowTop = stageTop + stageHeight * 0.78f;
 
             if (_btnRotateModelRight != null)
             {
                 _btnRotateModelRight.style.position = Position.Absolute;
-                _btnRotateModelRight.style.left = rightX;
+                _btnRotateModelRight.style.left = stageCenterX - arrowW * 0.5f;
                 _btnRotateModelRight.style.right = StyleKeyword.Null;
-                _btnRotateModelRight.style.top = buttonTop;
+                _btnRotateModelRight.style.top = arrowTop;
                 _btnRotateModelRight.style.bottom = StyleKeyword.Null;
+                _btnRotateModelRight.style.width = arrowW;
+                _btnRotateModelRight.style.height = arrowH;
                 _btnRotateModelRight.style.marginTop = 0f;
-                _btnRotateModelRight.style.width = 40f;
-                _btnRotateModelRight.style.height = 40f;
+                _btnRotateModelRight.style.marginLeft = 0f;
                 _btnRotateModelRight.style.display = DisplayStyle.Flex;
                 _btnRotateModelRight.style.opacity = 1f;
-                _btnRotateModelRight.style.zIndex = 1210;
+                SetupRotateButtonIcon(_btnRotateModelRight, true);
                 _btnRotateModelRight.BringToFront();
             }
+        }
+
+        private void SetupRotateButtonIcon(Button btn, bool clockwise)
+        {
+            if (btn == null) return;
+
+            const string kIconClass = "vb-rotate-icon";
+            if (btn.Q(className: kIconClass) != null) return;
+
+            // Clear button text and remove old UXML children
+            btn.text = "";
+            var oldChildren = new List<VisualElement>();
+            foreach (var child in btn.Children())
+            {
+                if (child is not TextElement)
+                    oldChildren.Add(child);
+            }
+            foreach (var old in oldChildren)
+                old.RemoveFromHierarchy();
+
+            // Make the ring container non-blocking so clicks pass through to hero stage
+            btn.pickingMode = PickingMode.Ignore;
+
+            // Create ring icon (ellipse only, no arrowhead)
+            var tex = GenerateRotateArrowTexture(clockwise);
+            var icon = new VisualElement();
+            icon.AddToClassList(kIconClass);
+            icon.style.backgroundImage = new StyleBackground(tex);
+            icon.style.opacity = 1f;
+            icon.pickingMode = PickingMode.Ignore;
+            btn.Add(icon);
+
+            // Create draggable arrow handle on the ring
+            const string kHandleClass = "vb-rotate-handle";
+            _rotateArrowHandle = new VisualElement();
+            _rotateArrowHandle.AddToClassList(kHandleClass);
+            _rotateArrowHandle.style.backgroundImage = new StyleBackground(GenerateRotateHandleTexture());
+            _rotateArrowHandle.pickingMode = PickingMode.Position;
+            btn.Add(_rotateArrowHandle);
+
+            // Register drag events on the handle
+            _rotateArrowHandle.RegisterCallback<PointerDownEvent>(OnRotateHandlePointerDown);
+            _rotateArrowHandle.RegisterCallback<PointerMoveEvent>(OnRotateHandlePointerMove);
+            _rotateArrowHandle.RegisterCallback<PointerUpEvent>(OnRotateHandlePointerUp);
+        }
+
+        /// <summary>
+        /// Generates a wide elliptical ring texture (front half only, no arrowhead).
+        /// The arrowhead is now a separate draggable handle element.
+        /// </summary>
+        private static Texture2D GenerateRotateArrowTexture(bool clockwise)
+        {
+            if (clockwise && _rotateTexCW != null) return _rotateTexCW;
+            if (!clockwise && _rotateTexCCW != null) return _rotateTexCCW;
+
+            const int tw = 192, th = 72;
+            var tex = new Texture2D(tw, th, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Bilinear;
+            tex.wrapMode = TextureWrapMode.Clamp;
+            var pixels = new Color[tw * th];
+
+            float cx = tw * 0.5f;
+            float cy = th * 0.5f;
+            float a = tw * 0.44f;   // horizontal semi-axis
+            float b = th * 0.40f;   // vertical semi-axis (foreshortened)
+            float thick = 4.5f;     // half-thickness of ring stroke
+
+            for (int py = 0; py < th; py++)
+            {
+                for (int px = 0; px < tw; px++)
+                {
+                    float dx = px - cx;
+                    float dy = cy - py; // math y-up
+
+                    if (Mathf.Abs(dx) < 0.5f && Mathf.Abs(dy) < 0.5f) continue;
+
+                    float nx = dx / a;
+                    float ny = dy / b;
+                    float d = Mathf.Sqrt(nx * nx + ny * ny);
+                    if (d < 0.01f) continue;
+
+                    float geoAngle = Mathf.Atan2(dy, dx);
+                    float cosG = Mathf.Cos(geoAngle);
+                    float sinG = Mathf.Sin(geoAngle);
+                    float localR = (a * b) / Mathf.Sqrt(b * b * cosG * cosG + a * a * sinG * sinG);
+                    float pixelDist = Mathf.Abs(d - 1f) * localR;
+
+                    if (pixelDist < thick + 1.5f)
+                    {
+                        float angleDeg = geoAngle * Mathf.Rad2Deg;
+                        if (angleDeg < 0f) angleDeg += 360f;
+
+                        // Hide top arc (behind character): 10° to 170°
+                        bool hidden = angleDeg >= 10f && angleDeg <= 170f;
+                        if (!hidden)
+                        {
+                            float aa = Mathf.Clamp01((thick - pixelDist) / 1.5f);
+                            pixels[py * tw + px] = new Color(1f, 1f, 1f, aa);
+                        }
+                    }
+                }
+            }
+
+            tex.SetPixels(pixels);
+            tex.Apply();
+
+            if (clockwise) _rotateTexCW = tex;
+            else _rotateTexCCW = tex;
+            return tex;
+        }
+
+        /// <summary>Generates a small arrow/triangle texture for the draggable rotation handle.</summary>
+        private static Texture2D GenerateRotateHandleTexture()
+        {
+            if (_rotateHandleTex != null) return _rotateHandleTex;
+
+            const int size = 24;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            tex.filterMode = FilterMode.Bilinear;
+            tex.wrapMode = TextureWrapMode.Clamp;
+            var pixels = new Color[size * size];
+
+            // Draw a filled right-pointing triangle (arrow)
+            float cy = size * 0.5f;
+            // Triangle: tip at right, base at left
+            float tipX = size * 0.85f, tipY = cy;
+            float b1X = size * 0.15f, b1Y = size * 0.15f;
+            float b2X = size * 0.15f, b2Y = size * 0.85f;
+
+            for (int py = 0; py < size; py++)
+            {
+                for (int px = 0; px < size; px++)
+                {
+                    if (IsInsideTriangle(px, py, tipX, tipY, b1X, b1Y, b2X, b2Y))
+                    {
+                        float dist = DistToTriangleEdge(px, py, tipX, tipY, b1X, b1Y, b2X, b2Y);
+                        float aa = Mathf.Clamp01(dist / 1.5f);
+                        pixels[py * size + px] = new Color(1f, 1f, 1f, aa);
+                    }
+                }
+            }
+
+            tex.SetPixels(pixels);
+            tex.Apply();
+            _rotateHandleTex = tex;
+            return tex;
+        }
+
+        // =============================================================================
+        // ROTATION HANDLE DRAG
+        // =============================================================================
+
+        private void OnRotateHandlePointerDown(PointerDownEvent evt)
+        {
+            if (_rotateArrowHandle == null) return;
+            _isRotateDragging = true;
+            _rotateDragLastX = evt.position.x;
+            _rotateArrowHandle.CapturePointer(evt.pointerId);
+            evt.StopPropagation();
+        }
+
+        private void OnRotateHandlePointerMove(PointerMoveEvent evt)
+        {
+            if (!_isRotateDragging || _heroStage == null) return;
+            float deltaX = evt.position.x - _rotateDragLastX;
+            _rotateDragLastX = evt.position.x;
+            // Convert pixel drag to rotation degrees (negative so drag-right = rotate-right)
+            _heroStage.RotateByDelta(deltaX * 0.5f);
+            evt.StopPropagation();
+        }
+
+        private void OnRotateHandlePointerUp(PointerUpEvent evt)
+        {
+            _isRotateDragging = false;
+            _rotateArrowHandle?.ReleasePointer(evt.pointerId);
+            evt.StopPropagation();
+        }
+
+        /// <summary>Updates the arrow handle position on the ellipse to match character rotation.</summary>
+        private void SyncRotateHandlePosition()
+        {
+            if (_rotateArrowHandle == null || _heroStage == null || _btnRotateModelRight == null) return;
+
+            float yaw = _heroStage.CurrentYRotation;
+            // Map yaw to ellipse angle: 270° on ellipse = front center
+            float ellipseAngle = (540f - yaw) % 360f;
+            if (ellipseAngle < 0f) ellipseAngle += 360f;
+
+            // Calculate position on the full ellipse (no clamping - smooth 360° travel)
+            const float containerW = 170f;
+            const float containerH = 60f;
+            float a = containerW * 0.44f;
+            float b = containerH * 0.40f;
+            float cxE = containerW * 0.5f;
+            float cyE = containerH * 0.5f;
+
+            float rad = ellipseAngle * Mathf.Deg2Rad;
+            const float handleSize = 20f;
+            float x = cxE + a * Mathf.Cos(rad) - handleSize * 0.5f;
+            float y = cyE - b * Mathf.Sin(rad) - handleSize * 0.5f;
+
+            _rotateArrowHandle.style.left = x;
+            _rotateArrowHandle.style.top = y;
+
+            // Rotate the arrow to point along the tangent direction
+            float tangentAngle = Mathf.Atan2(a * Mathf.Sin(rad), b * Mathf.Cos(rad)) * Mathf.Rad2Deg;
+            _rotateArrowHandle.style.rotate = new StyleRotate(new Rotate(Angle.Degrees(-tangentAngle + 90f)));
+
+            // Fade out when in hidden zone (behind character, 10°-170°)
+            // Smooth fade near edges for natural transition
+            const float fadeStart = 10f;
+            const float fadeEnd = 170f;
+            const float fadeMargin = 15f;
+            float handleOpacity = 0.9f;
+            if (ellipseAngle > fadeStart && ellipseAngle < fadeEnd)
+            {
+                // Fully hidden in center of hidden zone, fade at edges
+                float distFromEdge = Mathf.Min(ellipseAngle - fadeStart, fadeEnd - ellipseAngle);
+                handleOpacity = Mathf.Lerp(0.9f, 0f, Mathf.Clamp01(distFromEdge / fadeMargin));
+            }
+            _rotateArrowHandle.style.opacity = handleOpacity;
+        }
+
+        private static bool IsInsideTriangle(float px, float py,
+            float ax, float ay, float bx, float by, float cx, float cy)
+        {
+            float d1 = (px - bx) * (ay - by) - (ax - bx) * (py - by);
+            float d2 = (px - cx) * (by - cy) - (bx - cx) * (py - cy);
+            float d3 = (px - ax) * (cy - ay) - (cx - ax) * (py - ay);
+            bool hasNeg = d1 < 0 || d2 < 0 || d3 < 0;
+            bool hasPos = d1 > 0 || d2 > 0 || d3 > 0;
+            return !(hasNeg && hasPos);
+        }
+
+        /// <summary>Minimum distance from point to any edge of a triangle (for AA).</summary>
+        private static float DistToTriangleEdge(float px, float py,
+            float ax, float ay, float bx, float by, float cx, float cy)
+        {
+            float d0 = DistToSegment(px, py, ax, ay, bx, by);
+            float d1 = DistToSegment(px, py, bx, by, cx, cy);
+            float d2 = DistToSegment(px, py, cx, cy, ax, ay);
+            return Mathf.Min(d0, Mathf.Min(d1, d2));
+        }
+
+        private static float DistToSegment(float px, float py,
+            float ax, float ay, float bx, float by)
+        {
+            float dx = bx - ax, dy = by - ay;
+            float len2 = dx * dx + dy * dy;
+            if (len2 < 0.001f) return Mathf.Sqrt((px - ax) * (px - ax) + (py - ay) * (py - ay));
+            float t = Mathf.Clamp01(((px - ax) * dx + (py - ay) * dy) / len2);
+            float projX = ax + t * dx, projY = ay + t * dy;
+            float ex = px - projX, ey = py - projY;
+            return Mathf.Sqrt(ex * ex + ey * ey);
         }
 
         private bool TryGetHeroStageRect(out float left, out float top, out float width, out float height)
@@ -980,16 +1259,19 @@ namespace VeilBreakers.UI.CharacterSelect
                 return false;
             }
 
-            var rs = stage.resolvedStyle;
-            if (rs.width < 10f || rs.height < 10f)
+            // Use worldBound for reliable absolute position (resolvedStyle.left/top
+            // can return 0 for percentage-positioned elements before layout resolves)
+            var rect = stage.worldBound;
+            if (float.IsNaN(rect.width) || float.IsNaN(rect.height) ||
+                rect.width < 10f || rect.height < 10f)
             {
                 return false;
             }
 
-            left = rs.left;
-            top = rs.top;
-            width = rs.width;
-            height = rs.height;
+            left = rect.x;
+            top = rect.y;
+            width = rect.width;
+            height = rect.height;
             return true;
         }
 
@@ -1271,6 +1553,14 @@ namespace VeilBreakers.UI.CharacterSelect
                 }
             }
 
+            // Cleanup rotation handle drag events
+            if (_rotateArrowHandle != null)
+            {
+                _rotateArrowHandle.UnregisterCallback<PointerDownEvent>(OnRotateHandlePointerDown);
+                _rotateArrowHandle.UnregisterCallback<PointerMoveEvent>(OnRotateHandlePointerMove);
+                _rotateArrowHandle.UnregisterCallback<PointerUpEvent>(OnRotateHandlePointerUp);
+            }
+
             _root?.UnregisterCallback<KeyDownEvent>(OnKeyDown);
             _eventHandlersBound = false;
         }
@@ -1339,6 +1629,8 @@ namespace VeilBreakers.UI.CharacterSelect
                 EnsureNavigationButtonVisuals();
                 _nextNavVisualRefreshTime = Time.unscaledTime + 0.33f;
             }
+
+            SyncRotateHandlePosition();
         }
 
         private void OnInputAction(InputManager.GameAction action)
@@ -1539,14 +1831,59 @@ namespace VeilBreakers.UI.CharacterSelect
                 return;
             }
 
-            if (_monsterName != null) _monsterName.text = monster.display_name ?? "";
-            if (_monsterBrand != null) _monsterBrand.text = monster.GetPrimaryBrand().ToString();
+            if (_monsterName != null) _monsterName.text = monster.display_name?.ToUpper() ?? "";
+            Brand brand = monster.GetPrimaryBrand();
+            if (_monsterBrand != null) _monsterBrand.text = brand.ToString();
+            if (_monsterRole != null) _monsterRole.text = (monster.ai_pattern ?? "").ToUpper();
+
+            // Stats
+            if (_monsterStatHp != null) _monsterStatHp.text = monster.base_hp.ToString();
+            if (_monsterStatAtk != null) _monsterStatAtk.text = monster.base_attack.ToString();
+            if (_monsterStatDef != null) _monsterStatDef.text = monster.base_defense.ToString();
+            if (_monsterStatSpd != null) _monsterStatSpd.text = monster.base_speed.ToString();
+
+            // Tint brand badge with brand color
+            ApplyBrandBadgeColor(brand);
         }
 
         private void ClearMonsterData()
         {
-            if (_monsterName != null) _monsterName.text = "Unknown";
+            if (_monsterName != null) _monsterName.text = "UNKNOWN";
             if (_monsterBrand != null) _monsterBrand.text = "N/A";
+            if (_monsterRole != null) _monsterRole.text = "";
+            if (_monsterStatHp != null) _monsterStatHp.text = "0";
+            if (_monsterStatAtk != null) _monsterStatAtk.text = "0";
+            if (_monsterStatDef != null) _monsterStatDef.text = "0";
+            if (_monsterStatSpd != null) _monsterStatSpd.text = "0";
+        }
+
+        private static readonly Dictionary<Brand, Color> kBrandColors = new Dictionary<Brand, Color>
+        {
+            { Brand.IRON,    new Color(0.70f, 0.65f, 0.55f) },
+            { Brand.SAVAGE,  new Color(0.85f, 0.35f, 0.25f) },
+            { Brand.SURGE,   new Color(0.40f, 0.70f, 0.95f) },
+            { Brand.VENOM,   new Color(0.45f, 0.80f, 0.30f) },
+            { Brand.DREAD,   new Color(0.60f, 0.30f, 0.70f) },
+            { Brand.LEECH,   new Color(0.70f, 0.20f, 0.35f) },
+            { Brand.GRACE,   new Color(0.95f, 0.85f, 0.45f) },
+            { Brand.MEND,    new Color(0.40f, 0.85f, 0.75f) },
+            { Brand.RUIN,    new Color(0.90f, 0.50f, 0.15f) },
+            { Brand.VOID,    new Color(0.55f, 0.40f, 0.85f) },
+        };
+
+        private void ApplyBrandBadgeColor(Brand brand)
+        {
+            if (_monsterBrandBadge == null) return;
+
+            if (!kBrandColors.TryGetValue(brand, out Color c))
+                c = new Color(0.70f, 0.65f, 0.55f); // default warm neutral
+
+            _monsterBrandBadge.style.backgroundColor = new Color(c.r, c.g, c.b, 0.25f);
+            _monsterBrandBadge.style.borderTopColor = new Color(c.r, c.g, c.b, 0.5f);
+            _monsterBrandBadge.style.borderRightColor = new Color(c.r, c.g, c.b, 0.5f);
+            _monsterBrandBadge.style.borderBottomColor = new Color(c.r, c.g, c.b, 0.5f);
+            _monsterBrandBadge.style.borderLeftColor = new Color(c.r, c.g, c.b, 0.5f);
+            if (_monsterBrand != null) _monsterBrand.style.color = new Color(c.r, c.g, c.b, 0.95f);
         }
 
         private void ApplyStarterStats(HeroData hero)
@@ -2110,10 +2447,11 @@ namespace VeilBreakers.UI.CharacterSelect
                 _btnNextHero.style.display = DisplayStyle.Flex;
                 _btnNextHero.style.opacity = 1f;
             }
+            // Left button hidden - single rotation indicator only
             if (_btnRotateModelLeft != null)
             {
-                _btnRotateModelLeft.style.display = DisplayStyle.Flex;
-                _btnRotateModelLeft.style.opacity = 1f;
+                _btnRotateModelLeft.style.display = DisplayStyle.None;
+                _btnRotateModelLeft.style.opacity = 0f;
             }
             if (_btnRotateModelRight != null)
             {
@@ -2169,8 +2507,13 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_heroPath != null && string.IsNullOrWhiteSpace(_heroPath.text)) _heroPath.text = "IRONBOUND";
             if (_heroRole != null && string.IsNullOrWhiteSpace(_heroRole.text)) _heroRole.text = "TANK";
             if (_heroResource != null && string.IsNullOrWhiteSpace(_heroResource.text)) _heroResource.text = "GUARD";
-            if (_monsterName != null && string.IsNullOrWhiteSpace(_monsterName.text)) _monsterName.text = "Skitter-Teeth";
+            if (_monsterName != null && string.IsNullOrWhiteSpace(_monsterName.text)) _monsterName.text = "SKITTER-TEETH";
             if (_monsterBrand != null && string.IsNullOrWhiteSpace(_monsterBrand.text)) _monsterBrand.text = "IRON";
+            if (_monsterRole != null && string.IsNullOrWhiteSpace(_monsterRole.text)) _monsterRole.text = "TANK";
+            if (_monsterStatHp != null && string.IsNullOrWhiteSpace(_monsterStatHp.text)) _monsterStatHp.text = "50";
+            if (_monsterStatAtk != null && string.IsNullOrWhiteSpace(_monsterStatAtk.text)) _monsterStatAtk.text = "12";
+            if (_monsterStatDef != null && string.IsNullOrWhiteSpace(_monsterStatDef.text)) _monsterStatDef.text = "14";
+            if (_monsterStatSpd != null && string.IsNullOrWhiteSpace(_monsterStatSpd.text)) _monsterStatSpd.text = "10";
             if (_starterStatHp != null && string.IsNullOrWhiteSpace(_starterStatHp.text)) _starterStatHp.text = "68";
             if (_starterStatAtk != null && string.IsNullOrWhiteSpace(_starterStatAtk.text)) _starterStatAtk.text = "10";
             if (_starterStatDef != null && string.IsNullOrWhiteSpace(_starterStatDef.text)) _starterStatDef.text = "20";

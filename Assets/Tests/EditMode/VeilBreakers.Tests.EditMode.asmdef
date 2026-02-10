@@ -1,20 +1,24 @@
 {
   "name": "VeilBreakers.Tests.EditMode",
+  "rootNamespace": "VeilBreakers.Tests.EditMode",
   "references": [
-    "Assembly-CSharp"
-  ],
-  "optionalUnityReferences": [
-    "TestAssemblies"
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner",
+    "VeilBreakers.Runtime"
   ],
   "includePlatforms": [
     "Editor"
   ],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
-  "overrideReferences": false,
-  "precompiledReferences": [],
-  "autoReferenced": true,
-  "defineConstraints": [],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "autoReferenced": false,
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ],
   "versionDefines": [],
   "noEngineReferences": false
 }
