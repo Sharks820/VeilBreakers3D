@@ -20,7 +20,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private const string kMonsterModelResourceRoot = "Art/3D_Models/Monsters";
         private static readonly Dictionary<string, string[]> kHeroModelResourceById = new Dictionary<string, string[]>
         {
-            { "vex", new[] { "vex_medieval_knight", "Vex", "Vex_for_mixamo", "Vex_mesh_only" } }
+            { "vex", new[] { "Vex", "Vex_for_mixamo", "vex_medieval_knight", "Vex_mesh_only" } }
         };
         private static readonly Dictionary<string, string[]> kMonsterModelResourceById = new Dictionary<string, string[]>
         {
@@ -73,14 +73,14 @@ namespace VeilBreakers.UI.CharacterSelect
         [SerializeField] private float _zoomSpeed = 0.5f;
         [SerializeField] private float _framingPadding = 0.95f;
         [SerializeField] private float _framingMinDistance = 0.8f;
-        [SerializeField] private float _framingMaxDistance = 3.8f;
+        [SerializeField] private float _framingMaxDistance = 5.5f;
         [SerializeField, Range(0f, 0.8f)] private float _framingLookTargetBias = 0.35f;
 
         [Header("Model Positions")]
         [SerializeField] private Vector3 _heroPosition = new Vector3(0f, -2.1f, 0f);
-        [SerializeField] private Vector3 _monsterPosition = new Vector3(1.5f, -2.1f, 0.3f);
+        [SerializeField] private Vector3 _monsterPosition = new Vector3(0.7f, -2.1f, 0f);
         [SerializeField] private float _heroScale = 1.4f;
-        [SerializeField] private float _monsterScale = 0.5f;
+        [SerializeField] private float _monsterScale = 0.4f;
         [SerializeField] private bool _showCompanionPlaceholder = true;
 
         [Header("Interaction")]
@@ -103,6 +103,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private Camera _stageCamera;
         private RenderTexture _renderTexture;
         private GameObject _stageRoot;
+        private GameObject _heroPivot;
         private GameObject _currentHeroModel;
         private GameObject _currentMonsterModel;
         private Light _stageLight;
@@ -128,6 +129,11 @@ namespace VeilBreakers.UI.CharacterSelect
         private Renderer _heroRenderer;
         private Renderer _monsterRenderer;
         private Renderer[] _heroModelRenderers;
+        private Renderer[] _monsterModelRenderers;
+
+        // Monster hover state
+        private bool _isMonsterHovered;
+        private Material[] _monsterOriginalMaterials;
 
         // Animation
         private Animator _heroAnimator;
@@ -150,6 +156,20 @@ namespace VeilBreakers.UI.CharacterSelect
         public void Initialize(VisualElement renderTarget)
         {
             _renderTarget = renderTarget;
+
+            // Force-set ALL visual values (overrides any stale serialized inspector data)
+            _cameraFOV = 30f;
+            _cameraPosition = new Vector3(0f, 1.2f, -3f);
+            _cameraLookAt = new Vector3(0f, 0.65f, 0f);
+            _framingPadding = 0.95f;
+            _framingMinDistance = 0.8f;
+            _framingMaxDistance = 20f;
+            _framingLookTargetBias = 0f;
+            _heroPosition = new Vector3(0f, -2.1f, 0f);
+            _heroScale = 1.4f;
+            _monsterPosition = new Vector3(1.5f, -2.1f, 0.3f);
+            _monsterScale = 0.3f;
+
             _monsterDelayWait = new WaitForSeconds(_monsterDelay);
             CreateStage();
             SetupInteraction();
@@ -165,6 +185,7 @@ namespace VeilBreakers.UI.CharacterSelect
                 _renderTarget.UnregisterCallback<PointerDownEvent>(OnPointerDown);
                 _renderTarget.UnregisterCallback<PointerMoveEvent>(OnPointerMove);
                 _renderTarget.UnregisterCallback<PointerUpEvent>(OnPointerUp);
+                _renderTarget.UnregisterCallback<PointerLeaveEvent>(OnPointerLeave);
                 _renderTarget.UnregisterCallback<WheelEvent>(OnWheel);
             }
 
@@ -173,16 +194,16 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void Update()
         {
-            if (_isDestroyed || _stageRoot == null) return;
+            if (_isDestroyed || _heroPivot == null) return;
 
-            // Auto-orbit when idle
+            // Auto-orbit when idle (hero only)
             if (_enableAutoOrbit && !_isDragging)
             {
                 _idleTimer += Time.deltaTime;
                 if (_idleTimer >= _idleBeforeOrbit && _currentHeroModel != null)
                 {
                     _currentYRotation += _autoOrbitSpeed * Time.deltaTime;
-                    _stageRoot.transform.localRotation = Quaternion.Euler(0f, _currentYRotation, 0f);
+                    _heroPivot.transform.localRotation = Quaternion.Euler(0f, _currentYRotation, 0f);
                 }
             }
 
@@ -214,10 +235,15 @@ namespace VeilBreakers.UI.CharacterSelect
             _renderTexture.antiAliasing = 4;
             _renderTexture.Create();
 
-            // Create stage root (all models go under this for rotation)
+            // Create stage root (models go under this; does NOT rotate itself)
             _stageRoot = new GameObject("CharacterStage");
             _stageRoot.transform.SetParent(transform);
             _stageRoot.transform.localPosition = Vector3.zero;
+
+            // Hero pivot sits under stageRoot and handles hero-only rotation
+            _heroPivot = new GameObject("HeroPivot");
+            _heroPivot.transform.SetParent(_stageRoot.transform);
+            _heroPivot.transform.localPosition = Vector3.zero;
 
             // Create camera
             var camObj = new GameObject("StageCamera");
@@ -312,6 +338,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             if (_stageCamera != null) Destroy(_stageCamera.gameObject);
             if (_stageRoot != null) Destroy(_stageRoot);
+            _heroPivot = null;
             if (_stageLight != null) Destroy(_stageLight.gameObject);
             if (_fillLight != null) Destroy(_fillLight.gameObject);
             if (_rimLight != null) Destroy(_rimLight.gameObject);
@@ -320,6 +347,9 @@ namespace VeilBreakers.UI.CharacterSelect
 
             if (_heroMaterial != null) Destroy(_heroMaterial);
             if (_monsterMaterial != null) Destroy(_monsterMaterial);
+            _monsterModelRenderers = null;
+            _monsterOriginalMaterials = null;
+            _isMonsterHovered = false;
 
             if (_renderTexture != null)
             {
@@ -343,6 +373,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _renderTarget.RegisterCallback<PointerDownEvent>(OnPointerDown);
             _renderTarget.RegisterCallback<PointerMoveEvent>(OnPointerMove);
             _renderTarget.RegisterCallback<PointerUpEvent>(OnPointerUp);
+            _renderTarget.RegisterCallback<PointerLeaveEvent>(OnPointerLeave);
             _renderTarget.RegisterCallback<WheelEvent>(OnWheel);
         }
 
@@ -355,11 +386,24 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void OnPointerMove(PointerMoveEvent evt)
         {
-            if (!_isDragging || _stageRoot == null) return;
+            // Check monster hover on every pointer move (regardless of drag state)
+            UpdateMonsterHover(evt.localPosition);
+
+            if (!_isDragging || _heroPivot == null) return;
 
             _currentYRotation += evt.deltaPosition.x * _rotationSpeed;
-            _stageRoot.transform.localRotation = Quaternion.Euler(0f, _currentYRotation, 0f);
+            _heroPivot.transform.localRotation = Quaternion.Euler(0f, _currentYRotation, 0f);
             _idleTimer = 0;
+        }
+
+        private void OnPointerLeave(PointerLeaveEvent evt)
+        {
+            // Clear monster hover when pointer leaves the render target
+            if (_isMonsterHovered)
+            {
+                _isMonsterHovered = false;
+                SetMonsterHighlight(false);
+            }
         }
 
         private void OnPointerUp(PointerUpEvent evt)
@@ -410,7 +454,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         public void RotateByStep(float direction)
         {
-            if (_isDestroyed || _stageRoot == null) return;
+            if (_isDestroyed || _heroPivot == null) return;
 
             if (Mathf.Approximately(direction, 0f))
             {
@@ -418,16 +462,16 @@ namespace VeilBreakers.UI.CharacterSelect
             }
 
             _currentYRotation += Mathf.Sign(direction) * _rotateStepDegrees;
-            _stageRoot.transform.localRotation = Quaternion.Euler(0f, _currentYRotation, 0f);
+            _heroPivot.transform.localRotation = Quaternion.Euler(0f, _currentYRotation, 0f);
             _idleTimer = 0f;
         }
 
         /// <summary>Rotate by a continuous delta (for drag input from UI).</summary>
         public void RotateByDelta(float deltaDegrees)
         {
-            if (_isDestroyed || _stageRoot == null) return;
+            if (_isDestroyed || _heroPivot == null) return;
             _currentYRotation += deltaDegrees;
-            _stageRoot.transform.localRotation = Quaternion.Euler(0f, _currentYRotation, 0f);
+            _heroPivot.transform.localRotation = Quaternion.Euler(0f, _currentYRotation, 0f);
             _idleTimer = 0f;
         }
 
@@ -494,9 +538,9 @@ namespace VeilBreakers.UI.CharacterSelect
             // Reset rotation to face the camera on spawn, then re-fit framing after rotation.
             _currentYRotation = ResolveFacingYaw(hero, _currentHeroModel);
             _idleTimer = 0f;
-            if (_stageRoot != null)
+            if (_heroPivot != null)
             {
-                _stageRoot.transform.localRotation = Quaternion.Euler(0f, _currentYRotation, 0f);
+                _heroPivot.transform.localRotation = Quaternion.Euler(0f, _currentYRotation, 0f);
             }
             FitCameraToCurrentHero();
 
@@ -511,6 +555,9 @@ namespace VeilBreakers.UI.CharacterSelect
                     _currentMonsterModel = CreatePlaceholderMonster(heroColor);
                 }
                 yield return StartCoroutine(AnimateSpawn(_currentMonsterModel, _monsterMaterial));
+
+                // Re-fit camera to encompass both hero and monster
+                FitCameraToFullStage();
             }
         }
 
@@ -547,7 +594,7 @@ namespace VeilBreakers.UI.CharacterSelect
                 return null;
             }
 
-            var model = Instantiate(prefab, _stageRoot.transform);
+            var model = Instantiate(prefab, _heroPivot.transform);
             model.name = $"Hero_{heroId}";
             model.transform.localRotation = Quaternion.identity;
             SetLayer(model, _renderLayer);
@@ -561,6 +608,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             PositionModelOnStage(model);
             EnsureModelHasMaterials(model, heroId);
+            Debug.Log($"[HeroStage] Loaded hero model '{heroId}' from resource '{resolvedResourceName}'.");
             SetupAnimator(model, heroId, resolvedResourceName);
             return model;
         }
@@ -592,7 +640,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             var model = Instantiate(prefab, _stageRoot.transform);
             model.name = $"Monster_{id}";
-            model.transform.localRotation = Quaternion.identity;
+            model.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
             SetLayer(model, _renderLayer);
 
             var colliders = model.GetComponentsInChildren<Collider>(true);
@@ -603,11 +651,12 @@ namespace VeilBreakers.UI.CharacterSelect
 
             PositionMonsterOnStage(model);
 
-            // Keep authored materials from the FBX
-            _monsterRenderer = model.GetComponentInChildren<Renderer>();
+            // Keep authored materials from the FBX; cache all renderers for hover highlight
+            _monsterModelRenderers = model.GetComponentsInChildren<Renderer>(true);
+            _monsterRenderer = _monsterModelRenderers.Length > 0 ? _monsterModelRenderers[0] : null;
             _monsterMaterial = null;
 
-            Debug.Log($"[HeroStage] Loaded monster model '{id}' from Resources.");
+            Debug.Log($"[HeroStage] Loaded monster model '{id}' at local pos {model.transform.localPosition}, world pos {model.transform.position}.");
             return model;
         }
 
@@ -674,7 +723,7 @@ namespace VeilBreakers.UI.CharacterSelect
             sourceForward.Normalize();
             desiredForward.Normalize();
             float deltaYaw = Vector3.SignedAngle(sourceForward, desiredForward, Vector3.up);
-            yaw = Mathf.Repeat(_stageRoot.transform.localEulerAngles.y + deltaYaw, 360f);
+            yaw = Mathf.Repeat(_heroPivot.transform.localEulerAngles.y + deltaYaw, 360f);
             return true;
         }
 
@@ -804,8 +853,8 @@ namespace VeilBreakers.UI.CharacterSelect
                 return;
             }
 
-            Vector3 desiredAnchor = _stageRoot != null
-                ? _stageRoot.transform.TransformPoint(_heroPosition)
+            Vector3 desiredAnchor = _heroPivot != null
+                ? _heroPivot.transform.TransformPoint(_heroPosition)
                 : _heroPosition;
             Vector3 currentAnchor = new Vector3(bounds.center.x, bounds.min.y, bounds.center.z);
             model.transform.position += desiredAnchor - currentAnchor;
@@ -846,6 +895,99 @@ namespace VeilBreakers.UI.CharacterSelect
                 : _monsterPosition;
             Vector3 currentAnchor = new Vector3(bounds.center.x, bounds.min.y, bounds.center.z);
             model.transform.position += desiredAnchor - currentAnchor;
+        }
+
+        /// <summary>
+        /// Checks if the pointer (in local render target coordinates) is over the monster
+        /// model using bounds-based ray intersection, and toggles highlight accordingly.
+        /// </summary>
+        private void UpdateMonsterHover(Vector2 localPosition)
+        {
+            if (_stageCamera == null || _currentMonsterModel == null || _renderTarget == null) return;
+
+            // Convert local position to UV (0-1) on the render target
+            float w = _renderTarget.layout.width;
+            float h = _renderTarget.layout.height;
+            if (w < 1f || h < 1f) return;
+
+            Vector2 uv = new Vector2(localPosition.x / w, 1f - (localPosition.y / h)); // Flip Y for viewport
+            Ray ray = _stageCamera.ViewportPointToRay(new Vector3(uv.x, uv.y, 0f));
+
+            bool overMonster = false;
+            if (TryGetModelBounds(_currentMonsterModel, out var monsterBounds, _monsterModelRenderers))
+            {
+                overMonster = monsterBounds.IntersectRay(ray);
+            }
+
+            if (overMonster != _isMonsterHovered)
+            {
+                _isMonsterHovered = overMonster;
+                SetMonsterHighlight(overMonster);
+            }
+        }
+
+        /// <summary>
+        /// Returns the normalized Y position (0=top, 1=bottom) of the hero's feet
+        /// in the render texture viewport. Used by UI to position the rotation ring.
+        /// </summary>
+        public float GetHeroFeetViewportY()
+        {
+            if (_stageCamera == null || _currentHeroModel == null) return 0.85f;
+
+            Vector3 feetWorld;
+            if (TryGetModelBounds(_currentHeroModel, out var bounds, _heroModelRenderers))
+            {
+                feetWorld = new Vector3(bounds.center.x, bounds.min.y, bounds.center.z);
+            }
+            else
+            {
+                feetWorld = _currentHeroModel.transform.position;
+            }
+
+            Vector3 viewportPoint = _stageCamera.WorldToViewportPoint(feetWorld);
+            // Viewport Y: 0=bottom, 1=top. UI Y: 0=top, 1=bottom. Flip it.
+            return Mathf.Clamp01(1f - viewportPoint.y);
+        }
+
+        /// <summary>
+        /// Highlights the monster model in the 3D stage (e.g. on hover).
+        /// </summary>
+        public void SetMonsterHighlight(bool highlighted)
+        {
+            if (_monsterModelRenderers == null || _monsterModelRenderers.Length == 0) return;
+
+            if (highlighted)
+            {
+                // Cache original materials if not yet cached
+                if (_monsterOriginalMaterials == null)
+                {
+                    _monsterOriginalMaterials = new Material[_monsterModelRenderers.Length];
+                    for (int i = 0; i < _monsterModelRenderers.Length; i++)
+                    {
+                        if (_monsterModelRenderers[i] == null) continue;
+                        // Create material instances for highlight
+                        _monsterOriginalMaterials[i] = new Material(_monsterModelRenderers[i].material);
+                        _monsterModelRenderers[i].material = _monsterOriginalMaterials[i];
+                    }
+                }
+
+                for (int i = 0; i < _monsterOriginalMaterials.Length; i++)
+                {
+                    if (_monsterOriginalMaterials[i] == null) continue;
+                    _monsterOriginalMaterials[i].SetColor("_EmissionColor", new Color(0.35f, 0.28f, 0.1f, 1f));
+                    _monsterOriginalMaterials[i].EnableKeyword("_EMISSION");
+                }
+            }
+            else
+            {
+                if (_monsterOriginalMaterials == null) return;
+                for (int i = 0; i < _monsterOriginalMaterials.Length; i++)
+                {
+                    if (_monsterOriginalMaterials[i] == null) continue;
+                    _monsterOriginalMaterials[i].SetColor("_EmissionColor", Color.black);
+                    _monsterOriginalMaterials[i].DisableKeyword("_EMISSION");
+                }
+            }
         }
 
         /// <summary>
@@ -1089,9 +1231,12 @@ namespace VeilBreakers.UI.CharacterSelect
                 animator = model.AddComponent<Animator>();
             }
 
+            Debug.Log($"[HeroStage] SetupAnimator: heroId='{heroId}', resource='{resolvedResourceName}', hasAnimator={animator != null}, avatar={animator.avatar?.name ?? "null"}, isHuman={animator.isHuman}");
+
             if (animator.avatar == null)
             {
                 animator.avatar = LoadHeroAvatar(resolvedResourceName, heroId);
+                Debug.Log($"[HeroStage] Loaded avatar: {animator.avatar?.name ?? "null"}, isHuman={animator.isHuman}");
             }
 
             animator.applyRootMotion = false;
@@ -1111,7 +1256,9 @@ namespace VeilBreakers.UI.CharacterSelect
                     _heroAnimator.Update(0f);
                     _heroAnimator.SetBool(_animSelectedHash, false);
                     _heroAnimator.SetFloat(_animIdleTimerHash, 0f);
-                    if (_heroAnimator.HasState(0, _animIdleStateHash))
+                    bool hasIdleState = _heroAnimator.HasState(0, _animIdleStateHash);
+                    Debug.Log($"[HeroStage] AnimController loaded! hasIdleState={hasIdleState}, avatar={animator.avatar?.name ?? "null"}, isHuman={animator.isHuman}");
+                    if (hasIdleState)
                     {
                         _heroAnimator.Play(_animIdleStateHash, 0, 0f);
                     }
@@ -1119,8 +1266,12 @@ namespace VeilBreakers.UI.CharacterSelect
                 }
                 else
                 {
-                    Debug.Log($"[HeroStage] No AnimatorController found at Resources/{path}. Hero will be static until controller is created.");
+                    Debug.LogWarning($"[HeroStage] No AnimatorController found at Resources/{path}. Hero will be static.");
                 }
+            }
+            else
+            {
+                Debug.LogWarning($"[HeroStage] No animator controller mapping for heroId '{heroId}'.");
             }
         }
 
@@ -1202,7 +1353,7 @@ namespace VeilBreakers.UI.CharacterSelect
             float distanceByHeight = (paddedHeight * 0.5f) / Mathf.Max(0.001f, Mathf.Tan(verticalFovRad * 0.5f));
             float distanceByWidth = (paddedWidth * 0.5f) / Mathf.Max(0.001f, Mathf.Tan(horizontalFovRad * 0.5f));
             float distance = Mathf.Max(distanceByHeight, distanceByWidth) + Mathf.Max(0.25f, bounds.extents.z * 0.65f);
-            distance *= 0.58f;
+            distance *= 1.15f; // Show full hero head-to-toe with ~15% breathing room
             distance = Mathf.Clamp(distance, _framingMinDistance, _framingMaxDistance);
 
             // Push look target toward upper body so hero appears lower and more centered.
@@ -1214,6 +1365,67 @@ namespace VeilBreakers.UI.CharacterSelect
             _stageCamera.transform.LookAt(lookTarget);
             _cameraOrbitBasePosition = _stageCamera.transform.localPosition;
             _currentZoom = _cameraOrbitBasePosition.z;
+            Debug.Log($"[HeroStage] FitCameraToCurrentHero: bounds.h={bounds.size.y:F2}, FOV={_stageCamera.fieldOfView}, dist={distance:F2}, camPos={camPosition}, lookAt={lookTarget}, bias={_framingLookTargetBias}");
+        }
+
+        /// <summary>
+        /// Fits the camera to show both hero and monster. Called after monster spawn.
+        /// Uses combined bounds so both models are visible in the render texture.
+        /// </summary>
+        private void FitCameraToFullStage()
+        {
+            if (_stageCamera == null || _currentHeroModel == null) return;
+
+            // If no monster, fall back to hero-only framing
+            if (_currentMonsterModel == null)
+            {
+                FitCameraToCurrentHero();
+                return;
+            }
+
+            if (!TryGetModelBounds(_currentHeroModel, out var heroBounds, _heroModelRenderers)) return;
+            if (!TryGetModelBounds(_currentMonsterModel, out var monsterBounds, _monsterModelRenderers))
+            {
+                FitCameraToCurrentHero();
+                return;
+            }
+
+            // Combine both bounds
+            Bounds combinedBounds = heroBounds;
+            combinedBounds.Encapsulate(monsterBounds);
+
+            float aspect = _renderTexture != null
+                ? Mathf.Max(0.5f, _renderTexture.width / Mathf.Max(1f, (float)_renderTexture.height))
+                : Mathf.Max(0.5f, _stageCamera.aspect);
+
+            float verticalFovRad = Mathf.Deg2Rad * _stageCamera.fieldOfView;
+            float horizontalFovRad = 2f * Mathf.Atan(Mathf.Tan(verticalFovRad * 0.5f) * aspect);
+
+            float paddedHeight = combinedBounds.size.y * _framingPadding;
+            float paddedWidth = combinedBounds.size.x * _framingPadding;
+
+            float distanceByHeight = (paddedHeight * 0.5f) / Mathf.Max(0.001f, Mathf.Tan(verticalFovRad * 0.5f));
+            float distanceByWidth = (paddedWidth * 0.5f) / Mathf.Max(0.001f, Mathf.Tan(horizontalFovRad * 0.5f));
+            float distance = Mathf.Max(distanceByHeight, distanceByWidth) + Mathf.Max(0.25f, combinedBounds.extents.z * 0.65f);
+            // Generous framing to show both hero and monster fully
+            distance *= 1.2f;
+            distance = Mathf.Clamp(distance, _framingMinDistance, _framingMaxDistance);
+
+            // Center the look target between both models, biased slightly toward the hero's upper body
+            Vector3 lookTarget = new Vector3(
+                heroBounds.center.x * 0.7f + combinedBounds.center.x * 0.3f,
+                combinedBounds.center.y + combinedBounds.size.y * _framingLookTargetBias * 0.5f,
+                combinedBounds.center.z
+            );
+
+            float yOffset = _cameraPosition.y - _cameraLookAt.y;
+            Vector3 camPosition = new Vector3(lookTarget.x + _cameraPosition.x, lookTarget.y + yOffset, lookTarget.z - distance);
+
+            _stageCamera.transform.position = camPosition;
+            _stageCamera.transform.LookAt(lookTarget);
+            _cameraOrbitBasePosition = _stageCamera.transform.localPosition;
+            _currentZoom = _cameraOrbitBasePosition.z;
+            Debug.Log($"[HeroStage] FitCameraToFullStage: combined.h={combinedBounds.size.y:F2}, combined.w={combinedBounds.size.x:F2}, FOV={_stageCamera.fieldOfView}, dist={distance:F2}, camPos={camPosition}, lookAt={lookTarget}");
         }
 
         private static bool TryGetModelBounds(GameObject model, out Bounds combinedBounds, Renderer[] cachedRenderers = null)
@@ -1248,7 +1460,7 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             var hero = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             hero.name = "HeroPlaceholder";
-            hero.transform.SetParent(_stageRoot.transform);
+            hero.transform.SetParent(_heroPivot.transform);
             hero.transform.localPosition = _heroPosition;
             hero.transform.localScale = Vector3.one * _heroScale;
             SetLayer(hero, _renderLayer);
@@ -1409,6 +1621,9 @@ namespace VeilBreakers.UI.CharacterSelect
             _heroRenderer = null;
             _monsterRenderer = null;
             _heroModelRenderers = null;
+            _monsterModelRenderers = null;
+            _monsterOriginalMaterials = null;
+            _isMonsterHovered = false;
 
             // Track in pending list so FlushPendingDestroys can clean up if coroutine is interrupted
             if (hero != null) _pendingDestroyModels.Add(hero);

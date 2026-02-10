@@ -81,6 +81,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private Label _monsterStatDef;
         private Label _monsterStatSpd;
         private VisualElement _monsterBrandBadge;
+        private VisualElement _monsterInfo;
 
         // Stats panel
         private VisualElement _statsPanel;
@@ -345,6 +346,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _monsterStatAtk = _root.Q<Label>("monster-stat-atk");
             _monsterStatDef = _root.Q<Label>("monster-stat-def");
             _monsterStatSpd = _root.Q<Label>("monster-stat-spd");
+            _monsterInfo = _root.Q("monster-info");
 
             // Stats panel
             _statsPanel = _root.Q("stats-panel");
@@ -962,17 +964,19 @@ namespace VeilBreakers.UI.CharacterSelect
                 _btnRotateModelLeft.style.opacity = 0f;
             }
 
-            // Wide elliptical rotation ring at the character's feet
+            // Full circle rotation ring below the character's feet
             float stageLeft = rootW * 0.25f;
             float stageTop = rootH * 0.11f;
             float stageWidth = rootW * 0.50f;
             float stageHeight = rootH * 0.66f;
 
-            const float arrowW = 170f;
-            const float arrowH = 60f;
+            const float arrowW = 220f;
+            const float arrowH = 80f;
             float stageCenterX = stageLeft + stageWidth * 0.5f;
-            // Position at character's feet (~78% into the stage)
-            float arrowTop = stageTop + stageHeight * 0.78f;
+            // Position at character's feet level so they stand IN the ring
+            // Use dynamic feet position from the 3D stage if available
+            float feetNormalized = _heroStage?.GetHeroFeetViewportY() ?? 0.88f;
+            float arrowTop = stageTop + stageHeight * feetNormalized - arrowH * 0.5f;
 
             if (_btnRotateModelRight != null)
             {
@@ -1045,7 +1049,7 @@ namespace VeilBreakers.UI.CharacterSelect
             if (clockwise && _rotateTexCW != null) return _rotateTexCW;
             if (!clockwise && _rotateTexCCW != null) return _rotateTexCCW;
 
-            const int tw = 192, th = 72;
+            const int tw = 220, th = 80;
             var tex = new Texture2D(tw, th, TextureFormat.RGBA32, false);
             tex.filterMode = FilterMode.Bilinear;
             tex.wrapMode = TextureWrapMode.Clamp;
@@ -1055,7 +1059,7 @@ namespace VeilBreakers.UI.CharacterSelect
             float cy = th * 0.5f;
             float a = tw * 0.44f;   // horizontal semi-axis
             float b = th * 0.40f;   // vertical semi-axis (foreshortened)
-            float thick = 4.5f;     // half-thickness of ring stroke
+            float thick = 3.5f;     // half-thickness of ring stroke
 
             for (int py = 0; py < th; py++)
             {
@@ -1079,16 +1083,9 @@ namespace VeilBreakers.UI.CharacterSelect
 
                     if (pixelDist < thick + 1.5f)
                     {
-                        float angleDeg = geoAngle * Mathf.Rad2Deg;
-                        if (angleDeg < 0f) angleDeg += 360f;
-
-                        // Hide top arc (behind character): 10° to 170°
-                        bool hidden = angleDeg >= 10f && angleDeg <= 170f;
-                        if (!hidden)
-                        {
-                            float aa = Mathf.Clamp01((thick - pixelDist) / 1.5f);
-                            pixels[py * tw + px] = new Color(1f, 1f, 1f, aa);
-                        }
+                        // Full circle - no hidden zone
+                        float aa = Mathf.Clamp01((thick - pixelDist) / 1.5f);
+                        pixels[py * tw + px] = new Color(1f, 1f, 1f, aa * 0.85f);
                     }
                 }
             }
@@ -1178,9 +1175,9 @@ namespace VeilBreakers.UI.CharacterSelect
             float ellipseAngle = (540f - yaw) % 360f;
             if (ellipseAngle < 0f) ellipseAngle += 360f;
 
-            // Calculate position on the full ellipse (no clamping - smooth 360° travel)
-            const float containerW = 170f;
-            const float containerH = 60f;
+            // Calculate position on the full ellipse
+            const float containerW = 220f;
+            const float containerH = 80f;
             float a = containerW * 0.44f;
             float b = containerH * 0.40f;
             float cxE = containerW * 0.5f;
@@ -1198,19 +1195,8 @@ namespace VeilBreakers.UI.CharacterSelect
             float tangentAngle = Mathf.Atan2(a * Mathf.Sin(rad), b * Mathf.Cos(rad)) * Mathf.Rad2Deg;
             _rotateArrowHandle.style.rotate = new StyleRotate(new Rotate(Angle.Degrees(-tangentAngle + 90f)));
 
-            // Fade out when in hidden zone (behind character, 10°-170°)
-            // Smooth fade near edges for natural transition
-            const float fadeStart = 10f;
-            const float fadeEnd = 170f;
-            const float fadeMargin = 15f;
-            float handleOpacity = 0.9f;
-            if (ellipseAngle > fadeStart && ellipseAngle < fadeEnd)
-            {
-                // Fully hidden in center of hidden zone, fade at edges
-                float distFromEdge = Mathf.Min(ellipseAngle - fadeStart, fadeEnd - ellipseAngle);
-                handleOpacity = Mathf.Lerp(0.9f, 0f, Mathf.Clamp01(distFromEdge / fadeMargin));
-            }
-            _rotateArrowHandle.style.opacity = handleOpacity;
+            // Full circle - consistent opacity everywhere
+            _rotateArrowHandle.style.opacity = 0.9f;
         }
 
         private static bool IsInsideTriangle(float px, float py,
@@ -1525,6 +1511,8 @@ namespace VeilBreakers.UI.CharacterSelect
 
             // Tab key for stats panel toggle
             _root?.RegisterCallback<KeyDownEvent>(OnKeyDown);
+
+            // Monster hover highlight now handled by HeroStageController via 3D ray intersection
             _eventHandlersBound = true;
         }
 
