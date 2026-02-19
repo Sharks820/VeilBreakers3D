@@ -6,6 +6,8 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
 using VeilBreakers.Data;
+using VeilBreakers.Managers;
+using VeilBreakers.UI.Core;
 
 namespace VeilBreakers.UI.CharacterSelect
 {
@@ -94,8 +96,16 @@ namespace VeilBreakers.UI.CharacterSelect
         private IEnumerator InitializeWhenReady()
         {
             // Wait for GameDatabase (guard null for quit-time re-enable)
+            float timeout = 10f;
+            float elapsed = 0f;
             while (GameDatabase.Instance == null || !GameDatabase.Instance.IsReady)
             {
+                elapsed += Time.deltaTime;
+                if (elapsed > timeout)
+                {
+                    Debug.LogError("[CharSelectManager] Timed out waiting for GameDatabase after 10s.");
+                    yield break;
+                }
                 yield return null;
             }
 

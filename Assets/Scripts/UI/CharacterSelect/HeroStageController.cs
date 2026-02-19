@@ -56,6 +56,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         // Placeholder material
         private static Material _placeholderMaterial;
+        private Material _currentPlaceholderMat;
 
         // =============================================================================
         // LIFECYCLE
@@ -104,6 +105,10 @@ namespace VeilBreakers.UI.CharacterSelect
                 var camObj = new GameObject("PreviewCamera");
                 camObj.transform.SetParent(_stageRoot);
                 _previewCamera = camObj.AddComponent<Camera>();
+            }
+            else
+            {
+                _previewCamera.transform.SetParent(_stageRoot);
             }
 
             _previewCamera.targetTexture = _renderTexture;
@@ -269,12 +274,13 @@ namespace VeilBreakers.UI.CharacterSelect
                     _placeholderMaterial = new Material(shader);
                 }
 
-                var mat = new Material(_placeholderMaterial);
+                if (_currentPlaceholderMat != null) Destroy(_currentPlaceholderMat);
+                _currentPlaceholderMat = new Material(_placeholderMaterial);
                 Color brandColor = config?.primaryColor ?? (data?.color_palette?.ToColor() ?? Color.gray);
-                mat.color = brandColor;
-                mat.SetColor("_EmissionColor", brandColor * 0.3f);
-                mat.EnableKeyword("_EMISSION");
-                renderer.material = mat;
+                _currentPlaceholderMat.color = brandColor;
+                _currentPlaceholderMat.SetColor("_EmissionColor", brandColor * 0.3f);
+                _currentPlaceholderMat.EnableKeyword("_EMISSION");
+                renderer.material = _currentPlaceholderMat;
             }
 
             return placeholder;
@@ -392,6 +398,7 @@ namespace VeilBreakers.UI.CharacterSelect
                 _renderTarget.UnregisterCallback<PointerUpEvent>(OnPointerUp);
             }
 
+            if (_currentPlaceholderMat != null) Destroy(_currentPlaceholderMat);
             if (_currentModel != null) Destroy(_currentModel);
             if (_currentChampion != null) Destroy(_currentChampion);
 

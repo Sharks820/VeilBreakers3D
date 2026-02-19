@@ -111,7 +111,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             SetLabel(_championName, monster.display_name ?? data.starter_monster_id);
             SetLabel(_championBrand, monster.GetPrimaryBrand().ToString());
-            SetLabel(_championRole, monster.role?.ToUpper() ?? "");
+            SetLabel(_championRole, monster.GetPrimaryBrand().ToString().ToUpper());
         }
 
         private void AnimatePanel()
