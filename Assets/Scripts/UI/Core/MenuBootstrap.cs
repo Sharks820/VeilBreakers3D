@@ -155,7 +155,7 @@ namespace VeilBreakers.UI.Core
             // Apply standard styles
             uiAssets.ApplyStandardStyles(uiDocument.rootVisualElement);
 
-            uiManagerObj.AddComponent<VeilBreakers.UI.CharacterSelect.CharacterSelectController>();
+            uiManagerObj.AddComponent<VeilBreakers.UI.CharacterSelect.CharacterSelectManager>();
 
             Debug.Log("[MenuBootstrap] CharacterSelect UI setup complete");
         }
