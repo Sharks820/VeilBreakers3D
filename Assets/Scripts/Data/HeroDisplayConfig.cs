@@ -120,5 +120,20 @@ namespace VeilBreakers.Data
         public Color particleColor;
         [Tooltip("null = skip selection VFX")]
         public GameObject selectionVFXPrefab;
+
+#if UNITY_EDITOR
+        private void OnValidate()
+        {
+            if (idleVariantMinDelay > idleVariantMaxDelay)
+            {
+                idleVariantMaxDelay = idleVariantMinDelay;
+            }
+
+            if (string.IsNullOrEmpty(heroId))
+            {
+                Debug.LogWarning($"[HeroDisplayConfig] {name} has no heroId assigned!");
+            }
+        }
+#endif
     }
 }
