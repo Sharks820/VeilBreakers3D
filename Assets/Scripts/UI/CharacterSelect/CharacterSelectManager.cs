@@ -86,13 +86,20 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private IEnumerator InitializeWhenReady()
         {
-            // Wait for GameDatabase
-            while (!GameDatabase.Instance.IsReady)
+            // Wait for GameDatabase (guard null for quit-time re-enable)
+            while (GameDatabase.Instance == null || !GameDatabase.Instance.IsReady)
             {
                 yield return null;
             }
 
             LoadHeroData();
+
+            // Bail if no hero data -- downstream controllers can't function
+            if (_heroList == null || _heroList.Count == 0)
+            {
+                yield break;
+            }
+
             CacheUIReferences();
             BindUI();
             ApplyInitialState();
@@ -211,6 +218,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private void ApplyInitialState()
         {
             _currentIndex = 0;
+            _isTransitioning = false;
             _confirmOverlay?.AddToClassList("hidden");
 
             if (_heroList != null && _heroList.Count > 0)
