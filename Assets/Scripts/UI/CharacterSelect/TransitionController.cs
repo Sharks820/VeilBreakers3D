@@ -28,6 +28,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void CacheReferences()
         {
+            if (_uiDocument == null) { Debug.LogError("[TransitionController] UIDocument not assigned!"); return; }
             var root = _uiDocument.rootVisualElement;
             _heroInfoPanel = root.Q<VisualElement>("hero-info-panel");
             _statsPanel = root.Q<VisualElement>("stats-panel");

@@ -43,6 +43,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void CacheReferences()
         {
+            if (_uiDocument == null) { Debug.LogError("[HeroDataPanelController] UIDocument not assigned!"); return; }
             var root = _uiDocument.rootVisualElement;
             _panel = root.Q<VisualElement>("hero-info-panel");
             _heroName = root.Q<Label>("hero-name");
@@ -66,7 +67,7 @@ namespace VeilBreakers.UI.CharacterSelect
             if (data == null) return;
 
             // Identity
-            SetLabel(_heroName, data.display_name?.ToUpper() ?? data.hero_id.ToUpper());
+            SetLabel(_heroName, (data.display_name ?? data.hero_id ?? "UNKNOWN").ToUpper());
             SetLabel(_heroTitle, data.title?.ToUpper() ?? "");
             SetLabel(_heroQuote, !string.IsNullOrEmpty(data.quote) ? $"\"{data.quote}\"" : "");
 
@@ -98,6 +99,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             _championSection?.RemoveFromClassList("hidden");
 
+            if (!GameDatabase.HasInstance) return;
             var monster = GameDatabase.Instance.GetMonster(data.starter_monster_id);
             if (monster == null)
             {

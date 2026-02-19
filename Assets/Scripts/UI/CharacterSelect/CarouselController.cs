@@ -37,6 +37,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void CacheReferences()
         {
+            if (_uiDocument == null) { Debug.LogError("[CarouselController] UIDocument not assigned!"); return; }
             var root = _uiDocument.rootVisualElement;
             _carouselStrip = root.Q<VisualElement>("carousel-strip");
             _heroIndex = root.Q<Label>("hero-index");
@@ -55,6 +56,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _heroCards.Clear();
 
             // Fetch and sort once, not per card
+            if (!GameDatabase.HasInstance) return;
             var heroes = GameDatabase.Instance.GetAllHeroes();
             heroes.Sort((a, b) => string.Compare(a.hero_id, b.hero_id, StringComparison.Ordinal));
 
@@ -144,7 +146,7 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (_heroIndex != null)
             {
-                _heroIndex.text = $"HERO {index + 1} / {_manager.HeroCount}";
+                _heroIndex.text = $"HERO {index + 1} / {_manager?.HeroCount ?? 0}";
             }
         }
     }

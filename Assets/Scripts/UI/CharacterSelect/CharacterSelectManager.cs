@@ -80,7 +80,14 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void OnDisable()
         {
+            StopAllCoroutines();
+            _isTransitioning = false;
+            _isInitialized = false;
             UnbindUI();
+        }
+
+        private void OnDestroy()
+        {
             CharSelectEvents.ClearAll();
         }
 
@@ -168,6 +175,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void CacheUIReferences()
         {
+            if (_uiDocument == null) { Debug.LogError("[CharacterSelectManager] UIDocument not assigned!"); return; }
             _root = _uiDocument.rootVisualElement;
 
             _btnPrev = _root.Q<Button>("btn-prev");
@@ -399,7 +407,9 @@ namespace VeilBreakers.UI.CharacterSelect
         private void OnPrevClicked(ClickEvent evt) => NavigatePrev();
         private void OnNextClicked(ClickEvent evt) => NavigateNext();
 
-        private void OnBackClicked(ClickEvent evt)
+        private void OnBackClicked(ClickEvent evt) => NavigateBack();
+
+        private void NavigateBack()
         {
             CharSelectEvents.RaiseScreenExiting();
             if (ScreenTransition.HasInstance)
@@ -456,7 +466,7 @@ namespace VeilBreakers.UI.CharacterSelect
             }
             else
             {
-                OnBackClicked(null);
+                NavigateBack();
             }
             evt.StopPropagation();
         }

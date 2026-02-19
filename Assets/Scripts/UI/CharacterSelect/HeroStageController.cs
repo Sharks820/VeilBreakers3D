@@ -49,6 +49,11 @@ namespace VeilBreakers.UI.CharacterSelect
         private float _dragStartX;
         private float _modelRotationY;
 
+        // Model state cache (avoid per-frame GetComponent)
+        private bool _currentModelHasAnimator;
+        private Vector3 _currentModelBaseScale;
+        private Coroutine _swapCoroutine;
+
         // Placeholder material
         private static Material _placeholderMaterial;
 
@@ -179,7 +184,8 @@ namespace VeilBreakers.UI.CharacterSelect
         private void HandleHeroChanged(int index, HeroData data, HeroDisplayConfig config)
         {
             _currentConfig = config;
-            StartCoroutine(SwapHeroModel(data, config));
+            if (_swapCoroutine != null) StopCoroutine(_swapCoroutine);
+            _swapCoroutine = StartCoroutine(SwapHeroModel(data, config));
         }
 
         private IEnumerator SwapHeroModel(HeroData data, HeroDisplayConfig config)
@@ -212,6 +218,10 @@ namespace VeilBreakers.UI.CharacterSelect
             _currentModel.transform.localPosition = Vector3.zero;
             _currentModel.transform.localRotation = Quaternion.identity;
             _modelRotationY = 0f;
+
+            // Cache animator state to avoid per-frame GetComponent
+            _currentModelHasAnimator = _currentModel.GetComponent<Animator>() != null;
+            _currentModelBaseScale = _currentModel.transform.localScale;
 
             // Load champion monster
             if (config?.championModelPrefab != null)
@@ -249,7 +259,14 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 if (_placeholderMaterial == null)
                 {
-                    _placeholderMaterial = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+                    var shader = Shader.Find("Universal Render Pipeline/Lit");
+                    if (shader == null) shader = Shader.Find("Standard");
+                    if (shader == null)
+                    {
+                        Debug.LogWarning("[HeroStageController] No suitable shader found for placeholder.");
+                        return placeholder;
+                    }
+                    _placeholderMaterial = new Material(shader);
                 }
 
                 var mat = new Material(_placeholderMaterial);
@@ -341,10 +358,10 @@ namespace VeilBreakers.UI.CharacterSelect
         private void HandleDragInput()
         {
             // Procedural idle for placeholder models (no Animator)
-            if (_currentModel != null && _currentModel.GetComponent<Animator>() == null)
+            if (_currentModel != null && !_currentModelHasAnimator)
             {
                 float breath = 1f + Mathf.Sin(Time.time * 1.2f) * 0.005f;
-                _currentModel.transform.localScale = new Vector3(0.6f, 1f, 0.6f) * breath;
+                _currentModel.transform.localScale = _currentModelBaseScale * breath;
 
                 if (!_isDragging)
                 {
@@ -365,6 +382,9 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void CleanupStage()
         {
+            StopAllCoroutines();
+            _swapCoroutine = null;
+
             if (_renderTarget != null)
             {
                 _renderTarget.UnregisterCallback<PointerDownEvent>(OnPointerDown);

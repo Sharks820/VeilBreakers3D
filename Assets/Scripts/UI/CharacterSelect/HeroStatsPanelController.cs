@@ -36,6 +36,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void CacheReferences()
         {
+            if (_uiDocument == null) { Debug.LogError("[HeroStatsPanelController] UIDocument not assigned!"); return; }
             var root = _uiDocument.rootVisualElement;
             _panel = root.Q<VisualElement>("stats-panel");
 
@@ -99,7 +100,7 @@ namespace VeilBreakers.UI.CharacterSelect
                     string skillId = skills[i];
 
                     // Try to get skill display name from database
-                    var skillData = GameDatabase.Instance.GetSkill(skillId);
+                    var skillData = GameDatabase.HasInstance ? GameDatabase.Instance.GetSkill(skillId) : null;
                     string displayName = skillData?.display_name ?? FormatSkillId(skillId);
 
                     _abilitySlots[i].text = displayName;

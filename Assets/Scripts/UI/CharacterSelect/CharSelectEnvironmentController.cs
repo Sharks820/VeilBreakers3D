@@ -27,6 +27,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void CacheReferences()
         {
+            if (_uiDocument == null) { Debug.LogError("[CharSelectEnvironmentController] UIDocument not assigned!"); return; }
             var root = _uiDocument.rootVisualElement;
             _backgroundGradient = root.Q<VisualElement>("background-gradient");
 

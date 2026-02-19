@@ -265,7 +265,10 @@ namespace VeilBreakers.Editor
 
         private static Color HexColor(string hex)
         {
-            ColorUtility.TryParseHtmlString($"#{hex}", out Color color);
+            if (!ColorUtility.TryParseHtmlString($"#{hex}", out Color color))
+            {
+                Debug.LogWarning($"[CharSelect] Invalid hex color: {hex}");
+            }
             color.a = 1f;
             return color;
         }
