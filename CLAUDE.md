@@ -212,4 +212,60 @@ namespace VeilBreakers.[Category]
 
 ---
 
-*Configuration v5.1 - Lean, flexible, reasoning-first + explicit reasoning budget*
+# PRIORITY PATH: CHARACTER SELECT REBUILD
+
+## Execution Protocol (MANDATORY)
+
+### Model Roles
+- **Opus (Claude Opus 4.6):** Head Software Engineer. Signs off on ALL phases. Handles implementation when Sonnet gets stuck. Performs testing, security review, and code strength verification.
+- **Sonnet (Claude Sonnet 4.6):** Implementation engineer. Writes code phase-by-phase. Escalates to Opus when blocked.
+- **Gemini CLI:** Senior reviewer. Validates each phase output.
+- **Codex CLI:** Senior reviewer. Validates each phase output.
+- **Kimi CLI:** Senior reviewer. Validates each phase output.
+
+### Phase Execution Flow
+```
+For each phase:
+  1. Sonnet implements the phase code
+  2. Sonnet runs Unity compilation check
+  3. Opus reviews ALL code for:
+     - Code strength (SOLID, patterns, no god-classes)
+     - Security (no injection, no unsafe patterns)
+     - Performance (no Update allocations, cached queries)
+     - Architecture (event lifecycle, proper teardown)
+  4. Gemini + Codex + Kimi validate via bash CLI
+  5. Opus gives FINAL SIGN-OFF
+  6. On approval:
+     a. Save to episodic memory (conversation search)
+     b. Save to local memory (Serena/AIM)
+     c. Commit to feature branch
+     d. Merge to develop branch
+  7. Move to next phase
+```
+
+### Branch Strategy
+- `master` -- production, untouched during rebuild
+- `feature/character-select-rebuild` -- main feature branch
+- `feature/cs-phase-N` -- per-phase branches (merged into feature branch on approval)
+
+### Escalation Rule
+If Sonnet fails on a task after 2 attempts, Opus takes over implementation immediately. No negotiation.
+
+### Testing Requirements Per Phase
+- Unity compilation: MUST pass (zero errors)
+- Code review: Opus sign-off required
+- External review: At least 2/3 CLI reviewers must approve
+- Security scan: No hardcoded secrets, no unsafe deserialization, no injection vectors
+- Performance check: No allocations in hot paths, cached references, proper disposal
+
+### Memory Protocol Per Phase
+After each phase approval:
+1. `episodic-memory` -- save phase completion with key decisions
+2. `aim_memory_store` -- save to project context
+3. `serena write_memory` -- save implementation notes
+4. `git commit` -- commit with descriptive message
+5. `git merge` -- merge phase branch into feature branch
+
+---
+
+*Configuration v5.2 - Priority Path: Character Select Rebuild Protocol*

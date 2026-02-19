@@ -354,11 +354,171 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2d8ace1e8b5db5d4887b18407f981e12, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   _switchSFX: {fileID: 0}
   _confirmSFX: {fileID: 0}
   _cancelSFX: {fileID: 0}
+--- !u!1 &1846487431
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1846487440}
+  - component: {fileID: 1846487439}
+  - component: {fileID: 1846487438}
+  - component: {fileID: 1846487437}
+  - component: {fileID: 1846487436}
+  - component: {fileID: 1846487435}
+  - component: {fileID: 1846487434}
+  - component: {fileID: 1846487433}
+  - component: {fileID: 1846487432}
+  m_Layer: 0
+  m_Name: CharacterSelectSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1846487432
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1846487431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6494d836a7dcca40b587da4bbb8f883, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: VeilBreakers.Runtime::VeilBreakers.UI.CharacterSelect.TransitionController
+  _uiDocument: {fileID: 1846487439}
+--- !u!114 &1846487433
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1846487431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4c893f6093e0fd4a8b33236c5172ab4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: VeilBreakers.Runtime::VeilBreakers.UI.CharacterSelect.CharSelectEnvironmentController
+  _uiDocument: {fileID: 1846487439}
+--- !u!114 &1846487434
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1846487431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fc5e59648f93104880f69a5fe02df9f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: VeilBreakers.Runtime::VeilBreakers.UI.CharacterSelect.CarouselController
+  _uiDocument: {fileID: 1846487439}
+  _manager: {fileID: 1846487438}
+--- !u!114 &1846487435
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1846487431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 960501978dd746b448867b5a2cddfcc3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: VeilBreakers.Runtime::VeilBreakers.UI.CharacterSelect.HeroStatsPanelController
+  _uiDocument: {fileID: 1846487439}
+--- !u!114 &1846487436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1846487431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fdfdcb3937de71419e098a0c37b068e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: VeilBreakers.Runtime::VeilBreakers.UI.CharacterSelect.HeroDataPanelController
+  _uiDocument: {fileID: 1846487439}
+--- !u!114 &1846487437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1846487431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2376067ff403b164481d7d77fe43f19b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: VeilBreakers.Runtime::VeilBreakers.UI.CharacterSelect.HeroStageController
+  _uiDocument: {fileID: 1846487439}
+  _previewCamera: {fileID: 0}
+--- !u!114 &1846487438
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1846487431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f2a87a9f5bab11242a722a37516dba91, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: VeilBreakers.Runtime::VeilBreakers.UI.CharacterSelect.CharacterSelectManager
+  _uiDocument: {fileID: 1846487439}
+  _heroConfigs:
+  - {fileID: 11400000, guid: 40b75901b35cb374ba970f5518d010ea, type: 2}
+  - {fileID: 11400000, guid: 2350a6792fb72c1438f99821afb69493, type: 2}
+  - {fileID: 11400000, guid: b23e557751ee43f45ade67a7ae45772b, type: 2}
+  - {fileID: 11400000, guid: 48e8e9889511ef34382da23008764ece, type: 2}
+--- !u!114 &1846487439
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1846487431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: e4ba88e66cb501148b61139b572544b3, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 9197481963319205126, guid: 79fe1bde4e7cfbb4b866962f8d09d50d, type: 3}
+  m_SortingOrder: 0
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
+--- !u!4 &1846487440
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1846487431}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -366,3 +526,4 @@ SceneRoots:
   - {fileID: 519420032}
   - {fileID: 963194228}
   - {fileID: 1200000001}
+  - {fileID: 1846487440}
