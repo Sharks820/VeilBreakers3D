@@ -294,11 +294,11 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (_previewCamera == null) return;
 
-            Vector3 offset = config?.cameraOffset ?? new Vector3(0f, 1.2f, -3f);
+            Vector3 offset = config?.cameraOffset ?? new Vector3(0f, 1.4f, -2.8f);
             float fov = config?.cameraFOV ?? 30f;
 
             _previewCamera.transform.localPosition = offset;
-            _previewCamera.transform.LookAt(_stageRoot.position + Vector3.up * 1.2f);
+            _previewCamera.transform.LookAt(_stageRoot.position + Vector3.up * 1.1f);
             _previewCamera.fieldOfView = fov;
         }
 

@@ -6,7 +6,7 @@ using VeilBreakers.Data;
 namespace VeilBreakers.UI.CharacterSelect
 {
     /// <summary>
-    /// Populates the left info panel: name, title, quote, path/role/resource,
+    /// Populates the left info panel: name, title, quote, path/role/synergy,
     /// starter stats grid, and champion monster info.
     /// </summary>
     public class HeroDataPanelController : MonoBehaviour
@@ -20,7 +20,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private Label _heroQuote;
         private Label _heroPath;
         private Label _heroRole;
-        private Label _heroResource;
+        private Label _heroSynergy;
         private Label _statHp;
         private Label _statAtk;
         private Label _statDef;
@@ -51,7 +51,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _heroQuote = root.Q<Label>("hero-quote");
             _heroPath = root.Q<Label>("hero-path");
             _heroRole = root.Q<Label>("hero-role");
-            _heroResource = root.Q<Label>("hero-resource");
+            _heroSynergy = root.Q<Label>("hero-synergy");
             _statHp = root.Q<Label>("stat-hp");
             _statAtk = root.Q<Label>("stat-atk");
             _statDef = root.Q<Label>("stat-def");
@@ -74,7 +74,13 @@ namespace VeilBreakers.UI.CharacterSelect
             // Class info
             SetLabel(_heroPath, data.GetPrimaryPath().ToString());
             SetLabel(_heroRole, data.role?.ToUpper() ?? "");
-            SetLabel(_heroResource, data.resource_type?.ToUpper() ?? "");
+            // Synergy: show primary brand + synergy explanation if available
+            string synergy = data.GetPrimaryBrand().ToString().ToUpper();
+            if (!string.IsNullOrEmpty(data.synergy_explanation))
+            {
+                synergy = data.synergy_explanation.ToUpper();
+            }
+            SetLabel(_heroSynergy, synergy);
 
             // Starter stats
             SetLabel(_statHp, data.base_hp.ToString());

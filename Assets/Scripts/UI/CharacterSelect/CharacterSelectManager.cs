@@ -77,6 +77,12 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void OnEnable()
         {
+            // Ensure UI fills the screen immediately, before data loads
+            EnsureFullScreenLayout();
+
+            // Ensure critical singletons exist (handles direct scene entry without Bootstrap)
+            EnsureCriticalManagers();
+
             StartCoroutine(InitializeWhenReady());
         }
 
@@ -91,6 +97,44 @@ namespace VeilBreakers.UI.CharacterSelect
         private void OnDestroy()
         {
             CharSelectEvents.ClearAll();
+        }
+
+        /// <summary>
+        /// Ensure the UIDocument fills the entire viewport immediately.
+        /// Must run before data loading so the screen isn't half-height while waiting.
+        /// </summary>
+        private void EnsureFullScreenLayout()
+        {
+            if (_uiDocument == null) return;
+            var root = _uiDocument.rootVisualElement;
+            if (root == null) return;
+
+            // Walk up the visual tree setting flex-grow on every ancestor
+            // (handles the TemplateContainer that Unity wraps UXML in)
+            for (var ve = root; ve != null; ve = ve.parent)
+            {
+                ve.style.flexGrow = 1;
+            }
+        }
+
+        /// <summary>
+        /// Creates critical singleton managers if they don't already exist.
+        /// Handles the case where this scene is entered directly (skipping Bootstrap/MainMenu).
+        /// </summary>
+        private static void EnsureCriticalManagers()
+        {
+            EnsureSingleton<GameManager>("[GameManager]");
+            EnsureSingleton<GameDatabase>("[GameDatabase]");
+            EnsureSingleton<SaveManager>("[SaveManager]");
+        }
+
+        private static void EnsureSingleton<T>(string objectName) where T : SingletonMonoBehaviour<T>
+        {
+            if (!SingletonMonoBehaviour<T>.HasInstance)
+            {
+                var go = new GameObject(objectName);
+                go.AddComponent<T>();
+            }
         }
 
         private IEnumerator InitializeWhenReady()
@@ -271,7 +315,7 @@ namespace VeilBreakers.UI.CharacterSelect
             UpdateEmbarkText();
 
             // Transition completes after USS animations finish
-            StartCoroutine(EndTransitionAfterDelay(0.8f));
+            StartCoroutine(EndTransitionAfterDelay(0.15f));
         }
 
         private IEnumerator EndTransitionAfterDelay(float delay)

@@ -31,9 +31,9 @@
                         <ui:Label class="info-label" text="ROLE" />
                         <ui:Label name="hero-role" class="info-value" text="TANK" />
                     </ui:VisualElement>
-                    <ui:VisualElement name="resource-row" class="info-row">
-                        <ui:Label class="info-label" text="RESOURCE" />
-                        <ui:Label name="hero-resource" class="info-value" text="GUARD" />
+                    <ui:VisualElement name="synergy-row" class="info-row">
+                        <ui:Label class="info-label" text="SYNERGY" />
+                        <ui:Label name="hero-synergy" class="info-value" text="IRON / DREAD" />
                     </ui:VisualElement>
                 </ui:VisualElement>
 
@@ -141,7 +141,7 @@
         <ui:VisualElement name="bottom-layer" class="bottom-layer">
 
             <!-- Navigation: Prev Arrow -->
-            <ui:Button name="btn-prev" class="nav-arrow nav-arrow-left" text="&#x276E;" />
+            <ui:Button name="btn-prev" class="nav-arrow nav-arrow-left" text="&#x25C0;" />
 
             <!-- Hero Carousel -->
             <ui:VisualElement name="carousel-container" class="carousel-container">
@@ -151,7 +151,7 @@
             </ui:VisualElement>
 
             <!-- Navigation: Next Arrow -->
-            <ui:Button name="btn-next" class="nav-arrow nav-arrow-right" text="&#x276F;" />
+            <ui:Button name="btn-next" class="nav-arrow nav-arrow-right" text="&#x25B6;" />
 
             <!-- Hero Index -->
             <ui:Label name="hero-index" class="hero-index" text="HERO 1 / 4" />
@@ -160,7 +160,7 @@
 
         <!-- EMBARK LAYER -->
         <ui:VisualElement name="embark-layer" class="embark-layer">
-            <ui:Button name="btn-back" class="btn-back" text="&#x276E; BACK" />
+            <ui:Button name="btn-back" class="btn-back" text="&#x25C0; BACK" />
 
             <ui:Button name="btn-embark" class="btn-embark">
                 <ui:VisualElement name="embark-glow" class="embark-glow" />

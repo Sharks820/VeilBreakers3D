@@ -62,8 +62,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             for (int i = 0; i < heroes.Count; i++)
             {
-                string name = heroes[i].display_name?.ToUpper() ?? "???";
-                var card = CreateHeroCard(i, name);
+                var card = CreateHeroCard(i, heroes[i]);
                 _carouselStrip.Add(card);
                 _heroCards.Add(card);
             }
@@ -79,19 +78,39 @@ namespace VeilBreakers.UI.CharacterSelect
             }
         }
 
-        private VisualElement CreateHeroCard(int index, string displayName)
+        private VisualElement CreateHeroCard(int index, HeroData heroData)
         {
+            string displayName = heroData.display_name?.ToUpper() ?? "???";
+            string heroId = heroData.hero_id ?? "unknown";
+            string role = heroData.role?.ToUpper() ?? "";
+
             var card = new VisualElement();
             card.AddToClassList("hero-card");
+            card.AddToClassList($"hero-card-{heroId}");
             card.usageHints = UsageHints.DynamicTransform | UsageHints.DynamicColor;
 
-            var label = new Label(displayName);
-            label.AddToClassList("hero-card-name");
-            card.Add(label);
+            // Large initial letter as visual identity
+            string initial = displayName.Length > 0 ? displayName.Substring(0, 1) : "?";
+            var initialLabel = new Label(initial);
+            initialLabel.AddToClassList("hero-card-initial");
+            card.Add(initialLabel);
 
-            // Click handler (capture index)
+            // Hero name below initial
+            var nameLabel = new Label(displayName);
+            nameLabel.AddToClassList("hero-card-name");
+            card.Add(nameLabel);
+
+            // Role tag at bottom
+            if (!string.IsNullOrEmpty(role))
+            {
+                var roleLabel = new Label(role);
+                roleLabel.AddToClassList("hero-card-role");
+                card.Add(roleLabel);
+            }
+
+            // Use PointerDownEvent for instant response (ClickEvent waits for pointer up)
             int capturedIndex = index;
-            card.RegisterCallback<ClickEvent>(_ => OnCardClicked(capturedIndex));
+            card.RegisterCallback<PointerDownEvent>(_ => OnCardClicked(capturedIndex));
 
             return card;
         }
