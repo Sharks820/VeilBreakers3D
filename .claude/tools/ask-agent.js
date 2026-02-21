@@ -1,39 +1,54 @@
 #!/usr/bin/env node
 /**
- * VeilBreakers Agent Bridge
- * Reliable non-interactive interface to Gemini, Codex, and Kimi CLIs.
- * Bypasses Windows PATH issues by using absolute paths.
+ * VeilBreakers Agent Bridge v2
+ * Reliable non-interactive interface to Gemini, Codex, and MiniMax.
+ * Gemini/Codex: spawned via absolute CLI paths (bypasses Windows PATH issues)
+ * MiniMax M2.5: direct API call (OpenAI-compatible endpoint, no CLI install needed)
  *
  * Usage:
  *   node .claude/tools/ask-agent.js <agent> "<prompt>"
- *   node .claude/tools/ask-agent.js gemini "Review this code for bugs"
- *   node .claude/tools/ask-agent.js codex "Explain this function"
- *   node .claude/tools/ask-agent.js kimi "Find performance issues"
- *   node .claude/tools/ask-agent.js all "Review this architecture"   <-- asks all 3
+ *   node .claude/tools/ask-agent.js gemini "Review this UI layout"
+ *   node .claude/tools/ask-agent.js codex "Debug this function"
+ *   node .claude/tools/ask-agent.js minimax "Review architecture and SOLID compliance"
+ *   node .claude/tools/ask-agent.js all "Review this code"   <-- asks all 3
  *
  * Piping files:
- *   node .claude/tools/ask-agent.js gemini "Review this" --file path/to/file.cs
+ *   node .claude/tools/ask-agent.js minimax "Review this" --file path/to/file.cs
  *
  * Options:
  *   --file <path>    Append file contents to prompt
  *   --timeout <ms>   Override default timeout (default: 120000)
+ *
+ * Team Roles:
+ *   Codex  = #1 Code Partner (debugger, optimizer, senior dev)
+ *   Gemini = Front-end Designer & Researcher (UI/UX, web search)
+ *   MiniMax = Senior Code Reviewer (architecture, security, SOLID, quality gate)
+ *
+ * Environment:
+ *   MINIMAX_API_KEY  - Required for MiniMax M2.5 API access
+ *                      Get one at https://platform.minimax.io
  */
 
-const { spawn, execSync } = require('child_process');
+const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 
 // ============================================================
-// Agent Configuration - absolute paths, no PATH dependency
+// Agent Configuration
 // ============================================================
-const AGENTS = {
+
+// CLI-based agents (spawned as child processes)
+const CLI_AGENTS = {
   gemini: {
     name: 'Gemini',
-    // Node ESM entry point for gemini-cli
+    role: 'Front-end Designer & Researcher',
     command: 'node',
     args: (prompt) => [
       path.join('C:', 'nvm4w', 'nodejs', 'node_modules', '@google', 'gemini-cli', 'dist', 'index.js'),
-      '--prompt', prompt
+      '-m', 'gemini-3-pro-preview',
+      '-o', 'text',
+      '-p', prompt
     ],
     timeout: 120000,
     env: {
@@ -44,7 +59,7 @@ const AGENTS = {
 
   codex: {
     name: 'Codex',
-    // Native binary
+    role: '#1 Code Partner (Debugger & Optimizer)',
     command: path.join('C:', 'nvm4w', 'nodejs', 'node_modules', '@openai', 'codex', 'node_modules',
       '@openai', 'codex-win32-x64', 'vendor', 'x86_64-pc-windows-msvc', 'codex', 'codex.exe'),
     args: (prompt) => [
@@ -58,31 +73,50 @@ const AGENTS = {
       ...process.env,
       PATH: `C:\\nvm4w\\nodejs;${process.env.PATH || ''}`
     }
-  },
-
-  kimi: {
-    name: 'Kimi',
-    command: path.join('C:', 'Users', 'Conner', 'AppData', 'Local', 'Programs', 'Python', 'Python312', 'Scripts', 'kimi.exe'),
-    args: (prompt) => [
-      '--prompt', prompt,
-      '--quiet'
-    ],
-    timeout: 120000,
-    env: {
-      ...process.env,
-      PATH: `C:\\Users\\Conner\\AppData\\Local\\Programs\\Python\\Python312;C:\\Users\\Conner\\AppData\\Local\\Programs\\Python\\Python312\\Scripts;C:\\nvm4w\\nodejs;${process.env.PATH || ''}`,
-      PYTHONIOENCODING: 'utf-8',
-      PYTHONUTF8: '1'
-    }
   }
 };
+
+// API-based agents (direct HTTP calls — more reliable, no CLI install needed)
+const API_AGENTS = {
+  minimax: {
+    name: 'MiniMax M2.5',
+    role: 'Senior Code Reviewer (Architecture, Security, SOLID)',
+    model: 'MiniMax-M2.5',
+    baseUrl: 'api.minimax.io',
+    apiPath: '/v1/chat/completions',
+    apiKeyEnv: 'MINIMAX_API_KEY',
+    timeout: 120000,
+    systemPrompt: `You are a senior code reviewer for a Unity 3D game project (VeilBreakers).
+Your role: architecture validation, security audit, SOLID compliance, and quality gate.
+
+Review priorities:
+1. ARCHITECTURE: Event lifecycle, proper teardown, coupling issues, god-classes
+2. SECURITY: Injection vectors, unsafe deserialization, hardcoded secrets
+3. SOLID: Single responsibility, open-closed, dependency inversion violations
+4. PERFORMANCE: Update() allocations, uncached Find/GetComponent, hot-path issues
+5. UNITY-SPECIFIC: MonoBehaviour lifecycle, SerializeField usage, null checks
+
+Be direct and specific. Flag issues by severity (CRITICAL / HIGH / MEDIUM / LOW).
+Include line references when possible. Suggest concrete fixes, not vague advice.`
+  }
+};
+
+// Combined lookup
+const ALL_AGENT_KEYS = [...Object.keys(CLI_AGENTS), ...Object.keys(API_AGENTS)];
 
 // ============================================================
 // Argument parsing
 // ============================================================
 const args = process.argv.slice(2);
 if (args.length < 2) {
-  console.error('Usage: node ask-agent.js <gemini|codex|kimi|all> "prompt" [--file path] [--timeout ms]');
+  console.error(`Usage: node ask-agent.js <${ALL_AGENT_KEYS.join('|')}|all> "prompt" [--file path] [--timeout ms]`);
+  console.error('\nTeam:');
+  for (const key of Object.keys(CLI_AGENTS)) {
+    console.error(`  ${key.padEnd(10)} ${CLI_AGENTS[key].role}`);
+  }
+  for (const key of Object.keys(API_AGENTS)) {
+    console.error(`  ${key.padEnd(10)} ${API_AGENTS[key].role}`);
+  }
   process.exit(1);
 }
 
@@ -112,17 +146,16 @@ if (filePath) {
 }
 
 // ============================================================
-// Run agent
+// CLI-based agent runner (Gemini, Codex)
 // ============================================================
-function runAgent(agentKey) {
+function runCliAgent(agentKey) {
   return new Promise((resolve) => {
-    const agent = AGENTS[agentKey];
+    const agent = CLI_AGENTS[agentKey];
     if (!agent) {
-      resolve({ agent: agentKey, error: `Unknown agent: ${agentKey}` });
+      resolve({ agent: agentKey, error: `Unknown CLI agent: ${agentKey}` });
       return;
     }
 
-    // Verify executable exists
     const executable = agent.command === 'node' ? 'node' : agent.command;
     if (executable !== 'node' && !fs.existsSync(executable)) {
       resolve({ agent: agent.name, error: `Executable not found: ${executable}` });
@@ -144,7 +177,6 @@ function runAgent(agentKey) {
       timeout: timeout
     });
 
-    // Close stdin immediately (non-interactive)
     proc.stdin.end();
 
     proc.stdout.on('data', (data) => { stdout += data.toString(); });
@@ -173,14 +205,127 @@ function runAgent(agentKey) {
   });
 }
 
+// ============================================================
+// API-based agent runner (MiniMax M2.5)
+// ============================================================
+function runApiAgent(agentKey) {
+  return new Promise((resolve) => {
+    const agent = API_AGENTS[agentKey];
+    if (!agent) {
+      resolve({ agent: agentKey, error: `Unknown API agent: ${agentKey}` });
+      return;
+    }
+
+    const apiKey = process.env[agent.apiKeyEnv];
+    if (!apiKey) {
+      resolve({
+        agent: agent.name,
+        error: `Missing ${agent.apiKeyEnv} environment variable. Get a key at https://platform.minimax.io`
+      });
+      return;
+    }
+
+    const timeout = customTimeout || agent.timeout;
+
+    const payload = JSON.stringify({
+      model: agent.model,
+      messages: [
+        { role: 'system', content: agent.systemPrompt },
+        { role: 'user', content: prompt }
+      ],
+      max_tokens: 4096,
+      temperature: 0.3
+    });
+
+    const options = {
+      hostname: agent.baseUrl,
+      port: 443,
+      path: agent.apiPath,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Length': Buffer.byteLength(payload)
+      }
+    };
+
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      req.destroy();
+    }, timeout);
+
+    const req = https.request(options, (res) => {
+      let body = '';
+      res.on('data', (chunk) => { body += chunk; });
+      res.on('end', () => {
+        clearTimeout(timer);
+        if (timedOut) return;
+
+        if (res.statusCode !== 200) {
+          let errMsg = `HTTP ${res.statusCode}`;
+          try {
+            const errBody = JSON.parse(body);
+            errMsg += `: ${errBody.error?.message || body.slice(0, 200)}`;
+          } catch (e) {
+            errMsg += `: ${body.slice(0, 200)}`;
+          }
+          resolve({ agent: agent.name, error: errMsg });
+          return;
+        }
+
+        try {
+          const data = JSON.parse(body);
+          const content = data.choices?.[0]?.message?.content || '';
+          const usage = data.usage;
+          let response = content.trim();
+
+          // Append token usage for cost tracking
+          if (usage) {
+            response += `\n\n[Tokens: ${usage.prompt_tokens} in / ${usage.completion_tokens} out` +
+              ` | Est. cost: $${((usage.prompt_tokens * 0.15 + usage.completion_tokens * 1.20) / 1000000).toFixed(4)}]`;
+          }
+
+          resolve({ agent: agent.name, response });
+        } catch (e) {
+          resolve({ agent: agent.name, error: `Parse error: ${e.message}`, partial: body.slice(0, 500) });
+        }
+      });
+    });
+
+    req.on('error', (err) => {
+      clearTimeout(timer);
+      if (timedOut) {
+        resolve({ agent: agent.name, error: `Timed out after ${timeout / 1000}s` });
+      } else {
+        resolve({ agent: agent.name, error: `Request error: ${err.message}` });
+      }
+    });
+
+    req.write(payload);
+    req.end();
+  });
+}
+
+// ============================================================
+// Unified runner
+// ============================================================
+function runAgent(agentKey) {
+  if (CLI_AGENTS[agentKey]) return runCliAgent(agentKey);
+  if (API_AGENTS[agentKey]) return runApiAgent(agentKey);
+  return Promise.resolve({ agent: agentKey, error: `Unknown agent: ${agentKey}` });
+}
+
+// ============================================================
+// Main
+// ============================================================
 async function main() {
   const startTime = Date.now();
 
   if (agentName === 'all') {
-    // Run all three in parallel
     console.log('=== Querying all agents in parallel ===\n');
     const results = await Promise.all(
-      Object.keys(AGENTS).map(key => runAgent(key))
+      ALL_AGENT_KEYS.map(key => runAgent(key))
     );
 
     for (const result of results) {
@@ -196,7 +341,6 @@ async function main() {
       }
     }
   } else {
-    // Single agent
     const result = await runAgent(agentName);
     if (result.error) {
       console.error(`[${result.agent}] ERROR: ${result.error}`);
