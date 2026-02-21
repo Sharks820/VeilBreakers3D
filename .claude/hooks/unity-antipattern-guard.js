@@ -1,8 +1,13 @@
 #!/usr/bin/env node
-// VeilBreakers Unity Anti-Pattern Guard
+// VeilBreakers Unity Anti-Pattern Guard v2
 // Event: PreToolUse (Write)
 // Purpose: Catch common Unity performance killers BEFORE they're written
 // Impact: HIGH - prevents frame-dropping code from entering the codebase
+//
+// Strategy: Two-phase detection
+//   Phase 1: Check if file has Update/FixedUpdate/LateUpdate methods
+//   Phase 2: Check if file has hot-path anti-patterns
+//   If BOTH are true, flag it (avoids regex fragility with nested braces)
 
 let input = '';
 process.stdin.setEncoding('utf8');
@@ -18,38 +23,65 @@ process.stdin.on('end', () => {
 
     const issues = [];
 
-    // Find() or FindObjectOfType() in Update/FixedUpdate/LateUpdate
-    if (/void\s+(Update|FixedUpdate|LateUpdate)\s*\([^)]*\)\s*\{[^}]*(?:Find\(|FindObjectOfType|FindGameObjectWithTag|FindWithTag)/s.test(content)) {
-      issues.push('Find() in Update loop - cache the reference in Awake/Start');
+    // Phase 1: Does file contain Update-family methods?
+    const hasUpdateLoop = /\b(?:void|override\s+void)\s+(?:Update|FixedUpdate|LateUpdate)\s*\(/.test(content);
+    if (!hasUpdateLoop) return; // No hot path, no problem
+
+    // Phase 2: Check for anti-patterns that are dangerous IN FILES with Update loops
+    // (Safer than trying to regex inside method bodies with nested braces)
+
+    // Find() family - should always be cached
+    if (/\b(?:Find|FindObjectOfType|FindObjectsOfType|FindObjectsByType|FindGameObjectWithTag|FindWithTag|FindAnyObjectByType)\s*[<(]/.test(content)) {
+      issues.push('Find/FindObjectOfType in file with Update loop - cache references in Awake/Start');
     }
 
-    // new allocations in Update (new List, new Dictionary, new string[], etc.)
-    if (/void\s+(Update|FixedUpdate|LateUpdate)\s*\([^)]*\)\s*\{[^}]*new\s+(List|Dictionary|HashSet|Queue|Stack|string\[|int\[|float\[)/s.test(content)) {
-      issues.push('Heap allocation in Update loop - pre-allocate in Awake/Start');
+    // GetComponent family - should always be cached
+    if (/\b(?:GetComponent|GetComponentInChildren|GetComponentInParent|GetComponents|GetComponentsInChildren)\s*[<(]/.test(content)) {
+      // Exclude if ONLY in Awake/Start/OnEnable (common valid usage)
+      // Simple heuristic: if GetComponent appears and there's no Awake/Start, it's likely in Update
+      const hasAwakeOrStart = /\b(?:void|override\s+void)\s+(?:Awake|Start|OnEnable)\s*\(/.test(content);
+      if (!hasAwakeOrStart) {
+        issues.push('GetComponent in file with Update loop but no Awake/Start - likely uncached');
+      }
     }
 
-    // String concatenation in Update
-    if (/void\s+(Update|FixedUpdate|LateUpdate)\s*\([^)]*\)\s*\{[^}]*\+\s*"[^"]*"/s.test(content)) {
-      issues.push('String concatenation in Update - use StringBuilder or cached strings');
+    // Camera.main (calls FindWithTag internally)
+    if (/\bCamera\.main\b/.test(content)) {
+      issues.push('Camera.main in file with Update loop - cache the reference (calls FindWithTag internally)');
     }
 
-    // GetComponent in Update without caching
-    if (/void\s+(Update|FixedUpdate|LateUpdate)\s*\([^)]*\)\s*\{[^}]*GetComponent\s*</s.test(content)) {
-      issues.push('GetComponent in Update - cache in Awake/Start');
+    // Heap allocations - new collections (NOT structs like Vector3, Quaternion, Color)
+    const heapAllocs = content.match(/\bnew\s+(List|Dictionary|HashSet|Queue|Stack|ArrayList|LinkedList|SortedList|StringBuilder|string\s*\[|int\s*\[|float\s*\[|byte\s*\[|object\s*\[)/g);
+    if (heapAllocs) {
+      issues.push(`Heap allocation (${[...new Set(heapAllocs.map(m => m.replace(/^new\s+/, '')))].join(', ')}) in file with Update loop - pre-allocate in Awake/Start`);
     }
 
-    // Camera.main in Update (it calls FindGameObjectWithTag internally)
-    if (/void\s+(Update|FixedUpdate|LateUpdate)\s*\([^)]*\)\s*\{[^}]*Camera\.main/s.test(content)) {
-      issues.push('Camera.main in Update - cache the reference (it calls FindWithTag internally)');
+    // LINQ in hot-path files (allocates enumerators/delegates)
+    if (/\.\s*(?:Where|Select|OrderBy|GroupBy|ToList|ToArray|ToDictionary|Any|All|First|Last|Count|Sum|Average|Min|Max|Distinct|Union|Intersect|Except|Concat|Zip)\s*\(/.test(content)) {
+      issues.push('LINQ query in file with Update loop - LINQ allocates. Use loops or cached results');
+    }
+
+    // String concatenation via + operator (not in const/readonly declarations)
+    if (/[^=]\s*\+\s*"[^"]*"/.test(content) || /\$"[^"]*\{/.test(content)) {
+      // Only flag if there's evidence of frequent string ops (interpolation or concatenation)
+      const stringOps = (content.match(/\$"/g) || []).length + (content.match(/"\s*\+\s*"/g) || []).length;
+      if (stringOps >= 2) {
+        issues.push('Multiple string operations in file with Update loop - use StringBuilder or cached strings');
+      }
+    }
+
+    // Resources.Load in hot-path files
+    if (/\bResources\.Load\s*[<(]/.test(content)) {
+      issues.push('Resources.Load in file with Update loop - cache loaded resources');
     }
 
     if (issues.length > 0) {
       process.stdout.write(JSON.stringify({
         hookSpecificOutput: {
           hookEventName: 'PreToolUse',
-          permissionDecision: 'deny',
-          permissionDecisionReason: `UNITY ANTI-PATTERNS DETECTED:\n${issues.map(i => '- ' + i).join('\n')}\nFix these performance issues before writing the file.`,
-          additionalContext: 'These patterns cause frame drops in Unity. Cache references in Awake/Start, pre-allocate collections, and avoid allocations in hot paths.'
+          permissionDecision: 'ask',
+          permissionDecisionReason: `UNITY PERFORMANCE WARNING (${issues.length} issues):\n${issues.map(i => '- ' + i).join('\n')}\nVerify these are cached/pre-allocated, not called in Update loops.`,
+          additionalContext: 'This file contains Update loops AND patterns that cause frame drops if used in hot paths. The guard cannot determine exact method placement - review and confirm these are properly cached.'
         }
       }));
       return;

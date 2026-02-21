@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// VeilBreakers Stop Verification Hook
+// VeilBreakers Stop Verification Hook v2
 // Event: Stop
 // Purpose: Quality gate - ensure C# compilation was verified before finishing
 // Impact: HIGH for coding output quality
@@ -25,7 +25,24 @@ process.stdin.on('end', () => {
     if (fs.existsSync(markerFile)) {
       const pending = fs.readFileSync(markerFile, 'utf8').trim();
       if (pending) {
-        const files = pending.split('\n')
+        // Check marker age - auto-expire after 30 minutes to prevent stale lockouts
+        const lines = pending.split('\n').filter(Boolean);
+        const now = Date.now();
+        const freshLines = lines.filter(line => {
+          const ts = line.split(' ')[0];
+          try {
+            const age = now - new Date(ts).getTime();
+            return age < 30 * 60 * 1000; // 30 minutes
+          } catch (e) { return true; }
+        });
+
+        if (freshLines.length === 0) {
+          // All entries expired - clean up and allow stop
+          try { fs.unlinkSync(markerFile); } catch (e) {}
+          return;
+        }
+
+        const files = freshLines
           .map(line => line.split(' ').slice(1).join(' '))
           .filter(Boolean);
 
