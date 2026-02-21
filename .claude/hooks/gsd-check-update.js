@@ -21,6 +21,15 @@ if (!fs.existsSync(cacheDir)) {
   fs.mkdirSync(cacheDir, { recursive: true });
 }
 
+// Debounce: skip if checked within the last hour
+try {
+  if (fs.existsSync(cacheFile)) {
+    const stats = fs.statSync(cacheFile);
+    const ageMs = Date.now() - stats.mtimeMs;
+    if (ageMs < 3600000) process.exit(0); // Checked in last hour, skip
+  }
+} catch (e) {}
+
 // Run check in background (spawn background process, windowsHide prevents console flash)
 const child = spawn(process.execPath, ['-e', `
   const fs = require('fs');

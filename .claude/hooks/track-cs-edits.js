@@ -42,8 +42,9 @@ process.stdin.on('end', () => {
       let existing = '';
       try { existing = fs.readFileSync(markerFile, 'utf8'); } catch (e) {}
 
-      const lines = existing.trim().split('\n').filter(Boolean);
-      const updated = lines.filter(line => !line.endsWith(` ${relativePath}`));
+      // CRLF-safe split (Windows writes \r\n)
+      const lines = existing.trim().split(/\r?\n/).filter(Boolean);
+      const updated = lines.filter(line => !line.replace(/\r$/, '').endsWith(` ${relativePath}`));
       updated.push(`${timestamp} ${relativePath}`);
 
       fs.writeFileSync(markerFile, updated.join('\n') + '\n');

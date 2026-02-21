@@ -13,10 +13,10 @@ process.stdin.on('end', () => {
     const command = (data.tool_input?.command || '').trim();
 
     const destructive = [
-      // Git - force push variants
-      { pattern: /git\s+push\s+.*--force\b/i,              msg: 'Force push - could overwrite remote history' },
-      { pattern: /git\s+push\s+.*-f\b/i,                   msg: 'Force push (-f) - could overwrite remote history' },
-      { pattern: /git\s+push\s+.*--force-with-lease/i,      msg: 'Force push with lease - could overwrite remote' },
+      // Git - force push variants (order matters: check --force-with-lease before --force)
+      { pattern: /git\s+push\s+.*--force-with-lease/i,      msg: 'Force push with lease - verify no one else pushed' },
+      { pattern: /git\s+push\s+.*--force(?:\s|$)/i,         msg: 'Force push - could overwrite remote history' },
+      { pattern: /git\s+push\s+.*\s-f(?:\s|$)/i,            msg: 'Force push (-f) - could overwrite remote history' },
 
       // Git - history rewriting
       { pattern: /git\s+reset\s+--hard/i,                   msg: 'Hard reset - discards all uncommitted changes' },
@@ -40,8 +40,9 @@ process.stdin.on('end', () => {
 
       // Filesystem - recursive/forced deletion
       { pattern: /rm\s+-[a-z]*r[a-z]*\s+[\/\\.]/i,          msg: 'Recursive delete at root/project level' },
-      { pattern: /rm\s+-[a-z]*r[a-z]*\s+.*Assets\//i,       msg: 'Delete in Assets/ - Unity project files at risk' },
+      { pattern: /rm\s+-[a-z]*r[a-z]*\s+.*Assets[\/\\]/i,   msg: 'Delete in Assets/ - Unity project files at risk' },
       { pattern: /rm\s+-[a-z]*r[a-z]*\s+\*/i,               msg: 'Wildcard recursive delete' },
+      { pattern: /rm\s+-[a-z]*r[a-z]*\s+\.\s*$/i,           msg: 'Recursive delete current directory' },
 
       // PowerShell equivalents (Windows)
       { pattern: /Remove-Item\s+.*-Recurse/i,               msg: 'PowerShell recursive delete' },

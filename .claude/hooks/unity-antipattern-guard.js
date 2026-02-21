@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// VeilBreakers Unity Anti-Pattern Guard v2
-// Event: PreToolUse (Write)
+// VeilBreakers Unity Anti-Pattern Guard v3
+// Event: PreToolUse (Edit|Write)
 // Purpose: Catch common Unity performance killers BEFORE they're written
 // Impact: HIGH - prevents frame-dropping code from entering the codebase
 //
@@ -8,6 +8,11 @@
 //   Phase 1: Check if file has Update/FixedUpdate/LateUpdate methods
 //   Phase 2: Check if file has hot-path anti-patterns
 //   If BOTH are true, flag it (avoids regex fragility with nested braces)
+//
+// v3 fixes: Reads file from disk for Edit ops, improved Update regex,
+//           fixed += false positive, CRLF-safe
+
+const fs = require('fs');
 
 let input = '';
 process.stdin.setEncoding('utf8');
@@ -16,15 +21,29 @@ process.stdin.on('end', () => {
   try {
     const data = JSON.parse(input);
     const filePath = data.tool_input?.file_path || '';
-    const content = data.tool_input?.content || '';
 
     // Only check C# files
     if (!filePath.endsWith('.cs')) return;
 
+    // Get content: Write tool has content, Edit tool has old_string/new_string
+    // For Edit ops, read the file from disk to get full content + new changes
+    let content = data.tool_input?.content || '';
+    if (!content) {
+      // Edit tool - read existing file and apply the new_string conceptually
+      try {
+        const existing = fs.readFileSync(filePath, 'utf8');
+        const newStr = data.tool_input?.new_string || '';
+        content = existing + '\n' + newStr; // Check both existing and incoming code
+      } catch (e) {
+        return; // Can't read file, skip check
+      }
+    }
+
     const issues = [];
 
     // Phase 1: Does file contain Update-family methods?
-    const hasUpdateLoop = /\b(?:void|override\s+void)\s+(?:Update|FixedUpdate|LateUpdate)\s*\(/.test(content);
+    // Matches: void Update(), private void Update(), public override void FixedUpdate(), etc.
+    const hasUpdateLoop = /\b(?:(?:public|protected|private|internal|virtual|override|sealed|new)\s+)*void\s+(?:Update|FixedUpdate|LateUpdate)\s*\(/.test(content);
     if (!hasUpdateLoop) return; // No hot path, no problem
 
     // Phase 2: Check for anti-patterns that are dangerous IN FILES with Update loops
@@ -37,12 +56,8 @@ process.stdin.on('end', () => {
 
     // GetComponent family - should always be cached
     if (/\b(?:GetComponent|GetComponentInChildren|GetComponentInParent|GetComponents|GetComponentsInChildren)\s*[<(]/.test(content)) {
-      // Exclude if ONLY in Awake/Start/OnEnable (common valid usage)
-      // Simple heuristic: if GetComponent appears and there's no Awake/Start, it's likely in Update
-      const hasAwakeOrStart = /\b(?:void|override\s+void)\s+(?:Awake|Start|OnEnable)\s*\(/.test(content);
-      if (!hasAwakeOrStart) {
-        issues.push('GetComponent in file with Update loop but no Awake/Start - likely uncached');
-      }
+      // Flag all GetComponent in files with Update loops - regex can't determine method scope
+      issues.push('GetComponent in file with Update loop - ensure references are cached in Awake/Start');
     }
 
     // Camera.main (calls FindWithTag internally)
@@ -61,8 +76,8 @@ process.stdin.on('end', () => {
       issues.push('LINQ query in file with Update loop - LINQ allocates. Use loops or cached results');
     }
 
-    // String concatenation via + operator (not in const/readonly declarations)
-    if (/[^=]\s*\+\s*"[^"]*"/.test(content) || /\$"[^"]*\{/.test(content)) {
+    // String concatenation via + operator (exclude += assignments)
+    if (/(?<![+=])\s*\+\s*"[^"]*"/.test(content) || /\$"[^"\\]*(?:\\.[^"\\]*)*\{/.test(content)) {
       // Only flag if there's evidence of frequent string ops (interpolation or concatenation)
       const stringOps = (content.match(/\$"/g) || []).length + (content.match(/"\s*\+\s*"/g) || []).length;
       if (stringOps >= 2) {

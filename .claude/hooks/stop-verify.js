@@ -26,10 +26,12 @@ process.stdin.on('end', () => {
       const pending = fs.readFileSync(markerFile, 'utf8').trim();
       if (pending) {
         // Check marker age - auto-expire after 30 minutes to prevent stale lockouts
-        const lines = pending.split('\n').filter(Boolean);
+        // CRLF-safe split (Windows writes \r\n)
+        const lines = pending.split(/\r?\n/).filter(Boolean);
         const now = Date.now();
         const freshLines = lines.filter(line => {
-          const ts = line.split(' ')[0];
+          const clean = line.replace(/\r$/, '');
+          const ts = clean.split(' ')[0];
           try {
             const age = now - new Date(ts).getTime();
             return age < 30 * 60 * 1000; // 30 minutes
@@ -43,7 +45,7 @@ process.stdin.on('end', () => {
         }
 
         const files = freshLines
-          .map(line => line.split(' ').slice(1).join(' '))
+          .map(line => line.replace(/\r$/, '').split(' ').slice(1).join(' '))
           .filter(Boolean);
 
         process.stdout.write(JSON.stringify({
