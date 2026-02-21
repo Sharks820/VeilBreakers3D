@@ -4,176 +4,182 @@
     <Style src="project://database/Assets/UI/Styles/CharacterSelect.uss" />
 
     <!-- ROOT: Full-screen container -->
-    <ui:VisualElement name="character-select-root" class="character-select-root">
+    <ui:VisualElement name="character-select-root" class="character-select-root theme-vex">
 
-        <!-- BACKGROUND LAYER -->
-        <ui:VisualElement name="background-layer" class="background-layer">
-            <ui:VisualElement name="background-gradient" class="background-gradient" />
+        <!-- PARALLAX BACKGROUND SYSTEM -->
+        <ui:VisualElement name="parallax-bg" class="parallax-bg">
+            <!-- Layer 1: Deepest Void -->
+            <ui:VisualElement name="parallax-deep" class="parallax-bg parallax-deep">
+                <ui:VisualElement name="void-stars" class="void-stars" />
+            </ui:VisualElement>
+            
+            <!-- Layer 2: Atmospheric Fog -->
+            <ui:VisualElement name="parallax-fog" class="parallax-bg parallax-fog">
+                <ui:VisualElement name="fog-particles" class="fog-particles" />
+            </ui:VisualElement>
+            
+            <!-- Layer 5: Vignette & Lighting -->
             <ui:VisualElement name="background-vignette" class="background-vignette" />
-            <ui:VisualElement name="background-particles" class="background-particles" />
         </ui:VisualElement>
 
-        <!-- MAIN CONTENT LAYER -->
-        <ui:VisualElement name="content-layer" class="content-layer">
-
-            <!-- LEFT PANEL: Hero Info -->
-            <ui:VisualElement name="hero-info-panel" class="glass-panel hero-info-panel">
-                <ui:Label name="hero-name" class="hero-name" text="VEX" />
-                <ui:Label name="hero-title" class="hero-title" text="THE WARDEN" />
-                <ui:Label name="hero-quote" class="hero-quote" text="&quot;I hold the line.&quot;" />
-
-                <ui:VisualElement name="hero-class-info" class="hero-class-info">
-                    <ui:VisualElement name="path-row" class="info-row">
-                        <ui:Label class="info-label" text="PATH" />
-                        <ui:Label name="hero-path" class="info-value" text="IRONBOUND" />
-                    </ui:VisualElement>
-                    <ui:VisualElement name="role-row" class="info-row">
-                        <ui:Label class="info-label" text="ROLE" />
-                        <ui:Label name="hero-role" class="info-value" text="TANK" />
-                    </ui:VisualElement>
-                    <ui:VisualElement name="synergy-row" class="info-row">
-                        <ui:Label class="info-label" text="SYNERGY" />
-                        <ui:Label name="hero-synergy" class="info-value" text="IRON / DREAD" />
-                    </ui:VisualElement>
-                </ui:VisualElement>
-
-                <!-- Starter Stats 2x2 Grid -->
-                <ui:VisualElement name="starter-stats-grid" class="starter-stats-grid">
-                    <ui:VisualElement class="stat-chip">
-                        <ui:Label class="stat-chip-label" text="HP" />
-                        <ui:Label name="stat-hp" class="stat-chip-value" text="68" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="stat-chip">
-                        <ui:Label class="stat-chip-label" text="ATK" />
-                        <ui:Label name="stat-atk" class="stat-chip-value" text="10" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="stat-chip">
-                        <ui:Label class="stat-chip-label" text="DEF" />
-                        <ui:Label name="stat-def" class="stat-chip-value" text="20" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="stat-chip">
-                        <ui:Label class="stat-chip-label" text="SPD" />
-                        <ui:Label name="stat-spd" class="stat-chip-value" text="5" />
-                    </ui:VisualElement>
-                </ui:VisualElement>
-
-                <!-- Champion Monster Section -->
-                <ui:VisualElement name="champion-section" class="champion-section">
-                    <ui:Label class="section-header" text="CHAMPION MONSTER" />
-                    <ui:Label name="champion-name" class="champion-name" text="Skitter-Teeth" />
-                    <ui:VisualElement class="champion-tags">
-                        <ui:Label name="champion-brand" class="tag" text="IRON" />
-                        <ui:Label name="champion-role" class="tag" text="TANK" />
-                    </ui:VisualElement>
-                </ui:VisualElement>
+        <!-- CENTER: 3D HERO STAGE -->
+        <ui:VisualElement name="hero-stage" class="hero-stage">
+            <!-- Hero Aura Glow -->
+            <ui:VisualElement name="hero-aura-container" class="hero-aura-container">
+                <ui:VisualElement name="aura-base" class="aura-base" />
             </ui:VisualElement>
-
-            <!-- CENTER: 3D Hero Stage (RenderTexture target) -->
-            <ui:VisualElement name="hero-stage" class="hero-stage">
-                <ui:VisualElement name="hero-render-target" class="hero-render-target" />
-                <ui:Label name="drag-hint" class="drag-hint" text="DRAG TO ROTATE" />
-            </ui:VisualElement>
-
-            <!-- RIGHT PANEL: Attributes & Abilities -->
-            <ui:VisualElement name="stats-panel" class="glass-panel stats-panel">
-                <ui:Label class="section-header" text="ATTRIBUTES" />
-
-                <ui:VisualElement name="attribute-bars" class="attribute-bars">
-                    <!-- 6 stat bars: STR, DEX, CON, INT, WIS, CHA -->
-                    <ui:VisualElement name="bar-str" class="stat-bar-row">
-                        <ui:Label class="stat-bar-label" text="STR" />
-                        <ui:VisualElement class="stat-bar-track">
-                            <ui:VisualElement name="bar-str-fill" class="stat-bar-fill" />
-                        </ui:VisualElement>
-                        <ui:Label name="bar-str-value" class="stat-bar-value" text="14" />
-                    </ui:VisualElement>
-                    <ui:VisualElement name="bar-dex" class="stat-bar-row">
-                        <ui:Label class="stat-bar-label" text="DEX" />
-                        <ui:VisualElement class="stat-bar-track">
-                            <ui:VisualElement name="bar-dex-fill" class="stat-bar-fill" />
-                        </ui:VisualElement>
-                        <ui:Label name="bar-dex-value" class="stat-bar-value" text="10" />
-                    </ui:VisualElement>
-                    <ui:VisualElement name="bar-con" class="stat-bar-row">
-                        <ui:Label class="stat-bar-label" text="CON" />
-                        <ui:VisualElement class="stat-bar-track">
-                            <ui:VisualElement name="bar-con-fill" class="stat-bar-fill" />
-                        </ui:VisualElement>
-                        <ui:Label name="bar-con-value" class="stat-bar-value" text="14" />
-                    </ui:VisualElement>
-                    <ui:VisualElement name="bar-int" class="stat-bar-row">
-                        <ui:Label class="stat-bar-label" text="INT" />
-                        <ui:VisualElement class="stat-bar-track">
-                            <ui:VisualElement name="bar-int-fill" class="stat-bar-fill" />
-                        </ui:VisualElement>
-                        <ui:Label name="bar-int-value" class="stat-bar-value" text="10" />
-                    </ui:VisualElement>
-                    <ui:VisualElement name="bar-wis" class="stat-bar-row">
-                        <ui:Label class="stat-bar-label" text="WIS" />
-                        <ui:VisualElement class="stat-bar-track">
-                            <ui:VisualElement name="bar-wis-fill" class="stat-bar-fill" />
-                        </ui:VisualElement>
-                        <ui:Label name="bar-wis-value" class="stat-bar-value" text="12" />
-                    </ui:VisualElement>
-                    <ui:VisualElement name="bar-cha" class="stat-bar-row">
-                        <ui:Label class="stat-bar-label" text="CHA" />
-                        <ui:VisualElement class="stat-bar-track">
-                            <ui:VisualElement name="bar-cha-fill" class="stat-bar-fill" />
-                        </ui:VisualElement>
-                        <ui:Label name="bar-cha-value" class="stat-bar-value" text="10" />
-                    </ui:VisualElement>
-                </ui:VisualElement>
-
-                <ui:Label class="section-header abilities-header" text="ABILITIES" />
-
-                <ui:VisualElement name="abilities-list" class="abilities-list">
-                    <ui:Label name="ability-0" class="ability-slot" text="Shield Wall" />
-                    <ui:Label name="ability-1" class="ability-slot" text="Iron Guard" />
-                    <ui:Label name="ability-2" class="ability-slot" text="Veil Strike" />
-                    <ui:Label name="ability-3" class="ability-slot" text="Fortify" />
-                    <ui:Label name="ability-4" class="ability-slot" text="Last Stand" />
-                </ui:VisualElement>
-            </ui:VisualElement>
-
+            
+            <!-- The Render Texture Surface -->
+            <ui:VisualElement name="hero-render-target" class="hero-render-target" />
+            
+            <ui:Label name="drag-hint" class="drag-hint" text="DRAG TO ROTATE" />
         </ui:VisualElement>
 
-        <!-- BOTTOM LAYER: Carousel + Navigation -->
-        <ui:VisualElement name="bottom-layer" class="bottom-layer">
+        <!-- FLOATING UI CONTENT -->
+        
+        <!-- LEFT PANEL: Hero Identity & Core Info -->
+        <ui:VisualElement name="hero-info-panel" class="glass-panel hero-info-panel">
+            <ui:Label name="hero-name" class="hero-name" text="VEX" />
+            <ui:Label name="hero-title" class="hero-title" text="THE WARDEN" />
+            <ui:Label name="hero-quote" class="hero-quote" text="&quot;I hold the line.&quot;" />
 
-            <!-- Navigation: Prev Arrow -->
-            <ui:Button name="btn-prev" class="nav-arrow nav-arrow-left" text="&#x25C0;" />
-
-            <!-- Hero Carousel -->
-            <ui:VisualElement name="carousel-container" class="carousel-container">
-                <ui:VisualElement name="carousel-strip" class="carousel-strip">
-                    <!-- Slots generated dynamically by CarouselController -->
+            <ui:VisualElement name="hero-class-info" class="hero-class-info">
+                <ui:VisualElement name="path-row" class="info-row">
+                    <ui:Label class="info-label" text="PATH" />
+                    <ui:Label name="hero-path" class="info-value" text="IRONBOUND" />
+                </ui:VisualElement>
+                <ui:VisualElement name="role-row" class="info-row">
+                    <ui:Label class="info-label" text="ROLE" />
+                    <ui:Label name="hero-role" class="info-value" text="TANK" />
+                </ui:VisualElement>
+                <ui:VisualElement name="synergy-row" class="info-row">
+                    <ui:Label class="info-label" text="SYNERGY" />
+                    <ui:Label name="hero-synergy" class="info-value" text="IRON / DREAD" />
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <!-- Navigation: Next Arrow -->
-            <ui:Button name="btn-next" class="nav-arrow nav-arrow-right" text="&#x25B6;" />
+            <!-- Starter Stats Grid -->
+            <ui:VisualElement name="starter-stats-grid" class="starter-stats-grid">
+                <ui:VisualElement class="stat-chip">
+                    <ui:Label class="stat-chip-label" text="HP" />
+                    <ui:Label name="stat-hp" class="stat-chip-value" text="68" />
+                </ui:VisualElement>
+                <ui:VisualElement class="stat-chip">
+                    <ui:Label class="stat-chip-label" text="ATK" />
+                    <ui:Label name="stat-atk" class="stat-chip-value" text="10" />
+                </ui:VisualElement>
+                <ui:VisualElement class="stat-chip">
+                    <ui:Label class="stat-chip-label" text="DEF" />
+                    <ui:Label name="stat-def" class="stat-chip-value" text="20" />
+                </ui:VisualElement>
+                <ui:VisualElement class="stat-chip">
+                    <ui:Label class="stat-chip-label" text="SPD" />
+                    <ui:Label name="stat-spd" class="stat-chip-value" text="5" />
+                </ui:VisualElement>
+            </ui:VisualElement>
 
-            <!-- Hero Index -->
-            <ui:Label name="hero-index" class="hero-index" text="HERO 1 / 4" />
-
+            <!-- Champion Monster Info -->
+            <ui:VisualElement name="champion-section" class="champion-section">
+                <ui:Label class="section-header" text="CHAMPION" />
+                <ui:Label name="champion-name" class="champion-name" text="Skitter-Teeth" />
+                <ui:VisualElement class="champion-tags">
+                    <ui:Label name="champion-brand" class="tag" text="IRON" />
+                    <ui:Label name="champion-role" class="tag" text="TANK" />
+                </ui:VisualElement>
+            </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- EMBARK LAYER -->
+        <!-- RIGHT PANEL: Attributes & Abilities -->
+        <ui:VisualElement name="stats-panel" class="glass-panel stats-panel">
+            <ui:Label class="section-header" text="ATTRIBUTES" />
+
+            <ui:VisualElement name="attribute-bars" class="attribute-bars">
+                <!-- Stat Bars mapping to D&D attributes -->
+                <ui:VisualElement name="bar-str" class="stat-bar-row">
+                    <ui:Label class="stat-bar-label" text="STR" />
+                    <ui:VisualElement class="stat-bar-track">
+                        <ui:VisualElement name="bar-str-fill" class="stat-bar-fill" />
+                    </ui:VisualElement>
+                    <ui:Label name="bar-str-value" class="stat-bar-value" text="14" />
+                </ui:VisualElement>
+                <ui:VisualElement name="bar-dex" class="stat-bar-row">
+                    <ui:Label class="stat-bar-label" text="DEX" />
+                    <ui:VisualElement class="stat-bar-track">
+                        <ui:VisualElement name="bar-dex-fill" class="stat-bar-fill" />
+                    </ui:VisualElement>
+                    <ui:Label name="bar-dex-value" class="stat-bar-value" text="10" />
+                </ui:VisualElement>
+                <ui:VisualElement name="bar-con" class="stat-bar-row">
+                    <ui:Label class="stat-bar-label" text="CON" />
+                    <ui:VisualElement class="stat-bar-track">
+                        <ui:VisualElement name="bar-con-fill" class="stat-bar-fill" />
+                    </ui:VisualElement>
+                    <ui:Label name="bar-con-value" class="stat-bar-value" text="14" />
+                </ui:VisualElement>
+                <ui:VisualElement name="bar-int" class="stat-bar-row">
+                    <ui:Label class="stat-bar-label" text="INT" />
+                    <ui:VisualElement class="stat-bar-track">
+                        <ui:VisualElement name="bar-int-fill" class="stat-bar-fill" />
+                    </ui:VisualElement>
+                    <ui:Label name="bar-int-value" class="stat-bar-value" text="10" />
+                </ui:VisualElement>
+                <ui:VisualElement name="bar-wis" class="stat-bar-row">
+                    <ui:Label class="stat-bar-label" text="WIS" />
+                    <ui:VisualElement class="stat-bar-track">
+                        <ui:VisualElement name="bar-wis-fill" class="stat-bar-fill" />
+                    </ui:VisualElement>
+                    <ui:Label name="bar-wis-value" class="stat-bar-value" text="12" />
+                </ui:VisualElement>
+                <ui:VisualElement name="bar-cha" class="stat-bar-row">
+                    <ui:Label class="stat-bar-label" text="CHA" />
+                    <ui:VisualElement class="stat-bar-track">
+                        <ui:VisualElement name="bar-cha-fill" class="stat-bar-fill" />
+                    </ui:VisualElement>
+                    <ui:Label name="bar-cha-value" class="stat-bar-value" text="10" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:Label class="section-header abilities-header" text="ABILITIES" />
+
+            <ui:VisualElement name="abilities-list" class="abilities-list">
+                <ui:Label name="ability-0" class="ability-slot" text="Shield Wall" />
+                <ui:Label name="ability-1" class="ability-slot" text="Iron Guard" />
+                <ui:Label name="ability-2" class="ability-slot" text="Veil Strike" />
+                <ui:Label name="ability-3" class="ability-slot" text="Fortify" />
+                <ui:Label name="ability-4" class="ability-slot" text="Last Stand" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- TOP BAR: Navigation -->
+        <ui:Button name="btn-back" class="btn-back" text="&#x25C0; BACK" />
+
+        <!-- EMBARK AREA -->
         <ui:VisualElement name="embark-layer" class="embark-layer">
-            <ui:Button name="btn-back" class="btn-back" text="&#x25C0; BACK" />
-
             <ui:Button name="btn-embark" class="btn-embark">
+                <ui:VisualElement name="embark-hex-bg" class="embark-hex-bg" />
                 <ui:VisualElement name="embark-glow" class="embark-glow" />
                 <ui:Label name="embark-text" class="embark-text" text="EMBARK AS VEX" />
                 <ui:Label class="embark-subtitle" text="Begin Your Journey" />
             </ui:Button>
         </ui:VisualElement>
 
-        <!-- CONFIRM POPUP OVERLAY (hidden by default) -->
+        <!-- BOTTOM LAYER: Carousel Navigation -->
+        <ui:VisualElement name="bottom-layer" class="bottom-layer">
+            <ui:Button name="btn-prev" class="nav-arrow nav-arrow-left" text="&#x25C0;" />
+            <ui:VisualElement name="carousel-container" class="carousel-container">
+                <ui:VisualElement name="carousel-strip" class="carousel-strip">
+                    <!-- Carousel cards generated dynamically -->
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Button name="btn-next" class="nav-arrow nav-arrow-right" text="&#x25B6;" />
+            
+            <ui:Label name="hero-index" class="hero-index" text="1 / 4" />
+        </ui:VisualElement>
+
+        <!-- CONFIRM POPUP OVERLAY -->
         <ui:VisualElement name="confirm-overlay" class="confirm-overlay hidden">
-            <ui:VisualElement name="confirm-dim" class="confirm-dim" />
             <ui:VisualElement name="confirm-popup" class="glass-panel confirm-popup">
-                <ui:Label class="confirm-title" text="CONFIRM YOUR CHAMPION" />
+                <ui:Label class="confirm-title" text="CONFIRM CHAMPION" />
                 <ui:Label name="confirm-description" class="confirm-description"
                           text="You will begin your journey as VEX, THE WARDEN" />
                 <ui:VisualElement class="confirm-buttons">
