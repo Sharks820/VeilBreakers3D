@@ -50,6 +50,15 @@
             "command": "node .claude/hooks/protect-critical-files.js"
           }
         ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/unity-antipattern-guard.js"
+          }
+        ]
       }
     ],
     "PostToolUse": [
