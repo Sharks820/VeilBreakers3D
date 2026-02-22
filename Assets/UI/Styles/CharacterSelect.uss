@@ -4,7 +4,7 @@
    ============================================================================= */
 
 /* Import theme variables */
-@import url("project://database/Assets/UI/Styles/VeilBreakersTheme.uss");
+/* Global tokens imported via VeilBreakersTheme.tss → VeilBreakers.uss */
 
 /* =============================================================================
    CORE VARIABLES - Character Select Specific
