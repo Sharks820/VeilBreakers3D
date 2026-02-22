@@ -38,6 +38,9 @@ namespace VeilBreakers.UI.CharacterSelect
         private const string kEmbarkText = "embark-text";
         private const string kConfirmDescription = "confirm-description";
         private const string kEmbarkGlow = "embark-glow";
+        private const string kHeroInfoPanel = "hero-info-panel";
+        private const string kStatsPanel = "stats-panel";
+        private const string kEmbarkHexBg = "embark-hex-bg";
 
         // =============================================================================
         // SERIALIZED FIELDS
@@ -173,6 +176,7 @@ namespace VeilBreakers.UI.CharacterSelect
             }
 
             CacheUIReferences();
+            SetAnimationHints();
             BindUI();
             ApplyInitialState();
 
@@ -581,6 +585,42 @@ namespace VeilBreakers.UI.CharacterSelect
                 NavigateBack();
             }
             evt.StopPropagation();
+        }
+
+        // =================================================================
+        // ANIMATION HINTS
+        // =================================================================
+
+        /// <summary>
+        /// Sets UsageHints.DynamicTransform on all VisualElements that have USS
+        /// transitions or hover scale/translate effects. Called once during init,
+        /// after CacheUIReferences(). Uses |= to preserve existing flags (e.g. DynamicColor).
+        /// </summary>
+        private void SetAnimationHints()
+        {
+            // Named elements
+            SetHint(_root.Q<VisualElement>(kHeroInfoPanel));
+            SetHint(_root.Q<VisualElement>(kStatsPanel));
+            SetHint(_btnBack);
+            SetHint(_btnEmbark);
+            SetHint(_root.Q<VisualElement>(kEmbarkHexBg));
+            SetHint(_embarkGlow);
+            SetHint(_btnPrev);
+            SetHint(_btnNext);
+            SetHint(_confirmOverlay);
+            SetHint(_embarkText);
+
+            // Class-based queries (multiple elements)
+            _root.Query<VisualElement>(className: "ability-slot").ForEach(SetHint);
+            _root.Query<VisualElement>(className: "hero-card").ForEach(SetHint);
+            _root.Query<VisualElement>(className: "nav-arrow").ForEach(SetHint);
+            _root.Query<VisualElement>(className: "glass-panel").ForEach(SetHint);
+            _root.Query<VisualElement>(className: "fog-particles").ForEach(SetHint);
+        }
+
+        private static void SetHint(VisualElement el)
+        {
+            if (el != null) el.usageHints |= UsageHints.DynamicTransform;
         }
     }
 }
