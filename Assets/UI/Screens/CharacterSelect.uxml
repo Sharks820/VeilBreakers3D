@@ -87,6 +87,12 @@
                     <ui:Label name="champion-role" class="tag" text="TANK" />
                 </ui:VisualElement>
             </ui:VisualElement>
+
+            <!-- Lore / Backstory -->
+            <ui:VisualElement name="hero-lore-section" class="hero-lore-section">
+                <ui:Label class="section-header" text="LORE" />
+                <ui:Label name="hero-backstory" class="hero-backstory" text="" />
+            </ui:VisualElement>
         </ui:VisualElement>
 
         <!-- RIGHT PANEL: Attributes & Abilities -->

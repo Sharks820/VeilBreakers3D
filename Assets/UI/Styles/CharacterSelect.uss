@@ -181,6 +181,7 @@ TemplateContainer {
                 opacity var(--transition-normal) var(--ease-out-expo);
     border-top-width: 3px;
     border-top-color: var(--hero-primary);
+    overflow: hidden;
 }
 
 .hero-info-panel.panel-hidden {
@@ -223,6 +224,7 @@ TemplateContainer {
 .info-row {
     flex-direction: row;
     justify-content: space-between;
+    align-items: flex-start;
     margin-bottom: 8px;
 }
 
@@ -236,6 +238,9 @@ TemplateContainer {
     font-size: 13px;
     color: var(--hero-accent);
     -unity-font-style: bold;
+    white-space: normal;
+    overflow: hidden;
+    flex-shrink: 1;
 }
 
 /* Starter Stats 2x2 Grid */
@@ -299,6 +304,23 @@ TemplateContainer {
     border-radius: 3px;
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Lore / Backstory Section */
+.hero-lore-section {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top-width: 1px;
+    border-top-color: rgba(255, 255, 255, 0.08);
+    max-height: 120px;
+    overflow: hidden;
+}
+
+.hero-backstory {
+    font-size: 10px;
+    color: rgba(200, 200, 215, 0.6);
+    white-space: normal;
+    -unity-font-style: italic;
 }
 
 /* =============================================================================
