@@ -72,10 +72,10 @@ namespace VeilBreakers.UI.CharacterSelect
             _fogParticles = root.Q<VisualElement>("fog-particles");
 
             // Mark for dynamic transform optimization in UI Toolkit
-            if (_parallaxDeep != null) _parallaxDeep.usageHints = UsageHints.DynamicTransform;
-            if (_parallaxFog != null) _parallaxFog.usageHints = UsageHints.DynamicTransform;
-            if (_vignette != null) _vignette.usageHints = UsageHints.DynamicTransform;
-            if (_fogParticles != null) _fogParticles.usageHints = UsageHints.DynamicColor;
+            if (_parallaxDeep != null) _parallaxDeep.usageHints |= UsageHints.DynamicTransform;
+            if (_parallaxFog != null) _parallaxFog.usageHints |= UsageHints.DynamicTransform;
+            if (_vignette != null) _vignette.usageHints |= UsageHints.DynamicTransform;
+            if (_fogParticles != null) _fogParticles.usageHints |= UsageHints.DynamicColor;
         }
 
         private void HandleScreenReady()

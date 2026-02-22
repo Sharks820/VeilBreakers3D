@@ -180,14 +180,11 @@ namespace VeilBreakers.Editor
             systemGO.AddComponent<HeroStageController>();
             systemGO.AddComponent<HeroDataPanelController>();
             systemGO.AddComponent<HeroStatsPanelController>();
-            var carousel = systemGO.AddComponent<CarouselController>();
+            systemGO.AddComponent<CarouselController>();
             systemGO.AddComponent<CharSelectEnvironmentController>();
 
             // Wire UIDocument references via SerializedObject
             WireUIDocumentReferences(systemGO, uiDoc);
-
-            // Wire CarouselController._manager reference
-            WireCarouselManager(carousel, manager);
 
             // Wire HeroDisplayConfig array on manager
             WireHeroConfigs(manager);
@@ -210,18 +207,6 @@ namespace VeilBreakers.Editor
                 }
             }
             Debug.Log("[CharSelect] UIDocument wired to all controllers.");
-        }
-
-        private static void WireCarouselManager(CarouselController carousel, CharacterSelectManager manager)
-        {
-            var so = new SerializedObject(carousel);
-            var prop = so.FindProperty("_manager");
-            if (prop != null)
-            {
-                prop.objectReferenceValue = manager;
-                so.ApplyModifiedProperties();
-            }
-            Debug.Log("[CharSelect] CarouselController._manager wired.");
         }
 
         private static void WireHeroConfigs(CharacterSelectManager manager)

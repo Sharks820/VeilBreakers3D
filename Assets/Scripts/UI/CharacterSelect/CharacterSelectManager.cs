@@ -598,12 +598,22 @@ namespace VeilBreakers.UI.CharacterSelect
         /// </summary>
         private void SetAnimationHints()
         {
-            // Named elements
-            SetHint(_root.Q<VisualElement>(kHeroInfoPanel));
-            SetHint(_root.Q<VisualElement>(kStatsPanel));
+            // Named elements (with Debug.Assert for uncached Q() calls)
+            var heroInfoPanel = _root.Q<VisualElement>(kHeroInfoPanel);
+            Debug.Assert(heroInfoPanel != null, $"[CharSelectManager] Missing element: {kHeroInfoPanel}");
+            SetHint(heroInfoPanel);
+
+            var statsPanel = _root.Q<VisualElement>(kStatsPanel);
+            Debug.Assert(statsPanel != null, $"[CharSelectManager] Missing element: {kStatsPanel}");
+            SetHint(statsPanel);
+
             SetHint(_btnBack);
             SetHint(_btnEmbark);
-            SetHint(_root.Q<VisualElement>(kEmbarkHexBg));
+
+            var embarkHexBg = _root.Q<VisualElement>(kEmbarkHexBg);
+            Debug.Assert(embarkHexBg != null, $"[CharSelectManager] Missing element: {kEmbarkHexBg}");
+            SetHint(embarkHexBg);
+
             SetHint(_embarkGlow);
             SetHint(_btnPrev);
             SetHint(_btnNext);

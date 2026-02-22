@@ -39,7 +39,7 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_uiDocument == null) { Debug.LogError("[HeroStatsPanelController] UIDocument not assigned!"); return; }
             var root = _uiDocument.rootVisualElement;
             _panel = root.Q<VisualElement>("stats-panel");
-            if (_panel != null) _panel.usageHints = UsageHints.DynamicTransform;
+            if (_panel != null) _panel.usageHints |= UsageHints.DynamicTransform;
 
             for (int i = 0; i < kStatNames.Length; i++)
             {

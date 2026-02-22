@@ -62,7 +62,7 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_uiDocument == null) { Debug.LogError("[HeroDataPanelController] UIDocument not assigned!"); return; }
             var root = _uiDocument.rootVisualElement;
             _panel = root.Q<VisualElement>("hero-info-panel");
-            if (_panel != null) _panel.usageHints = UsageHints.DynamicTransform;
+            if (_panel != null) _panel.usageHints |= UsageHints.DynamicTransform;
             _heroName = root.Q<Label>("hero-name");
             _heroTitle = root.Q<Label>("hero-title");
             _heroQuote = root.Q<Label>("hero-quote");

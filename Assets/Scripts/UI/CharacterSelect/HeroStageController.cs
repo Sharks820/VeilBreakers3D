@@ -78,6 +78,15 @@ namespace VeilBreakers.UI.CharacterSelect
             CleanupStage();
         }
 
+        private void OnDestroy()
+        {
+            if (_placeholderMaterial != null)
+            {
+                Destroy(_placeholderMaterial);
+                _placeholderMaterial = null;
+            }
+        }
+
         private void Update()
         {
             HandleDragInput();
@@ -174,7 +183,7 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_renderTarget != null)
             {
                 _renderTarget.style.backgroundImage = Background.FromRenderTexture(_renderTexture);
-                _renderTarget.usageHints = UsageHints.DynamicTransform;
+                _renderTarget.usageHints |= UsageHints.DynamicTransform;
 
                 // Register drag events
                 _renderTarget.RegisterCallback<PointerDownEvent>(OnPointerDown);

@@ -304,7 +304,7 @@ GameObject:
   - component: {fileID: 1846487435}
   - component: {fileID: 1846487434}
   - component: {fileID: 1846487433}
-  - component: {fileID: 1846487432}
+
   m_Layer: 0
   m_Name: CharacterSelectSystem
   m_TagString: Untagged
@@ -312,19 +312,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1846487432
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1846487431}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c6494d836a7dcca40b587da4bbb8f883, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: VeilBreakers.Runtime::VeilBreakers.UI.CharacterSelect.TransitionController
-  _uiDocument: {fileID: 1846487439}
 --- !u!114 &1846487433
 MonoBehaviour:
   m_ObjectHideFlags: 0
