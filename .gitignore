@@ -5,6 +5,9 @@ __pycache__/
 # Debug/inspection tools
 Tools/*.py
 
+# Archived assets (removed from Unity but preserved)
+_Archive/
+
 # AIM memory (local agent memory)
 .aim/
 
