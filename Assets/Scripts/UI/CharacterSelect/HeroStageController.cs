@@ -99,7 +99,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _renderTexture.filterMode = FilterMode.Bilinear;
             _renderTexture.Create();
 
-            // Setup camera
+            // Setup camera (re-activate if previously disabled by CleanupStage)
             if (_previewCamera == null)
             {
                 var camObj = new GameObject("PreviewCamera");
@@ -108,6 +108,7 @@ namespace VeilBreakers.UI.CharacterSelect
             }
             else
             {
+                _previewCamera.gameObject.SetActive(true);
                 _previewCamera.transform.SetParent(_stageRoot);
             }
 
@@ -396,16 +397,27 @@ namespace VeilBreakers.UI.CharacterSelect
                 _renderTarget.UnregisterCallback<PointerDownEvent>(OnPointerDown);
                 _renderTarget.UnregisterCallback<PointerMoveEvent>(OnPointerMove);
                 _renderTarget.UnregisterCallback<PointerUpEvent>(OnPointerUp);
+                // C2 fix: clear UI reference before destroying RenderTexture
+                _renderTarget.style.backgroundImage = new StyleBackground(StyleKeyword.None);
             }
 
             if (_currentPlaceholderMat != null) Destroy(_currentPlaceholderMat);
             if (_currentModel != null) Destroy(_currentModel);
             if (_currentChampion != null) Destroy(_currentChampion);
 
+            // C2/C6 fix: detach camera from stageRoot before destroy so serialized camera survives
+            if (_previewCamera != null)
+            {
+                _previewCamera.targetTexture = null;
+                _previewCamera.transform.SetParent(null);
+                _previewCamera.gameObject.SetActive(false);
+            }
+
             if (_renderTexture != null)
             {
                 _renderTexture.Release();
                 Destroy(_renderTexture);
+                _renderTexture = null;
             }
 
             if (_stageRoot != null) Destroy(_stageRoot.gameObject);

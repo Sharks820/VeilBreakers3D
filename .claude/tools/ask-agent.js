@@ -66,8 +66,10 @@ const CLI_AGENTS = {
       'exec',
       '--sandbox', 'read-only',
       '--ephemeral',
+      '--json',
       prompt
     ],
+    parseJsonl: true,  // Flag: output is JSONL, extract agent_message items
     timeout: 120000,
     env: {
       ...process.env,
@@ -194,7 +196,34 @@ function runCliAgent(agentKey) {
       } else if (code !== 0 && !stdout.trim()) {
         resolve({ agent: agent.name, error: `Exit code ${code}`, stderr: stderr.trim().slice(0, 500) });
       } else {
-        resolve({ agent: agent.name, response: stdout.trim() });
+        let response = stdout.trim();
+
+        // Parse JSONL output (Codex --json mode): extract agent_message text
+        if (agent.parseJsonl && response) {
+          try {
+            const messages = [];
+            let totalIn = 0, totalOut = 0;
+            for (const line of response.split('\n')) {
+              if (!line.trim()) continue;
+              const obj = JSON.parse(line);
+              if (obj.type === 'item.completed' && obj.item?.type === 'agent_message') {
+                messages.push(obj.item.text);
+              }
+              if (obj.type === 'turn.completed' && obj.usage) {
+                totalIn += obj.usage.input_tokens || 0;
+                totalOut += obj.usage.output_tokens || 0;
+              }
+            }
+            response = messages.join('\n\n');
+            if (totalIn || totalOut) {
+              response += `\n\n[Tokens: ${totalIn} in / ${totalOut} out]`;
+            }
+          } catch (e) {
+            // If JSONL parsing fails, fall back to raw output
+          }
+        }
+
+        resolve({ agent: agent.name, response });
       }
     });
 
@@ -216,7 +245,22 @@ function runApiAgent(agentKey) {
       return;
     }
 
-    const apiKey = process.env[agent.apiKeyEnv];
+    let apiKey = process.env[agent.apiKeyEnv];
+
+    // Windows fallback: load from user environment variables via registry
+    if (!apiKey && process.platform === 'win32') {
+      try {
+        const { execSync } = require('child_process');
+        apiKey = execSync(
+          `powershell -Command "[System.Environment]::GetEnvironmentVariable('${agent.apiKeyEnv}', 'User')"`,
+          { encoding: 'utf8', timeout: 5000 }
+        ).trim();
+        if (apiKey) {
+          process.env[agent.apiKeyEnv] = apiKey;  // Cache for subsequent calls
+        }
+      } catch (e) { /* ignore fallback failure */ }
+    }
+
     if (!apiKey) {
       resolve({
         agent: agent.name,

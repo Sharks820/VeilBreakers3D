@@ -53,8 +53,10 @@ namespace VeilBreakers.UI.CharacterSelect
         private List<HeroData> _heroList;
         private int _currentIndex;
         private bool _isTransitioning;
+        private bool _isEmbarking;
         private bool _isInitialized;
         private VisualElement _root;
+        private string _currentThemeClass;
 
         // =============================================================================
         // CACHED UI REFERENCES
@@ -110,6 +112,7 @@ namespace VeilBreakers.UI.CharacterSelect
             CharSelectEvents.OnNavigationRequested -= NavigateToHero;
             StopAllCoroutines();
             _isTransitioning = false;
+            _isEmbarking = false;
             _isInitialized = false;
             UnbindUI();
         }
@@ -121,7 +124,11 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void OnSceneUnloaded(Scene scene)
         {
-            CharSelectEvents.ClearAll();
+            // H2 fix: only clear events when OUR scene unloads, not any scene
+            if (scene == gameObject.scene)
+            {
+                CharSelectEvents.ClearAll();
+            }
         }
 
         /// <summary>
@@ -337,7 +344,6 @@ namespace VeilBreakers.UI.CharacterSelect
             if (index == _currentIndex) return;
 
             _isTransitioning = true;
-            int prevIndex = _currentIndex;
             _currentIndex = index;
 
             ApplyThemeClass(_heroList[_currentIndex].hero_id);
@@ -373,21 +379,18 @@ namespace VeilBreakers.UI.CharacterSelect
         // THEME MANAGEMENT
         // =============================================================================
 
-        private static readonly string[] kThemeClasses = { "theme-vex", "theme-seraphina", "theme-orion", "theme-nyx" };
-
         private void ApplyThemeClass(string heroId)
         {
             if (_root == null) return;
 
-            // Remove all theme classes
-            for (int i = 0; i < kThemeClasses.Length; i++)
+            // H7 fix: track current theme class instead of hardcoding hero list
+            if (!string.IsNullOrEmpty(_currentThemeClass))
             {
-                _root.RemoveFromClassList(kThemeClasses[i]);
+                _root.RemoveFromClassList(_currentThemeClass);
             }
 
-            // Add new theme class
-            string themeClass = $"theme-{heroId}";
-            _root.AddToClassList(themeClass);
+            _currentThemeClass = $"theme-{heroId}";
+            _root.AddToClassList(_currentThemeClass);
         }
 
         // =============================================================================
@@ -399,7 +402,7 @@ namespace VeilBreakers.UI.CharacterSelect
             var hero = CurrentHero;
             if (hero == null) return;
 
-            string name = string.IsNullOrEmpty(hero.display_name) ? hero.hero_id.ToUpper() : hero.display_name.ToUpper();
+            string name = string.IsNullOrEmpty(hero.display_name) ? (hero.hero_id?.ToUpper() ?? "UNKNOWN") : hero.display_name.ToUpper();
             if (_embarkText != null) _embarkText.text = $"EMBARK AS {name}";
             if (_confirmDescription != null)
             {
@@ -425,8 +428,13 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void ExecuteEmbark()
         {
+            // C5 fix: guard against double-click re-entry
+            if (_isEmbarking) return;
+
             var hero = CurrentHero;
             if (hero == null) return;
+
+            _isEmbarking = true;
 
             CharSelectEvents.RaiseEmbarkConfirmed();
             CharSelectEvents.RaiseScreenExiting();
@@ -450,6 +458,8 @@ namespace VeilBreakers.UI.CharacterSelect
             }
         }
 
+        private const float kSaveTaskTimeout = 10f;
+
         private IEnumerator CreateOrRotateNewGameSave(HeroData hero)
         {
             if (!SaveManager.HasInstance || hero == null)
@@ -458,8 +468,21 @@ namespace VeilBreakers.UI.CharacterSelect
             }
 
             var saveManager = SaveManager.Instance;
+            float elapsed;
+
+            // H5 fix: add timeouts to all async task polling loops
             var slotTask = saveManager.GetBestNewGameSlotAsync();
-            while (!slotTask.IsCompleted) yield return null;
+            elapsed = 0f;
+            while (!slotTask.IsCompleted)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                if (elapsed > kSaveTaskTimeout)
+                {
+                    Debug.LogError("[CharSelectManager] GetBestNewGameSlotAsync timed out.");
+                    yield break;
+                }
+                yield return null;
+            }
 
             if (slotTask.IsFaulted || slotTask.IsCanceled)
             {
@@ -471,7 +494,17 @@ namespace VeilBreakers.UI.CharacterSelect
             string heroName = string.IsNullOrEmpty(hero.display_name) ? hero.hero_id : hero.display_name;
 
             var createTask = saveManager.CreateNewSaveAsync(slot, hero.hero_id, heroName, hero.GetPrimaryPath());
-            while (!createTask.IsCompleted) yield return null;
+            elapsed = 0f;
+            while (!createTask.IsCompleted)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                if (elapsed > kSaveTaskTimeout)
+                {
+                    Debug.LogError("[CharSelectManager] CreateNewSaveAsync timed out.");
+                    yield break;
+                }
+                yield return null;
+            }
 
             if (createTask.IsFaulted || createTask.IsCanceled || !createTask.Result)
             {
@@ -481,7 +514,17 @@ namespace VeilBreakers.UI.CharacterSelect
 
             saveManager.SetCurrentLocation(kStarterTownLocation);
             var saveTask = saveManager.SaveAsync(slot);
-            while (!saveTask.IsCompleted) yield return null;
+            elapsed = 0f;
+            while (!saveTask.IsCompleted)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                if (elapsed > kSaveTaskTimeout)
+                {
+                    Debug.LogError("[CharSelectManager] SaveAsync timed out.");
+                    yield break;
+                }
+                yield return null;
+            }
         }
 
         // =============================================================================
@@ -514,8 +557,14 @@ namespace VeilBreakers.UI.CharacterSelect
         // NAVIGATION EVENTS (KEYBOARD / GAMEPAD)
         // =============================================================================
 
+        private bool IsConfirmOverlayVisible =>
+            _confirmOverlay != null && !_confirmOverlay.ClassListContains("hidden");
+
         private void OnNavigationMove(NavigationMoveEvent evt)
         {
+            // M3 fix: block hero navigation while confirm overlay is open
+            if (IsConfirmOverlayVisible) return;
+
             switch (evt.direction)
             {
                 case NavigationMoveEvent.Direction.Left:
@@ -531,7 +580,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void OnNavigationSubmit(NavigationSubmitEvent evt)
         {
-            if (_confirmOverlay != null && !_confirmOverlay.ClassListContains("hidden"))
+            if (IsConfirmOverlayVisible)
             {
                 ExecuteEmbark();
             }
@@ -544,7 +593,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void OnNavigationCancel(NavigationCancelEvent evt)
         {
-            if (_confirmOverlay != null && !_confirmOverlay.ClassListContains("hidden"))
+            if (IsConfirmOverlayVisible)
             {
                 HideConfirmPopup();
             }

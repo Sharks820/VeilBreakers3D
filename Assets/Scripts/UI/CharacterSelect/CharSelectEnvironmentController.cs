@@ -33,6 +33,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private Vector2 _targetParallax;
         private Vector2 _currentParallax;
         private Texture2D _nebulaTexture;
+        private Color[] _nebulaPixels;
 
         private void OnEnable()
         {
@@ -49,7 +50,9 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_nebulaTexture != null)
             {
                 Destroy(_nebulaTexture);
+                _nebulaTexture = null;
             }
+            _nebulaPixels = null;
         }
 
         private void Update()
@@ -87,8 +90,8 @@ namespace VeilBreakers.UI.CharacterSelect
 
             // Normalize mouse position (-1 to 1) using New Input System
             Vector2 mousePos = InputManager.HasInstance ? InputManager.Instance.MousePosition : Vector2.zero;
-            float nx = (mousePos.x / Screen.width) * 2f - 1f;
-            float ny = (mousePos.y / Screen.height) * 2f - 1f;
+            float nx = (mousePos.x / Mathf.Max(Screen.width, 1)) * 2f - 1f;
+            float ny = (mousePos.y / Mathf.Max(Screen.height, 1)) * 2f - 1f;
 
             _targetParallax = new Vector2(nx, ny);
             _currentParallax = Vector2.Lerp(_currentParallax, _targetParallax, Time.deltaTime * _lerpSpeed);
@@ -133,6 +136,13 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void GenerateNebula(Color baseColor, Color accentColor)
         {
+            // Recreate texture if size changed (SerializeField edited at runtime)
+            if (_nebulaTexture != null && (_nebulaTexture.width != _textureSize || _nebulaTexture.height != _textureSize))
+            {
+                Destroy(_nebulaTexture);
+                _nebulaTexture = null;
+            }
+
             if (_nebulaTexture == null)
             {
                 _nebulaTexture = new Texture2D(_textureSize, _textureSize, TextureFormat.RGBA32, false);
@@ -140,12 +150,21 @@ namespace VeilBreakers.UI.CharacterSelect
                 _nebulaTexture.filterMode = FilterMode.Bilinear;
             }
 
-            Color[] pixels = new Color[_textureSize * _textureSize];
+            int pixelCount = _textureSize * _textureSize;
+            if (_nebulaPixels == null || _nebulaPixels.Length != pixelCount)
+            {
+                _nebulaPixels = new Color[pixelCount];
+            }
+
             float scale = _noiseScale;
-            
+
             // Random offset for unique patterns per hero
             float offsetX = Random.Range(0f, 100f);
             float offsetY = Random.Range(0f, 100f);
+
+            // Cache center and radius outside loops
+            float center = _textureSize * 0.5f;
+            float radiusInv = 1f / center;
 
             for (int y = 0; y < _textureSize; y++)
             {
@@ -153,7 +172,7 @@ namespace VeilBreakers.UI.CharacterSelect
                 {
                     float xCoord = (float)x / _textureSize * scale + offsetX;
                     float yCoord = (float)y / _textureSize * scale + offsetY;
-                    
+
                     // Layered Perlin noise for "cloudy" look
                     float sample = Mathf.PerlinNoise(xCoord, yCoord);
                     float sample2 = Mathf.PerlinNoise(xCoord * 2f + 10f, yCoord * 2f + 10f) * 0.5f;
@@ -164,14 +183,16 @@ namespace VeilBreakers.UI.CharacterSelect
                     finalColor = Color.Lerp(finalColor, accentColor, Mathf.Pow(combined, 3f)); // Highlights on peaks
 
                     // Vignette edges
-                    float dist = Vector2.Distance(new Vector2(x, y), new Vector2(_textureSize / 2, _textureSize / 2)) / (_textureSize / 2);
+                    float dx = x - center;
+                    float dy = y - center;
+                    float dist = Mathf.Sqrt(dx * dx + dy * dy) * radiusInv;
                     finalColor *= Mathf.SmoothStep(1.2f, 0.4f, dist);
 
-                    pixels[y * _textureSize + x] = finalColor;
+                    _nebulaPixels[y * _textureSize + x] = finalColor;
                 }
             }
 
-            _nebulaTexture.SetPixels(pixels);
+            _nebulaTexture.SetPixels(_nebulaPixels);
             _nebulaTexture.Apply();
 
             _parallaxDeep.style.backgroundImage = new StyleBackground(_nebulaTexture);

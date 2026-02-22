@@ -73,10 +73,11 @@ namespace VeilBreakers.UI.CharacterSelect
             var teaser = CreateTeaserCard();
             _carouselStrip.Add(teaser);
 
-            // Select first
+            // Select first and update index label
             if (_heroCards.Count > 0)
             {
                 UpdateSelection(0);
+                UpdateHeroIndex(0);
             }
         }
 

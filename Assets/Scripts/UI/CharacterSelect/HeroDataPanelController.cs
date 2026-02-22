@@ -118,7 +118,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             CharSelectUIUtils.SetLabel(_championName, monster.display_name ?? data.starter_monster_id);
             CharSelectUIUtils.SetLabel(_championBrand, monster.GetPrimaryBrand().ToString());
-            CharSelectUIUtils.SetLabel(_championRole, monster.GetPrimaryBrand().ToString().ToUpper());
+            CharSelectUIUtils.SetLabel(_championRole, monster.GetAIPattern().ToString());
         }
     }
 }
