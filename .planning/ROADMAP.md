@@ -50,7 +50,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md -- Fix UXML structure, content population, panel sizing, and remove EnsureFullScreenLayout hack
+- [x] 02-01-PLAN.md -- Fix UXML structure, content population, panel sizing, and remove EnsureFullScreenLayout hack
 - [ ] 02-02-PLAN.md -- Rewrite USS transition declarations and set UsageHints.DynamicTransform on animated elements
 
 ### Phase 3: Controller Behavior

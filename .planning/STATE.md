@@ -10,28 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 2 of 5 (Layout & Structure)
-Plan: 0 of 2 in current phase
-Status: Ready to plan
-Last activity: 2026-02-22 -- Phase 1 complete (3/3 plans), 19 bug fixes applied, ready for Phase 2
+Plan: 1 of 2 in current phase
+Status: Executing
+Last activity: 2026-02-22 -- Plan 02-01 complete (UXML backstory, USS overflow, EnsureFullScreenLayout removed)
 
-Progress: [##........] 20%
+Progress: [####......] 40%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
+- Total plans completed: 4
 - Average duration: ~1 session
-- Total execution time: ~4 hours
+- Total execution time: ~4.25 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation Cleanup | 3/3 | ~4h | ~1.3h |
+| 2. Layout & Structure | 1/2 | ~15m | ~15m |
 
 **Recent Trend:**
-- Last 3 plans: 01-01 USS Consolidation, 01-02 Foundation Cleanup, 01-03 Bug Fix Audit
-- Trend: Steady
+- Last 3 plans: 01-02 Foundation Cleanup, 01-03 Bug Fix Audit, 02-01 Layout Fix
+- Trend: Accelerating
 
 *Updated after each plan completion*
 
@@ -50,6 +51,9 @@ Recent decisions affecting current work:
 - [Phase 1]: MonsterData has no `role` field; use `GetAIPattern()` for champion role display
 - [Phase 1]: Dynamic theme class tracking (`_currentThemeClass`) replaces hardcoded `kThemeClasses` array
 - [Phase 1]: Camera must be unparented before stageRoot destroy to preserve serialized reference across enable/disable
+- [Phase 2]: EnsureFullScreenLayout() C# hack removed; USS-only layout via TemplateContainer flex-grow + absolute positioning
+- [Phase 2]: Synergy explanation text kept natural-case (no .ToUpper()) to prevent text overflow on long strings
+- [Phase 2]: Lore section uses .hidden class pattern (matching champion-section) for conditional visibility
 
 ### Pending Todos
 
@@ -65,5 +69,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Phase 1 complete, ready to plan Phase 2 (Layout & Structure)
+Stopped at: Completed 02-01-PLAN.md (Layout Fix). Ready for 02-02-PLAN.md.
 Resume file: None

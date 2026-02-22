@@ -21,11 +21,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Layout (LAYOUT)
 
-- [ ] **LAYOUT-01**: Hero info panel text overlap fixed (name, title, quote, path, role display correctly without collision)
-- [ ] **LAYOUT-02**: Champion/starter monster area displays correctly with name, brand, and role tags
-- [ ] **LAYOUT-03**: Hero stories and synergy/brands populate correctly for all 4 heroes
-- [ ] **LAYOUT-04**: Panel sizing correct at 1920x1080 with no overflow or clipping
-- [ ] **LAYOUT-05**: `EnsureFullScreenLayout()` hack removed by fixing UXML root configuration
+- [x] **LAYOUT-01**: Hero info panel text overlap fixed (name, title, quote, path, role display correctly without collision)
+- [x] **LAYOUT-02**: Champion/starter monster area displays correctly with name, brand, and role tags
+- [x] **LAYOUT-03**: Hero stories and synergy/brands populate correctly for all 4 heroes
+- [x] **LAYOUT-04**: Panel sizing correct at 1920x1080 with no overflow or clipping
+- [x] **LAYOUT-05**: `EnsureFullScreenLayout()` hack removed by fixing UXML root configuration
 - [ ] **LAYOUT-06**: All USS transitions audited to animate only transform/color properties (no width/height/margin)
 - [ ] **LAYOUT-07**: `UsageHints.DynamicTransform` set on all animated VisualElements at creation time
 
@@ -116,11 +116,11 @@ Deferred to future release. Tracked but not in current roadmap.
 | INFRA-07 | Phase 1 | Pending |
 | INFRA-08 | Phase 1 | Pending |
 | INFRA-09 | Phase 1 | Pending |
-| LAYOUT-01 | Phase 2 | Pending |
-| LAYOUT-02 | Phase 2 | Pending |
-| LAYOUT-03 | Phase 2 | Pending |
-| LAYOUT-04 | Phase 2 | Pending |
-| LAYOUT-05 | Phase 2 | Pending |
+| LAYOUT-01 | Phase 2 | Complete |
+| LAYOUT-02 | Phase 2 | Complete |
+| LAYOUT-03 | Phase 2 | Complete |
+| LAYOUT-04 | Phase 2 | Complete |
+| LAYOUT-05 | Phase 2 | Complete |
 | LAYOUT-06 | Phase 2 | Pending |
 | LAYOUT-07 | Phase 2 | Pending |
 | CTRL-01 | Phase 3 | Pending |
