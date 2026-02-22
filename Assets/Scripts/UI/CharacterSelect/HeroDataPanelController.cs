@@ -7,13 +7,27 @@ namespace VeilBreakers.UI.CharacterSelect
 {
     /// <summary>
     /// Populates the left info panel: name, title, quote, path/role/synergy,
-    /// starter stats grid, and champion monster info.
+    /// starter stats grid, champion monster info, and backstory lore.
     /// </summary>
     public class HeroDataPanelController : MonoBehaviour
     {
+        // =============================================================================
+        // CONSTANTS
+        // =============================================================================
+
+        private const string kHeroBackstory = "hero-backstory";
+        private const string kHeroLoreSection = "hero-lore-section";
+
+        // =============================================================================
+        // SERIALIZED FIELDS
+        // =============================================================================
+
         [SerializeField] private UIDocument _uiDocument;
 
-        // Cached references
+        // =============================================================================
+        // CACHED REFERENCES
+        // =============================================================================
+
         private VisualElement _panel;
         private Label _heroName;
         private Label _heroTitle;
@@ -29,6 +43,8 @@ namespace VeilBreakers.UI.CharacterSelect
         private Label _championBrand;
         private Label _championRole;
         private VisualElement _championSection;
+        private VisualElement _heroLoreSection;
+        private Label _heroBackstory;
 
         private void OnEnable()
         {
@@ -61,6 +77,11 @@ namespace VeilBreakers.UI.CharacterSelect
             _championBrand = root.Q<Label>("champion-brand");
             _championRole = root.Q<Label>("champion-role");
             _championSection = root.Q<VisualElement>("champion-section");
+            _heroLoreSection = root.Q<VisualElement>(kHeroLoreSection);
+            _heroBackstory = root.Q<Label>(kHeroBackstory);
+
+            Debug.Assert(_heroBackstory != null, $"[HeroDataPanel] Missing element: {kHeroBackstory}");
+            Debug.Assert(_heroLoreSection != null, $"[HeroDataPanel] Missing element: {kHeroLoreSection}");
         }
 
         private void HandleHeroChanged(int index, HeroData data, HeroDisplayConfig config)
@@ -79,7 +100,7 @@ namespace VeilBreakers.UI.CharacterSelect
             string synergy = data.GetPrimaryBrand().ToString().ToUpper();
             if (!string.IsNullOrEmpty(data.synergy_explanation))
             {
-                synergy = data.synergy_explanation.ToUpper();
+                synergy = data.synergy_explanation;
             }
             CharSelectUIUtils.SetLabel(_heroSynergy, synergy);
 
@@ -92,8 +113,26 @@ namespace VeilBreakers.UI.CharacterSelect
             // Champion monster
             PopulateChampion(data);
 
+            // Backstory / Lore
+            PopulateBackstory(data);
+
             // Panel slide-in animation
             CharSelectUIUtils.AnimatePanel(_panel);
+        }
+
+        private void PopulateBackstory(HeroData data)
+        {
+            bool hasBackstory = !string.IsNullOrEmpty(data.backstory);
+
+            if (_heroLoreSection != null)
+            {
+                if (hasBackstory)
+                    _heroLoreSection.RemoveFromClassList("hidden");
+                else
+                    _heroLoreSection.AddToClassList("hidden");
+            }
+
+            CharSelectUIUtils.SetLabel(_heroBackstory, data.backstory ?? string.Empty);
         }
 
         private void PopulateChampion(HeroData data)
