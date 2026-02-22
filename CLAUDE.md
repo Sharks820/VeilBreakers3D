@@ -243,10 +243,48 @@ For each phase:
   7. Move to next phase
 ```
 
-### Branch Strategy
-- `master` -- production, untouched during rebuild
-- `feature/character-select-rebuild` -- main feature branch
-- `feature/cs-phase-N` -- per-phase branches (merged into feature branch on approval)
+### Git Management Framework (MANDATORY)
+
+**Branch Structure:**
+- `master` -- production truth, always deployable
+- `develop` -- integration branch, mirrors master after each feature merge
+- `feature/<name>` -- feature branches (created from master, merged back to master)
+- `feature/cs-phase-N` -- per-phase branches (optional, for large phases)
+
+**Rules (Non-Negotiable):**
+1. **Never commit directly to master in isolation** -- all branches must be synced after every commit
+2. **After EVERY commit**, run: `git branch -f develop master && git branch -f feature/<active> master`
+3. **After EVERY push**, push ALL active branches: `git push origin master develop feature/<active>`
+4. **Delete stale branches immediately** -- no orphan branches sitting around
+5. **Clean up remote branches** that are merged or abandoned
+6. **Verify branch alignment** before ending any session: all active branches must point to same commit
+
+**Session Start Checklist:**
+```bash
+# 1. Verify clean state
+git status -s
+# 2. Verify branch alignment
+git branch -v
+# 3. If misaligned, fix immediately with git branch -f
+```
+
+**Session End Checklist:**
+```bash
+# 1. Commit all pending work
+# 2. Sync all branches to master
+git branch -f develop master
+git branch -f feature/<active> master
+# 3. Push everything
+git push origin master develop feature/<active>
+# 4. Verify clean
+git status -s  # must be empty
+git branch -v  # all active branches same commit
+```
+
+**Stale Branch Cleanup:**
+- Old feature branches that are fully merged → delete local + remote
+- Phase branches after phase completion → delete
+- Claude review branches → delete after review complete
 
 ### Escalation Rule
 If Sonnet fails on a task after 2 attempts, Opus takes over implementation immediately. No negotiation.
