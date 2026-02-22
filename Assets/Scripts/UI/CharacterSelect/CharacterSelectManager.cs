@@ -58,6 +58,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private bool _isTransitioning;
         private bool _isEmbarking;
         private bool _isInitialized;
+        private static readonly WaitForSeconds kTransitionWait = new WaitForSeconds(0.15f);
         private VisualElement _root;
         private string _currentThemeClass;
 
@@ -334,12 +335,12 @@ namespace VeilBreakers.UI.CharacterSelect
             UpdateEmbarkText();
 
             // Transition completes after USS animations finish
-            StartCoroutine(EndTransitionAfterDelay(0.15f));
+            StartCoroutine(EndTransitionAfterDelay());
         }
 
-        private IEnumerator EndTransitionAfterDelay(float delay)
+        private IEnumerator EndTransitionAfterDelay()
         {
-            yield return new WaitForSeconds(delay);
+            yield return kTransitionWait;
             _isTransitioning = false;
         }
 

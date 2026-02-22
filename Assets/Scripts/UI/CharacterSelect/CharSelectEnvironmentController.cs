@@ -94,16 +94,21 @@ namespace VeilBreakers.UI.CharacterSelect
             float ny = (mousePos.y / Mathf.Max(Screen.height, 1)) * 2f - 1f;
 
             _targetParallax = new Vector2(nx, ny);
-            _currentParallax = Vector2.Lerp(_currentParallax, _targetParallax, Time.deltaTime * _lerpSpeed);
+            Vector2 newParallax = Vector2.Lerp(_currentParallax, _targetParallax, Time.deltaTime * _lerpSpeed);
+
+            // Skip style writes when parallax has converged (< 0.01px movement)
+            if ((newParallax - _currentParallax).sqrMagnitude < 0.0001f) return;
+            _currentParallax = newParallax;
 
             // Apply offsets with different intensities for depth effect
-            if (_parallaxDeep != null) 
+            // translate is GPU-accelerated with UsageHints.DynamicTransform — no layout recalc
+            if (_parallaxDeep != null)
                 SetTranslate(_parallaxDeep, _currentParallax * _deepIntensity);
-            
-            if (_parallaxFog != null) 
+
+            if (_parallaxFog != null)
                 SetTranslate(_parallaxFog, _currentParallax * _fogIntensity);
-            
-            if (_vignette != null) 
+
+            if (_vignette != null)
                 SetTranslate(_vignette, _currentParallax * _vignetteIntensity);
         }
 
