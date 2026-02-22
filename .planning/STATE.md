@@ -5,21 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** The game flow from title screen through character selection to gameplay must work flawlessly with AAA-quality visuals at every step.
-**Current focus:** Phase 2 - Layout & Structure
+**Current focus:** Phase 2 complete; ready for Phase 3
 
 ## Current Position
 
-Phase: 2 of 5 (Layout & Structure)
-Plan: 1 of 2 in current phase
-Status: Executing
-Last activity: 2026-02-22 -- Plan 02-01 complete (UXML backstory, USS overflow, EnsureFullScreenLayout removed)
+Phase: 2 of 5 (Layout & Structure) -- COMPLETE
+Plan: 2 of 2 in current phase -- COMPLETE
+Status: Phase 2 done
+Last activity: 2026-02-22 -- Plan 02-02 complete (USS transitions rewritten, UsageHints set)
 
 Progress: [####......] 40%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
+- Total plans completed: 5
 - Average duration: ~1 session
 - Total execution time: ~4.25 hours
 
@@ -28,10 +28,10 @@ Progress: [####......] 40%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Foundation Cleanup | 3/3 | ~4h | ~1.3h |
-| 2. Layout & Structure | 1/2 | ~15m | ~15m |
+| 2. Layout & Structure | 2/2 | ~35m | ~17.5m |
 
 **Recent Trend:**
-- Last 3 plans: 01-02 Foundation Cleanup, 01-03 Bug Fix Audit, 02-01 Layout Fix
+- Last 3 plans: 01-03 Bug Fix Audit, 02-01 Layout Fix, 02-02 Transition Audit
 - Trend: Accelerating
 
 *Updated after each plan completion*
@@ -54,6 +54,9 @@ Recent decisions affecting current work:
 - [Phase 2]: EnsureFullScreenLayout() C# hack removed; USS-only layout via TemplateContainer flex-grow + absolute positioning
 - [Phase 2]: Synergy explanation text kept natural-case (no .ToUpper()) to prevent text overflow on long strings
 - [Phase 2]: Lore section uses .hidden class pattern (matching champion-section) for conditional visibility
+- [Phase 2]: All USS transitions rewritten to explicit GPU-safe properties; zero transition: all remaining
+- [Phase 2]: UsageHints.DynamicTransform set with |= to preserve existing DynamicColor flags
+- [Phase 2]: stat-bar-fill width transition removed; deferred to Phase 4 PrimeTween scaleX
 
 ### Pending Todos
 
@@ -64,10 +67,10 @@ None yet.
 - Audio assets (navigation SFX, per-hero ambient tracks) do not exist yet -- needed for Phase 3 and Phase 4
 - 3D hero model assets blocked on art pipeline -- deferred to v2 (ART category), does not block v1 roadmap
 - Glass-morphism / backdrop-filter support in Unity 6000.3.6f1 is unconfirmed -- validate during Phase 4 planning
-- Pre-existing Editor error: CharSelectSceneWiringUtility.cs references missing TransitionController type -- non-blocking, Editor-only
+- ~~Pre-existing Editor error: CharSelectSceneWiringUtility.cs references missing TransitionController type~~ -- FIXED (d8441b3)
 
 ## Session Continuity
 
 Last session: 2026-02-22
-Stopped at: Completed 02-01-PLAN.md (Layout Fix). Ready for 02-02-PLAN.md.
+Stopped at: Phase 2 complete. Ready for Phase 3 planning.
 Resume file: None

@@ -13,7 +13,7 @@ Rebuild the Character Select screen from a functional-but-buggy state to AAA vis
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation Cleanup** - Eliminate dead code, consolidate stylesheets, fix legacy APIs, and harden event safety
-- [ ] **Phase 2: Layout & Structure** - Fix all panel sizing, text overlap, and content rendering at target resolution
+- [x] **Phase 2: Layout & Structure** - Fix all panel sizing, text overlap, and content rendering at target resolution
 - [ ] **Phase 3: Controller Behavior** - Wire all interactions, fix performance, add gamepad support and audio feedback
 - [ ] **Phase 4: Visual Amplification** - Install PrimeTween, add cinematic animations, post-processing, and atmospheric effects
 - [ ] **Phase 5: Game Flow & Quality** - Verify end-to-end flow, polish title screen, pass full quality audit
@@ -51,7 +51,7 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md -- Fix UXML structure, content population, panel sizing, and remove EnsureFullScreenLayout hack
-- [ ] 02-02-PLAN.md -- Rewrite USS transition declarations and set UsageHints.DynamicTransform on animated elements
+- [x] 02-02-PLAN.md -- Rewrite USS transition declarations and set UsageHints.DynamicTransform on animated elements
 
 ### Phase 3: Controller Behavior
 **Goal**: All 6 buttons and carousel navigation functional with both mouse and gamepad, zero GC allocations during hero switch, proper async embark flow with error handling
@@ -111,7 +111,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation Cleanup | 3/3 | Complete | 2026-02-22 |
-| 2. Layout & Structure | 0/2 | Planned | - |
+| 2. Layout & Structure | 2/2 | Complete | 2026-02-22 |
 | 3. Controller Behavior | 0/3 | Not started | - |
 | 4. Visual Amplification | 0/3 | Not started | - |
 | 5. Game Flow & Quality | 0/2 | Not started | - |
