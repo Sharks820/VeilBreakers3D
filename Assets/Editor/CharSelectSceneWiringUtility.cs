@@ -182,7 +182,6 @@ namespace VeilBreakers.Editor
             systemGO.AddComponent<HeroStatsPanelController>();
             var carousel = systemGO.AddComponent<CarouselController>();
             systemGO.AddComponent<CharSelectEnvironmentController>();
-            systemGO.AddComponent<TransitionController>();
 
             // Wire UIDocument references via SerializedObject
             WireUIDocumentReferences(systemGO, uiDoc);
