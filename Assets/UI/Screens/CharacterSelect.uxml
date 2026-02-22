@@ -176,6 +176,13 @@
             <ui:Label name="hero-index" class="hero-index" text="1 / 4" />
         </ui:VisualElement>
 
+        <!-- CINEMATIC OVERLAY SYSTEM (Highest Z-Index) -->
+        <ui:VisualElement name="cinematic-overlays" class="cinematic-overlays">
+            <ui:VisualElement name="scanlines" class="overlay-scanlines" />
+            <ui:VisualElement name="vignette-outer" class="overlay-vignette" />
+            <ui:VisualElement name="veil-glow" class="overlay-veil-glow" />
+        </ui:VisualElement>
+
         <!-- CONFIRM POPUP OVERLAY -->
         <ui:VisualElement name="confirm-overlay" class="confirm-overlay hidden">
             <ui:VisualElement name="confirm-popup" class="glass-panel confirm-popup">

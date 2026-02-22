@@ -39,6 +39,7 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_uiDocument == null) { Debug.LogError("[HeroStatsPanelController] UIDocument not assigned!"); return; }
             var root = _uiDocument.rootVisualElement;
             _panel = root.Q<VisualElement>("stats-panel");
+            if (_panel != null) _panel.usageHints = UsageHints.DynamicTransform;
 
             for (int i = 0; i < kStatNames.Length; i++)
             {
@@ -58,7 +59,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             UpdateStatBars(data);
             UpdateAbilities(data);
-            AnimatePanel();
+            CharSelectUIUtils.AnimatePanel(_panel);
         }
 
         private void UpdateStatBars(HeroData data)
@@ -129,11 +130,5 @@ namespace VeilBreakers.UI.CharacterSelect
             return string.Join(" ", parts);
         }
 
-        private void AnimatePanel()
-        {
-            if (_panel == null) return;
-            _panel.AddToClassList("panel-hidden");
-            _panel.schedule.Execute(() => _panel.RemoveFromClassList("panel-hidden")).ExecuteLater(50);
-        }
     }
 }

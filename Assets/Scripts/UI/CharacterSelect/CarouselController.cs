@@ -11,16 +11,17 @@ namespace VeilBreakers.UI.CharacterSelect
     /// Manages the hero carousel strip at the bottom.
     /// Dynamically generates hero cards from data, handles selection highlighting,
     /// and updates hero index label.
+    /// Communicates navigation intent via CharSelectEvents (no direct Manager reference).
     /// </summary>
     public class CarouselController : MonoBehaviour
     {
         [SerializeField] private UIDocument _uiDocument;
-        [SerializeField] private CharacterSelectManager _manager;
 
         private VisualElement _carouselStrip;
         private Label _heroIndex;
         private readonly List<VisualElement> _heroCards = new List<VisualElement>();
         private int _selectedIndex = -1;
+        private int _heroCount;
 
         private void OnEnable()
         {
@@ -50,7 +51,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void BuildCarousel()
         {
-            if (_carouselStrip == null || _manager == null) return;
+            if (_carouselStrip == null) return;
 
             _carouselStrip.Clear();
             _heroCards.Clear();
@@ -59,6 +60,7 @@ namespace VeilBreakers.UI.CharacterSelect
             if (!GameDatabase.HasInstance) return;
             var heroes = GameDatabase.Instance.GetAllHeroes();
             heroes.Sort((a, b) => string.Compare(a.hero_id, b.hero_id, StringComparison.Ordinal));
+            _heroCount = heroes.Count;
 
             for (int i = 0; i < heroes.Count; i++)
             {
@@ -136,7 +138,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void OnCardClicked(int index)
         {
-            _manager?.NavigateToHero(index);
+            CharSelectEvents.RaiseNavigationRequested(index);
         }
 
         private void HandleHeroChanged(int index, HeroData data, HeroDisplayConfig config)
@@ -165,7 +167,7 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (_heroIndex != null)
             {
-                _heroIndex.text = $"HERO {index + 1} / {_manager?.HeroCount ?? 0}";
+                _heroIndex.text = $"HERO {index + 1} / {_heroCount}";
             }
         }
     }

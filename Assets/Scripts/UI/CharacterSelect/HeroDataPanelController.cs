@@ -46,6 +46,7 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_uiDocument == null) { Debug.LogError("[HeroDataPanelController] UIDocument not assigned!"); return; }
             var root = _uiDocument.rootVisualElement;
             _panel = root.Q<VisualElement>("hero-info-panel");
+            if (_panel != null) _panel.usageHints = UsageHints.DynamicTransform;
             _heroName = root.Q<Label>("hero-name");
             _heroTitle = root.Q<Label>("hero-title");
             _heroQuote = root.Q<Label>("hero-quote");
@@ -67,32 +68,32 @@ namespace VeilBreakers.UI.CharacterSelect
             if (data == null) return;
 
             // Identity
-            SetLabel(_heroName, (data.display_name ?? data.hero_id ?? "UNKNOWN").ToUpper());
-            SetLabel(_heroTitle, data.title?.ToUpper() ?? "");
-            SetLabel(_heroQuote, !string.IsNullOrEmpty(data.quote) ? $"\"{data.quote}\"" : "");
+            CharSelectUIUtils.SetLabel(_heroName, (data.display_name ?? data.hero_id ?? "UNKNOWN").ToUpper());
+            CharSelectUIUtils.SetLabel(_heroTitle, data.title?.ToUpper() ?? "");
+            CharSelectUIUtils.SetLabel(_heroQuote, !string.IsNullOrEmpty(data.quote) ? $"\"{data.quote}\"" : "");
 
             // Class info
-            SetLabel(_heroPath, data.GetPrimaryPath().ToString());
-            SetLabel(_heroRole, data.role?.ToUpper() ?? "");
+            CharSelectUIUtils.SetLabel(_heroPath, data.GetPrimaryPath().ToString());
+            CharSelectUIUtils.SetLabel(_heroRole, data.role?.ToUpper() ?? "");
             // Synergy: show primary brand + synergy explanation if available
             string synergy = data.GetPrimaryBrand().ToString().ToUpper();
             if (!string.IsNullOrEmpty(data.synergy_explanation))
             {
                 synergy = data.synergy_explanation.ToUpper();
             }
-            SetLabel(_heroSynergy, synergy);
+            CharSelectUIUtils.SetLabel(_heroSynergy, synergy);
 
             // Starter stats
-            SetLabel(_statHp, data.base_hp.ToString());
-            SetLabel(_statAtk, data.base_attack.ToString());
-            SetLabel(_statDef, data.base_defense.ToString());
-            SetLabel(_statSpd, data.base_speed.ToString());
+            CharSelectUIUtils.SetLabel(_statHp, data.base_hp.ToString());
+            CharSelectUIUtils.SetLabel(_statAtk, data.base_attack.ToString());
+            CharSelectUIUtils.SetLabel(_statDef, data.base_defense.ToString());
+            CharSelectUIUtils.SetLabel(_statSpd, data.base_speed.ToString());
 
             // Champion monster
             PopulateChampion(data);
 
             // Panel slide-in animation
-            AnimatePanel();
+            CharSelectUIUtils.AnimatePanel(_panel);
         }
 
         private void PopulateChampion(HeroData data)
@@ -109,29 +110,15 @@ namespace VeilBreakers.UI.CharacterSelect
             var monster = GameDatabase.Instance.GetMonster(data.starter_monster_id);
             if (monster == null)
             {
-                SetLabel(_championName, data.starter_monster_id);
-                SetLabel(_championBrand, "");
-                SetLabel(_championRole, "");
+                CharSelectUIUtils.SetLabel(_championName, data.starter_monster_id);
+                CharSelectUIUtils.SetLabel(_championBrand, "");
+                CharSelectUIUtils.SetLabel(_championRole, "");
                 return;
             }
 
-            SetLabel(_championName, monster.display_name ?? data.starter_monster_id);
-            SetLabel(_championBrand, monster.GetPrimaryBrand().ToString());
-            SetLabel(_championRole, monster.GetPrimaryBrand().ToString().ToUpper());
-        }
-
-        private void AnimatePanel()
-        {
-            if (_panel == null) return;
-
-            // Trigger slide-in by toggling class
-            _panel.AddToClassList("panel-hidden");
-            _panel.schedule.Execute(() => _panel.RemoveFromClassList("panel-hidden")).ExecuteLater(50);
-        }
-
-        private static void SetLabel(Label label, string text)
-        {
-            if (label != null) label.text = text;
+            CharSelectUIUtils.SetLabel(_championName, monster.display_name ?? data.starter_monster_id);
+            CharSelectUIUtils.SetLabel(_championBrand, monster.GetPrimaryBrand().ToString());
+            CharSelectUIUtils.SetLabel(_championRole, monster.GetPrimaryBrand().ToString().ToUpper());
         }
     }
 }

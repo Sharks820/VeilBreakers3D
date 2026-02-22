@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
+using VeilBreakers.Core;
 using VeilBreakers.Data;
 
 namespace VeilBreakers.UI.CharacterSelect
@@ -84,8 +85,8 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (_parallaxRoot == null) return;
 
-            // Normalize mouse position (-1 to 1)
-            Vector2 mousePos = Input.mousePosition;
+            // Normalize mouse position (-1 to 1) using New Input System
+            Vector2 mousePos = InputManager.HasInstance ? InputManager.Instance.MousePosition : Vector2.zero;
             float nx = (mousePos.x / Screen.width) * 2f - 1f;
             float ny = (mousePos.y / Screen.height) * 2f - 1f;
 

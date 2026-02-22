@@ -4,7 +4,7 @@
    ============================================================================= */
 
 /* Import theme variables */
-@import url("VeilBreakersTheme.uss");
+@import url("project://database/Assets/UI/Styles/VeilBreakersTheme.uss");
 
 /* =============================================================================
    CORE VARIABLES - Character Select Specific
@@ -18,9 +18,9 @@
     --transition-hero-switch: 1.2s;
     
     /* Easing Functions */
-    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-    --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
-    --ease-in-out-quint: cubic-bezier(0.86, 0, 0.07, 1);
+    --ease-out-expo: ease-out-back;
+    --ease-out-back: ease-out-back;
+    --ease-in-out-quint: ease-in-out-cubic;
     
     /* Spacing */
     --panel-margin: 40px;
@@ -29,12 +29,6 @@
     /* Glass Effect */
     --glass-bg: rgba(8, 8, 14, 0.92);
     --glass-border: rgba(255, 255, 255, 0.1);
-    --glass-blur: 12px;
-    
-    /* Glow Effects */
-    --glow-primary: 0 0 20px var(--hero-primary);
-    --glow-secondary: 0 0 40px var(--hero-secondary);
-    --glow-text: 0 0 20px rgba(235, 225, 215, 0.8);
 }
 
 /* =============================================================================
@@ -148,11 +142,7 @@ TemplateContainer {
     height: 100%;
     z-index: 4;
     pointer-events: none;
-    background: radial-gradient(ellipse at 50% 50%,
-        transparent 0%,
-        transparent 50%,
-        rgba(0, 0, 0, 0.5) 85%,
-        rgba(0, 0, 0, 0.85) 100%);
+    background-color: rgba(0, 0, 0, 0.15);
 }
 
 /* =============================================================================
@@ -161,8 +151,6 @@ TemplateContainer {
 
 .glass-panel {
     background-color: var(--glass-bg);
-    backdrop-filter: blur(var(--glass-blur));
-    -unity-backdrop-filter: blur(var(--glass-blur));
     border-width: 1px;
     border-color: var(--hero-accent, rgba(120, 120, 140, 0.2));
     border-radius: 12px;
@@ -170,15 +158,10 @@ TemplateContainer {
     border-top-color: rgba(255, 255, 255, 0.15);
     border-left-color: rgba(255, 255, 255, 0.1);
     transition: all var(--transition-normal) var(--ease-out-expo);
-    /* High-end depth shadow */
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6),
-                inset 0 0 12px rgba(255, 255, 255, 0.05);
 }
 
 .glass-panel:hover {
     border-color: var(--hero-accent, rgba(180, 180, 200, 0.4));
-    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.8),
-                inset 0 0 16px rgba(255, 255, 255, 0.08);
 }
 
 /* =============================================================================
@@ -211,9 +194,6 @@ TemplateContainer {
     color: rgb(255, 255, 255);
     letter-spacing: 8px;
     margin-bottom: 2px;
-    /* Hero-themed text glow */
-    text-shadow: 0 0 12px var(--hero-glow),
-                 0 0 24px rgba(255, 255, 255, 0.15);
     transition: all var(--transition-slow) var(--ease-out-expo);
 }
 
@@ -222,9 +202,7 @@ TemplateContainer {
     color: var(--hero-accent);
     letter-spacing: 5px;
     margin-bottom: 16px;
-    text-transform: uppercase;
     opacity: 0.8;
-    /* Rim-lit text effect */
     border-left-width: 2px;
     border-left-color: var(--hero-primary);
     padding-left: 12px;
@@ -292,6 +270,37 @@ TemplateContainer {
     -unity-font-style: bold;
 }
 
+/* Champion Section */
+.champion-section {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top-width: 1px;
+    border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.champion-name {
+    font-size: 16px;
+    -unity-font-style: bold;
+    color: var(--hero-accent);
+    margin-bottom: 8px;
+}
+
+.champion-tags {
+    flex-direction: row;
+}
+
+.tag {
+    font-size: 9px;
+    color: rgba(200, 200, 215, 0.9);
+    letter-spacing: 2px;
+    background-color: rgba(255, 255, 255, 0.06);
+    padding: 4px 10px;
+    margin-right: 8px;
+    border-radius: 3px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
 /* =============================================================================
    CENTER: HERO STAGE
    ============================================================================= */
@@ -311,6 +320,21 @@ TemplateContainer {
     -unity-background-scale-mode: scale-to-fit;
 }
 
+.drag-hint {
+    position: absolute;
+    bottom: 12%;
+    font-size: 10px;
+    color: rgba(200, 200, 215, 0.25);
+    letter-spacing: 6px;
+    -unity-text-align: middle-center;
+    align-self: center;
+    transition: opacity 0.6s;
+}
+
+.drag-hint:hover {
+    opacity: 0;
+}
+
 .hero-aura-container {
     position: absolute;
     width: 60%;
@@ -324,10 +348,8 @@ TemplateContainer {
     position: absolute;
     width: 100%;
     height: 100%;
-    background: radial-gradient(ellipse at 50% 100%,
-        var(--hero-glow) 0%,
-        transparent 70%);
-    opacity: 0.6;
+    background-color: var(--hero-glow, rgba(40, 20, 60, 0.08));
+    opacity: 0.3;
 }
 
 /* =============================================================================
@@ -389,12 +411,8 @@ TemplateContainer {
 
 .stat-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, 
-        var(--hero-primary) 0%, 
-        var(--hero-secondary) 100%);
+    background-color: var(--hero-primary, rgb(200, 60, 60));
     border-radius: 7px;
-    /* Glowing fill effect */
-    box-shadow: 0 0 16px var(--hero-glow);
     transition: width var(--transition-slow) var(--ease-out-expo);
 }
 
@@ -423,9 +441,7 @@ TemplateContainer {
     border-radius: 6px;
     border-left-width: 4px;
     border-left-color: var(--hero-primary);
-    /* High-end hover shadow transition */
     transition: all var(--transition-fast) var(--ease-out-expo);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .ability-slot:hover {
@@ -433,8 +449,6 @@ TemplateContainer {
     translate: 8px 0;
     border-left-color: #FFF;
     border-left-width: 6px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5),
-                inset 0 0 8px rgba(255, 255, 255, 0.1);
 }
 
 /* =============================================================================
@@ -492,17 +506,12 @@ TemplateContainer {
     justify-content: center;
     transition: all var(--transition-normal) var(--ease-out-back);
     opacity: 0.7;
-    /* Layered glass depth shadow */
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5),
-                inset 0 0 8px rgba(255, 255, 255, 0.03);
 }
 
 .hero-card:hover {
     scale: 1.15;
     opacity: 1;
     border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7),
-                inset 0 0 12px rgba(255, 255, 255, 0.05);
 }
 
 .hero-card.selected {
@@ -510,9 +519,6 @@ TemplateContainer {
     opacity: 1;
     border-width: 2px;
     border-color: var(--hero-primary);
-    box-shadow: 0 0 32px var(--hero-glow),
-                0 0 64px var(--hero-glow),
-                inset 0 0 16px rgba(255, 255, 255, 0.08);
 }
 
 .hero-card-initial {
@@ -527,14 +533,29 @@ TemplateContainer {
 
 .hero-card.selected .hero-card-initial {
     opacity: 1;
-    text-shadow: 0 0 16px var(--hero-glow);
 }
 
 .hero-card-name {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.8);
     letter-spacing: 2px;
-    text-transform: uppercase;
+}
+
+.hero-card-role {
+    font-size: 8px;
+    color: rgba(200, 200, 215, 0.5);
+    letter-spacing: 3px;
+    margin-top: 4px;
+}
+
+.hero-card.teaser {
+    border-color: rgba(255, 255, 255, 0.06);
+    opacity: 0.3;
+}
+
+.hero-card.teaser:hover {
+    opacity: 0.5;
+    scale: 1.05;
 }
 
 /* =============================================================================
@@ -561,23 +582,17 @@ TemplateContainer {
     position: absolute;
     width: 100%;
     height: 100%;
-    background: linear-gradient(180deg, rgba(35, 30, 45, 0.98) 0%, rgba(10, 8, 15, 0.98) 100%);
+    background-color: rgba(20, 16, 28, 0.98);
     border-width: 2px;
     border-color: var(--hero-primary);
     border-radius: 6px;
-    /* Hero-themed shadow */
-    box-shadow: 0 0 24px var(--hero-glow),
-                inset 0 0 16px rgba(255, 255, 255, 0.05);
     transition: all var(--transition-normal) var(--ease-out-expo);
 }
 
 .btn-embark:hover .embark-hex-bg {
     border-color: #FFF;
     border-width: 3px;
-    background: linear-gradient(180deg, rgba(50, 45, 65, 0.98) 0%, rgba(20, 15, 25, 0.98) 100%);
-    box-shadow: 0 0 48px var(--hero-glow),
-                0 0 96px var(--hero-glow),
-                inset 0 0 24px rgba(255, 255, 255, 0.1);
+    background-color: rgba(35, 30, 45, 0.98);
     scale: 1.05;
 }
 
@@ -586,21 +601,18 @@ TemplateContainer {
     -unity-font-style: bold;
     color: #FFF;
     letter-spacing: 12px;
-    text-shadow: 0 0 16px rgba(255, 255, 255, 0.3);
     transition: all var(--transition-normal);
 }
 
 .btn-embark:hover .embark-text {
     color: #FFF;
     scale: 1.1;
-    text-shadow: 0 0 24px #FFF;
 }
 
 .embark-subtitle {
     font-size: 10px;
     color: rgba(200, 200, 215, 0.5);
     letter-spacing: 4px;
-    text-transform: uppercase;
     margin-top: 4px;
 }
 
@@ -614,13 +626,7 @@ TemplateContainer {
 }
 
 .embark-glow.breathing {
-    opacity: 0.1;
-    animation: breathing 4s ease-in-out infinite;
-}
-
-@keyframes breathing {
-    0%, 100% { opacity: 0.05; scale: 1; }
-    50% { opacity: 0.15; scale: 1.02; }
+    opacity: 0.08;
 }
 
 /* =============================================================================
@@ -629,16 +635,17 @@ TemplateContainer {
 
 .btn-back {
     position: absolute;
-    top: var(--panel-margin);
-    left: var(--panel-margin);
-    padding: 12px 24px;
-    background-color: rgba(0, 0, 0, 0.4);
+    top: 12px;
+    left: 12px;
+    padding: 10px 20px;
+    background-color: rgba(0, 0, 0, 0.5);
     border-width: 1px;
     border-color: rgba(255, 255, 255, 0.1);
     border-radius: 4px;
     color: rgba(255, 255, 255, 0.5);
     font-size: 12px;
     letter-spacing: 4px;
+    z-index: 50;
     transition: all var(--transition-fast);
 }
 
@@ -718,4 +725,45 @@ TemplateContainer {
 .btn-cancel {
     background-color: rgba(255, 255, 255, 0.05);
     color: rgba(255, 255, 255, 0.5);
+}
+
+/* =============================================================================
+   CINEMATIC OVERLAY SYSTEM
+   Subtle post-process layers for atmospheric depth
+   ============================================================================= */
+
+.cinematic-overlays {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 90;
+    pointer-events: none;
+}
+
+/* Scanline overlay: subtle horizontal stripe pattern */
+.overlay-scanlines {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.02);
+    opacity: 0.3;
+}
+
+/* Vignette: darken edges for cinematic focus */
+.overlay-vignette {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-width: 80px;
+    border-color: rgba(0, 0, 0, 0.25);
+}
+
+/* Veil glow: hero-tinted ambient haze */
+.overlay-veil-glow {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: var(--hero-glow, rgba(40, 20, 60, 0.03));
+    opacity: 0.15;
+    transition: background-color 1.2s ease-in-out-cubic;
 }

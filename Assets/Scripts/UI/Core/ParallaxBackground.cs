@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using VeilBreakers.Core;
 
 namespace VeilBreakers.UI.Core
 {
@@ -126,8 +127,8 @@ namespace VeilBreakers.UI.Core
 
         private void UpdateParallax()
         {
-            // Get mouse position relative to screen center
-            Vector2 mousePos = Input.mousePosition;
+            // Get mouse position relative to screen center (New Input System)
+            Vector2 mousePos = InputManager.HasInstance ? InputManager.Instance.MousePosition : Vector2.zero;
             Vector2 normalizedOffset = new Vector2(
                 (mousePos.x - _screenCenter.x) / _screenCenter.x,
                 (mousePos.y - _screenCenter.y) / _screenCenter.y

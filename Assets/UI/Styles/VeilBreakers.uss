@@ -11,6 +11,12 @@
     -unity-font-definition: url('project://database/Assets/UI/Fonts/Arial.ttf?fileID=12800000&guid=a1b82bd02ca673443b4c4c64ac746061&type=3');
 }
 
+/* UIDocument wraps UXML content in a TemplateContainer — it must grow to
+   fill the viewport, otherwise all content collapses to zero height. */
+TemplateContainer {
+    flex-grow: 1;
+}
+
 /* =============================================================================
    CSS VARIABLES (Custom Properties)
    ============================================================================= */

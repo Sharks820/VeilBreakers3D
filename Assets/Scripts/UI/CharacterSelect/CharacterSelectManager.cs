@@ -27,6 +27,18 @@ namespace VeilBreakers.UI.CharacterSelect
         private const string kStarterTownLocation = "StarterTown";
         private const string kConfigPath = "CharacterSelect/HeroDisplayConfigs/";
 
+        // UI element name constants (prevent silent null from typos)
+        private const string kBtnPrev = "btn-prev";
+        private const string kBtnNext = "btn-next";
+        private const string kBtnBack = "btn-back";
+        private const string kBtnEmbark = "btn-embark";
+        private const string kBtnConfirm = "btn-confirm";
+        private const string kBtnCancel = "btn-cancel";
+        private const string kConfirmOverlay = "confirm-overlay";
+        private const string kEmbarkText = "embark-text";
+        private const string kConfirmDescription = "confirm-description";
+        private const string kEmbarkGlow = "embark-glow";
+
         // =============================================================================
         // SERIALIZED FIELDS
         // =============================================================================
@@ -83,11 +95,19 @@ namespace VeilBreakers.UI.CharacterSelect
             // Ensure critical singletons exist (handles direct scene entry without Bootstrap)
             EnsureCriticalManagers();
 
+            // Safety net: clear events on scene unload to prevent memory leaks
+            SceneManager.sceneUnloaded += OnSceneUnloaded;
+
+            // Listen for navigation requests from sub-controllers (e.g. CarouselController)
+            CharSelectEvents.OnNavigationRequested += NavigateToHero;
+
             StartCoroutine(InitializeWhenReady());
         }
 
         private void OnDisable()
         {
+            SceneManager.sceneUnloaded -= OnSceneUnloaded;
+            CharSelectEvents.OnNavigationRequested -= NavigateToHero;
             StopAllCoroutines();
             _isTransitioning = false;
             _isInitialized = false;
@@ -95,6 +115,11 @@ namespace VeilBreakers.UI.CharacterSelect
         }
 
         private void OnDestroy()
+        {
+            CharSelectEvents.ClearAll();
+        }
+
+        private void OnSceneUnloaded(Scene scene)
         {
             CharSelectEvents.ClearAll();
         }
@@ -232,16 +257,25 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_uiDocument == null) { Debug.LogError("[CharacterSelectManager] UIDocument not assigned!"); return; }
             _root = _uiDocument.rootVisualElement;
 
-            _btnPrev = _root.Q<Button>("btn-prev");
-            _btnNext = _root.Q<Button>("btn-next");
-            _btnBack = _root.Q<Button>("btn-back");
-            _btnEmbark = _root.Q<Button>("btn-embark");
-            _btnConfirm = _root.Q<Button>("btn-confirm");
-            _btnCancel = _root.Q<Button>("btn-cancel");
-            _confirmOverlay = _root.Q<VisualElement>("confirm-overlay");
-            _embarkText = _root.Q<Label>("embark-text");
-            _confirmDescription = _root.Q<Label>("confirm-description");
-            _embarkGlow = _root.Q<VisualElement>("embark-glow");
+            _btnPrev = _root.Q<Button>(kBtnPrev);
+            _btnNext = _root.Q<Button>(kBtnNext);
+            _btnBack = _root.Q<Button>(kBtnBack);
+            _btnEmbark = _root.Q<Button>(kBtnEmbark);
+            _btnConfirm = _root.Q<Button>(kBtnConfirm);
+            _btnCancel = _root.Q<Button>(kBtnCancel);
+            _confirmOverlay = _root.Q<VisualElement>(kConfirmOverlay);
+            _embarkText = _root.Q<Label>(kEmbarkText);
+            _confirmDescription = _root.Q<Label>(kConfirmDescription);
+            _embarkGlow = _root.Q<VisualElement>(kEmbarkGlow);
+
+            // Assert critical elements exist -- surfaces typos immediately instead of silent null
+            Debug.Assert(_btnPrev != null, $"[CharSelectManager] Element '{kBtnPrev}' not found in UXML");
+            Debug.Assert(_btnNext != null, $"[CharSelectManager] Element '{kBtnNext}' not found in UXML");
+            Debug.Assert(_btnBack != null, $"[CharSelectManager] Element '{kBtnBack}' not found in UXML");
+            Debug.Assert(_btnEmbark != null, $"[CharSelectManager] Element '{kBtnEmbark}' not found in UXML");
+            Debug.Assert(_btnConfirm != null, $"[CharSelectManager] Element '{kBtnConfirm}' not found in UXML");
+            Debug.Assert(_btnCancel != null, $"[CharSelectManager] Element '{kBtnCancel}' not found in UXML");
+            Debug.Assert(_confirmOverlay != null, $"[CharSelectManager] Element '{kConfirmOverlay}' not found in UXML");
         }
 
         private void BindUI()
@@ -287,8 +321,6 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 ApplyThemeClass(_heroList[0].hero_id);
                 CharSelectEvents.RaiseHeroChanged(0, _heroList[0], CurrentConfig);
-                CharSelectEvents.RaiseHeroDataLoaded(_heroList[0]);
-                CharSelectEvents.RaiseHeroSelected();
                 UpdateEmbarkText();
             }
         }
@@ -310,8 +342,6 @@ namespace VeilBreakers.UI.CharacterSelect
 
             ApplyThemeClass(_heroList[_currentIndex].hero_id);
             CharSelectEvents.RaiseHeroChanged(_currentIndex, _heroList[_currentIndex], CurrentConfig);
-            CharSelectEvents.RaiseHeroDataLoaded(_heroList[_currentIndex]);
-            CharSelectEvents.RaiseHeroSelected();
             UpdateEmbarkText();
 
             // Transition completes after USS animations finish
