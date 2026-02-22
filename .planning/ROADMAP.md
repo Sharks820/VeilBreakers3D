@@ -30,7 +30,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Navigating away from Character Select and returning does not leak event subscriptions -- `CharSelectEvents.ClearAll()` fires reliably on scene unload
   4. All `Q()` element queries are backed by named constants with `Debug.Assert` validation -- a typo in an element name produces an immediate, obvious error instead of silent null
   5. CarouselController communicates navigation intent through events, not direct Manager references; TransitionController is either functional or deleted; duplicate `AnimatePanel()` logic exists in one shared location
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [x] 01-01: USS Consolidation (INFRA-01)
@@ -47,11 +47,11 @@ Plans:
   3. Hero stories text and synergy/brands section populate with correct data for each hero when navigating through all 4 characters
   4. No panel content overflows or clips at 1920x1080; `EnsureFullScreenLayout()` hack is deleted and UXML root configuration handles full-screen layout natively
   5. All USS transitions animate only transform and color properties (no width, height, margin, left, top); all animated VisualElements have `UsageHints.DynamicTransform` set at creation time
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md -- Fix UXML structure, content population, panel sizing, and remove EnsureFullScreenLayout hack
+- [ ] 02-02-PLAN.md -- Rewrite USS transition declarations and set UsageHints.DynamicTransform on animated elements
 
 ### Phase 3: Controller Behavior
 **Goal**: All 6 buttons and carousel navigation functional with both mouse and gamepad, zero GC allocations during hero switch, proper async embark flow with error handling
@@ -111,7 +111,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation Cleanup | 3/3 | Complete | 2026-02-22 |
-| 2. Layout & Structure | 0/2 | Not started | - |
+| 2. Layout & Structure | 0/2 | Planned | - |
 | 3. Controller Behavior | 0/3 | Not started | - |
 | 4. Visual Amplification | 0/3 | Not started | - |
 | 5. Game Flow & Quality | 0/2 | Not started | - |
