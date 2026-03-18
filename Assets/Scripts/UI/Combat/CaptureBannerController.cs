@@ -58,6 +58,7 @@ namespace VeilBreakers.UI.Combat
         private Vector3 _baseScale;
         private Coroutine _animationCoroutine;
         private bool _isSubscribed = false;
+        private CaptureManager _cachedCaptureManager; // Cached for safe unsubscribe if singleton destroyed first
 
         // Cached WaitForSeconds to avoid GC allocation
         private WaitForSeconds _flashDurationWait;
@@ -397,24 +398,30 @@ namespace VeilBreakers.UI.Combat
         {
             if (_isSubscribed || CaptureManager.Instance == null) return;
 
-            CaptureManager.Instance.OnTargetMarked += HandleTargetMarked;
-            CaptureManager.Instance.OnTargetUnmarked += HandleTargetUnmarked;
-            CaptureManager.Instance.OnBindThresholdReached += HandleThresholdReached;
-            CaptureManager.Instance.OnCapturePhaseStarted += HandleCapturePhaseStarted;
-            CaptureManager.Instance.OnCapturePhaseEnded += HandleCapturePhaseEnded;
+            _cachedCaptureManager = CaptureManager.Instance;
+            _cachedCaptureManager.OnTargetMarked += HandleTargetMarked;
+            _cachedCaptureManager.OnTargetUnmarked += HandleTargetUnmarked;
+            _cachedCaptureManager.OnBindThresholdReached += HandleThresholdReached;
+            _cachedCaptureManager.OnCapturePhaseStarted += HandleCapturePhaseStarted;
+            _cachedCaptureManager.OnCapturePhaseEnded += HandleCapturePhaseEnded;
 
             _isSubscribed = true;
         }
 
         private void UnsubscribeFromCaptureEvents()
         {
-            if (!_isSubscribed || CaptureManager.Instance == null) return;
+            if (!_isSubscribed) return;
 
-            CaptureManager.Instance.OnTargetMarked -= HandleTargetMarked;
-            CaptureManager.Instance.OnTargetUnmarked -= HandleTargetUnmarked;
-            CaptureManager.Instance.OnBindThresholdReached -= HandleThresholdReached;
-            CaptureManager.Instance.OnCapturePhaseStarted -= HandleCapturePhaseStarted;
-            CaptureManager.Instance.OnCapturePhaseEnded -= HandleCapturePhaseEnded;
+            // Use cached reference to safely unsubscribe even if singleton was destroyed
+            if (_cachedCaptureManager != null)
+            {
+                _cachedCaptureManager.OnTargetMarked -= HandleTargetMarked;
+                _cachedCaptureManager.OnTargetUnmarked -= HandleTargetUnmarked;
+                _cachedCaptureManager.OnBindThresholdReached -= HandleThresholdReached;
+                _cachedCaptureManager.OnCapturePhaseStarted -= HandleCapturePhaseStarted;
+                _cachedCaptureManager.OnCapturePhaseEnded -= HandleCapturePhaseEnded;
+                _cachedCaptureManager = null;
+            }
 
             _isSubscribed = false;
         }

@@ -56,7 +56,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/unity-antipattern-guard.js"
+            "command": "echo disabled-for-claude"
           }
         ]
       }

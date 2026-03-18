@@ -622,11 +622,13 @@ namespace VeilBreakers.Managers
             if (a == null || b == null || a.Length != b.Length)
                 return false;
 
+            // Constant-time comparison to prevent timing side-channel attacks on HMAC
+            int diff = 0;
             for (int i = 0; i < a.Length; i++)
             {
-                if (a[i] != b[i]) return false;
+                diff |= a[i] ^ b[i];
             }
-            return true;
+            return diff == 0;
         }
 
         private static bool HasSufficientDiskSpace(string path, long requiredBytes)

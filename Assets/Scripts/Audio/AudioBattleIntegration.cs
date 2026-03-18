@@ -31,6 +31,7 @@ namespace VeilBreakers.Audio
         private bool _isSubscribed = false;
         private float _lastPlayerHealthPercent = 1f;
         private Coroutine _subscribeRetryCoroutine = null;
+        private BattleManager _cachedBattleManager; // Cached for safe unsubscribe if singleton destroyed first
 
         // Pre-allocated list for enemy IDs
         private List<string> _enemyIds = new List<string>(8);
@@ -85,11 +86,12 @@ namespace VeilBreakers.Audio
                 return;
             }
 
-            BattleManager.Instance.OnBattleStart += HandleBattleStart;
-            BattleManager.Instance.OnBattleEnd += HandleBattleEnd;
-            BattleManager.Instance.OnDamageDealt += HandleDamageDealt;
-            BattleManager.Instance.OnHealApplied += HandleHealApplied;
-            BattleManager.Instance.OnCombatantDeath += HandleCombatantDeath;
+            _cachedBattleManager = BattleManager.Instance;
+            _cachedBattleManager.OnBattleStart += HandleBattleStart;
+            _cachedBattleManager.OnBattleEnd += HandleBattleEnd;
+            _cachedBattleManager.OnDamageDealt += HandleDamageDealt;
+            _cachedBattleManager.OnHealApplied += HandleHealApplied;
+            _cachedBattleManager.OnCombatantDeath += HandleCombatantDeath;
 
             _isSubscribed = true;
             Debug.Log("[AudioBattleIntegration] Subscribed to battle events");
@@ -103,13 +105,15 @@ namespace VeilBreakers.Audio
             if (!_isSubscribed) return;
             _isSubscribed = false;
 
-            if (BattleManager.Instance == null) return;
+            // Use cached reference to safely unsubscribe even if singleton was destroyed
+            if (_cachedBattleManager == null) return;
 
-            BattleManager.Instance.OnBattleStart -= HandleBattleStart;
-            BattleManager.Instance.OnBattleEnd -= HandleBattleEnd;
-            BattleManager.Instance.OnDamageDealt -= HandleDamageDealt;
-            BattleManager.Instance.OnHealApplied -= HandleHealApplied;
-            BattleManager.Instance.OnCombatantDeath -= HandleCombatantDeath;
+            _cachedBattleManager.OnBattleStart -= HandleBattleStart;
+            _cachedBattleManager.OnBattleEnd -= HandleBattleEnd;
+            _cachedBattleManager.OnDamageDealt -= HandleDamageDealt;
+            _cachedBattleManager.OnHealApplied -= HandleHealApplied;
+            _cachedBattleManager.OnCombatantDeath -= HandleCombatantDeath;
+            _cachedBattleManager = null;
         }
 
         /// <summary>

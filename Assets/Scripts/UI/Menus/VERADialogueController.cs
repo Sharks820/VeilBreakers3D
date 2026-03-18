@@ -65,6 +65,7 @@ namespace VeilBreakers.UI.Menus
         private WaitForSeconds _waitTypeSpeed;
         private WaitForSeconds _waitGlitchedTypeSpeed;
         private WaitForSeconds _waitGlitchPulse;
+        private VERAVoiceController _cachedVoiceController; // Cached for safe unsubscribe
 
         // =============================================================================
         // UI ELEMENTS
@@ -202,21 +203,24 @@ namespace VeilBreakers.UI.Menus
         {
             if (VERAVoiceController.Instance != null)
             {
-                VERAVoiceController.Instance.OnVeilIntegrityChanged += OnVeilIntegrityChanged;
-                VERAVoiceController.Instance.OnGlitchTriggered += OnGlitchTriggered;
+                _cachedVoiceController = VERAVoiceController.Instance;
+                _cachedVoiceController.OnVeilIntegrityChanged += OnVeilIntegrityChanged;
+                _cachedVoiceController.OnGlitchTriggered += OnGlitchTriggered;
 
                 // Get initial integrity
-                _currentVeilIntegrity = VERAVoiceController.Instance.VeilIntegrity;
+                _currentVeilIntegrity = _cachedVoiceController.VeilIntegrity;
                 UpdateIntegrityDisplay();
             }
         }
 
         private void UnsubscribeFromVERA()
         {
-            if (VERAVoiceController.Instance != null)
+            // Use cached reference to safely unsubscribe even if singleton was destroyed
+            if (_cachedVoiceController != null)
             {
-                VERAVoiceController.Instance.OnVeilIntegrityChanged -= OnVeilIntegrityChanged;
-                VERAVoiceController.Instance.OnGlitchTriggered -= OnGlitchTriggered;
+                _cachedVoiceController.OnVeilIntegrityChanged -= OnVeilIntegrityChanged;
+                _cachedVoiceController.OnGlitchTriggered -= OnGlitchTriggered;
+                _cachedVoiceController = null;
             }
         }
 

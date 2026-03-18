@@ -49,6 +49,8 @@ namespace VeilBreakers.Capture
 
         // Currently active bind attempts (ally -> target)
         private readonly Dictionary<Combatant, Combatant> _bindAttempts = new Dictionary<Combatant, Combatant>();
+        // O(1) lookup for bind targets (avoids Dictionary.ContainsValue O(n) scan in Update)
+        private readonly HashSet<Combatant> _bindTargetSet = new HashSet<Combatant>();
 
         // Bind start times for duration tracking (ally -> start time)
         private readonly Dictionary<Combatant, float> _bindStartTimes = new Dictionary<Combatant, float>();
@@ -102,6 +104,7 @@ namespace VeilBreakers.Capture
             // subscribers unsubscribe in their own OnDestroy/OnDisable.
             // Only clear runtime state.
             _bindAttempts.Clear();
+            _bindTargetSet.Clear();
             _bindStartTimes.Clear();
         }
 
@@ -131,6 +134,7 @@ namespace VeilBreakers.Capture
             _markedTargets.Clear();
             _boundMonsters.Clear();
             _bindAttempts.Clear();
+            _bindTargetSet.Clear();
             _bindStartTimes.Clear();
             _inCapturePhase = false;
             _currentCaptureTarget = null;
@@ -315,7 +319,7 @@ namespace VeilBreakers.Capture
                 float currentHP = target.MaxHP > 0 ? target.CurrentHP / (float)target.MaxHP : 0f;
 
                 // Check if reached threshold
-                if (currentHP <= threshold && !_bindAttempts.ContainsValue(target))
+                if (currentHP <= threshold && !_bindTargetSet.Contains(target))
                 {
                     OnBindThresholdReached?.Invoke(target, threshold);
                     // Ally will pick up the bind attempt
@@ -375,6 +379,8 @@ namespace VeilBreakers.Capture
             // Clean up completed attempts
             foreach (var ally in _iterationBuffer)
             {
+                if (_bindAttempts.TryGetValue(ally, out var boundTarget))
+                    _bindTargetSet.Remove(boundTarget);
                 _bindAttempts.Remove(ally);
                 _bindStartTimes.Remove(ally);
             }
@@ -388,6 +394,7 @@ namespace VeilBreakers.Capture
             if (ally == null || _bindAttempts.ContainsKey(ally)) return;
 
             _bindAttempts[ally] = target;
+            _bindTargetSet.Add(target);
             _bindStartTimes[ally] = Time.time;
 
             OnBindStarted?.Invoke(target, ally);
@@ -708,6 +715,7 @@ namespace VeilBreakers.Capture
                 _bindAttempts.Remove(ally);
                 _bindStartTimes.Remove(ally);
             }
+            _bindTargetSet.Remove(monster);
             _iterationBuffer.Clear();
 
             // Disable the game object (monster is removed from battle)

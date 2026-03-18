@@ -99,23 +99,23 @@ namespace VeilBreakers.Systems
             if (championPath == Path.UNCHAINED)
                 return SynergyTier.NEUTRAL;
 
-            // Check for weak brands (anti-synergy)
+            // Check for weak brands (anti-synergy) — Array.IndexOf to avoid LINQ allocation
             if (PathWeakBrands.TryGetValue(championPath, out var weakBrands))
             {
                 foreach (var brand in partyBrands)
                 {
-                    if (weakBrands.Contains(brand))
+                    if (System.Array.IndexOf(weakBrands, brand) >= 0)
                         return SynergyTier.ANTI;
                 }
             }
 
-            // Count strong synergy matches
+            // Count strong synergy matches — Array.IndexOf to avoid LINQ allocation
             int matchCount = 0;
             if (PathSynergyBrands.TryGetValue(championPath, out var strongBrands))
             {
                 foreach (var brand in partyBrands)
                 {
-                    if (strongBrands.Contains(brand))
+                    if (System.Array.IndexOf(strongBrands, brand) >= 0)
                         matchCount++;
                 }
             }
