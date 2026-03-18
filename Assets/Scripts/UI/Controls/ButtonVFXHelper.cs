@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -194,6 +195,7 @@ namespace VeilBreakers.UI.Controls
 
         /// <summary>
         /// Apply a "shimmer" effect that moves across the button surface.
+        /// Detects pointer entry side for directional sweep.
         /// </summary>
         public static void AddShimmer(Button button, float interval = 3f)
         {
@@ -201,37 +203,81 @@ namespace VeilBreakers.UI.Controls
             shimmer.style.position = Position.Absolute;
             shimmer.style.top = 0;
             shimmer.style.bottom = 0;
-            shimmer.style.width = 50;
-            shimmer.style.left = -50;
-            shimmer.style.opacity = 0.3f;
-            shimmer.style.backgroundImage = null; // Would be a gradient texture
+            shimmer.style.width = 30;
+            shimmer.style.left = -30;
+            shimmer.style.opacity = 0;
+            shimmer.style.backgroundColor = new Color(1f, 0.85f, 0.6f, 0.25f);
+            shimmer.style.rotate = new Rotate(15f);
+            shimmer.style.scale = new Scale(new Vector2(1f, 1.5f));
             shimmer.pickingMode = PickingMode.Ignore;
+
+            shimmer.style.transitionProperty = new List<StylePropertyName>
+            {
+                new StylePropertyName("left"),
+                new StylePropertyName("opacity")
+            };
+            shimmer.style.transitionDuration = new List<TimeValue>
+            {
+                new TimeValue(0.6f, TimeUnit.Second),
+                new TimeValue(0.15f, TimeUnit.Second)
+            };
+            shimmer.style.transitionTimingFunction = new List<EasingFunction>
+            {
+                new EasingFunction(EasingMode.EaseInOut),
+                new EasingFunction(EasingMode.EaseOut)
+            };
 
             button.Insert(0, shimmer);
 
-            // Schedule shimmer animation
-            void DoShimmer()
+            // Track pointer entry direction for directional shimmer on hover
+            bool _sweepRightToLeft = false;
+            button.RegisterCallback<PointerEnterEvent>(evt =>
             {
                 float buttonWidth = button.resolvedStyle.width;
-                shimmer.style.left = -50;
+                if (buttonWidth <= 0) return;
+                float centerX = buttonWidth * 0.5f;
+                _sweepRightToLeft = evt.localPosition.x > centerX;
 
-                button.schedule.Execute(() =>
-                {
-                    shimmer.style.left = buttonWidth + 50;
-                }).ExecuteLater(50);
+                // Trigger a quick hover shimmer in the entry direction
+                DoDirectionalShimmer(shimmer, button, _sweepRightToLeft);
+            });
 
-                // Reset for next shimmer
-                button.schedule.Execute(() =>
-                {
-                    shimmer.style.left = -50;
-                }).ExecuteLater(800);
+            // Periodic auto-shimmer (always left-to-right)
+            void DoAutoShimmer()
+            {
+                DoDirectionalShimmer(shimmer, button, false);
             }
 
-            // Initial shimmer after a delay
-            button.schedule.Execute(DoShimmer).ExecuteLater((long)(interval * 1000));
+            button.schedule.Execute(DoAutoShimmer).ExecuteLater((long)(interval * 1000));
+            button.schedule.Execute(DoAutoShimmer).Every((long)(interval * 1000));
+        }
 
-            // Repeat
-            button.schedule.Execute(DoShimmer).Every((long)(interval * 1000));
+        private static void DoDirectionalShimmer(VisualElement shimmer, Button button, bool rightToLeft)
+        {
+            float buttonWidth = button.resolvedStyle.width;
+            if (buttonWidth <= 0) return;
+
+            float startPos = rightToLeft ? buttonWidth + 30 : -30;
+            float endPos = rightToLeft ? -30 : buttonWidth + 30;
+
+            shimmer.style.left = startPos;
+            shimmer.style.opacity = 0;
+
+            button.schedule.Execute(() =>
+            {
+                shimmer.style.opacity = 1f;
+                shimmer.style.left = endPos;
+            }).ExecuteLater(50);
+
+            button.schedule.Execute(() =>
+            {
+                shimmer.style.opacity = 0;
+            }).ExecuteLater(600);
+
+            button.schedule.Execute(() =>
+            {
+                shimmer.style.left = startPos;
+            }).ExecuteLater(800);
         }
 
         /// <summary>
@@ -256,6 +302,200 @@ namespace VeilBreakers.UI.Controls
             }
 
             button.schedule.Execute(DoPulse).Every(800);
+        }
+
+        // =============================================================================
+        // CLICK BURST EFFECT
+        // =============================================================================
+
+        /// <summary>
+        /// Add a radial particle burst on button click for impact feedback.
+        /// Spawns small dots that radiate outward from click point and fade.
+        /// </summary>
+        public static void AddClickBurst(Button button, int particleCount = 8)
+        {
+            button.RegisterCallback<ClickEvent>(evt =>
+            {
+                SpawnClickBurst(button, evt.localPosition, particleCount);
+            });
+        }
+
+        private static void SpawnClickBurst(VisualElement host, Vector2 origin, int count)
+        {
+            float angleStep = 360f / count;
+            for (int i = 0; i < count; i++)
+            {
+                var particle = new VisualElement();
+                particle.style.position = Position.Absolute;
+                float size = UnityEngine.Random.Range(3f, 6f);
+                particle.style.width = size;
+                particle.style.height = size;
+                particle.style.borderTopLeftRadius = size;
+                particle.style.borderTopRightRadius = size;
+                particle.style.borderBottomLeftRadius = size;
+                particle.style.borderBottomRightRadius = size;
+                particle.style.backgroundColor = new Color(1f, 0.7f, 0.3f, 0.9f);
+                particle.style.left = origin.x - size * 0.5f;
+                particle.style.top = origin.y - size * 0.5f;
+                particle.style.opacity = 1f;
+                particle.pickingMode = PickingMode.Ignore;
+
+                // CSS transitions for outward movement + fade
+                particle.style.transitionProperty = new List<StylePropertyName>
+                {
+                    new StylePropertyName("translate"),
+                    new StylePropertyName("opacity"),
+                    new StylePropertyName("scale")
+                };
+                particle.style.transitionDuration = new List<TimeValue>
+                {
+                    new TimeValue(0.4f, TimeUnit.Second),
+                    new TimeValue(0.35f, TimeUnit.Second),
+                    new TimeValue(0.4f, TimeUnit.Second)
+                };
+                particle.style.transitionTimingFunction = new List<EasingFunction>
+                {
+                    new EasingFunction(EasingMode.EaseOut),
+                    new EasingFunction(EasingMode.EaseIn),
+                    new EasingFunction(EasingMode.EaseOut)
+                };
+
+                host.Add(particle);
+
+                float angle = (angleStep * i + UnityEngine.Random.Range(-15f, 15f)) * Mathf.Deg2Rad;
+                float distance = UnityEngine.Random.Range(25f, 50f);
+                float tx = Mathf.Cos(angle) * distance;
+                float ty = Mathf.Sin(angle) * distance;
+
+                host.schedule.Execute(() =>
+                {
+                    particle.style.translate = new Translate(tx, ty);
+                    particle.style.opacity = 0;
+                    particle.style.scale = new Scale(new Vector2(0.3f, 0.3f));
+                }).ExecuteLater(10);
+
+                host.schedule.Execute(() =>
+                {
+                    particle.RemoveFromHierarchy();
+                }).ExecuteLater(500);
+            }
+        }
+
+        // =============================================================================
+        // BREATHING EFFECT
+        // =============================================================================
+
+        /// <summary>
+        /// Add a gentle idle breathing (scale oscillation) to a visual element.
+        /// Creates organic, alive feel for static UI containers.
+        /// </summary>
+        public static void AddBreathing(VisualElement element, float amplitude = 0.008f, float periodMs = 3000f)
+        {
+            if (element == null) return;
+
+            float startTime = Time.time;
+
+            element.schedule.Execute(() =>
+            {
+                float elapsed = Time.time - startTime;
+                float t = Mathf.Sin(elapsed * (2f * Mathf.PI) / (periodMs / 1000f));
+                float scale = 1f + t * amplitude;
+                element.style.scale = new Scale(new Vector2(scale, scale));
+            }).Every(50);
+        }
+
+        // =============================================================================
+        // CHARGE LINE EFFECT
+        // =============================================================================
+
+        /// <summary>
+        /// Add a charge line that fills along the bottom edge when button is held down.
+        /// Provides visual feedback for prolonged press interactions.
+        /// </summary>
+        public static void AddChargeEffect(Button button)
+        {
+            var chargeLine = new VisualElement();
+            chargeLine.style.position = Position.Absolute;
+            chargeLine.style.bottom = 0;
+            chargeLine.style.left = 0;
+            chargeLine.style.height = 2;
+            chargeLine.style.width = Length.Percent(0);
+            chargeLine.style.backgroundColor = new Color(1f, 0.6f, 0.2f, 0.9f);
+            chargeLine.style.opacity = 0;
+            chargeLine.pickingMode = PickingMode.Ignore;
+
+            chargeLine.style.transitionProperty = new List<StylePropertyName>
+            {
+                new StylePropertyName("width"),
+                new StylePropertyName("opacity")
+            };
+            chargeLine.style.transitionDuration = new List<TimeValue>
+            {
+                new TimeValue(0.8f, TimeUnit.Second),
+                new TimeValue(0.15f, TimeUnit.Second)
+            };
+            chargeLine.style.transitionTimingFunction = new List<EasingFunction>
+            {
+                new EasingFunction(EasingMode.EaseOut),
+                new EasingFunction(EasingMode.EaseOut)
+            };
+
+            button.Add(chargeLine);
+
+            bool isCharging = false;
+
+            button.RegisterCallback<PointerDownEvent>(evt =>
+            {
+                isCharging = true;
+                chargeLine.style.opacity = 1;
+                chargeLine.style.width = Length.Percent(100);
+            });
+
+            button.RegisterCallback<PointerUpEvent>(evt =>
+            {
+                if (!isCharging) return;
+                isCharging = false;
+
+                // If charge completed (give it time to fill), trigger a pulse
+                chargeLine.style.width = Length.Percent(0);
+                chargeLine.style.opacity = 0;
+            });
+
+            button.RegisterCallback<PointerLeaveEvent>(evt =>
+            {
+                if (!isCharging) return;
+                isCharging = false;
+                chargeLine.style.width = Length.Percent(0);
+                chargeLine.style.opacity = 0;
+            });
+        }
+
+        // =============================================================================
+        // FOCUS EFFECT (GAMEPAD/KEYBOARD)
+        // =============================================================================
+
+        /// <summary>
+        /// Add premium focus effects for gamepad/keyboard navigation.
+        /// Applies glow border, scale bump, and shimmer on FocusIn.
+        /// </summary>
+        public static void AddFocusEffect(Button button)
+        {
+            button.RegisterCallback<FocusInEvent>(evt =>
+            {
+                button.style.scale = new Scale(new Vector2(1.04f, 1.04f));
+                button.style.borderTopColor = new Color(1f, 0.7f, 0.3f, 0.9f);
+                button.style.borderBottomColor = new Color(1f, 0.7f, 0.3f, 0.9f);
+                button.style.borderLeftColor = new Color(1f, 0.7f, 0.3f, 0.9f);
+                button.style.borderRightColor = new Color(1f, 0.7f, 0.3f, 0.9f);
+                button.AddToClassList("vb-button-hover-glow");
+            });
+
+            button.RegisterCallback<FocusOutEvent>(evt =>
+            {
+                button.style.scale = new Scale(Vector2.one);
+                button.RemoveFromClassList("vb-button-hover-glow");
+                // Border colors will be restored by hover callbacks
+            });
         }
     }
 

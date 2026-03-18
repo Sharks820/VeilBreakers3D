@@ -81,6 +81,9 @@ namespace VeilBreakers.UI.Menus
 
         private void Start()
         {
+            // Wire up UIAnimationController singleton for animated settings transitions
+            _animator = UIAnimationController.Instance;
+
             InitializeUI();
             // NOTE: Entrance animation is handled by MainMenuController.PlayEntranceAnimation()
             // which has the full AAA elastic/bounce effects. Running both simultaneously
@@ -410,15 +413,33 @@ namespace VeilBreakers.UI.Menus
             _settingsOpen = true;
 
             _settingsOverlay.style.display = DisplayStyle.Flex;
-            _animator?.FadeIn(_settingsOverlay, 0.3f);
 
-            // Also animate the settings panel
-            var settingsPanel = _settingsOverlay.Q<VisualElement>("settings-panel");
-            if (settingsPanel != null)
+            // Dim and defocus background elements for cinematic settings overlay
+            DimBackground(true);
+
+            if (_animator != null)
             {
-                settingsPanel.style.opacity = 0;
-                settingsPanel.style.scale = new Scale(new Vector2(0.95f, 0.95f));
-                _animator?.FadeScaleIn(settingsPanel, 0.95f, 0.3f);
+                _animator.FadeIn(_settingsOverlay, 0.3f);
+
+                // Also animate the settings panel
+                var settingsPanel = _settingsOverlay.Q<VisualElement>("settings-panel");
+                if (settingsPanel != null)
+                {
+                    settingsPanel.style.opacity = 0;
+                    settingsPanel.style.scale = new Scale(new Vector2(0.95f, 0.95f));
+                    _animator.FadeScaleIn(settingsPanel, 0.95f, 0.3f);
+                }
+            }
+            else
+            {
+                // Fallback: show immediately when no animator is available
+                _settingsOverlay.style.opacity = 1;
+                var settingsPanel = _settingsOverlay.Q<VisualElement>("settings-panel");
+                if (settingsPanel != null)
+                {
+                    settingsPanel.style.opacity = 1;
+                    settingsPanel.style.scale = new Scale(Vector2.one);
+                }
             }
         }
 
@@ -427,9 +448,14 @@ namespace VeilBreakers.UI.Menus
             if (!_settingsOpen) return;
             _settingsOpen = false;
 
+            // Restore background elements
+            DimBackground(false);
+
             var settingsPanel = _settingsOverlay.Q<VisualElement>("settings-panel");
             if (_animator == null)
             {
+                // Fallback: hide immediately when no animator is available
+                _settingsOverlay.style.opacity = 0;
                 _settingsOverlay.style.display = DisplayStyle.None;
                 return;
             }
@@ -450,6 +476,66 @@ namespace VeilBreakers.UI.Menus
                 {
                     _settingsOverlay.style.display = DisplayStyle.None;
                 });
+            }
+        }
+
+        /// <summary>
+        /// Dims/restores background elements when settings overlay opens/closes.
+        /// Creates a cinematic defocus illusion (UI Toolkit has no native blur).
+        /// </summary>
+        private void DimBackground(bool dim)
+        {
+            var mainContainer = _root?.Q<VisualElement>("main-container");
+            var rootBg = _root?.Q<VisualElement>("root-background");
+
+            const float kDimDuration = 0.3f;
+
+            if (dim)
+            {
+                // Reduce opacity and slightly scale background for defocus illusion
+                if (mainContainer != null)
+                {
+                    mainContainer.style.transitionProperty = new List<StylePropertyName>
+                    {
+                        new("opacity"), new("scale")
+                    };
+                    mainContainer.style.transitionDuration = new List<TimeValue>
+                    {
+                        new(kDimDuration, TimeUnit.Second), new(kDimDuration, TimeUnit.Second)
+                    };
+                    mainContainer.style.opacity = 0.3f;
+                    mainContainer.style.scale = new Scale(new Vector2(1.02f, 1.02f));
+                }
+
+                // Darken root backdrop
+                if (rootBg != null)
+                {
+                    rootBg.style.transitionProperty = new List<StylePropertyName>
+                    {
+                        new("background-color")
+                    };
+                    rootBg.style.transitionDuration = new List<TimeValue>
+                    {
+                        new(kDimDuration, TimeUnit.Second)
+                    };
+                    rootBg.style.backgroundColor = new Color(0.02f, 0.01f, 0.03f, 0.7f);
+                }
+            }
+            else
+            {
+                // Restore
+                if (mainContainer != null)
+                {
+                    mainContainer.style.opacity = 1f;
+                    mainContainer.style.scale = new Scale(Vector2.one);
+                }
+
+                if (rootBg != null)
+                {
+                    Color backdrop = _rootBackdropColor;
+                    backdrop.a = Mathf.Clamp01(_rootBackdropAlpha);
+                    rootBg.style.backgroundColor = new StyleColor(backdrop);
+                }
             }
         }
 

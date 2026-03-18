@@ -95,11 +95,13 @@ namespace VeilBreakers.UI.Core
 
         private void Start()
         {
-            // DISABLE ALL hover block effects
+            // Sheet skins require a sprite sheet asset - disable until art is ready.
             _enableButtonSheetSkins = false;
+            // Hover lava fill and molten highlight are too noisy without art tuning - keep disabled.
             _enableHoverLavaFill = false;
-            _enableMoltenHighlight = false;  // This was the sweeping block - DISABLED
-            _enableCracks = false;
+            _enableMoltenHighlight = false;
+            // Cracks add visual depth on hover - safe to enable without sheet mode.
+            _enableCracks = true;
 
             if (_uiDocument == null)
             {

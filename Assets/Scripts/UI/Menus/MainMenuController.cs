@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 using VeilBreakers.Core;
 using VeilBreakers.Managers;
 using VeilBreakers.UI.Controls;
+using VeilBreakers.UI.Core;
 
 namespace VeilBreakers.UI.Menus
 {
@@ -53,6 +54,7 @@ namespace VeilBreakers.UI.Menus
         private List<Button> _cachedButtons; // Cache for entrance animation (avoid ToList allocation)
         private bool _hasValidSave;
         private bool _initialized;
+        private TitleScreenVFX _titleVfx; // For logo aura hover response
         private bool _eventsBound;
         private int _continueSlot = SaveManager.kNoneSlot;
 
@@ -358,20 +360,88 @@ namespace VeilBreakers.UI.Menus
 
         private IEnumerator TransitionToScene(string sceneName)
         {
-            // Fade out (0.5 seconds)
-            if (_root != null)
+            if (_root == null)
             {
-                _root.style.opacity = 1f;
-                float elapsed = 0f;
-                float duration = 0.5f;
-                while (elapsed < duration)
+                SceneManager.LoadScene(sceneName);
+                yield break;
+            }
+
+            // Phase 1: Buttons scatter outward (0.25s)
+            if (_buttonContainer != null)
+            {
+                var buttons = _buttonContainer.Query<Button>().ToList();
+                for (int i = 0; i < buttons.Count; i++)
                 {
-                    elapsed += Time.unscaledDeltaTime;
-                    _root.style.opacity = 1f - (elapsed / duration);
-                    yield return null;
+                    var btn = buttons[i];
+                    btn.style.transitionProperty = new List<StylePropertyName>
+                    {
+                        new("opacity"), new("translate")
+                    };
+                    btn.style.transitionDuration = new List<TimeValue>
+                    {
+                        new(0.25f, TimeUnit.Second), new(0.25f, TimeUnit.Second)
+                    };
+                    btn.style.transitionTimingFunction = new List<EasingFunction>
+                    {
+                        new(EasingMode.EaseIn), new(EasingMode.EaseIn)
+                    };
+                    // Alternate buttons slide left/right
+                    float slideX = (i % 2 == 0) ? -80f : 80f;
+                    btn.style.translate = new Translate(slideX, 0);
+                    btn.style.opacity = 0f;
                 }
             }
 
+            // Phase 1b: Title scales up and fades
+            if (_titleSection != null)
+            {
+                _titleSection.style.transitionProperty = new List<StylePropertyName>
+                {
+                    new("opacity"), new("scale")
+                };
+                _titleSection.style.transitionDuration = new List<TimeValue>
+                {
+                    new(0.3f, TimeUnit.Second), new(0.3f, TimeUnit.Second)
+                };
+                _titleSection.style.opacity = 0f;
+                _titleSection.style.scale = new Scale(new Vector2(1.1f, 1.1f));
+            }
+
+            yield return new WaitForSecondsRealtime(0.25f);
+
+            // Phase 2: Flash white overlay (0.15s in, 0.2s out)
+            var flash = new VisualElement();
+            flash.name = "transition-flash";
+            flash.pickingMode = PickingMode.Ignore;
+            flash.style.position = Position.Absolute;
+            flash.style.left = 0;
+            flash.style.top = 0;
+            flash.style.right = 0;
+            flash.style.bottom = 0;
+            flash.style.backgroundColor = new Color(1f, 0.85f, 0.6f, 0f);
+            _root.Add(flash);
+
+            // Flash in
+            flash.style.transitionProperty = new List<StylePropertyName> { new("background-color") };
+            flash.style.transitionDuration = new List<TimeValue> { new(0.15f, TimeUnit.Second) };
+            flash.schedule.Execute(() =>
+            {
+                flash.style.backgroundColor = new Color(1f, 0.9f, 0.7f, 0.6f);
+            });
+
+            yield return new WaitForSecondsRealtime(0.15f);
+
+            // Phase 3: Flash fades to black (0.4s)
+            flash.style.transitionDuration = new List<TimeValue> { new(0.4f, TimeUnit.Second) };
+            flash.style.backgroundColor = new Color(0f, 0f, 0f, 1f);
+
+            // Also fade entire root content behind the flash
+            _root.style.transitionProperty = new List<StylePropertyName> { new("opacity") };
+            _root.style.transitionDuration = new List<TimeValue> { new(0.35f, TimeUnit.Second) };
+
+            yield return new WaitForSecondsRealtime(0.45f);
+
+            // Load scene
             var asyncOp = SceneManager.LoadSceneAsync(sceneName);
             while (asyncOp != null && !asyncOp.isDone)
             {
@@ -532,6 +602,10 @@ namespace VeilBreakers.UI.Menus
             _buttonContainer = _root.Q<VisualElement>("button-container");
             _cachedButtons = _buttonContainer != null ? _buttonContainer.Query<Button>().ToList() : new List<Button>();
 
+            // Initialize hover callback dictionaries (needed by PlayEntranceAnimation)
+            _hoverEnterCallbacks = new Dictionary<Button, EventCallback<MouseEnterEvent>>();
+            _hoverLeaveCallbacks = new Dictionary<Button, EventCallback<MouseLeaveEvent>>();
+
             // Set version
             if (_versionLabel != null)
             {
@@ -540,6 +614,12 @@ namespace VeilBreakers.UI.Menus
 
             // Bind button events
             BindEvents();
+
+            // Cache TitleScreenVFX for logo hover response
+            _titleVfx = FindAnyObjectByType<TitleScreenVFX>();
+
+            // Play entrance animations and apply button VFX
+            PlayEntranceAnimation();
 
             // Check for save
             StartCoroutine(RefreshContinueButton());
@@ -652,6 +732,15 @@ namespace VeilBreakers.UI.Menus
                     // Apply AAA VFX (ripple, glow overlay, press effect)
                     ButtonVFXHelper.ApplyEffects(button, ButtonVFXOptions.Silent);
 
+                    // Click burst for impact feedback on all buttons
+                    ButtonVFXHelper.AddClickBurst(button);
+
+                    // Charge line effect for held buttons
+                    ButtonVFXHelper.AddChargeEffect(button);
+
+                    // Gamepad/keyboard focus choreography
+                    ButtonVFXHelper.AddFocusEffect(button);
+
                     // Add shimmer to primary buttons for extra polish
                     bool isPrimary = button.name == "btn-new-game" || button.name == "btn-continue";
                     if (isPrimary)
@@ -661,6 +750,16 @@ namespace VeilBreakers.UI.Menus
                     }
                 }
             }
+
+            // Idle breathing on containers for organic feel
+            if (_titleSection != null)
+                ButtonVFXHelper.AddBreathing(_titleSection, 0.006f, 4000f);
+            if (_buttonContainer != null)
+                ButtonVFXHelper.AddBreathing(_buttonContainer, 0.004f, 3500f);
+
+            var logoContainer = _root?.Q<VisualElement>("logo-container");
+            if (logoContainer != null)
+                ButtonVFXHelper.AddBreathing(logoContainer, 0.008f, 3000f);
         }
 
         private IEnumerator FadeInElement(VisualElement element, float duration, float delay)
@@ -797,18 +896,18 @@ namespace VeilBreakers.UI.Menus
 
             bool isPrimary = button.name == "btn-new-game" || button.name == "btn-continue";
 
-            // Define colors programmatically (matches USS molten orange theme)
-            // Primary buttons: Molten orange
-            Color primaryBaseColor = new Color(180f / 255f, 80f / 255f, 20f / 255f, 1f);
-            Color primaryHoverColor = new Color(210f / 255f, 100f / 255f, 30f / 255f, 1f);
-            Color primaryBorderBase = new Color(255f / 255f, 140f / 255f, 50f / 255f, 1f);
-            Color primaryBorderHover = new Color(255f / 255f, 180f / 255f, 80f / 255f, 1f);
+            // Define colors programmatically (bypasses USS specificity issues)
+            // Primary buttons: Subtle warm tones, no harsh borders
+            Color primaryBaseColor = new Color(120f / 255f, 50f / 255f, 20f / 255f, 1f);
+            Color primaryHoverColor = new Color(150f / 255f, 65f / 255f, 25f / 255f, 1f);
+            Color primaryBorderBase = new Color(90f / 255f, 45f / 255f, 25f / 255f, 0.6f);
+            Color primaryBorderHover = new Color(140f / 255f, 70f / 255f, 35f / 255f, 0.8f);
 
-            // Secondary buttons: Dark gray with warm amber hover
-            Color secondaryBaseColor = new Color(60f / 255f, 50f / 255f, 45f / 255f, 1f);
-            Color secondaryHoverColor = new Color(90f / 255f, 70f / 255f, 50f / 255f, 1f);
-            Color secondaryBorderBase = new Color(180f / 255f, 90f / 255f, 40f / 255f, 1f);
-            Color secondaryBorderHover = new Color(200f / 255f, 120f / 255f, 60f / 255f, 1f);
+            // Secondary buttons: Dark with minimal border visibility
+            Color secondaryBaseColor = new Color(45f / 255f, 38f / 255f, 35f / 255f, 1f);
+            Color secondaryHoverColor = new Color(65f / 255f, 52f / 255f, 42f / 255f, 1f);
+            Color secondaryBorderBase = new Color(70f / 255f, 55f / 255f, 45f / 255f, 0.4f);
+            Color secondaryBorderHover = new Color(100f / 255f, 70f / 255f, 50f / 255f, 0.6f);
 
             // Only set initial base colors if NOT using art skins
             // (art skin buttons will have vb-btn-sheet class added later by MoltenButtonVFX)
@@ -828,6 +927,15 @@ namespace VeilBreakers.UI.Menus
                 SetButtonColors(button, hoverColor, hoverBorder);
                 button.style.scale = new Scale(new Vector2(1.05f, 1.05f));
                 button.AddToClassList("vb-button-hover-glow");
+
+                // Hover light propagation to adjacent buttons
+                PropagateHoverLight(button, true);
+
+                // Notify logo VFX of button hover
+                if (_titleVfx != null)
+                {
+                    _titleVfx.OnButtonHovered(true, isPrimary);
+                }
             };
 
             // Create and store hover leave callback (for proper unregistration)
@@ -844,6 +952,15 @@ namespace VeilBreakers.UI.Menus
                 SetButtonColors(button, restoreColor, restoreBorder);
                 button.style.scale = new Scale(Vector2.one);
                 button.RemoveFromClassList("vb-button-hover-glow");
+
+                // Clear neighbor hover light
+                PropagateHoverLight(button, false);
+
+                // Notify logo VFX of button unhover
+                if (_titleVfx != null)
+                {
+                    _titleVfx.OnButtonHovered(false, isPrimary);
+                }
             };
 
             // Register callbacks
@@ -856,15 +973,41 @@ namespace VeilBreakers.UI.Menus
         }
 
         /// <summary>
+        /// Propagates a subtle brightness lift to adjacent buttons when one is hovered.
+        /// Uses opacity instead of border colors for a softer, non-intrusive effect.
+        /// </summary>
+        private void PropagateHoverLight(Button hoveredButton, bool isEntering)
+        {
+            if (_cachedButtons == null || _cachedButtons.Count < 2) return;
+
+            int hoveredIndex = _cachedButtons.IndexOf(hoveredButton);
+            if (hoveredIndex < 0) return;
+
+            for (int offset = -1; offset <= 1; offset += 2)
+            {
+                int neighborIndex = hoveredIndex + offset;
+                if (neighborIndex < 0 || neighborIndex >= _cachedButtons.Count) continue;
+
+                var neighbor = _cachedButtons[neighborIndex];
+                if (neighbor == null || neighbor.ClassListContains("vb-btn-sheet")) continue;
+
+                // Subtle opacity lift instead of border color change
+                neighbor.style.opacity = isEntering ? 0.85f : 1f;
+            }
+        }
+
+        /// <summary>
         /// Helper to set button background and border colors.
         /// </summary>
         private void SetButtonColors(Button button, Color bgColor, Color borderColor)
         {
             button.style.backgroundColor = bgColor;
-            button.style.borderTopColor = borderColor;
-            button.style.borderBottomColor = borderColor;
-            button.style.borderLeftColor = borderColor;
-            button.style.borderRightColor = borderColor;
+            // Don't set border colors programmatically - let USS handle borders
+            // Setting them caused visible orange lines on hover
+            button.style.borderTopColor = Color.clear;
+            button.style.borderBottomColor = Color.clear;
+            button.style.borderLeftColor = Color.clear;
+            button.style.borderRightColor = Color.clear;
         }
 
         /// <summary>

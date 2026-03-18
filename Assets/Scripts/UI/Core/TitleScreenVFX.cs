@@ -197,6 +197,19 @@ namespace VeilBreakers.UI.Core
         private float _logoPulseRemaining;
         private float _logoPulseStrength;
         private float _logoGlowCurrentOpacity;
+
+        // Logo aura layers (programmatic glow behind logo)
+        private VisualElement _logoAuraInner;
+        private VisualElement _logoAuraOuter;
+        private VisualElement _logoAuraPulse;
+        private float _auraTime;
+        private float _logoButtonHoverBoost;
+
+        // Atmospheric fog layers
+        private VisualElement _fogLayer1;
+        private VisualElement _fogLayer2;
+        private VisualElement _fogLayer3;
+        private float _fogTime;
         private Vector2 _mousePosition;
         private bool _hasMouse;
         private readonly List<BurstParticle> _burstParticles = new();
@@ -600,6 +613,9 @@ namespace VeilBreakers.UI.Core
                 CreateGrungeOverlay();
             }
 
+            // Atmospheric fog layers
+            CreateFogLayers();
+
             StartVFX();
             Debug.Log($"[TitleScreenVFX] Staggered VFX init complete: {_emberCount} embers, {_microSparkCount} micro-sparks, {_ashCount} ash, {_smokeCount} smoke, {_sparkCount} sparks");
         }
@@ -747,9 +763,9 @@ namespace VeilBreakers.UI.Core
 
         private void EnsureLogoGlow()
         {
-            // Disabled: the previous "glow" texture layered behind the logo reads as a muddy shadow/box.
-            // The logo should be clean; use VFX around the scene instead of a duplicated logo layer.
-            return;
+            // Texture-based glow was disabled (looked like muddy shadow/box).
+            // Use programmatic aura layers instead for clean, pulsing glow.
+            CreateLogoAura();
         }
 
         private void EnsureLogoFxLayer()
@@ -767,6 +783,78 @@ namespace VeilBreakers.UI.Core
             fx.pickingMode = PickingMode.Ignore;
             _logoContainer.Add(fx);
             _logoFxLayer = fx;
+        }
+
+        /// <summary>
+        /// Creates layered programmatic glow elements behind the logo.
+        /// Each layer pulses at a different rate for organic, living feel.
+        /// </summary>
+        private void CreateLogoAura()
+        {
+            // Disabled - aura elements caused visual glitching during logo click pulse
+            return;
+        }
+
+        private VisualElement CreateAuraElement(string elName, Color color, int extraWidth, int extraHeight, VisualElement parent)
+        {
+            var aura = new VisualElement();
+            aura.name = elName;
+            aura.pickingMode = PickingMode.Ignore;
+            aura.style.position = Position.Absolute;
+            // Extend beyond logo bounds for glow effect
+            aura.style.left = new Length(-extraWidth / 2, LengthUnit.Pixel);
+            aura.style.top = new Length(-extraHeight / 2, LengthUnit.Pixel);
+            aura.style.right = new Length(-extraWidth / 2, LengthUnit.Pixel);
+            aura.style.bottom = new Length(-extraHeight / 2, LengthUnit.Pixel);
+            aura.style.backgroundColor = color;
+            aura.style.borderTopLeftRadius = extraWidth;
+            aura.style.borderTopRightRadius = extraWidth;
+            aura.style.borderBottomLeftRadius = extraWidth;
+            aura.style.borderBottomRightRadius = extraWidth;
+
+            // Insert behind everything else in target parent
+            if (parent.childCount > 0)
+                parent.Insert(0, aura);
+            else
+                parent.Add(aura);
+
+            return aura;
+        }
+
+        /// <summary>
+        /// Creates semi-transparent fog overlay elements that drift slowly across the screen.
+        /// Adds atmospheric depth between background and foreground.
+        /// </summary>
+        private void CreateFogLayers()
+        {
+            if (_vfxContainer == null) return;
+
+            _fogLayer1 = CreateFogElement("fog-layer-1",
+                new Color(0.15f, 0.08f, 0.05f, 0.08f), 0.4f, 0f);
+            _fogLayer2 = CreateFogElement("fog-layer-2",
+                new Color(0.2f, 0.1f, 0.06f, 0.05f), 0.6f, -0.3f);
+            _fogLayer3 = CreateFogElement("fog-layer-3",
+                new Color(0.1f, 0.06f, 0.04f, 0.06f), 0.3f, 0.5f);
+        }
+
+        private VisualElement CreateFogElement(string elName, Color color, float heightPercent, float startOffsetPercent)
+        {
+            var fog = new VisualElement();
+            fog.name = elName;
+            fog.pickingMode = PickingMode.Ignore;
+            fog.style.position = Position.Absolute;
+            fog.style.left = new Length(startOffsetPercent * 100f, LengthUnit.Percent);
+            fog.style.top = new Length((1f - heightPercent) * 50f, LengthUnit.Percent);
+            fog.style.width = new Length(120, LengthUnit.Percent);
+            fog.style.height = new Length(heightPercent * 100f, LengthUnit.Percent);
+            fog.style.backgroundColor = color;
+            fog.style.borderTopLeftRadius = 200;
+            fog.style.borderTopRightRadius = 200;
+            fog.style.borderBottomLeftRadius = 200;
+            fog.style.borderBottomRightRadius = 200;
+            _vfxContainer.Add(fog);
+
+            return fog;
         }
 
         private void ApplyBackground()
@@ -1354,6 +1442,9 @@ namespace VeilBreakers.UI.Core
             {
                 CreateGrungeOverlay();
             }
+
+            // 10. Atmospheric fog layers (drifting semi-transparent overlays)
+            CreateFogLayers();
 
             StartVFX();
             Debug.Log($"[TitleScreenVFX] AAA VFX Initialized: {_emberCount} embers, {_microSparkCount} micro-sparks, {_ashCount} ash, {_smokeCount} smoke, {_sparkCount} sparks (Lightning: {_enableLightning}) (Textures: {(_smokeTexture != null ? "smoke " : "")}{(_ashTexture != null ? "ash " : "")}{(_emberTexture != null ? "ember " : "")}{(_grungeTexture != null ? "grunge" : "")})");
@@ -2046,6 +2137,46 @@ namespace VeilBreakers.UI.Core
                     UpdateSpark(spark, deltaTime);
                 }
 
+                // Animate atmospheric fog layers (slow horizontal drift)
+                _fogTime += deltaTime;
+                if (_fogLayer1 != null)
+                {
+                    float drift1 = Mathf.Sin(_fogTime * 0.15f) * 10f;
+                    _fogLayer1.style.translate = new Translate(drift1, 0);
+                }
+                if (_fogLayer2 != null)
+                {
+                    float drift2 = Mathf.Sin(_fogTime * 0.1f + 1.5f) * 15f;
+                    _fogLayer2.style.translate = new Translate(drift2, 0);
+                }
+                if (_fogLayer3 != null)
+                {
+                    float drift3 = Mathf.Sin(_fogTime * 0.08f + 3.0f) * 8f;
+                    _fogLayer3.style.translate = new Translate(drift3, 0);
+                }
+
+                // Particle parallax response to cursor position
+                if (_hasMouse && _screenWidth > 0 && _screenHeight > 0)
+                {
+                    float normalizedX = (_mousePosition.x - _screenWidth * 0.5f) / (_screenWidth * 0.5f);
+                    float normalizedY = (_mousePosition.y - _screenHeight * 0.5f) / (_screenHeight * 0.5f);
+
+                    // Apply subtle parallax to VFX containers (background particles shift opposite to cursor)
+                    if (_vfxContainer != null)
+                    {
+                        float bgOffsetX = -normalizedX * 8f;
+                        float bgOffsetY = normalizedY * 5f; // Inverted Y for natural feel
+                        _vfxContainer.style.translate = new Translate(bgOffsetX, bgOffsetY);
+                    }
+                    // Front container shifts less for depth differentiation
+                    if (_frontVfxContainer != null)
+                    {
+                        float fgOffsetX = -normalizedX * 4f;
+                        float fgOffsetY = normalizedY * 3f;
+                        _frontVfxContainer.style.translate = new Translate(fgOffsetX, fgOffsetY);
+                    }
+                }
+
                 yield return null;
             }
         }
@@ -2152,6 +2283,33 @@ namespace VeilBreakers.UI.Core
             {
                 _logoGlowCurrentOpacity = Mathf.Lerp(_logoGlowCurrentOpacity, targetGlow, deltaTime * 10f);
                 _logoGlowElement.style.opacity = _logoGlowCurrentOpacity;
+            }
+
+            // Animate logo aura layers with staggered pulsing
+            _auraTime += deltaTime;
+            float hoverBoost = _logoButtonHoverBoost;
+
+            if (_logoAuraInner != null)
+            {
+                float innerPulse = 0.12f + Mathf.Sin(_auraTime * 2.0f) * 0.04f + hoverBoost * 0.1f;
+                _logoAuraInner.style.opacity = innerPulse;
+            }
+            if (_logoAuraOuter != null)
+            {
+                float outerPulse = 0.06f + Mathf.Sin(_auraTime * 1.2f) * 0.025f + hoverBoost * 0.05f;
+                _logoAuraOuter.style.opacity = outerPulse;
+            }
+            if (_logoAuraPulse != null)
+            {
+                float pulsePulse = 0.08f + Mathf.Sin(_auraTime * 3.0f) * 0.05f + hoverBoost * 0.08f;
+                _logoAuraPulse.style.opacity = pulsePulse;
+            }
+
+            // Decay hover boost smoothly
+            if (_logoButtonHoverBoost > 0f)
+            {
+                _logoButtonHoverBoost = Mathf.Lerp(_logoButtonHoverBoost, 0f, deltaTime * 5f);
+                if (_logoButtonHoverBoost < 0.001f) _logoButtonHoverBoost = 0f;
             }
         }
 
@@ -2877,6 +3035,15 @@ namespace VeilBreakers.UI.Core
             {
                 ember.Speed = UnityEngine.Random.Range(_emberSpeedMin, _emberSpeedMax) * intensity;
             }
+        }
+
+        /// <summary>
+        /// Notify the VFX system that a menu button is being hovered.
+        /// Boosts logo aura intensity for reactive feedback.
+        /// </summary>
+        public void OnButtonHovered(bool isHovered, bool isPrimary)
+        {
+            _logoButtonHoverBoost = isHovered ? (isPrimary ? 1.0f : 0.5f) : 0f;
         }
 
         /// <summary>

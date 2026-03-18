@@ -218,7 +218,10 @@ TemplateContainer {
 .vb-button:active {
     background-color: var(--color-accent-crimson);
     scale: 0.97 0.97;
-    translate: 0 1px;
+    translate: 0 2px;
+    transition-property: scale, translate;
+    transition-duration: 0.08s;
+    transition-timing-function: ease-out;
 }
 
 .vb-button:disabled {
@@ -2762,6 +2765,8 @@ TemplateContainer {
     transition-timing-function: ease-out;
 }
 
+
+
 .button-glow {
     transition-property: opacity;
     transition-duration: 0.2s;
@@ -2770,10 +2775,21 @@ TemplateContainer {
 
 .button--pressed {
     scale: 0.97 0.97;
+    translate: 0 2px;
+    transition-property: scale, translate;
+    transition-duration: 0.08s;
+    transition-timing-function: ease-out;
 }
 
 .button--clicked {
     /* Brief flash effect */
+}
+
+/* Hover glow overlay applied by MainMenuController */
+.vb-button-hover-glow {
+    transition-property: border-color, background-color;
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out;
 }
 
 /* Primary button VFX (important actions) */

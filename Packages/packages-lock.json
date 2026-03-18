@@ -11,6 +11,14 @@
       },
       "hash": "5dbd851fc51ae15f2e1bb648cb0f128cd2a93df1"
     },
+    "com.jarvis.editor-bridge": {
+      "version": "file:C:/Users/Conner/jarvis-memory-repo/unity/com.jarvis.editor-bridge",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {
+        "com.unity.nuget.newtonsoft-json": "3.0.1"
+      }
+    },
     "com.unity.adaptiveperformance": {
       "version": "6.0.0",
       "depth": 0,
