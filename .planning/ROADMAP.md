@@ -54,21 +54,21 @@ Plans:
 - [x] 02-02-PLAN.md -- Rewrite USS transition declarations and set UsageHints.DynamicTransform on animated elements
 
 ### Phase 3: Controller Behavior
-**Goal**: All 6 buttons and carousel navigation functional with both mouse and gamepad, zero GC allocations during hero switch, proper async embark flow with error handling
+**Goal**: Rule-of-thirds layout with tabbed info panel, hold-to-embark replacing confirm popup, zone-based gamepad navigation with visible focus ring, per-hero audio feedback, async embark with timeout and error toast, skeleton loading states, and zero-GC hero switching with pre-baked nebula textures
 **Depends on**: Phase 2 (controllers animate panels -- layout must be correct first)
 **Requirements**: CTRL-01, CTRL-02, CTRL-03, CTRL-04, CTRL-05, CTRL-06, CTRL-07, CTRL-08, CTRL-09
 **Success Criteria** (what must be TRUE):
-  1. All 6 buttons (Back, Prev, Next, Embark, Confirm, Cancel) respond to both mouse click and gamepad input; carousel hero cards respond to click selection
-  2. Gamepad navigation shows a visible focus ring highlight on the currently focused element; confirm overlay traps focus so gamepad cannot escape to background elements
-  3. Navigation clicks, hero switches, and embark confirmation each play distinct audio feedback through AudioManager
-  4. Clicking Embark initiates an async flow with timeout and user-facing error feedback if GameDatabase or SaveManager operations fail -- no silent hang, no swallowed exceptions
-  5. Hero switch completes with zero per-frame GC allocations: nebula textures are pre-baked, all VisualElement queries are cached, and panel transitions use exit-then-enter choreography (slide-out completes before slide-in begins)
-**Plans**: TBD
+  1. All interaction points (Back, Prev, Next, Embark hold, Tab switch, Carousel card click) respond to both mouse click and gamepad input; L1/R1 switches heroes and cycles tabs
+  2. Gamepad navigation shows a visible focus ring highlight on the currently focused zone; during embark hold, navigation is blocked (focus trap)
+  3. Navigation clicks, hero switches, and embark confirmation each play distinct audio feedback (placeholder tones if no audio assets exist)
+  4. Holding Embark for 1.5s initiates an async flow with 10s timeout and user-facing error toast if SaveManager operations fail -- no silent hang, no swallowed exceptions
+  5. Hero switch completes with zero per-frame GC allocations: nebula textures are pre-baked for all 4 heroes at init, all VisualElement queries are cached, and panel transitions use exit-then-enter choreography
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
-- [ ] 03-03: TBD
+- [ ] 03-01-PLAN.md -- Restructure UXML to rule-of-thirds with tabbed info, veil-torn dark fantasy USS, and extend CharSelectEvents
+- [ ] 03-02-PLAN.md -- Rewrite controllers for async embark, tab management, toast, skeleton loading, remove confirm overlay
+- [ ] 03-03-PLAN.md -- Create CharSelectFocusManager (gamepad zones), HoldToEmbarkController (hold-to-confirm), pre-bake nebula cache, audio feedback
 
 ### Phase 4: Visual Amplification
 **Goal**: Cinematic, premium-feeling character select with orchestrated PrimeTween animations, per-hero post-processing, atmospheric overlays, and polished micro-interactions
