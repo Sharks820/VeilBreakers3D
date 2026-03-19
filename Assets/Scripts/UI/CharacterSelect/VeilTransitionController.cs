@@ -120,13 +120,13 @@ namespace VeilBreakers.UI.CharacterSelect
             _mpb.SetFloat(kBackgroundAlpha, 0f);
             _fullScreenQuadRenderer.SetPropertyBlock(_mpb);
 
-            return Tween.Custom(this, 0f, 1f, duration, Ease.InQuad,
-                (ctrl, val) =>
+            return Tween.Custom(this, 0f, 1f, duration,
+                onValueChange: (ctrl, val) =>
                 {
                     if (ctrl._fullScreenQuadRenderer == null) return;
                     ctrl._mpb.SetFloat(kCrackProgress, val);
                     ctrl._fullScreenQuadRenderer.SetPropertyBlock(ctrl._mpb);
-                });
+                }, ease: Ease.InQuad);
         }
 
         /// <summary>
@@ -141,13 +141,13 @@ namespace VeilBreakers.UI.CharacterSelect
                 _shatterParticles.Play();
             }
 
-            return Tween.Custom(this, 0f, 1f, duration, Ease.OutQuad,
-                (ctrl, val) =>
+            return Tween.Custom(this, 0f, 1f, duration,
+                onValueChange: (ctrl, val) =>
                 {
                     if (ctrl._fullScreenQuadRenderer == null) return;
                     ctrl._mpb.SetFloat(kShatterProgress, val);
                     ctrl._fullScreenQuadRenderer.SetPropertyBlock(ctrl._mpb);
-                });
+                }, ease: Ease.OutQuad);
         }
 
         /// <summary>
@@ -155,13 +155,13 @@ namespace VeilBreakers.UI.CharacterSelect
         /// </summary>
         public Tween PlayWhiteOut(float duration = 0.2f)
         {
-            return Tween.Custom(this, 0f, 1f, duration, Ease.InQuad,
-                (ctrl, val) =>
+            return Tween.Custom(this, 0f, 1f, duration,
+                onValueChange: (ctrl, val) =>
                 {
                     if (ctrl._fullScreenQuadRenderer == null) return;
                     ctrl._mpb.SetFloat(kBackgroundAlpha, val);
                     ctrl._fullScreenQuadRenderer.SetPropertyBlock(ctrl._mpb);
-                });
+                }, ease: Ease.InQuad);
         }
 
         /// <summary>
@@ -177,8 +177,8 @@ namespace VeilBreakers.UI.CharacterSelect
             _mpb.SetFloat(kBackgroundAlpha, 1f);
             _fullScreenQuadRenderer.SetPropertyBlock(_mpb);
 
-            return Tween.Custom(this, 1f, 0f, duration, Ease.OutCubic,
-                (ctrl, val) =>
+            return Tween.Custom(this, 1f, 0f, duration,
+                onValueChange: (ctrl, val) =>
                 {
                     ctrl._mpb.SetFloat(kBackgroundAlpha, val);
                     ctrl._mpb.SetFloat(kShatterProgress, val);
@@ -190,7 +190,7 @@ namespace VeilBreakers.UI.CharacterSelect
                         ctrl.HideQuad();
                         ctrl.OnTransitionComplete?.Invoke();
                     }
-                });
+                }, ease: Ease.OutCubic);
         }
 
         /// <summary>

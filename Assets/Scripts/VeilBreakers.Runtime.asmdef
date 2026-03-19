@@ -6,7 +6,7 @@
     "Unity.TextMeshPro",
     "Unity.RenderPipelines.Universal.Runtime",
     "Unity.RenderPipelines.Core.Runtime",
-    "PrimeTween"
+    "PrimeTween.Runtime"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

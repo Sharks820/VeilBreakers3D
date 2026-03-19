@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
+using PrimeTween;
 using VeilBreakers.Data;
 
 namespace VeilBreakers.UI.CharacterSelect
@@ -55,6 +56,19 @@ namespace VeilBreakers.UI.CharacterSelect
         private bool _currentModelHasAnimator;
         private Vector3 _currentModelBaseScale;
         private Coroutine _swapCoroutine;
+
+        // =============================================================================
+        // LIGHTING LERP STATE
+        // =============================================================================
+
+        private Tween _lightLerpTween;
+        private Tween _rimFlickerTween;
+        private Color _srcFillColor, _dstFillColor;
+        private float _srcFillIntensity, _dstFillIntensity;
+        private Color _srcRimColor, _dstRimColor;
+        private float _srcRimIntensity, _dstRimIntensity;
+        private Color _srcAmbientColor, _dstAmbientColor;
+        private bool _isRimFlickering;
 
         // Placeholder material
         private static Material _placeholderMaterial;
@@ -343,6 +357,119 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_groundLight != null)
             {
                 _groundLight.color = config.secondaryColor;
+            }
+        }
+
+        // =============================================================================
+        // PER-HERO LIGHTING LERP (HeroThemeConfig-driven)
+        // =============================================================================
+
+        /// <summary>
+        /// Lerps stage lighting from current values to the hero theme's lighting config.
+        /// Starts/stops Nyx rim flicker based on theme.rimFlicker.
+        /// </summary>
+        public void TransitionLighting(HeroThemeConfig theme, float duration = 0.6f)
+        {
+            _lightLerpTween.Stop();
+
+            // Cache source from current light values
+            if (_fillLight != null)
+            {
+                _srcFillColor = _fillLight.color;
+                _srcFillIntensity = _fillLight.intensity;
+            }
+            if (_rimLight != null)
+            {
+                _srcRimColor = _rimLight.color;
+                _srcRimIntensity = _rimLight.intensity;
+            }
+            _srcAmbientColor = RenderSettings.ambientLight;
+
+            // Cache destination from theme
+            _dstFillColor = theme.fillLightColor;
+            _dstFillIntensity = theme.fillLightIntensity;
+            _dstRimColor = theme.rimLightColor;
+            _dstRimIntensity = theme.rimLightIntensity;
+            _dstAmbientColor = theme.ambientColor;
+
+            _lightLerpTween = Tween.Custom(this, 0f, 1f, duration,
+                onValueChange: (ctrl, t) => ctrl.ApplyLightLerp(t), ease: Ease.InOutSine);
+
+            // Rim flicker for Nyx (unstable reality)
+            if (theme.rimFlicker && !_isRimFlickering)
+            {
+                StartRimFlicker();
+            }
+            else if (!theme.rimFlicker && _isRimFlickering)
+            {
+                StopRimFlicker();
+            }
+        }
+
+        private void ApplyLightLerp(float t)
+        {
+            if (_fillLight != null)
+            {
+                _fillLight.color = Color.Lerp(_srcFillColor, _dstFillColor, t);
+                _fillLight.intensity = Mathf.Lerp(_srcFillIntensity, _dstFillIntensity, t);
+            }
+            if (_rimLight != null)
+            {
+                _rimLight.color = Color.Lerp(_srcRimColor, _dstRimColor, t);
+                // Only lerp rim intensity if not flickering (flicker overrides intensity)
+                if (!_isRimFlickering)
+                {
+                    _rimLight.intensity = Mathf.Lerp(_srcRimIntensity, _dstRimIntensity, t);
+                }
+            }
+
+            // Ambient light tint per hero
+            RenderSettings.ambientLight = Color.Lerp(_srcAmbientColor, _dstAmbientColor, t);
+        }
+
+        /// <summary>
+        /// Starts Nyx-style rim light flicker: random intensity variation between 0.8x and 1.5x
+        /// of target intensity every 0.1-0.3s, creating unstable electrical energy feel.
+        /// </summary>
+        private void StartRimFlicker()
+        {
+            _isRimFlickering = true;
+
+            // Infinite loop flicker using short-duration tweens
+            void DoFlickerCycle()
+            {
+                if (!_isRimFlickering || _rimLight == null) return;
+
+                float baseIntensity = _dstRimIntensity;
+                float targetFlicker = baseIntensity * UnityEngine.Random.Range(0.8f, 1.5f);
+                float flickerDuration = UnityEngine.Random.Range(0.1f, 0.3f);
+
+                _rimFlickerTween = Tween.Custom(this, _rimLight.intensity, targetFlicker, flickerDuration,
+                    onValueChange: (ctrl, val) =>
+                    {
+                        if (ctrl._rimLight != null) ctrl._rimLight.intensity = val;
+                    }, ease: Ease.Linear)
+                    .OnComplete(() => DoFlickerCycle());
+            }
+
+            DoFlickerCycle();
+        }
+
+        /// <summary>
+        /// Stops the rim light flicker and lerps back to stable target intensity.
+        /// </summary>
+        private void StopRimFlicker()
+        {
+            _isRimFlickering = false;
+            _rimFlickerTween.Stop();
+
+            if (_rimLight != null)
+            {
+                Tween.Custom(this, _rimLight.intensity, _dstRimIntensity, 0.3f,
+                    onValueChange: (ctrl, val) =>
+                    {
+                        if (ctrl._rimLight != null) ctrl._rimLight.intensity = val;
+                    });
             }
         }
 

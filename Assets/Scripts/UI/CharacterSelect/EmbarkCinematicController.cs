@@ -245,8 +245,9 @@ namespace VeilBreakers.UI.CharacterSelect
             if (cam == null) return;
 
             float startFOV = cam.fieldOfView;
-            Tween.Custom(cam, startFOV, targetFOV, duration, Ease.InOutQuad,
-                (c, val) => c.fieldOfView = val);
+            Tween.Custom(startFOV, targetFOV, duration,
+                onValueChange: val => { if (cam != null) cam.fieldOfView = val; },
+                ease: Ease.InOutQuad);
         }
     }
 }

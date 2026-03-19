@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
+using PrimeTween;
 using VeilBreakers.Core;
 using VeilBreakers.Data;
 
@@ -22,6 +23,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private readonly Label[] _abilitySlots = new Label[5];
 
         private static readonly string[] kStatNames = { "str", "dex", "con", "int", "wis", "cha" };
+        private Sequence _statCascadeSequence;
 
         private void OnEnable()
         {
@@ -92,6 +94,60 @@ namespace VeilBreakers.UI.CharacterSelect
                 }
             }
         }
+
+        // =============================================================================
+        // STAT BAR CASCADE ANIMATION
+        // =============================================================================
+
+        /// <summary>
+        /// Animates stat bars with staggered cascade fill.
+        /// Each bar starts 100ms after the previous (STR -> DEX -> CON -> INT -> WIS -> CHA).
+        /// Uses PrimeTween scaleX on the fill element (per Phase 2 decision: no width transitions).
+        /// </summary>
+        public Sequence BuildStatBarCascade(HeroData heroData)
+        {
+            _statCascadeSequence.Stop();
+
+            var stats = heroData?.base_stats;
+            if (stats == null) return Sequence.Create();
+
+            int[] values = {
+                stats.strength, stats.dexterity, stats.constitution,
+                stats.intelligence, stats.wisdom, stats.charisma
+            };
+
+            var seq = Sequence.Create();
+
+            for (int i = 0; i < values.Length && i < _barFills.Length; i++)
+            {
+                if (_barFills[i] == null) continue;
+
+                float pct = Mathf.Clamp01(values[i] / kMaxStatValue);
+                float stagger = i * 0.1f; // 100ms stagger per bar
+
+                // Set initial state: scaleX 0 with left-anchored origin
+                _barFills[i].style.transformOrigin = new TransformOrigin(0, Length.Percent(50));
+                _barFills[i].style.scale = new Scale(new Vector2(0f, 1f));
+
+                // Set width to target (scaleX will reveal it)
+                _barFills[i].style.width = new StyleLength(new Length(pct * 100f, LengthUnit.Percent));
+
+                // Animate scaleX from 0 to 1 over 300ms with OutCubic
+                int capturedIndex = i;
+                seq.Insert(stagger, Tween.Custom(_barFills[capturedIndex], 0f, 1f, 0.3f,
+                    onValueChange: (fill, t) =>
+                    {
+                        fill.style.scale = new Scale(new Vector2(t, 1f));
+                    }, ease: Ease.OutCubic));
+            }
+
+            _statCascadeSequence = seq;
+            return seq;
+        }
+
+        // =============================================================================
+        // ABILITIES
+        // =============================================================================
 
         /// <summary>
         /// Updates ability slot labels with skill display names from GameDatabase.
