@@ -34,10 +34,10 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **CTRL-01**: All 6 buttons functional (Back, Prev, Next, Embark, Confirm, Cancel) with both mouse and gamepad
 - [x] **CTRL-02**: Gamepad focus ring visible with clear highlight on focused element
 - [x] **CTRL-03**: Audio feedback wired for navigation clicks, hero switch, and embark confirmation
-- [ ] **CTRL-04**: Embark coroutine-Task bridge replaced with async/await + timeout + user-facing error feedback
+- [x] **CTRL-04**: Embark coroutine-Task bridge replaced with async/await + timeout + user-facing error feedback
 - [x] **CTRL-05**: Nebula texture generation pre-baked (eliminate per-switch `Color[65536]` allocation)
-- [ ] **CTRL-06**: All VisualElement Q() queries cached; zero Q() calls in Update/hot paths
-- [ ] **CTRL-07**: Panel exit-then-enter choreography implemented (slide-out before slide-in)
+- [x] **CTRL-06**: All VisualElement Q() queries cached; zero Q() calls in Update/hot paths
+- [x] **CTRL-07**: Panel exit-then-enter choreography implemented (slide-out before slide-in)
 - [x] **CTRL-08**: Confirm overlay focus trap working for gamepad navigation
 - [x] **CTRL-09**: Loading state feedback shown during GameDatabase initialization (skeleton/shimmer)
 
@@ -126,10 +126,10 @@ Deferred to future release. Tracked but not in current roadmap.
 | CTRL-01 | Phase 3 | Complete |
 | CTRL-02 | Phase 3 | Complete |
 | CTRL-03 | Phase 3 | Complete |
-| CTRL-04 | Phase 3 | Pending |
+| CTRL-04 | Phase 3 | Complete |
 | CTRL-05 | Phase 3 | Complete |
-| CTRL-06 | Phase 3 | Pending |
-| CTRL-07 | Phase 3 | Pending |
+| CTRL-06 | Phase 3 | Complete |
+| CTRL-07 | Phase 3 | Complete |
 | CTRL-08 | Phase 3 | Complete |
 | CTRL-09 | Phase 3 | Complete |
 | VISUAL-01 | Phase 4 | Pending |
