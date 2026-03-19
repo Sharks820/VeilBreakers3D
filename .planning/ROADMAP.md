@@ -103,6 +103,32 @@ Plans:
 - [ ] 05-01: TBD
 - [ ] 05-02: TBD
 
+---
+
+## Milestone: MCP Blender Server Architecture
+
+### Overview
+
+Build a custom MCP Python server + Blender TCP socket bridge for AI-assisted 3D asset pipeline automation. Replaces the third-party blender-mcp with a custom veilbreakers-blender server using compound action tools, mandatory visual verification, and AST-validated code execution.
+
+### Phase 1: Foundation Server Architecture
+**Goal**: End-to-end communication between Claude (MCP host) and Blender: a Python MCP server dispatching validated commands over TCP to a Blender addon, receiving structured responses, capturing viewport screenshots, and composing multi-angle contact sheets
+**Depends on**: Nothing (independent track)
+**Requirements**: ARCH-01, ARCH-02, ARCH-03, ARCH-04, ARCH-05, ARCH-06, ARCH-07, ARCH-08
+**Success Criteria** (what must be TRUE):
+  1. Claude can invoke 6 compound tools (blender_scene, blender_object, blender_material, blender_viewport, blender_execute, blender_export) that dispatch operations to Blender
+  2. Every mutation tool returns a viewport screenshot alongside structured results -- visual verification is non-negotiable
+  3. Malformed or dangerous Python code is rejected by AST validation before reaching Blender -- no raw exec() without security checks
+  4. Contact sheet system renders multi-angle composite images via Pillow grid composition
+  5. Blender addon survives rapid sequential tool calls via queue+timer pattern with zero deadlocks
+  6. TCP socket bridge handles connect/reconnect/timeout with structured error responses
+**Plans**: 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md -- Scaffold uv project, TCP socket client, pydantic models, config, MCP server entry point
+- [ ] 01-02-PLAN.md -- Blender addon socket server with queue+timer dispatch, command handlers, AST security validator
+- [ ] 01-03-PLAN.md -- 6 compound MCP tools with visual verification, contact sheet composition, .mcp.json integration
+
 ## Progress
 
 **Execution Order:**
@@ -115,3 +141,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 3. Controller Behavior | 0/3 | Not started | - |
 | 4. Visual Amplification | 0/3 | Not started | - |
 | 5. Game Flow & Quality | 0/2 | Not started | - |
+
+**MCP Server Architecture:**
+
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 1. Foundation Server Architecture | 0/3 | Not started | - |
