@@ -26,7 +26,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private const string kBtnBack = "btn-back";
         private const string kBtnEmbark = "btn-embark";
-        private const string kInfoPanel = "hero-info-panel";
+        private const string kInfoPanel = "info-panel-container";
         private const string kCarouselContainer = "carousel-container";
         private const string kFocusRingClass = "focus-ring-active";
         private const int kTabCount = 3; // Overview, Abilities, Lore

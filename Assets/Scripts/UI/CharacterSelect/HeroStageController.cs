@@ -44,10 +44,12 @@ namespace VeilBreakers.UI.CharacterSelect
         private Transform _stageRoot;
         private HeroDisplayConfig _currentConfig;
 
-        // Drag rotation
+        // Drag / stick rotation
         private bool _isDragging;
         private float _dragStartX;
         private float _modelRotationY;
+        private const float kStickRotationSpeed = 120f; // degrees per second
+        private bool _hasRightStickAxis = true;
 
         // Model state cache (avoid per-frame GetComponent)
         private bool _currentModelHasAnimator;
@@ -373,8 +375,24 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void HandleDragInput()
         {
+            if (_currentModel == null) return;
+
+            // Right-stick rotation (gamepad) — axis may not exist in Input Manager
+            float stickX = 0f;
+            if (_hasRightStickAxis)
+            {
+                try { stickX = Input.GetAxis("RightStickHorizontal"); }
+                catch (System.ArgumentException) { _hasRightStickAxis = false; }
+            }
+            if (Mathf.Abs(stickX) > 0.15f)
+            {
+                _modelRotationY += stickX * kStickRotationSpeed * Time.deltaTime;
+                _currentModel.transform.localRotation = Quaternion.Euler(0f, _modelRotationY, 0f);
+                return; // Stick takes priority, skip idle rotation
+            }
+
             // Procedural idle for placeholder models (no Animator)
-            if (_currentModel != null && !_currentModelHasAnimator)
+            if (!_currentModelHasAnimator)
             {
                 float breath = 1f + Mathf.Sin(Time.time * 1.2f) * 0.005f;
                 _currentModel.transform.localScale = _currentModelBaseScale * breath;

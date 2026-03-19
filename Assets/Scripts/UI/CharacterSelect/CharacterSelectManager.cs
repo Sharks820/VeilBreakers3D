@@ -128,6 +128,7 @@ namespace VeilBreakers.UI.CharacterSelect
             EnsureCriticalManagers();
             SceneManager.sceneUnloaded += OnSceneUnloaded;
             CharSelectEvents.OnNavigationRequested += NavigateToHero;
+            CharSelectEvents.OnEmbarkTriggered += TriggerEmbark;
             StartCoroutine(InitializeWhenReady());
         }
 
@@ -135,6 +136,7 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             SceneManager.sceneUnloaded -= OnSceneUnloaded;
             CharSelectEvents.OnNavigationRequested -= NavigateToHero;
+            CharSelectEvents.OnEmbarkTriggered -= TriggerEmbark;
             StopAllCoroutines();
             _isTransitioning = false;
             _isEmbarking = false;
