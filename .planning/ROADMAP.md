@@ -83,7 +83,7 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 04-01-PLAN.md -- Install PrimeTween, update asmdef references, create HeroThemeConfig ScriptableObject, write VeilDissolve shader
+- [x] 04-01-PLAN.md -- Install PrimeTween, update asmdef references, create HeroThemeConfig ScriptableObject, write VeilDissolve shader
 - [ ] 04-02-PLAN.md -- Build visual subsystems: VolumeProfileTransitioner, OverlayController, GlitchTextEffect, VeilDissolveController, extend MusicManager
 - [ ] 04-03-PLAN.md -- Wire choreography: HeroThemeTransitioner, HeroSwitchAnimator, ScreenEntryAnimator, stat cascade, carousel animations, lighting lerp
 - [ ] 04-04-PLAN.md -- Embark cinematic: VeilCrack shader, VeilTransitionController, EmbarkCinematicController, visual verification checkpoint
@@ -140,7 +140,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. Foundation Cleanup | 3/3 | Complete | 2026-02-22 |
 | 2. Layout & Structure | 2/2 | Complete | 2026-02-22 |
 | 3. Controller Behavior | 0/3 | Not started | - |
-| 4. Visual Amplification | 0/4 | Not started | - |
+| 4. Visual Amplification | 1/4 | In Progress | - |
 | 5. Game Flow & Quality | 0/2 | Not started | - |
 
 **MCP Server Architecture:**

@@ -43,7 +43,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Visual Polish (VISUAL)
 
-- [ ] **VISUAL-01**: PrimeTween 1.3.7 installed and integrated for orchestrated animation sequences
+- [x] **VISUAL-01**: PrimeTween 1.3.7 installed and integrated for orchestrated animation sequences
 - [ ] **VISUAL-02**: Coordinated panel transitions (left slides from left, right from right, staggered timing)
 - [ ] **VISUAL-03**: Staggered stat bar fill animations on hero switch
 - [ ] **VISUAL-04**: Per-hero URP Volume Profiles configured (Bloom, DoF, Vignette, Color Adjustments)
@@ -132,7 +132,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | CTRL-07 | Phase 3 | Complete |
 | CTRL-08 | Phase 3 | Complete |
 | CTRL-09 | Phase 3 | Complete |
-| VISUAL-01 | Phase 4 | Pending |
+| VISUAL-01 | Phase 4 | Complete |
 | VISUAL-02 | Phase 4 | Pending |
 | VISUAL-03 | Phase 4 | Pending |
 | VISUAL-04 | Phase 4 | Pending |
