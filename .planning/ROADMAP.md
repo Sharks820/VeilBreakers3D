@@ -80,12 +80,13 @@ Plans:
   3. Cinematic overlays (scanlines, vignette, veil glow) are visible and enhance atmosphere; USS filters (blur on inactive panels, tint, contrast) create visual depth hierarchy between active and inactive elements
   4. Clicking Embark plays a 1-2 second cinematic sequence (animation, effects) before the scene transition begins; the Embark button has a continuous breathing glow animation while idle
   5. Selecting a different hero crossfades ambient music to the new hero's theme via MusicManager -- no hard audio cuts
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
-- [ ] 04-03: TBD
+- [ ] 04-01-PLAN.md -- Install PrimeTween, update asmdef references, create HeroThemeConfig ScriptableObject, write VeilDissolve shader
+- [ ] 04-02-PLAN.md -- Build visual subsystems: VolumeProfileTransitioner, OverlayController, GlitchTextEffect, VeilDissolveController, extend MusicManager
+- [ ] 04-03-PLAN.md -- Wire choreography: HeroThemeTransitioner, HeroSwitchAnimator, ScreenEntryAnimator, stat cascade, carousel animations, lighting lerp
+- [ ] 04-04-PLAN.md -- Embark cinematic: VeilCrack shader, VeilTransitionController, EmbarkCinematicController, visual verification checkpoint
 
 ### Phase 5: Game Flow & Quality
 **Goal**: End-to-end game flow verified from Bootstrap through Overworld, title screen polished to AAA standard, full quality audit with zero errors and clean conventions
@@ -139,7 +140,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. Foundation Cleanup | 3/3 | Complete | 2026-02-22 |
 | 2. Layout & Structure | 2/2 | Complete | 2026-02-22 |
 | 3. Controller Behavior | 0/3 | Not started | - |
-| 4. Visual Amplification | 0/3 | Not started | - |
+| 4. Visual Amplification | 0/4 | Not started | - |
 | 5. Game Flow & Quality | 0/2 | Not started | - |
 
 **MCP Server Architecture:**
