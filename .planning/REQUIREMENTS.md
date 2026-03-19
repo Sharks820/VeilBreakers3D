@@ -45,13 +45,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **VISUAL-01**: PrimeTween 1.3.7 installed and integrated for orchestrated animation sequences
 - [ ] **VISUAL-02**: Coordinated panel transitions (left slides from left, right from right, staggered timing)
-- [ ] **VISUAL-03**: Staggered stat bar fill animations on hero switch
-- [ ] **VISUAL-04**: Per-hero URP Volume Profiles configured (Bloom, DoF, Vignette, Color Adjustments)
-- [ ] **VISUAL-05**: Cinematic overlays active (scanlines, vignette, veil glow) via USS
+- [x] **VISUAL-03**: Staggered stat bar fill animations on hero switch
+- [x] **VISUAL-04**: Per-hero URP Volume Profiles configured (Bloom, DoF, Vignette, Color Adjustments)
+- [x] **VISUAL-05**: Cinematic overlays active (scanlines, vignette, veil glow) via USS
 - [ ] **VISUAL-06**: Embark sequence cinematic (1-2s animation before scene transition)
-- [ ] **VISUAL-07**: USS filters applied for visual effects (blur on inactive panels, tint, contrast)
+- [x] **VISUAL-07**: USS filters applied for visual effects (blur on inactive panels, tint, contrast)
 - [ ] **VISUAL-08**: Embark button breathing glow animation
-- [ ] **VISUAL-09**: Per-hero ambient music crossfade via MusicManager
+- [x] **VISUAL-09**: Per-hero ambient music crossfade via MusicManager
 
 ### Game Flow (FLOW)
 
@@ -134,13 +134,13 @@ Deferred to future release. Tracked but not in current roadmap.
 | CTRL-09 | Phase 3 | Complete |
 | VISUAL-01 | Phase 4 | Complete |
 | VISUAL-02 | Phase 4 | Pending |
-| VISUAL-03 | Phase 4 | Pending |
-| VISUAL-04 | Phase 4 | Pending |
-| VISUAL-05 | Phase 4 | Pending |
+| VISUAL-03 | Phase 4 | Complete |
+| VISUAL-04 | Phase 4 | Complete |
+| VISUAL-05 | Phase 4 | Complete |
 | VISUAL-06 | Phase 4 | Pending |
-| VISUAL-07 | Phase 4 | Pending |
+| VISUAL-07 | Phase 4 | Complete |
 | VISUAL-08 | Phase 4 | Pending |
-| VISUAL-09 | Phase 4 | Pending |
+| VISUAL-09 | Phase 4 | Complete |
 | FLOW-01 | Phase 5 | Pending |
 | FLOW-02 | Phase 5 | Pending |
 | FLOW-03 | Phase 5 | Pending |
