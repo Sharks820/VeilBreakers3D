@@ -35,11 +35,25 @@ namespace VeilBreakers.Audio
         private float _lowHealthParam = 0f;
         private float _bossPhaseParam = 0f;
 
+        // Hero-specific music parameters (0-1 range)
+        private float _warmthParam = 0f;
+        private float _synthParam = 0f;
+        private float _percParam = 0f;
+        private float _padParam = 0f;
+        private float _filterParam = 0f;
+
         // Target values for lerping
         private float _targetIntensity = 0f;
         private float _targetTension = 0f;
         private float _targetLowHealth = 0f;
         private float _targetBossPhase = 0f;
+
+        // Hero-specific target values for lerping
+        private float _targetWarmth = 0f;
+        private float _targetSynth = 0f;
+        private float _targetPerc = 0f;
+        private float _targetPad = 0f;
+        private float _targetFilter = 0f;
 
         // Transition tracking
         private Coroutine _transitionCoroutine;
@@ -129,6 +143,16 @@ namespace VeilBreakers.Audio
                 _targetLowHealth = value;
             else if (string.Equals(paramName, "bossphase", System.StringComparison.OrdinalIgnoreCase))
                 _targetBossPhase = value;
+            else if (string.Equals(paramName, "warmth", System.StringComparison.OrdinalIgnoreCase))
+                _targetWarmth = value;
+            else if (string.Equals(paramName, "synth", System.StringComparison.OrdinalIgnoreCase))
+                _targetSynth = value;
+            else if (string.Equals(paramName, "perc", System.StringComparison.OrdinalIgnoreCase))
+                _targetPerc = value;
+            else if (string.Equals(paramName, "pad", System.StringComparison.OrdinalIgnoreCase))
+                _targetPad = value;
+            else if (string.Equals(paramName, "filter", System.StringComparison.OrdinalIgnoreCase))
+                _targetFilter = value;
         }
 
         /// <summary>
@@ -146,8 +170,33 @@ namespace VeilBreakers.Audio
                 _lowHealthParam = _targetLowHealth = value;
             else if (string.Equals(paramName, "bossphase", System.StringComparison.OrdinalIgnoreCase))
                 _bossPhaseParam = _targetBossPhase = value;
+            else if (string.Equals(paramName, "warmth", System.StringComparison.OrdinalIgnoreCase))
+                _warmthParam = _targetWarmth = value;
+            else if (string.Equals(paramName, "synth", System.StringComparison.OrdinalIgnoreCase))
+                _synthParam = _targetSynth = value;
+            else if (string.Equals(paramName, "perc", System.StringComparison.OrdinalIgnoreCase))
+                _percParam = _targetPerc = value;
+            else if (string.Equals(paramName, "pad", System.StringComparison.OrdinalIgnoreCase))
+                _padParam = _targetPad = value;
+            else if (string.Equals(paramName, "filter", System.StringComparison.OrdinalIgnoreCase))
+                _filterParam = _targetFilter = value;
 
             ApplyParameter(paramName, value);
+        }
+
+        /// <summary>
+        /// Sets all hero-specific music parameters at once. Called on hero switch.
+        /// Parameters lerp smoothly to target values via _parameterLerpSpeed.
+        /// </summary>
+        public void SetHeroMusicParameters(float intensity, float warmth, float tension, float synth, float perc, float pad, float filter)
+        {
+            SetParameter("intensity", intensity);
+            SetParameter("warmth", warmth);
+            SetParameter("tension", tension);
+            SetParameter("synth", synth);
+            SetParameter("perc", perc);
+            SetParameter("pad", pad);
+            SetParameter("filter", filter);
         }
 
         /// <summary>
@@ -258,17 +307,29 @@ namespace VeilBreakers.Audio
         {
             float dt = Time.deltaTime * _parameterLerpSpeed;
 
-            // Lerp parameters toward targets
+            // Lerp core parameters toward targets
             bool intensityChanged = LerpParameter(ref _intensityParam, _targetIntensity, dt);
             bool tensionChanged = LerpParameter(ref _tensionParam, _targetTension, dt);
             bool lowHealthChanged = LerpParameter(ref _lowHealthParam, _targetLowHealth, dt);
             bool bossPhaseChanged = LerpParameter(ref _bossPhaseParam, _targetBossPhase, dt);
+
+            // Lerp hero-specific parameters toward targets
+            bool warmthChanged = LerpParameter(ref _warmthParam, _targetWarmth, dt);
+            bool synthChanged = LerpParameter(ref _synthParam, _targetSynth, dt);
+            bool percChanged = LerpParameter(ref _percParam, _targetPerc, dt);
+            bool padChanged = LerpParameter(ref _padParam, _targetPad, dt);
+            bool filterChanged = LerpParameter(ref _filterParam, _targetFilter, dt);
 
             // Apply to FMOD
             if (intensityChanged) ApplyParameter("Intensity", _intensityParam);
             if (tensionChanged) ApplyParameter("Tension", _tensionParam);
             if (lowHealthChanged) ApplyParameter("LowHealth", _lowHealthParam);
             if (bossPhaseChanged) ApplyParameter("BossPhase", _bossPhaseParam);
+            if (warmthChanged) ApplyParameter("Warmth", _warmthParam);
+            if (synthChanged) ApplyParameter("Synth", _synthParam);
+            if (percChanged) ApplyParameter("Perc", _percParam);
+            if (padChanged) ApplyParameter("Pad", _padParam);
+            if (filterChanged) ApplyParameter("Filter", _filterParam);
         }
 
         private bool LerpParameter(ref float current, float target, float dt)
