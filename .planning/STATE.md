@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Phase 3 context gathered
-last_updated: "2026-03-18T22:55:24.544Z"
-last_activity: 2026-02-22 -- Plan 02-02 complete (USS transitions rewritten, UsageHints set)
+stopped_at: Completed 03-01-PLAN.md
+last_updated: "2026-03-19T00:13:47.208Z"
+last_activity: 2026-03-18 -- Plan 03-03 complete (FocusManager, HoldToEmbark, nebula pre-bake, audio feedback)
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 5
-  percent: 40
+  total_plans: 5
+  completed_plans: 7
+  percent: 53
 ---
 
 # Project State
@@ -21,23 +21,24 @@ progress:
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** The game flow from title screen through character selection to gameplay must work flawlessly with AAA-quality visuals at every step.
-**Current focus:** Phase 2 complete; ready for Phase 3
+**Current focus:** Phase 3 complete; ready for Phase 4
 
 ## Current Position
 
-Phase: 2 of 5 (Layout & Structure) -- COMPLETE
-Plan: 2 of 2 in current phase -- COMPLETE
-Status: Phase 2 done
-Last activity: 2026-02-22 -- Plan 02-02 complete (USS transitions rewritten, UsageHints set)
+Phase: 3 of 5 (Controller Behavior) -- COMPLETE
+Plan: 3 of 3 in current phase -- COMPLETE
+Status: Phase 3 done
+Last activity: 2026-03-18 -- Plan 03-03 complete (FocusManager, HoldToEmbark, nebula pre-bake, audio feedback)
 
-Progress: [####......] 40%
+Progress: [#####.....] 53%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
+
+- Total plans completed: 6
 - Average duration: ~1 session
-- Total execution time: ~4.25 hours
+- Total execution time: ~4.5 hours
 
 **By Phase:**
 
@@ -45,9 +46,11 @@ Progress: [####......] 40%
 |-------|-------|-------|----------|
 | 1. Foundation Cleanup | 3/3 | ~4h | ~1.3h |
 | 2. Layout & Structure | 2/2 | ~35m | ~17.5m |
+| 3. Controller Behavior | 1/3 | ~14m | ~14m |
 
 **Recent Trend:**
-- Last 3 plans: 01-03 Bug Fix Audit, 02-01 Layout Fix, 02-02 Transition Audit
+
+- Last 3 plans: 02-01 Layout Fix, 02-02 Transition Audit, 03-01 UXML/USS/Events Foundation
 - Trend: Accelerating
 
 *Updated after each plan completion*
@@ -73,6 +76,13 @@ Recent decisions affecting current work:
 - [Phase 2]: All USS transitions rewritten to explicit GPU-safe properties; zero transition: all remaining
 - [Phase 2]: UsageHints.DynamicTransform set with |= to preserve existing DynamicColor flags
 - [Phase 2]: stat-bar-fill width transition removed; deferred to Phase 4 PrimeTween scaleX
+- [Phase 03]: Hero theme colors updated to dark fantasy palette: Vex=amber/iron, Seraphina=violet/void, Orion=crimson/fang, Nyx=cyan/chaos
+- [Phase 03]: Glass-panel replaced by veil-panel material with per-hero accent border-color via theme class selectors
+- [Phase 03]: OnEmbarkTriggered event replaces old 3-event popup flow (Requested/Confirmed/Cancelled); confirm overlay fully removed
+- [Phase 03]: Tab content uses display:none/flex toggle via .tab-active class for clean content switching
+- [Phase 03]: Zone-based focus navigation using static FocusZone[4,4] graph for deterministic D-pad traversal
+- [Phase 03]: Nebula textures pre-baked at init with shared Color[] buffer -- zero per-switch GC allocation
+- [Phase 03]: Placeholder audio via AudioClip.Create at runtime (sine waves) until real audio assets available
 
 ### Pending Todos
 
@@ -87,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T22:55:24.541Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-controller-behavior/03-CONTEXT.md
+Last session: 2026-03-19T00:13:12.413Z
+Stopped at: Completed 03-01-PLAN.md
+Resume file: None
