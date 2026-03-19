@@ -741,12 +741,11 @@ namespace VeilBreakers.UI.Menus
                     // Gamepad/keyboard focus choreography
                     ButtonVFXHelper.AddFocusEffect(button);
 
-                    // Add shimmer to primary buttons for extra polish
+                    // Primary buttons get click burst only (shimmer/pulse border removed per user feedback)
                     bool isPrimary = button.name == "btn-new-game" || button.name == "btn-continue";
                     if (isPrimary)
                     {
-                        ButtonVFXHelper.AddShimmer(button, 4f);
-                        ButtonVFXHelper.AddPulseBorder(button, new Color(1f, 0.5f, 0.2f, 0.8f));
+                        ButtonVFXHelper.AddClickBurst(button);
                     }
                 }
             }
