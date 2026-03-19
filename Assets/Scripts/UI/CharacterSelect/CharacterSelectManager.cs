@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
@@ -13,8 +14,9 @@ namespace VeilBreakers.UI.CharacterSelect
 {
     /// <summary>
     /// Orchestrator for the character select screen.
-    /// Wires sub-controllers, manages hero navigation, and handles scene lifecycle.
-    /// Does NOT directly manipulate UI -- delegates to focused controllers.
+    /// Manages hero navigation, tab switching, async embark flow with timeout/error toast,
+    /// skeleton loading states, and scene lifecycle.
+    /// Delegates UI population to focused sub-controllers via CharSelectEvents.
     /// </summary>
     public class CharacterSelectManager : MonoBehaviour
     {
@@ -26,16 +28,33 @@ namespace VeilBreakers.UI.CharacterSelect
         private const string kMainMenuScene = "MainMenu";
         private const string kStarterTownLocation = "StarterTown";
         private const string kConfigPath = "CharacterSelect/HeroDisplayConfigs/";
+        private const float kSaveTimeout = 10f;
 
-        // UI element name constants (prevent silent null from typos)
+        private const int kTabOverview = 0;
+        private const int kTabAbilities = 1;
+        private const int kTabLore = 2;
+
         private const string kBtnPrev = "btn-prev";
         private const string kBtnNext = "btn-next";
         private const string kBtnBack = "btn-back";
         private const string kBtnEmbark = "btn-embark";
         private const string kEmbarkText = "embark-text";
         private const string kEmbarkGlow = "embark-glow";
-        private const string kInfoPanelContainer = "info-panel-container";
         private const string kEmbarkHexBg = "embark-hex-bg";
+        private const string kInfoPanelContainer = "info-panel-container";
+        private const string kTabBtnOverview = "tab-btn-overview";
+        private const string kTabBtnAbilities = "tab-btn-abilities";
+        private const string kTabBtnLore = "tab-btn-lore";
+        private const string kTabOverviewContent = "tab-overview-content";
+        private const string kTabAbilitiesContent = "tab-abilities-content";
+        private const string kTabLoreContent = "tab-lore-content";
+        private const string kEmbarkProgressRing = "embark-progress-ring";
+        private const string kToastContainer = "toast-container";
+        private const string kToastMessage = "toast-message";
+        private const string kBtnToastRetry = "btn-toast-retry";
+        private const string kBtnToastBack = "btn-toast-back";
+        private const string kSkeletonOverlay = "skeleton-overlay";
+        private const string kEmbarkSubtitle = "embark-subtitle";
 
         // =============================================================================
         // SERIALIZED FIELDS
@@ -53,6 +72,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private bool _isTransitioning;
         private bool _isEmbarking;
         private bool _isInitialized;
+        private int _currentTab = kTabOverview;
         private static readonly WaitForSeconds kTransitionWait = new WaitForSeconds(0.15f);
         private VisualElement _root;
         private string _currentThemeClass;
@@ -68,17 +88,35 @@ namespace VeilBreakers.UI.CharacterSelect
         private Label _embarkText;
         private VisualElement _embarkGlow;
         private VisualElement _infoPanelContainer;
+        private Button _tabBtnOverview;
+        private Button _tabBtnAbilities;
+        private Button _tabBtnLore;
+        private VisualElement _tabOverviewContent;
+        private VisualElement _tabAbilitiesContent;
+        private VisualElement _tabLoreContent;
+        private VisualElement _embarkProgressRing;
+        private VisualElement _toastContainer;
+        private Label _toastMessage;
+        private Button _btnToastRetry;
+        private Button _btnToastBack;
+        private VisualElement _skeletonOverlay;
+        private Label _embarkSubtitle;
 
         // =============================================================================
         // PROPERTIES
         // =============================================================================
 
+        /// <summary>Current hero index in the hero list.</summary>
         public int CurrentIndex => _currentIndex;
+        /// <summary>Currently selected hero data, or null if no hero selected.</summary>
         public HeroData CurrentHero => _heroList != null && _currentIndex >= 0 && _currentIndex < _heroList.Count
             ? _heroList[_currentIndex] : null;
+        /// <summary>Display config for the currently selected hero.</summary>
         public HeroDisplayConfig CurrentConfig => _heroConfigs != null && _currentIndex >= 0 && _currentIndex < _heroConfigs.Length
             ? _heroConfigs[_currentIndex] : null;
+        /// <summary>Total number of heroes available.</summary>
         public int HeroCount => _heroList?.Count ?? 0;
+        /// <summary>True if a hero switch transition is in progress.</summary>
         public bool IsTransitioning => _isTransitioning;
 
         // =============================================================================
@@ -87,18 +125,9 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void OnEnable()
         {
-            // Ensure critical singletons exist (handles direct scene entry without Bootstrap)
             EnsureCriticalManagers();
-
-            // Safety net: clear events on scene unload to prevent memory leaks
             SceneManager.sceneUnloaded += OnSceneUnloaded;
-
-            // Listen for navigation requests from sub-controllers (e.g. CarouselController)
             CharSelectEvents.OnNavigationRequested += NavigateToHero;
-
-            // Listen for embark trigger from HoldToEmbarkController
-            CharSelectEvents.OnEmbarkTriggered += TriggerEmbark;
-
             StartCoroutine(InitializeWhenReady());
         }
 
@@ -106,7 +135,6 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             SceneManager.sceneUnloaded -= OnSceneUnloaded;
             CharSelectEvents.OnNavigationRequested -= NavigateToHero;
-            CharSelectEvents.OnEmbarkTriggered -= TriggerEmbark;
             StopAllCoroutines();
             _isTransitioning = false;
             _isEmbarking = false;
@@ -114,23 +142,15 @@ namespace VeilBreakers.UI.CharacterSelect
             UnbindUI();
         }
 
-        private void OnDestroy()
-        {
-            CharSelectEvents.ClearAll();
-        }
+        private void OnDestroy() { CharSelectEvents.ClearAll(); }
 
         private void OnSceneUnloaded(Scene scene)
         {
-            // H2 fix: only clear events when OUR scene unloads, not any scene
-            if (scene == gameObject.scene)
-            {
-                CharSelectEvents.ClearAll();
-            }
+            if (scene == gameObject.scene) CharSelectEvents.ClearAll();
         }
 
         /// <summary>
         /// Creates critical singleton managers if they don't already exist.
-        /// Handles the case where this scene is entered directly (skipping Bootstrap/MainMenu).
         /// </summary>
         private static void EnsureCriticalManagers()
         {
@@ -150,7 +170,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private IEnumerator InitializeWhenReady()
         {
-            // Wait for GameDatabase (guard null for quit-time re-enable)
+            ShowSkeletonLoading();
             float timeout = 10f;
             float elapsed = 0f;
             while (GameDatabase.Instance == null || !GameDatabase.Instance.IsReady)
@@ -159,24 +179,18 @@ namespace VeilBreakers.UI.CharacterSelect
                 if (elapsed > timeout)
                 {
                     Debug.LogError("[CharSelectManager] Timed out waiting for GameDatabase after 10s.");
+                    CharSelectEvents.RaiseErrorOccurred("GameDatabase initialization timed out. Please restart.");
                     yield break;
                 }
                 yield return null;
             }
-
             LoadHeroData();
-
-            // Bail if no hero data -- downstream controllers can't function
-            if (_heroList == null || _heroList.Count == 0)
-            {
-                yield break;
-            }
-
+            if (_heroList == null || _heroList.Count == 0) yield break;
+            HideSkeletonLoading();
             CacheUIReferences();
             SetAnimationHints();
             BindUI();
             ApplyInitialState();
-
             _isInitialized = true;
             CharSelectEvents.RaiseScreenReady();
         }
@@ -188,24 +202,17 @@ namespace VeilBreakers.UI.CharacterSelect
         private void LoadHeroData()
         {
             _heroList = GameDatabase.Instance.GetAllHeroes();
-
             if (_heroList == null || _heroList.Count == 0)
             {
                 Debug.LogError("[CharSelectManager] No heroes found in GameDatabase!");
                 return;
             }
-
-            // Sort by hero_id for consistent ordering
             _heroList.Sort((a, b) => string.Compare(a.hero_id, b.hero_id, StringComparison.Ordinal));
-
-            // Validate configs match hero count
             if (_heroConfigs == null || _heroConfigs.Length == 0)
             {
                 Debug.LogWarning("[CharSelectManager] No HeroDisplayConfigs assigned. Using defaults.");
                 _heroConfigs = new HeroDisplayConfig[_heroList.Count];
             }
-
-            // Reorder configs to match hero list order
             ReorderConfigsToMatchHeroes();
         }
 
@@ -213,24 +220,15 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             var ordered = new HeroDisplayConfig[_heroList.Count];
             for (int i = 0; i < _heroList.Count; i++)
-            {
                 ordered[i] = FindConfigForHero(_heroList[i].hero_id);
-            }
             _heroConfigs = ordered;
         }
 
         private HeroDisplayConfig FindConfigForHero(string heroId)
         {
             if (_heroConfigs == null) return null;
-
             for (int i = 0; i < _heroConfigs.Length; i++)
-            {
-                if (_heroConfigs[i] != null && _heroConfigs[i].heroId == heroId)
-                {
-                    return _heroConfigs[i];
-                }
-            }
-
+                if (_heroConfigs[i] != null && _heroConfigs[i].heroId == heroId) return _heroConfigs[i];
             Debug.LogWarning($"[CharSelectManager] No config found for hero '{heroId}'");
             return null;
         }
@@ -243,7 +241,6 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (_uiDocument == null) { Debug.LogError("[CharacterSelectManager] UIDocument not assigned!"); return; }
             _root = _uiDocument.rootVisualElement;
-
             _btnPrev = _root.Q<Button>(kBtnPrev);
             _btnNext = _root.Q<Button>(kBtnNext);
             _btnBack = _root.Q<Button>(kBtnBack);
@@ -251,13 +248,37 @@ namespace VeilBreakers.UI.CharacterSelect
             _embarkText = _root.Q<Label>(kEmbarkText);
             _embarkGlow = _root.Q<VisualElement>(kEmbarkGlow);
             _infoPanelContainer = _root.Q<VisualElement>(kInfoPanelContainer);
+            _tabBtnOverview = _root.Q<Button>(kTabBtnOverview);
+            _tabBtnAbilities = _root.Q<Button>(kTabBtnAbilities);
+            _tabBtnLore = _root.Q<Button>(kTabBtnLore);
+            _tabOverviewContent = _root.Q<VisualElement>(kTabOverviewContent);
+            _tabAbilitiesContent = _root.Q<VisualElement>(kTabAbilitiesContent);
+            _tabLoreContent = _root.Q<VisualElement>(kTabLoreContent);
+            _embarkProgressRing = _root.Q<VisualElement>(kEmbarkProgressRing);
+            _toastContainer = _root.Q<VisualElement>(kToastContainer);
+            _toastMessage = _root.Q<Label>(kToastMessage);
+            _btnToastRetry = _root.Q<Button>(kBtnToastRetry);
+            _btnToastBack = _root.Q<Button>(kBtnToastBack);
+            _skeletonOverlay = _root.Q<VisualElement>(kSkeletonOverlay);
+            _embarkSubtitle = _root.Q<Label>(kEmbarkSubtitle);
 
-            // Assert critical elements exist -- surfaces typos immediately instead of silent null
             Debug.Assert(_btnPrev != null, $"[CharSelectManager] Element '{kBtnPrev}' not found in UXML");
             Debug.Assert(_btnNext != null, $"[CharSelectManager] Element '{kBtnNext}' not found in UXML");
             Debug.Assert(_btnBack != null, $"[CharSelectManager] Element '{kBtnBack}' not found in UXML");
             Debug.Assert(_btnEmbark != null, $"[CharSelectManager] Element '{kBtnEmbark}' not found in UXML");
             Debug.Assert(_infoPanelContainer != null, $"[CharSelectManager] Element '{kInfoPanelContainer}' not found in UXML");
+            Debug.Assert(_tabBtnOverview != null, $"[CharSelectManager] Element '{kTabBtnOverview}' not found in UXML");
+            Debug.Assert(_tabBtnAbilities != null, $"[CharSelectManager] Element '{kTabBtnAbilities}' not found in UXML");
+            Debug.Assert(_tabBtnLore != null, $"[CharSelectManager] Element '{kTabBtnLore}' not found in UXML");
+            Debug.Assert(_tabOverviewContent != null, $"[CharSelectManager] Element '{kTabOverviewContent}' not found in UXML");
+            Debug.Assert(_tabAbilitiesContent != null, $"[CharSelectManager] Element '{kTabAbilitiesContent}' not found in UXML");
+            Debug.Assert(_tabLoreContent != null, $"[CharSelectManager] Element '{kTabLoreContent}' not found in UXML");
+            Debug.Assert(_embarkProgressRing != null, $"[CharSelectManager] Element '{kEmbarkProgressRing}' not found in UXML");
+            Debug.Assert(_toastContainer != null, $"[CharSelectManager] Element '{kToastContainer}' not found in UXML");
+            Debug.Assert(_toastMessage != null, $"[CharSelectManager] Element '{kToastMessage}' not found in UXML");
+            Debug.Assert(_btnToastRetry != null, $"[CharSelectManager] Element '{kBtnToastRetry}' not found in UXML");
+            Debug.Assert(_btnToastBack != null, $"[CharSelectManager] Element '{kBtnToastBack}' not found in UXML");
+            Debug.Assert(_skeletonOverlay != null, $"[CharSelectManager] Element '{kSkeletonOverlay}' not found in UXML");
         }
 
         private void BindUI()
@@ -265,10 +286,14 @@ namespace VeilBreakers.UI.CharacterSelect
             _btnPrev?.RegisterCallback<ClickEvent>(OnPrevClicked);
             _btnNext?.RegisterCallback<ClickEvent>(OnNextClicked);
             _btnBack?.RegisterCallback<ClickEvent>(OnBackClicked);
-
-            // NOTE: btn-embark click is handled by HoldToEmbarkController (hold-to-confirm)
-            // Zone navigation is handled by CharSelectFocusManager
-            // Only cancel (back) navigation remains here
+            _btnEmbark?.RegisterCallback<ClickEvent>(OnEmbarkClicked);
+            _tabBtnOverview?.RegisterCallback<ClickEvent>(OnTabOverviewClicked);
+            _tabBtnAbilities?.RegisterCallback<ClickEvent>(OnTabAbilitiesClicked);
+            _tabBtnLore?.RegisterCallback<ClickEvent>(OnTabLoreClicked);
+            _btnToastRetry?.RegisterCallback<ClickEvent>(OnToastRetryClicked);
+            _btnToastBack?.RegisterCallback<ClickEvent>(OnToastBackClicked);
+            _root?.RegisterCallback<NavigationMoveEvent>(OnNavigationMove);
+            _root?.RegisterCallback<NavigationSubmitEvent>(OnNavigationSubmit);
             _root?.RegisterCallback<NavigationCancelEvent>(OnNavigationCancel);
         }
 
@@ -277,7 +302,14 @@ namespace VeilBreakers.UI.CharacterSelect
             _btnPrev?.UnregisterCallback<ClickEvent>(OnPrevClicked);
             _btnNext?.UnregisterCallback<ClickEvent>(OnNextClicked);
             _btnBack?.UnregisterCallback<ClickEvent>(OnBackClicked);
-
+            _btnEmbark?.UnregisterCallback<ClickEvent>(OnEmbarkClicked);
+            _tabBtnOverview?.UnregisterCallback<ClickEvent>(OnTabOverviewClicked);
+            _tabBtnAbilities?.UnregisterCallback<ClickEvent>(OnTabAbilitiesClicked);
+            _tabBtnLore?.UnregisterCallback<ClickEvent>(OnTabLoreClicked);
+            _btnToastRetry?.UnregisterCallback<ClickEvent>(OnToastRetryClicked);
+            _btnToastBack?.UnregisterCallback<ClickEvent>(OnToastBackClicked);
+            _root?.UnregisterCallback<NavigationMoveEvent>(OnNavigationMove);
+            _root?.UnregisterCallback<NavigationSubmitEvent>(OnNavigationSubmit);
             _root?.UnregisterCallback<NavigationCancelEvent>(OnNavigationCancel);
         }
 
@@ -289,7 +321,8 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             _currentIndex = 0;
             _isTransitioning = false;
-
+            SwitchTab(kTabOverview);
+            DismissToast();
             if (_heroList != null && _heroList.Count > 0)
             {
                 ApplyThemeClass(_heroList[0].hero_id);
@@ -302,21 +335,17 @@ namespace VeilBreakers.UI.CharacterSelect
         // HERO NAVIGATION
         // =============================================================================
 
+        /// <summary>Navigates to the hero at the specified index with transition guard.</summary>
         public void NavigateToHero(int index)
         {
             if (_isTransitioning || _heroList == null || _heroList.Count == 0) return;
-
             index = Mathf.Clamp(index, 0, _heroList.Count - 1);
             if (index == _currentIndex) return;
-
             _isTransitioning = true;
             _currentIndex = index;
-
             ApplyThemeClass(_heroList[_currentIndex].hero_id);
             CharSelectEvents.RaiseHeroChanged(_currentIndex, _heroList[_currentIndex], CurrentConfig);
             UpdateEmbarkText();
-
-            // Transition completes after USS animations finish
             StartCoroutine(EndTransitionAfterDelay());
         }
 
@@ -326,19 +355,20 @@ namespace VeilBreakers.UI.CharacterSelect
             _isTransitioning = false;
         }
 
+        /// <summary>Navigates to the previous hero (wraps around).</summary>
         public void NavigatePrev()
         {
             if (_heroList == null || _heroList.Count == 0) return;
             int newIndex = _currentIndex - 1;
-            if (newIndex < 0) newIndex = _heroList.Count - 1; // Wrap around
+            if (newIndex < 0) newIndex = _heroList.Count - 1;
             NavigateToHero(newIndex);
         }
 
+        /// <summary>Navigates to the next hero (wraps around).</summary>
         public void NavigateNext()
         {
             if (_heroList == null || _heroList.Count == 0) return;
-            int newIndex = (_currentIndex + 1) % _heroList.Count;
-            NavigateToHero(newIndex);
+            NavigateToHero((_currentIndex + 1) % _heroList.Count);
         }
 
         // =============================================================================
@@ -348,135 +378,151 @@ namespace VeilBreakers.UI.CharacterSelect
         private void ApplyThemeClass(string heroId)
         {
             if (_root == null) return;
-
-            // H7 fix: track current theme class instead of hardcoding hero list
-            if (!string.IsNullOrEmpty(_currentThemeClass))
-            {
-                _root.RemoveFromClassList(_currentThemeClass);
-            }
-
+            if (!string.IsNullOrEmpty(_currentThemeClass)) _root.RemoveFromClassList(_currentThemeClass);
             _currentThemeClass = $"theme-{heroId}";
             _root.AddToClassList(_currentThemeClass);
         }
 
         // =============================================================================
-        // EMBARK FLOW
+        // TAB MANAGEMENT
+        // =============================================================================
+
+        private void SwitchTab(int tabIndex)
+        {
+            if (tabIndex == _currentTab && tabIndex != kTabOverview) return;
+            _currentTab = tabIndex;
+            SetTabButtonActive(_tabBtnOverview, tabIndex == kTabOverview);
+            SetTabButtonActive(_tabBtnAbilities, tabIndex == kTabAbilities);
+            SetTabButtonActive(_tabBtnLore, tabIndex == kTabLore);
+            SetTabContentActive(_tabOverviewContent, tabIndex == kTabOverview);
+            SetTabContentActive(_tabAbilitiesContent, tabIndex == kTabAbilities);
+            SetTabContentActive(_tabLoreContent, tabIndex == kTabLore);
+            CharSelectEvents.RaiseTabChanged(tabIndex);
+        }
+
+        private static void SetTabButtonActive(Button btn, bool active)
+        {
+            if (btn == null) return;
+            if (active) btn.AddToClassList("tab-btn-active");
+            else btn.RemoveFromClassList("tab-btn-active");
+        }
+
+        private static void SetTabContentActive(VisualElement content, bool active)
+        {
+            if (content == null) return;
+            if (active) content.AddToClassList("tab-active");
+            else content.RemoveFromClassList("tab-active");
+        }
+
+        // =============================================================================
+        // LOADING STATE
+        // =============================================================================
+
+        private void ShowSkeletonLoading()
+        {
+            if (_skeletonOverlay == null && _uiDocument != null)
+                _skeletonOverlay = _uiDocument.rootVisualElement?.Q<VisualElement>(kSkeletonOverlay);
+            _skeletonOverlay?.RemoveFromClassList("hidden");
+            CharSelectEvents.RaiseLoadingStarted();
+        }
+
+        private void HideSkeletonLoading()
+        {
+            if (_skeletonOverlay == null && _uiDocument != null)
+                _skeletonOverlay = _uiDocument.rootVisualElement?.Q<VisualElement>(kSkeletonOverlay);
+            _skeletonOverlay?.AddToClassList("hidden");
+            CharSelectEvents.RaiseLoadingComplete();
+        }
+
+        // =============================================================================
+        // EMBARK FLOW (async/await with timeout)
         // =============================================================================
 
         private void UpdateEmbarkText()
         {
             var hero = CurrentHero;
             if (hero == null) return;
-
             string name = string.IsNullOrEmpty(hero.display_name) ? (hero.hero_id?.ToUpper() ?? "UNKNOWN") : hero.display_name.ToUpper();
             if (_embarkText != null) _embarkText.text = $"EMBARK AS {name}";
-
-            // Start breathing glow
             _embarkGlow?.AddToClassList("breathing");
         }
 
         /// <summary>
-        /// Called when embark hold completes (via OnEmbarkTriggered event).
-        /// Begins the async embark sequence (save creation + scene transition).
+        /// Initiates the async embark sequence with save creation and scene transition.
+        /// Uses Awaitable with destroyCancellationToken for lifecycle safety.
         /// </summary>
-        private void TriggerEmbark()
+        private async void TriggerEmbark()
         {
-            // Guard against double re-entry
             if (_isEmbarking) return;
-
             var hero = CurrentHero;
             if (hero == null) return;
-
             _isEmbarking = true;
-
+            CharSelectEvents.RaiseEmbarkTriggered();
             CharSelectEvents.RaiseScreenExiting();
-
-            StartCoroutine(EmbarkSequence(hero));
-        }
-
-        private IEnumerator EmbarkSequence(HeroData hero)
-        {
-            // Create save file
-            yield return StartCoroutine(CreateOrRotateNewGameSave(hero));
-
-            // Transition to gameplay
-            if (ScreenTransition.HasInstance)
+            try
             {
-                ScreenTransition.Instance.Transition(() => SceneManager.LoadScene(kGameScene));
+                await ExecuteEmbarkAsync(hero);
             }
-            else
+            catch (OperationCanceledException)
             {
-                SceneManager.LoadScene(kGameScene);
+                Debug.Log("[CharSelectManager] Embark cancelled (destroyed or timed out).");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[CharSelectManager] Embark failed: {ex.Message}");
+                ShowErrorToast($"Embark failed: {ex.Message}");
+                _isEmbarking = false;
             }
         }
 
-        private const float kSaveTaskTimeout = 10f;
-
-        private IEnumerator CreateOrRotateNewGameSave(HeroData hero)
+        private async Awaitable ExecuteEmbarkAsync(HeroData hero)
         {
-            if (!SaveManager.HasInstance || hero == null)
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
+            cts.CancelAfter(TimeSpan.FromSeconds(kSaveTimeout));
+            var token = cts.Token;
+            if (!SaveManager.HasInstance)
             {
-                yield break;
+                ShowErrorToast("Save system unavailable. Please restart.");
+                _isEmbarking = false;
+                return;
             }
-
             var saveManager = SaveManager.Instance;
-            float elapsed;
-
-            // H5 fix: add timeouts to all async task polling loops
-            var slotTask = saveManager.GetBestNewGameSlotAsync();
-            elapsed = 0f;
-            while (!slotTask.IsCompleted)
-            {
-                elapsed += Time.unscaledDeltaTime;
-                if (elapsed > kSaveTaskTimeout)
-                {
-                    Debug.LogError("[CharSelectManager] GetBestNewGameSlotAsync timed out.");
-                    yield break;
-                }
-                yield return null;
-            }
-
-            if (slotTask.IsFaulted || slotTask.IsCanceled)
-            {
-                Debug.LogWarning("[CharSelectManager] Failed to resolve save slot.");
-                yield break;
-            }
-
-            int slot = slotTask.Result;
+            int slot = await saveManager.GetBestNewGameSlotAsync();
+            token.ThrowIfCancellationRequested();
             string heroName = string.IsNullOrEmpty(hero.display_name) ? hero.hero_id : hero.display_name;
-
-            var createTask = saveManager.CreateNewSaveAsync(slot, hero.hero_id, heroName, hero.GetPrimaryPath());
-            elapsed = 0f;
-            while (!createTask.IsCompleted)
+            bool created = await saveManager.CreateNewSaveAsync(slot, hero.hero_id, heroName, hero.GetPrimaryPath());
+            token.ThrowIfCancellationRequested();
+            if (!created)
             {
-                elapsed += Time.unscaledDeltaTime;
-                if (elapsed > kSaveTaskTimeout)
-                {
-                    Debug.LogError("[CharSelectManager] CreateNewSaveAsync timed out.");
-                    yield break;
-                }
-                yield return null;
+                ShowErrorToast("Failed to create save file. Please try again.");
+                _isEmbarking = false;
+                return;
             }
-
-            if (createTask.IsFaulted || createTask.IsCanceled || !createTask.Result)
-            {
-                Debug.LogWarning($"[CharSelectManager] Failed to create save in slot {slot}.");
-                yield break;
-            }
-
             saveManager.SetCurrentLocation(kStarterTownLocation);
-            var saveTask = saveManager.SaveAsync(slot);
-            elapsed = 0f;
-            while (!saveTask.IsCompleted)
-            {
-                elapsed += Time.unscaledDeltaTime;
-                if (elapsed > kSaveTaskTimeout)
-                {
-                    Debug.LogError("[CharSelectManager] SaveAsync timed out.");
-                    yield break;
-                }
-                yield return null;
-            }
+            await saveManager.SaveAsync(slot);
+            token.ThrowIfCancellationRequested();
+            if (ScreenTransition.HasInstance)
+                ScreenTransition.Instance.Transition(() => SceneManager.LoadScene(kGameScene));
+            else
+                SceneManager.LoadScene(kGameScene);
+        }
+
+        // =============================================================================
+        // TOAST NOTIFICATION
+        // =============================================================================
+
+        private void ShowErrorToast(string message)
+        {
+            CharSelectUIUtils.SetLabel(_toastMessage, message);
+            _toastContainer?.RemoveFromClassList("toast-hidden");
+            _toastContainer?.AddToClassList("toast-visible");
+            CharSelectEvents.RaiseErrorOccurred(message);
+        }
+
+        private void DismissToast()
+        {
+            _toastContainer?.RemoveFromClassList("toast-visible");
+            _toastContainer?.AddToClassList("toast-hidden");
         }
 
         // =============================================================================
@@ -485,65 +531,77 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void OnPrevClicked(ClickEvent evt) => NavigatePrev();
         private void OnNextClicked(ClickEvent evt) => NavigateNext();
-
         private void OnBackClicked(ClickEvent evt) => NavigateBack();
+        private void OnEmbarkClicked(ClickEvent evt) => TriggerEmbark();
 
         private void NavigateBack()
         {
             CharSelectEvents.RaiseScreenExiting();
             if (ScreenTransition.HasInstance)
-            {
                 ScreenTransition.Instance.Transition(() => SceneManager.LoadScene(kMainMenuScene));
-            }
             else
-            {
                 SceneManager.LoadScene(kMainMenuScene);
-            }
         }
+
+        private void OnTabOverviewClicked(ClickEvent evt) => SwitchTab(kTabOverview);
+        private void OnTabAbilitiesClicked(ClickEvent evt) => SwitchTab(kTabAbilities);
+        private void OnTabLoreClicked(ClickEvent evt) => SwitchTab(kTabLore);
+        private void OnToastRetryClicked(ClickEvent evt) { DismissToast(); _isEmbarking = false; TriggerEmbark(); }
+        private void OnToastBackClicked(ClickEvent evt) { DismissToast(); NavigateBack(); }
 
         // =============================================================================
         // NAVIGATION EVENTS (KEYBOARD / GAMEPAD)
         // =============================================================================
 
-        private void OnNavigationCancel(NavigationCancelEvent evt)
+        private void OnNavigationMove(NavigationMoveEvent evt)
         {
-            NavigateBack();
-            evt.StopPropagation();
+            switch (evt.direction)
+            {
+                case NavigationMoveEvent.Direction.Left:
+                    NavigatePrev();
+                    evt.StopPropagation();
+                    break;
+                case NavigationMoveEvent.Direction.Right:
+                    NavigateNext();
+                    evt.StopPropagation();
+                    break;
+                // Up/Down reserved for Plan 03 CharSelectFocusManager zone navigation
+            }
         }
 
-        // =================================================================
+        private void OnNavigationSubmit(NavigationSubmitEvent evt) { TriggerEmbark(); evt.StopPropagation(); }
+        private void OnNavigationCancel(NavigationCancelEvent evt) { NavigateBack(); evt.StopPropagation(); }
+
+        // =============================================================================
         // ANIMATION HINTS
-        // =================================================================
+        // =============================================================================
 
         /// <summary>
         /// Sets UsageHints.DynamicTransform on all VisualElements that have USS
-        /// transitions or hover scale/translate effects. Called once during init,
-        /// after CacheUIReferences(). Uses |= to preserve existing flags (e.g. DynamicColor).
+        /// transitions or hover scale/translate effects. Called once during init.
         /// </summary>
         private void SetAnimationHints()
         {
-            // Named elements
-            SetHint(_infoPanelContainer);
             SetHint(_btnBack);
             SetHint(_btnEmbark);
-
             var embarkHexBg = _root.Q<VisualElement>(kEmbarkHexBg);
             Debug.Assert(embarkHexBg != null, $"[CharSelectManager] Missing element: {kEmbarkHexBg}");
             SetHint(embarkHexBg);
-
             SetHint(_embarkGlow);
             SetHint(_btnPrev);
             SetHint(_btnNext);
             SetHint(_embarkText);
-
-            // Class-based queries (multiple elements)
+            SetHint(_infoPanelContainer);
+            SetHint(_tabOverviewContent);
+            SetHint(_tabAbilitiesContent);
+            SetHint(_tabLoreContent);
+            SetHint(_embarkProgressRing);
+            SetHint(_toastContainer);
             _root.Query<VisualElement>(className: "ability-slot").ForEach(SetHint);
             _root.Query<VisualElement>(className: "hero-card").ForEach(SetHint);
             _root.Query<VisualElement>(className: "nav-arrow").ForEach(SetHint);
             _root.Query<VisualElement>(className: "veil-panel").ForEach(SetHint);
             _root.Query<VisualElement>(className: "fog-particles").ForEach(SetHint);
-            _root.Query<VisualElement>(className: "tab-btn").ForEach(SetHint);
-            _root.Query<VisualElement>(className: "toast-container").ForEach(SetHint);
         }
 
         private static void SetHint(VisualElement el)
