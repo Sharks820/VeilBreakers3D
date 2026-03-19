@@ -2,12 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
 using VeilBreakers.Data;
 using VeilBreakers.Managers;
+using VeilBreakers.UI.Controls;
 using VeilBreakers.UI.Core;
 
 namespace VeilBreakers.UI.CharacterSelect
@@ -62,6 +64,8 @@ namespace VeilBreakers.UI.CharacterSelect
 
         [SerializeField] private UIDocument _uiDocument;
         [SerializeField] private HeroDisplayConfig[] _heroConfigs;
+        [SerializeField] private HeroThemeTransitioner _themeTransitioner;
+        [SerializeField] private EmbarkCinematicController _embarkCinematic;
 
         // =============================================================================
         // STATE
@@ -146,6 +150,14 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void OnDestroy() { CharSelectEvents.ClearAll(); }
 
+        private void LateUpdate()
+        {
+            if (_themeTransitioner != null)
+            {
+                _themeTransitioner.UpdateParallax();
+            }
+        }
+
         private void OnSceneUnloaded(Scene scene)
         {
             if (scene == gameObject.scene) CharSelectEvents.ClearAll();
@@ -191,6 +203,7 @@ namespace VeilBreakers.UI.CharacterSelect
             HideSkeletonLoading();
             CacheUIReferences();
             SetAnimationHints();
+            InitVisualSystems();
             BindUI();
             ApplyInitialState();
             _isInitialized = true;
@@ -281,6 +294,48 @@ namespace VeilBreakers.UI.CharacterSelect
             Debug.Assert(_btnToastRetry != null, $"[CharSelectManager] Element '{kBtnToastRetry}' not found in UXML");
             Debug.Assert(_btnToastBack != null, $"[CharSelectManager] Element '{kBtnToastBack}' not found in UXML");
             Debug.Assert(_skeletonOverlay != null, $"[CharSelectManager] Element '{kSkeletonOverlay}' not found in UXML");
+        }
+
+        /// <summary>
+        /// Initializes HeroThemeTransitioner, veil-pulse-flash element, and embark button breathing.
+        /// Called after CacheUIReferences when all UI elements are cached.
+        /// </summary>
+        private void InitVisualSystems()
+        {
+            // Initialize HeroThemeTransitioner with root VisualElement
+            if (_themeTransitioner != null && _root != null)
+            {
+                _themeTransitioner.Init(_root);
+            }
+
+            // Create veil-pulse-flash element for hero switch animation
+            if (_root != null)
+            {
+                var veilPulseFlash = new VisualElement();
+                veilPulseFlash.name = "veil-pulse-flash";
+                veilPulseFlash.style.position = Position.Absolute;
+                veilPulseFlash.style.width = Length.Percent(100);
+                veilPulseFlash.style.height = Length.Percent(100);
+                veilPulseFlash.style.opacity = 0f;
+                veilPulseFlash.pickingMode = PickingMode.Ignore;
+                veilPulseFlash.usageHints = UsageHints.DynamicTransform | UsageHints.DynamicColor;
+                _root.Add(veilPulseFlash);
+            }
+
+            // Initialize embark cinematic with UI references
+            if (_embarkCinematic != null && _root != null)
+            {
+                var heroStage = _root.Q<VisualElement>("hero-stage");
+                var carousel = _root.Q<VisualElement>("carousel-strip")?.parent
+                               ?? _root.Q<VisualElement>("carousel-container");
+                _embarkCinematic.Init(_root, heroStage, _infoPanelContainer, carousel, _themeTransitioner);
+            }
+
+            // Embark button breathing glow (VISUAL-08)
+            if (_btnEmbark != null)
+            {
+                ButtonVFXHelper.AddBreathing(_btnEmbark, 0.012f, 2500f);
+            }
         }
 
         private void BindUI()
@@ -479,6 +534,27 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private async Awaitable ExecuteEmbarkAsync(HeroData hero)
         {
+            // Play embark cinematic before save/load (if available)
+            if (_embarkCinematic != null && _themeTransitioner != null)
+            {
+                var tcs = new System.Threading.Tasks.TaskCompletionSource<bool>();
+
+                void OnComplete()
+                {
+                    _embarkCinematic.OnCinematicComplete -= OnComplete;
+                    tcs.TrySetResult(true);
+                }
+                _embarkCinematic.OnCinematicComplete += OnComplete;
+
+                var theme = _themeTransitioner.GetCurrentTheme();
+                string heroName = string.IsNullOrEmpty(hero.display_name) ? hero.hero_id?.ToUpper() ?? "UNKNOWN" : hero.display_name.ToUpper();
+                string heroTitle = hero.title ?? "";
+                _embarkCinematic.PlayEmbarkCinematic(theme, heroName, heroTitle);
+
+                // Await cinematic completion (~1.2s)
+                await tcs.Task;
+            }
+
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);
             cts.CancelAfter(TimeSpan.FromSeconds(kSaveTimeout));
             var token = cts.Token;

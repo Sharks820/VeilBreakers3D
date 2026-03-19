@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using PrimeTween;
+using VeilBreakers.Core;
 
 namespace VeilBreakers.UI.CharacterSelect
 {
@@ -174,6 +175,85 @@ namespace VeilBreakers.UI.CharacterSelect
         public void StopTransitions()
         {
             _transitionSequence.Stop();
+        }
+
+        // =============================================================================
+        // PARALLAX
+        // =============================================================================
+
+        private const float kVeilGlowParallax = 0.5f;
+        private const float kScanlineParallax = 1.0f;
+        private const float kVignetteParallax = 2.0f;
+        private const float kPanelParallax = 4.0f;
+
+        private VisualElement _leftPanel;
+        private VisualElement _rightPanel;
+        private VisualElement _carousel;
+        private Vector2 _currentParallaxOffset;
+        private Vector2 _previousParallaxOffset;
+        private Vector2 _screenCenter;
+        private const float kParallaxSmoothing = 5f;
+        private const float kParallaxDirtyThreshold = 0.05f;
+
+        /// <summary>
+        /// Registers UI panels for parallax movement.
+        /// Call after Init(root) setup.
+        /// </summary>
+        public void InitParallax(VisualElement leftPanel, VisualElement rightPanel, VisualElement carousel)
+        {
+            _leftPanel = leftPanel;
+            _rightPanel = rightPanel;
+            _carousel = carousel;
+            _screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+
+            if (leftPanel != null) leftPanel.usageHints |= UsageHints.DynamicTransform;
+            if (rightPanel != null) rightPanel.usageHints |= UsageHints.DynamicTransform;
+            if (carousel != null) carousel.usageHints |= UsageHints.DynamicTransform;
+        }
+
+        /// <summary>
+        /// Updates parallax offsets based on mouse/stick position.
+        /// Call from MonoBehaviour.LateUpdate() via HeroThemeTransitioner.
+        /// UI panels shift 3-5px, overlay layers at different rates for depth.
+        /// </summary>
+        public void UpdateParallax()
+        {
+            Vector2 mousePos = InputManager.HasInstance
+                ? InputManager.Instance.MousePosition
+                : Vector2.zero;
+
+            if (_screenCenter.x <= 0f) _screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+
+            Vector2 normalized = new Vector2(
+                (mousePos.x - _screenCenter.x) / Mathf.Max(_screenCenter.x, 1f),
+                (mousePos.y - _screenCenter.y) / Mathf.Max(_screenCenter.y, 1f)
+            );
+
+            _currentParallaxOffset = Vector2.Lerp(
+                _currentParallaxOffset,
+                normalized,
+                Time.unscaledDeltaTime * kParallaxSmoothing
+            );
+
+            if (Mathf.Abs(_currentParallaxOffset.x - _previousParallaxOffset.x) < kParallaxDirtyThreshold &&
+                Mathf.Abs(_currentParallaxOffset.y - _previousParallaxOffset.y) < kParallaxDirtyThreshold)
+                return;
+            _previousParallaxOffset = _currentParallaxOffset;
+
+            ApplyTranslateOffset(_veilGlow, kVeilGlowParallax);
+            ApplyTranslateOffset(_scanlines, kScanlineParallax);
+            ApplyTranslateOffset(_vignette, kVignetteParallax);
+            ApplyTranslateOffset(_leftPanel, kPanelParallax);
+            ApplyTranslateOffset(_rightPanel, kPanelParallax);
+            ApplyTranslateOffset(_carousel, kPanelParallax * 0.8f);
+        }
+
+        private void ApplyTranslateOffset(VisualElement element, float multiplier)
+        {
+            if (element == null) return;
+            float x = _currentParallaxOffset.x * multiplier;
+            float y = _currentParallaxOffset.y * multiplier;
+            element.style.translate = new Translate(x, y);
         }
 
         // =============================================================================

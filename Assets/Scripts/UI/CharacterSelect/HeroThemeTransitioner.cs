@@ -109,8 +109,17 @@ namespace VeilBreakers.UI.CharacterSelect
             _heroTitleLabel = root.Q<Label>("hero-title");
             _veilPulseFlash = root.Q<VisualElement>("veil-pulse-flash");
 
+            // Initialize parallax with panel references
+            var leftPanel = _heroStage; // Hero stage is the left side of rule-of-thirds
+            _overlayController.InitParallax(leftPanel, _infoPanel, _carousel);
+
             _isInitialized = true;
         }
+
+        /// <summary>
+        /// Returns the currently active HeroThemeConfig (used by embark cinematic).
+        /// </summary>
+        public HeroThemeConfig GetCurrentTheme() => _currentTheme;
 
         // =============================================================================
         // EVENT HANDLERS

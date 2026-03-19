@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using PrimeTween;
 using VeilBreakers.Core;
 using VeilBreakers.Data;
+using VeilBreakers.UI.Controls;
 
 namespace VeilBreakers.UI.CharacterSelect
 {
@@ -152,17 +154,26 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void UpdateSelection(int index)
         {
-            // Remove previous selection
+            // Deselect previous card: shrink, dim, stop breathing
             if (_selectedIndex >= 0 && _selectedIndex < _heroCards.Count)
             {
-                _heroCards[_selectedIndex].RemoveFromClassList("selected");
+                var prev = _heroCards[_selectedIndex];
+                prev.RemoveFromClassList("selected");
+                Tween.StyleScale(prev, new Scale(new Vector2(0.9f, 0.9f)), 0.3f, Ease.InCubic);
+                Tween.StyleTranslate(prev, new Translate(0, 0), 0.3f, Ease.InCubic);
+                Tween.StyleOpacity(prev, 0.6f, 0.3f);
             }
 
-            // Apply new selection
+            // Select new card: grow, brighten, add breathing
             _selectedIndex = index;
             if (_selectedIndex >= 0 && _selectedIndex < _heroCards.Count)
             {
-                _heroCards[_selectedIndex].AddToClassList("selected");
+                var card = _heroCards[_selectedIndex];
+                card.AddToClassList("selected");
+                Tween.StyleScale(card, new Scale(new Vector2(1.15f, 1.15f)), 0.3f, Ease.OutCubic);
+                Tween.StyleTranslate(card, new Translate(0, -5), 0.3f, Ease.OutCubic);
+                Tween.StyleOpacity(card, 1f, 0.3f);
+                ButtonVFXHelper.AddBreathing(card, 0.008f, 3000f);
             }
         }
 
