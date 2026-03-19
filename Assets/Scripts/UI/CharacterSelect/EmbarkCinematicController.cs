@@ -116,7 +116,7 @@ namespace VeilBreakers.UI.CharacterSelect
             }
             if (_cinematicNameLabel != null)
             {
-                seq.Insert(0.8f, Tween.StyleOpacity(_cinematicNameLabel, 0f, 0.15f, Ease.InQuad));
+                seq.Insert(0.8f, Tween.VisualElementOpacity(_cinematicNameLabel, 0f, 0.15f, Ease.InQuad));
             }
 
             // t=1000ms: White-out
@@ -206,7 +206,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             return Sequence.Create()
                 .ChainCallback(() => flash.style.opacity = 0.8f)
-                .Chain(Tween.StyleOpacity(flash, 0f, 0.15f, Ease.OutQuad))
+                .Chain(Tween.VisualElementOpacity(flash, 0f, 0.15f, Ease.OutQuad))
                 .ChainCallback(() => flash.RemoveFromHierarchy());
         }
 
@@ -219,15 +219,15 @@ namespace VeilBreakers.UI.CharacterSelect
 
             if (_leftPanel != null)
             {
-                seq.Group(Tween.StyleTranslate(_leftPanel, new Translate(-300, 0), 0.2f, Ease.InCubic));
+                seq.Group(Tween.Position(_leftPanel, new Vector3(-300f, 0f, 0f), 0.2f, Ease.InCubic));
             }
             if (_rightPanel != null)
             {
-                seq.Group(Tween.StyleTranslate(_rightPanel, new Translate(300, 0), 0.2f, Ease.InCubic));
+                seq.Group(Tween.Position(_rightPanel, new Vector3(300f, 0f, 0f), 0.2f, Ease.InCubic));
             }
             if (_carousel != null)
             {
-                seq.Group(Tween.StyleTranslate(_carousel, new Translate(0, 200), 0.2f, Ease.InCubic));
+                seq.Group(Tween.Position(_carousel, new Vector3(0f, 200f, 0f), 0.2f, Ease.InCubic));
             }
 
             return seq;

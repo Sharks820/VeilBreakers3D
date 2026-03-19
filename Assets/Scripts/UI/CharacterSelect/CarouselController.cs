@@ -159,9 +159,9 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 var prev = _heroCards[_selectedIndex];
                 prev.RemoveFromClassList("selected");
-                Tween.StyleScale(prev, new Scale(new Vector2(0.9f, 0.9f)), 0.3f, Ease.InCubic);
-                Tween.StyleTranslate(prev, new Translate(0, 0), 0.3f, Ease.InCubic);
-                Tween.StyleOpacity(prev, 0.6f, 0.3f);
+                Tween.Scale(prev, new Vector3(0.9f, 0.9f, 1f), 0.3f, Ease.InCubic);
+                Tween.Position(prev, Vector3.zero, 0.3f, Ease.InCubic);
+                Tween.VisualElementOpacity(prev, 0.6f, 0.3f);
             }
 
             // Select new card: grow, brighten, add breathing
@@ -170,9 +170,9 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 var card = _heroCards[_selectedIndex];
                 card.AddToClassList("selected");
-                Tween.StyleScale(card, new Scale(new Vector2(1.15f, 1.15f)), 0.3f, Ease.OutCubic);
-                Tween.StyleTranslate(card, new Translate(0, -5), 0.3f, Ease.OutCubic);
-                Tween.StyleOpacity(card, 1f, 0.3f);
+                Tween.Scale(card, new Vector3(1.15f, 1.15f, 1f), 0.3f, Ease.OutCubic);
+                Tween.Position(card, new Vector3(0f, -5f, 0f), 0.3f, Ease.OutCubic);
+                Tween.VisualElementOpacity(card, 1f, 0.3f);
                 ButtonVFXHelper.AddBreathing(card, 0.008f, 3000f);
             }
         }

@@ -47,7 +47,7 @@ namespace VeilBreakers.UI.CharacterSelect
             // =====================================================================
             if (infoPanel != null)
             {
-                seq.Insert(0f, Tween.StyleOpacity(infoPanel, 0f, 0.2f, Ease.InQuad));
+                seq.Insert(0f, Tween.VisualElementOpacity(infoPanel, 0f, 0.2f, Ease.InQuad));
             }
             seq.InsertCallback(0f, () => applyMusicParameters?.Invoke());
 
@@ -85,7 +85,7 @@ namespace VeilBreakers.UI.CharacterSelect
             // =====================================================================
             if (infoPanel != null)
             {
-                seq.Insert(0.6f, Tween.StyleOpacity(infoPanel, 1f, 0.3f, Ease.OutQuad));
+                seq.Insert(0.6f, Tween.VisualElementOpacity(infoPanel, 1f, 0.3f, Ease.OutQuad));
             }
             if (overlayController != null)
             {
@@ -129,7 +129,7 @@ namespace VeilBreakers.UI.CharacterSelect
             // Animate opacity: snap to 0.1 then fade out over 200ms
             return Sequence.Create()
                 .ChainCallback(() => flash.style.opacity = 0.1f)
-                .Chain(Tween.StyleOpacity(flash, 0f, 0.2f, Ease.OutQuad));
+                .Chain(Tween.VisualElementOpacity(flash, 0f, 0.2f, Ease.OutQuad));
         }
     }
 }

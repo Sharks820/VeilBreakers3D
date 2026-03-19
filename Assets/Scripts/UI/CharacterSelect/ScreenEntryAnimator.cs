@@ -49,17 +49,17 @@ namespace VeilBreakers.UI.CharacterSelect
             }
             if (leftPanel != null)
             {
-                leftPanel.style.translate = new Translate(-300f, 0f);
+                leftPanel.transform.position = new Vector3(-300f, 0f, 0f);
                 leftPanel.style.opacity = 0f;
             }
             if (rightPanel != null)
             {
-                rightPanel.style.translate = new Translate(300f, 0f);
+                rightPanel.transform.position = new Vector3(300f, 0f, 0f);
                 rightPanel.style.opacity = 0f;
             }
             if (carousel != null)
             {
-                carousel.style.translate = new Translate(0f, 200f);
+                carousel.transform.position = new Vector3(0f, 200f, 0f);
                 carousel.style.opacity = 0f;
             }
 
@@ -70,7 +70,7 @@ namespace VeilBreakers.UI.CharacterSelect
             // =====================================================================
             if (heroStage != null)
             {
-                seq.Insert(0f, Tween.StyleOpacity(heroStage, 1f, 0.3f, Ease.OutQuad));
+                seq.Insert(0f, Tween.VisualElementOpacity(heroStage, 1f, 0.3f, Ease.OutQuad));
             }
 
             // =====================================================================
@@ -78,9 +78,9 @@ namespace VeilBreakers.UI.CharacterSelect
             // =====================================================================
             if (leftPanel != null)
             {
-                seq.Insert(0.1f, Tween.StyleTranslate(leftPanel,
-                    new Translate(0f, 0f), 0.4f, Ease.OutCubic));
-                seq.Insert(0.1f, Tween.StyleOpacity(leftPanel, 1f, 0.3f, Ease.OutQuad));
+                seq.Insert(0.1f, Tween.Position(leftPanel,
+                    Vector3.zero, 0.4f, Ease.OutCubic));
+                seq.Insert(0.1f, Tween.VisualElementOpacity(leftPanel, 1f, 0.3f, Ease.OutQuad));
             }
 
             // =====================================================================
@@ -88,9 +88,9 @@ namespace VeilBreakers.UI.CharacterSelect
             // =====================================================================
             if (rightPanel != null)
             {
-                seq.Insert(0.2f, Tween.StyleTranslate(rightPanel,
-                    new Translate(0f, 0f), 0.4f, Ease.OutCubic));
-                seq.Insert(0.2f, Tween.StyleOpacity(rightPanel, 1f, 0.3f, Ease.OutQuad));
+                seq.Insert(0.2f, Tween.Position(rightPanel,
+                    Vector3.zero, 0.4f, Ease.OutCubic));
+                seq.Insert(0.2f, Tween.VisualElementOpacity(rightPanel, 1f, 0.3f, Ease.OutQuad));
             }
 
             // =====================================================================
@@ -98,9 +98,9 @@ namespace VeilBreakers.UI.CharacterSelect
             // =====================================================================
             if (carousel != null)
             {
-                seq.Insert(0.35f, Tween.StyleTranslate(carousel,
-                    new Translate(0f, 0f), 0.35f, Ease.OutCubic));
-                seq.Insert(0.35f, Tween.StyleOpacity(carousel, 1f, 0.25f, Ease.OutQuad));
+                seq.Insert(0.35f, Tween.Position(carousel,
+                    Vector3.zero, 0.35f, Ease.OutCubic));
+                seq.Insert(0.35f, Tween.VisualElementOpacity(carousel, 1f, 0.25f, Ease.OutQuad));
             }
 
             // =====================================================================

@@ -78,7 +78,7 @@ namespace VeilBreakers.UI.CharacterSelect
             // Scanline opacity transition
             if (_scanlines != null)
             {
-                seq.Group(Tween.StyleOpacity(_scanlines, theme.scanlineOpacity, duration));
+                seq.Group(Tween.VisualElementOpacity(_scanlines, theme.scanlineOpacity, duration));
             }
 
             // Vignette: animate border-color alpha for intensity.
@@ -104,7 +104,7 @@ namespace VeilBreakers.UI.CharacterSelect
             // Veil glow opacity transition
             if (_veilGlow != null)
             {
-                seq.Group(Tween.StyleOpacity(_veilGlow, theme.veilGlowOpacity, duration));
+                seq.Group(Tween.VisualElementOpacity(_veilGlow, theme.veilGlowOpacity, duration));
             }
 
             _transitionSequence = seq;
