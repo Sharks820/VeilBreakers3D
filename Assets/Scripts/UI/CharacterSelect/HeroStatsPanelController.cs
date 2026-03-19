@@ -6,16 +6,16 @@ using VeilBreakers.Data;
 namespace VeilBreakers.UI.CharacterSelect
 {
     /// <summary>
-    /// Populates the right panel: D&D attribute bars (STR/DEX/CON/INT/WIS/CHA)
-    /// with animated fills, and the abilities list.
+    /// Populates the abilities tab content: D&D attribute bars (STR/DEX/CON/INT/WIS/CHA)
+    /// with width-based fills, and the abilities list with skill names from GameDatabase.
+    /// All Q() calls are confined to CacheReferences() at init time.
     /// </summary>
     public class HeroStatsPanelController : MonoBehaviour
     {
-        private const float kMaxStatValue = 20f; // D&D max for percentage calc
+        private const float kMaxStatValue = 20f;
 
         [SerializeField] private UIDocument _uiDocument;
 
-        // Cached stat bar references
         private VisualElement _panel;
         private readonly VisualElement[] _barFills = new VisualElement[6];
         private readonly Label[] _barValues = new Label[6];
@@ -34,12 +34,14 @@ namespace VeilBreakers.UI.CharacterSelect
             CharSelectEvents.OnHeroChanged -= HandleHeroChanged;
         }
 
+        /// <summary>
+        /// Caches all VisualElement references at init time. Zero Q() calls outside this method.
+        /// </summary>
         private void CacheReferences()
         {
             if (_uiDocument == null) { Debug.LogError("[HeroStatsPanelController] UIDocument not assigned!"); return; }
             var root = _uiDocument.rootVisualElement;
-            _panel = root.Q<VisualElement>("stats-panel");
-            if (_panel != null) _panel.usageHints |= UsageHints.DynamicTransform;
+            _panel = root.Q<VisualElement>("tab-abilities-content");
 
             for (int i = 0; i < kStatNames.Length; i++)
             {
@@ -53,13 +55,16 @@ namespace VeilBreakers.UI.CharacterSelect
             }
         }
 
+        /// <summary>
+        /// Handles hero change events by updating stat bars and abilities.
+        /// Panel animation is handled by HeroDataPanelController on the parent info-panel-container.
+        /// </summary>
         private void HandleHeroChanged(int index, HeroData data, HeroDisplayConfig config)
         {
             if (data == null) return;
 
             UpdateStatBars(data);
             UpdateAbilities(data);
-            CharSelectUIUtils.AnimatePanel(_panel);
         }
 
         private void UpdateStatBars(HeroData data)
@@ -88,6 +93,9 @@ namespace VeilBreakers.UI.CharacterSelect
             }
         }
 
+        /// <summary>
+        /// Updates ability slot labels with skill display names from GameDatabase.
+        /// </summary>
         private void UpdateAbilities(HeroData data)
         {
             string[] skills = data.innate_skills;
@@ -99,8 +107,6 @@ namespace VeilBreakers.UI.CharacterSelect
                 if (skills != null && i < skills.Length)
                 {
                     string skillId = skills[i];
-
-                    // Try to get skill display name from database
                     var skillData = GameDatabase.HasInstance ? GameDatabase.Instance.GetSkill(skillId) : null;
                     string displayName = skillData?.display_name ?? FormatSkillId(skillId);
 
@@ -117,8 +123,6 @@ namespace VeilBreakers.UI.CharacterSelect
         private static string FormatSkillId(string skillId)
         {
             if (string.IsNullOrEmpty(skillId)) return "";
-
-            // Convert snake_case to Title Case: "shackle_strike" -> "Shackle Strike"
             var parts = skillId.Split('_');
             for (int i = 0; i < parts.Length; i++)
             {
@@ -129,6 +133,5 @@ namespace VeilBreakers.UI.CharacterSelect
             }
             return string.Join(" ", parts);
         }
-
     }
 }

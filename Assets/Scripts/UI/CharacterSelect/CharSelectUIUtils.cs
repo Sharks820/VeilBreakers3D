@@ -27,5 +27,23 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (label != null) label.text = text;
         }
+
+        /// <summary>
+        /// Triggers exit-then-enter choreography for tab content switching.
+        /// Removes tab-active from outgoing section, adds it to incoming section
+        /// with an entrance animation via AnimatePanel.
+        /// </summary>
+        public static void SwitchTabContent(VisualElement outgoing, VisualElement incoming)
+        {
+            if (outgoing != null)
+            {
+                outgoing.RemoveFromClassList("tab-active");
+            }
+            if (incoming != null)
+            {
+                incoming.AddToClassList("tab-active");
+                AnimatePanel(incoming);
+            }
+        }
     }
 }

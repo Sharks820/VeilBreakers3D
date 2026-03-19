@@ -6,8 +6,9 @@ using VeilBreakers.Data;
 namespace VeilBreakers.UI.CharacterSelect
 {
     /// <summary>
-    /// Populates the left info panel: name, title, quote, path/role/synergy,
-    /// starter stats grid, champion monster info, and backstory lore.
+    /// Populates the tabbed info panel: overview tab (name, title, quote, path/role/synergy,
+    /// starter stats grid, champion monster info) and lore tab (backstory, synergy detail, brands).
+    /// All Q() calls are confined to CacheReferences() at init time.
     /// </summary>
     public class HeroDataPanelController : MonoBehaviour
     {
@@ -29,6 +30,7 @@ namespace VeilBreakers.UI.CharacterSelect
         // =============================================================================
 
         private VisualElement _panel;
+        private VisualElement _infoPanelContainer;
         private Label _heroName;
         private Label _heroTitle;
         private Label _heroQuote;
@@ -45,6 +47,8 @@ namespace VeilBreakers.UI.CharacterSelect
         private VisualElement _championSection;
         private VisualElement _heroLoreSection;
         private Label _heroBackstory;
+        private Label _heroSynergyDetail;
+        private Label _heroBrandsDetail;
 
         private void OnEnable()
         {
@@ -61,8 +65,11 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (_uiDocument == null) { Debug.LogError("[HeroDataPanelController] UIDocument not assigned!"); return; }
             var root = _uiDocument.rootVisualElement;
-            _panel = root.Q<VisualElement>("hero-info-panel");
-            if (_panel != null) _panel.usageHints |= UsageHints.DynamicTransform;
+
+            _panel = root.Q<VisualElement>("tab-overview-content");
+            _infoPanelContainer = root.Q<VisualElement>("info-panel-container");
+            if (_infoPanelContainer != null) _infoPanelContainer.usageHints |= UsageHints.DynamicTransform;
+
             _heroName = root.Q<Label>("hero-name");
             _heroTitle = root.Q<Label>("hero-title");
             _heroQuote = root.Q<Label>("hero-quote");
@@ -79,9 +86,13 @@ namespace VeilBreakers.UI.CharacterSelect
             _championSection = root.Q<VisualElement>("champion-section");
             _heroLoreSection = root.Q<VisualElement>(kHeroLoreSection);
             _heroBackstory = root.Q<Label>(kHeroBackstory);
+            _heroSynergyDetail = root.Q<Label>("hero-synergy-detail");
+            _heroBrandsDetail = root.Q<Label>("hero-brands-detail");
 
             Debug.Assert(_heroBackstory != null, $"[HeroDataPanel] Missing element: {kHeroBackstory}");
             Debug.Assert(_heroLoreSection != null, $"[HeroDataPanel] Missing element: {kHeroLoreSection}");
+            Debug.Assert(_heroSynergyDetail != null, "[HeroDataPanel] Missing element: hero-synergy-detail");
+            Debug.Assert(_heroBrandsDetail != null, "[HeroDataPanel] Missing element: hero-brands-detail");
         }
 
         private void HandleHeroChanged(int index, HeroData data, HeroDisplayConfig config)
@@ -96,7 +107,6 @@ namespace VeilBreakers.UI.CharacterSelect
             // Class info
             CharSelectUIUtils.SetLabel(_heroPath, data.GetPrimaryPath().ToString());
             CharSelectUIUtils.SetLabel(_heroRole, data.role?.ToUpper() ?? "");
-            // Synergy: show primary brand + synergy explanation if available
             string synergy = data.GetPrimaryBrand().ToString().ToUpper();
             if (!string.IsNullOrEmpty(data.synergy_explanation))
             {
@@ -116,8 +126,11 @@ namespace VeilBreakers.UI.CharacterSelect
             // Backstory / Lore
             PopulateBackstory(data);
 
-            // Panel slide-in animation
-            CharSelectUIUtils.AnimatePanel(_panel);
+            // Lore tab -- synergy detail and brands
+            PopulateLoreDetails(data);
+
+            // Panel slide-in animation on the info-panel-container
+            CharSelectUIUtils.AnimatePanel(_infoPanelContainer);
         }
 
         private void PopulateBackstory(HeroData data)
@@ -133,6 +146,17 @@ namespace VeilBreakers.UI.CharacterSelect
             }
 
             CharSelectUIUtils.SetLabel(_heroBackstory, data.backstory ?? string.Empty);
+        }
+
+        private void PopulateLoreDetails(HeroData data)
+        {
+            string synDetail = !string.IsNullOrEmpty(data.synergy_explanation)
+                ? data.synergy_explanation
+                : data.GetPrimaryBrand().ToString();
+            CharSelectUIUtils.SetLabel(_heroSynergyDetail, synDetail);
+
+            string brandsText = data.GetPrimaryBrand().ToString();
+            CharSelectUIUtils.SetLabel(_heroBrandsDetail, brandsText);
         }
 
         private void PopulateChampion(HeroData data)

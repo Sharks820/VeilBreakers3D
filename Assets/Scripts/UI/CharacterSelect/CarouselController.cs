@@ -91,6 +91,8 @@ namespace VeilBreakers.UI.CharacterSelect
             card.AddToClassList("hero-card");
             card.AddToClassList($"hero-card-{heroId}");
             card.usageHints = UsageHints.DynamicTransform | UsageHints.DynamicColor;
+            card.focusable = true;
+            card.tabIndex = index;
 
             // Large initial letter as visual identity
             string initial = displayName.Length > 0 ? displayName.Substring(0, 1) : "?";
