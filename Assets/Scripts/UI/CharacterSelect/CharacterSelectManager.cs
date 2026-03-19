@@ -32,14 +32,9 @@ namespace VeilBreakers.UI.CharacterSelect
         private const string kBtnNext = "btn-next";
         private const string kBtnBack = "btn-back";
         private const string kBtnEmbark = "btn-embark";
-        private const string kBtnConfirm = "btn-confirm";
-        private const string kBtnCancel = "btn-cancel";
-        private const string kConfirmOverlay = "confirm-overlay";
         private const string kEmbarkText = "embark-text";
-        private const string kConfirmDescription = "confirm-description";
         private const string kEmbarkGlow = "embark-glow";
-        private const string kHeroInfoPanel = "hero-info-panel";
-        private const string kStatsPanel = "stats-panel";
+        private const string kInfoPanelContainer = "info-panel-container";
         private const string kEmbarkHexBg = "embark-hex-bg";
 
         // =============================================================================
@@ -70,12 +65,9 @@ namespace VeilBreakers.UI.CharacterSelect
         private Button _btnNext;
         private Button _btnBack;
         private Button _btnEmbark;
-        private Button _btnConfirm;
-        private Button _btnCancel;
-        private VisualElement _confirmOverlay;
         private Label _embarkText;
-        private Label _confirmDescription;
         private VisualElement _embarkGlow;
+        private VisualElement _infoPanelContainer;
 
         // =============================================================================
         // PROPERTIES
@@ -104,6 +96,9 @@ namespace VeilBreakers.UI.CharacterSelect
             // Listen for navigation requests from sub-controllers (e.g. CarouselController)
             CharSelectEvents.OnNavigationRequested += NavigateToHero;
 
+            // Listen for embark trigger from HoldToEmbarkController
+            CharSelectEvents.OnEmbarkTriggered += TriggerEmbark;
+
             StartCoroutine(InitializeWhenReady());
         }
 
@@ -111,6 +106,7 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             SceneManager.sceneUnloaded -= OnSceneUnloaded;
             CharSelectEvents.OnNavigationRequested -= NavigateToHero;
+            CharSelectEvents.OnEmbarkTriggered -= TriggerEmbark;
             StopAllCoroutines();
             _isTransitioning = false;
             _isEmbarking = false;
@@ -252,21 +248,16 @@ namespace VeilBreakers.UI.CharacterSelect
             _btnNext = _root.Q<Button>(kBtnNext);
             _btnBack = _root.Q<Button>(kBtnBack);
             _btnEmbark = _root.Q<Button>(kBtnEmbark);
-            _btnConfirm = _root.Q<Button>(kBtnConfirm);
-            _btnCancel = _root.Q<Button>(kBtnCancel);
-            _confirmOverlay = _root.Q<VisualElement>(kConfirmOverlay);
             _embarkText = _root.Q<Label>(kEmbarkText);
-            _confirmDescription = _root.Q<Label>(kConfirmDescription);
             _embarkGlow = _root.Q<VisualElement>(kEmbarkGlow);
+            _infoPanelContainer = _root.Q<VisualElement>(kInfoPanelContainer);
 
             // Assert critical elements exist -- surfaces typos immediately instead of silent null
             Debug.Assert(_btnPrev != null, $"[CharSelectManager] Element '{kBtnPrev}' not found in UXML");
             Debug.Assert(_btnNext != null, $"[CharSelectManager] Element '{kBtnNext}' not found in UXML");
             Debug.Assert(_btnBack != null, $"[CharSelectManager] Element '{kBtnBack}' not found in UXML");
             Debug.Assert(_btnEmbark != null, $"[CharSelectManager] Element '{kBtnEmbark}' not found in UXML");
-            Debug.Assert(_btnConfirm != null, $"[CharSelectManager] Element '{kBtnConfirm}' not found in UXML");
-            Debug.Assert(_btnCancel != null, $"[CharSelectManager] Element '{kBtnCancel}' not found in UXML");
-            Debug.Assert(_confirmOverlay != null, $"[CharSelectManager] Element '{kConfirmOverlay}' not found in UXML");
+            Debug.Assert(_infoPanelContainer != null, $"[CharSelectManager] Element '{kInfoPanelContainer}' not found in UXML");
         }
 
         private void BindUI()
@@ -274,13 +265,10 @@ namespace VeilBreakers.UI.CharacterSelect
             _btnPrev?.RegisterCallback<ClickEvent>(OnPrevClicked);
             _btnNext?.RegisterCallback<ClickEvent>(OnNextClicked);
             _btnBack?.RegisterCallback<ClickEvent>(OnBackClicked);
-            _btnEmbark?.RegisterCallback<ClickEvent>(OnEmbarkClicked);
-            _btnConfirm?.RegisterCallback<ClickEvent>(OnConfirmClicked);
-            _btnCancel?.RegisterCallback<ClickEvent>(OnCancelClicked);
 
-            // Keyboard / gamepad navigation
-            _root?.RegisterCallback<NavigationMoveEvent>(OnNavigationMove);
-            _root?.RegisterCallback<NavigationSubmitEvent>(OnNavigationSubmit);
+            // NOTE: btn-embark click is handled by HoldToEmbarkController (hold-to-confirm)
+            // Zone navigation is handled by CharSelectFocusManager
+            // Only cancel (back) navigation remains here
             _root?.RegisterCallback<NavigationCancelEvent>(OnNavigationCancel);
         }
 
@@ -289,12 +277,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _btnPrev?.UnregisterCallback<ClickEvent>(OnPrevClicked);
             _btnNext?.UnregisterCallback<ClickEvent>(OnNextClicked);
             _btnBack?.UnregisterCallback<ClickEvent>(OnBackClicked);
-            _btnEmbark?.UnregisterCallback<ClickEvent>(OnEmbarkClicked);
-            _btnConfirm?.UnregisterCallback<ClickEvent>(OnConfirmClicked);
-            _btnCancel?.UnregisterCallback<ClickEvent>(OnCancelClicked);
 
-            _root?.UnregisterCallback<NavigationMoveEvent>(OnNavigationMove);
-            _root?.UnregisterCallback<NavigationSubmitEvent>(OnNavigationSubmit);
             _root?.UnregisterCallback<NavigationCancelEvent>(OnNavigationCancel);
         }
 
@@ -306,7 +289,6 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             _currentIndex = 0;
             _isTransitioning = false;
-            _confirmOverlay?.AddToClassList("hidden");
 
             if (_heroList != null && _heroList.Count > 0)
             {
@@ -388,31 +370,18 @@ namespace VeilBreakers.UI.CharacterSelect
 
             string name = string.IsNullOrEmpty(hero.display_name) ? (hero.hero_id?.ToUpper() ?? "UNKNOWN") : hero.display_name.ToUpper();
             if (_embarkText != null) _embarkText.text = $"EMBARK AS {name}";
-            if (_confirmDescription != null)
-            {
-                string title = string.IsNullOrEmpty(hero.title) ? "" : $", {hero.title.ToUpper()}";
-                _confirmDescription.text = $"You will begin your journey as {name}{title}";
-            }
 
             // Start breathing glow
             _embarkGlow?.AddToClassList("breathing");
         }
 
-        private void ShowConfirmPopup()
+        /// <summary>
+        /// Called when embark hold completes (via OnEmbarkTriggered event).
+        /// Begins the async embark sequence (save creation + scene transition).
+        /// </summary>
+        private void TriggerEmbark()
         {
-            _confirmOverlay?.RemoveFromClassList("hidden");
-            CharSelectEvents.RaiseEmbarkRequested();
-        }
-
-        private void HideConfirmPopup()
-        {
-            _confirmOverlay?.AddToClassList("hidden");
-            CharSelectEvents.RaiseEmbarkCancelled();
-        }
-
-        private void ExecuteEmbark()
-        {
-            // C5 fix: guard against double-click re-entry
+            // Guard against double re-entry
             if (_isEmbarking) return;
 
             var hero = CurrentHero;
@@ -420,7 +389,6 @@ namespace VeilBreakers.UI.CharacterSelect
 
             _isEmbarking = true;
 
-            CharSelectEvents.RaiseEmbarkConfirmed();
             CharSelectEvents.RaiseScreenExiting();
 
             StartCoroutine(EmbarkSequence(hero));
@@ -533,58 +501,13 @@ namespace VeilBreakers.UI.CharacterSelect
             }
         }
 
-        private void OnEmbarkClicked(ClickEvent evt) => ShowConfirmPopup();
-        private void OnConfirmClicked(ClickEvent evt) => ExecuteEmbark();
-        private void OnCancelClicked(ClickEvent evt) => HideConfirmPopup();
-
         // =============================================================================
         // NAVIGATION EVENTS (KEYBOARD / GAMEPAD)
         // =============================================================================
 
-        private bool IsConfirmOverlayVisible =>
-            _confirmOverlay != null && !_confirmOverlay.ClassListContains("hidden");
-
-        private void OnNavigationMove(NavigationMoveEvent evt)
-        {
-            // M3 fix: block hero navigation while confirm overlay is open
-            if (IsConfirmOverlayVisible) return;
-
-            switch (evt.direction)
-            {
-                case NavigationMoveEvent.Direction.Left:
-                    NavigatePrev();
-                    evt.StopPropagation();
-                    break;
-                case NavigationMoveEvent.Direction.Right:
-                    NavigateNext();
-                    evt.StopPropagation();
-                    break;
-            }
-        }
-
-        private void OnNavigationSubmit(NavigationSubmitEvent evt)
-        {
-            if (IsConfirmOverlayVisible)
-            {
-                ExecuteEmbark();
-            }
-            else
-            {
-                ShowConfirmPopup();
-            }
-            evt.StopPropagation();
-        }
-
         private void OnNavigationCancel(NavigationCancelEvent evt)
         {
-            if (IsConfirmOverlayVisible)
-            {
-                HideConfirmPopup();
-            }
-            else
-            {
-                NavigateBack();
-            }
+            NavigateBack();
             evt.StopPropagation();
         }
 
@@ -599,15 +522,8 @@ namespace VeilBreakers.UI.CharacterSelect
         /// </summary>
         private void SetAnimationHints()
         {
-            // Named elements (with Debug.Assert for uncached Q() calls)
-            var heroInfoPanel = _root.Q<VisualElement>(kHeroInfoPanel);
-            Debug.Assert(heroInfoPanel != null, $"[CharSelectManager] Missing element: {kHeroInfoPanel}");
-            SetHint(heroInfoPanel);
-
-            var statsPanel = _root.Q<VisualElement>(kStatsPanel);
-            Debug.Assert(statsPanel != null, $"[CharSelectManager] Missing element: {kStatsPanel}");
-            SetHint(statsPanel);
-
+            // Named elements
+            SetHint(_infoPanelContainer);
             SetHint(_btnBack);
             SetHint(_btnEmbark);
 
@@ -618,15 +534,16 @@ namespace VeilBreakers.UI.CharacterSelect
             SetHint(_embarkGlow);
             SetHint(_btnPrev);
             SetHint(_btnNext);
-            SetHint(_confirmOverlay);
             SetHint(_embarkText);
 
             // Class-based queries (multiple elements)
             _root.Query<VisualElement>(className: "ability-slot").ForEach(SetHint);
             _root.Query<VisualElement>(className: "hero-card").ForEach(SetHint);
             _root.Query<VisualElement>(className: "nav-arrow").ForEach(SetHint);
-            _root.Query<VisualElement>(className: "glass-panel").ForEach(SetHint);
+            _root.Query<VisualElement>(className: "veil-panel").ForEach(SetHint);
             _root.Query<VisualElement>(className: "fog-particles").ForEach(SetHint);
+            _root.Query<VisualElement>(className: "tab-btn").ForEach(SetHint);
+            _root.Query<VisualElement>(className: "toast-container").ForEach(SetHint);
         }
 
         private static void SetHint(VisualElement el)

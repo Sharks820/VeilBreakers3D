@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
@@ -7,22 +8,32 @@ namespace VeilBreakers.UI.CharacterSelect
 {
     /// <summary>
     /// Manages the cinematic background layers and adds interactive parallax movement.
-    /// Responds to hero theme changes by tinting the atmospheric fog and generating dynamic nebula textures.
+    /// Responds to hero theme changes by tinting the atmospheric fog and assigning pre-baked nebula textures.
+    /// All nebula textures are generated once at initialization using a shared pixel buffer -- zero per-switch
+    /// Color[] allocation.
     /// </summary>
     public class CharSelectEnvironmentController : MonoBehaviour
     {
+        // =============================================================================
+        // SERIALIZED FIELDS
+        // =============================================================================
+
         [Header("References")]
         [SerializeField] private UIDocument _uiDocument;
-        
+
         [Header("Parallax Settings")]
-        [SerializeField] private float _deepIntensity = 20f;    // Minimal movement
-        [SerializeField] private float _fogIntensity = 50f;     // Mid movement
-        [SerializeField] private float _vignetteIntensity = 80f; // Overlay movement
+        [SerializeField] private float _deepIntensity = 20f;
+        [SerializeField] private float _fogIntensity = 50f;
+        [SerializeField] private float _vignetteIntensity = 80f;
         [SerializeField] private float _lerpSpeed = 5f;
 
         [Header("Procedural Generation")]
         [SerializeField] private int _textureSize = 256;
         [SerializeField] private float _noiseScale = 5f;
+
+        // =============================================================================
+        // CACHED UI REFERENCES
+        // =============================================================================
 
         private VisualElement _parallaxRoot;
         private VisualElement _parallaxDeep;
@@ -30,10 +41,25 @@ namespace VeilBreakers.UI.CharacterSelect
         private VisualElement _vignette;
         private VisualElement _fogParticles;
 
+        // =============================================================================
+        // PARALLAX STATE
+        // =============================================================================
+
         private Vector2 _targetParallax;
         private Vector2 _currentParallax;
-        private Texture2D _nebulaTexture;
-        private Color[] _nebulaPixels;
+
+        // =============================================================================
+        // NEBULA CACHE -- PRE-BAKED AT INIT
+        // =============================================================================
+
+        private readonly Dictionary<string, Texture2D> _nebulaCache =
+            new Dictionary<string, Texture2D>(4);
+        private Color[] _sharedPixelBuffer;
+        private bool _nebulasPreBaked;
+
+        // =============================================================================
+        // LIFECYCLE
+        // =============================================================================
 
         private void OnEnable()
         {
@@ -46,19 +72,29 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             CharSelectEvents.OnHeroChanged -= HandleHeroChanged;
             CharSelectEvents.OnScreenReady -= HandleScreenReady;
-            
-            if (_nebulaTexture != null)
+
+            // Destroy all cached nebula textures to prevent memory leaks
+            foreach (var kvp in _nebulaCache)
             {
-                Destroy(_nebulaTexture);
-                _nebulaTexture = null;
+                if (kvp.Value != null)
+                {
+                    Destroy(kvp.Value);
+                }
             }
-            _nebulaPixels = null;
+            _nebulaCache.Clear();
+
+            _sharedPixelBuffer = null;
+            _nebulasPreBaked = false;
         }
 
         private void Update()
         {
             ApplyParallax();
         }
+
+        // =============================================================================
+        // INITIALIZATION
+        // =============================================================================
 
         private void CacheReferences()
         {
@@ -80,9 +116,13 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void HandleScreenReady()
         {
-            // Initial positioning
             _currentParallax = Vector2.zero;
+            PreBakeAllNebulas();
         }
+
+        // =============================================================================
+        // PARALLAX
+        // =============================================================================
 
         private void ApplyParallax()
         {
@@ -101,7 +141,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _currentParallax = newParallax;
 
             // Apply offsets with different intensities for depth effect
-            // translate is GPU-accelerated with UsageHints.DynamicTransform — no layout recalc
+            // translate is GPU-accelerated with UsageHints.DynamicTransform -- no layout recalc
             if (_parallaxDeep != null)
                 SetTranslate(_parallaxDeep, _currentParallax * _deepIntensity);
 
@@ -112,62 +152,78 @@ namespace VeilBreakers.UI.CharacterSelect
                 SetTranslate(_vignette, _currentParallax * _vignetteIntensity);
         }
 
-        private void SetTranslate(VisualElement element, Vector2 offset)
+        private static void SetTranslate(VisualElement element, Vector2 offset)
         {
-            // UI Toolkit uses translate for hardware-accelerated movement
-            // Correct usage: Translate(Length x, Length y, float z = 0)
             element.style.translate = new Translate(new Length(offset.x, LengthUnit.Pixel), new Length(-offset.y, LengthUnit.Pixel), 0f);
         }
 
-        private void HandleHeroChanged(int index, HeroData data, HeroDisplayConfig config)
+        // =============================================================================
+        // NEBULA PRE-BAKING
+        // =============================================================================
+
+        /// <summary>
+        /// Pre-generates nebula textures for all heroes during screen initialization.
+        /// Uses a shared pixel buffer to avoid per-hero Color[] allocations.
+        /// </summary>
+        private void PreBakeAllNebulas()
         {
-            if (config == null) return;
+            if (!GameDatabase.HasInstance) return;
 
-            // 1. Tint Fog Particles
-            if (_fogParticles != null)
-            {
-                Color tint = config.primaryColor;
-                tint.a = 0.15f; // Subtle tint
-                _fogParticles.style.backgroundColor = tint;
-            }
+            var heroes = GameDatabase.Instance.GetAllHeroes();
+            if (heroes == null || heroes.Count == 0) return;
 
-            // 2. Generate Dynamic Nebula Background
-            // If the Nano Banana AI generation failed, we generate a procedural texture here
-            if (_parallaxDeep != null)
-            {
-                GenerateNebula(config.secondaryColor, config.primaryColor);
-            }
-        }
-
-        private void GenerateNebula(Color baseColor, Color accentColor)
-        {
-            // Recreate texture if size changed (SerializeField edited at runtime)
-            if (_nebulaTexture != null && (_nebulaTexture.width != _textureSize || _nebulaTexture.height != _textureSize))
-            {
-                Destroy(_nebulaTexture);
-                _nebulaTexture = null;
-            }
-
-            if (_nebulaTexture == null)
-            {
-                _nebulaTexture = new Texture2D(_textureSize, _textureSize, TextureFormat.RGBA32, false);
-                _nebulaTexture.wrapMode = TextureWrapMode.Clamp;
-                _nebulaTexture.filterMode = FilterMode.Bilinear;
-            }
+            var configs = Resources.LoadAll<HeroDisplayConfig>("CharacterSelect/HeroDisplayConfigs");
+            if (configs == null || configs.Length == 0) return;
 
             int pixelCount = _textureSize * _textureSize;
-            if (_nebulaPixels == null || _nebulaPixels.Length != pixelCount)
+            _sharedPixelBuffer = new Color[pixelCount]; // One allocation for all heroes
+
+            for (int i = 0; i < heroes.Count; i++)
             {
-                _nebulaPixels = new Color[pixelCount];
+                string heroId = heroes[i].hero_id;
+                HeroDisplayConfig config = FindConfig(configs, heroId);
+                if (config == null) continue;
+
+                var tex = new Texture2D(_textureSize, _textureSize, TextureFormat.RGBA32, false);
+                tex.wrapMode = TextureWrapMode.Clamp;
+                tex.filterMode = FilterMode.Bilinear;
+
+                GenerateNebulaIntoBuffer(config.secondaryColor, config.primaryColor, heroId);
+                tex.SetPixels(_sharedPixelBuffer);
+                tex.Apply();
+
+                _nebulaCache[heroId] = tex;
             }
 
+            _nebulasPreBaked = true;
+        }
+
+        /// <summary>
+        /// Finds a HeroDisplayConfig by heroId without LINQ.
+        /// </summary>
+        private static HeroDisplayConfig FindConfig(HeroDisplayConfig[] configs, string heroId)
+        {
+            for (int i = 0; i < configs.Length; i++)
+            {
+                if (configs[i] != null && configs[i].heroId == heroId)
+                    return configs[i];
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Generates a procedural nebula texture into the shared pixel buffer.
+        /// Uses the hero ID hash code for deterministic noise offset instead of Random.Range
+        /// to ensure consistent visuals across sessions.
+        /// </summary>
+        private void GenerateNebulaIntoBuffer(Color baseColor, Color accentColor, string heroId)
+        {
+            // Use heroId hashcode for deterministic offset instead of Random.Range
+            int hash = heroId.GetHashCode();
+            float offsetX = Mathf.Abs(hash % 1000) * 0.1f;
+            float offsetY = Mathf.Abs((hash / 1000) % 1000) * 0.1f;
+
             float scale = _noiseScale;
-
-            // Random offset for unique patterns per hero
-            float offsetX = Random.Range(0f, 100f);
-            float offsetY = Random.Range(0f, 100f);
-
-            // Cache center and radius outside loops
             float center = _textureSize * 0.5f;
             float radiusInv = 1f / center;
 
@@ -185,7 +241,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
                     // Gradient: Dark Void -> Base Color -> Accent Highlights
                     Color finalColor = Color.Lerp(Color.black, baseColor, combined);
-                    finalColor = Color.Lerp(finalColor, accentColor, Mathf.Pow(combined, 3f)); // Highlights on peaks
+                    finalColor = Color.Lerp(finalColor, accentColor, Mathf.Pow(combined, 3f));
 
                     // Vignette edges
                     float dx = x - center;
@@ -193,14 +249,32 @@ namespace VeilBreakers.UI.CharacterSelect
                     float dist = Mathf.Sqrt(dx * dx + dy * dy) * radiusInv;
                     finalColor *= Mathf.SmoothStep(1.2f, 0.4f, dist);
 
-                    _nebulaPixels[y * _textureSize + x] = finalColor;
+                    _sharedPixelBuffer[y * _textureSize + x] = finalColor;
                 }
             }
+        }
 
-            _nebulaTexture.SetPixels(_nebulaPixels);
-            _nebulaTexture.Apply();
+        // =============================================================================
+        // HERO CHANGED -- ZERO-ALLOC TEXTURE ASSIGNMENT
+        // =============================================================================
 
-            _parallaxDeep.style.backgroundImage = new StyleBackground(_nebulaTexture);
+        private void HandleHeroChanged(int index, HeroData data, HeroDisplayConfig config)
+        {
+            if (config == null) return;
+
+            // Tint fog particles
+            if (_fogParticles != null)
+            {
+                Color tint = config.primaryColor;
+                tint.a = 0.15f;
+                _fogParticles.style.backgroundColor = tint;
+            }
+
+            // Assign pre-baked nebula -- ZERO allocation
+            if (_parallaxDeep != null && data != null && _nebulaCache.TryGetValue(data.hero_id, out var cached))
+            {
+                _parallaxDeep.style.backgroundImage = new StyleBackground(cached);
+            }
         }
     }
 }
