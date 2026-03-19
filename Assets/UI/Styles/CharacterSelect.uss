@@ -1010,3 +1010,16 @@ TemplateContainer {
     transition-duration: 1.2s;
     transition-timing-function: ease-in-out;
 }
+
+/* =============================================================================
+   VISUAL DEPTH HIERARCHY (VISUAL-07)
+   Inactive panels are dimmed for visual depth, drawing focus to active content
+   ============================================================================= */
+
+/* Panel dim/desaturate for inactive state (applied via OverlayController) */
+.panel-inactive-dim {
+    opacity: 0.6;
+    transition-property: opacity;
+    transition-duration: 0.3s;
+    transition-timing-function: ease-in-out;
+}
