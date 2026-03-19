@@ -1,10 +1,7 @@
 /* =============================================================================
-   VEILBREAKERS 3D - AAA MASTER CHARACTER SELECT STYLESHEET
-   Cinematic, atmospheric, immersive hero selection experience
+   VEILBREAKERS 3D - VEIL-TORN DARK FANTASY CHARACTER SELECT STYLESHEET
+   Rule-of-thirds composition, tabbed info, hold-to-embark, gamepad focus ring
    ============================================================================= */
-
-/* Import theme variables */
-/* Global tokens imported via VeilBreakersTheme.tss → VeilBreakers.uss */
 
 /* =============================================================================
    CORE VARIABLES - Character Select Specific
@@ -16,19 +13,19 @@
     --transition-normal: 0.4s;
     --transition-slow: 0.8s;
     --transition-hero-switch: 1.2s;
-    
+
     /* Easing Functions */
     --ease-out-expo: ease-out-back;
     --ease-out-back: ease-out-back;
     --ease-in-out-quint: ease-in-out-cubic;
-    
+
     /* Spacing */
     --panel-margin: 40px;
     --card-gap: 20px;
-    
-    /* Glass Effect */
-    --glass-bg: rgba(8, 8, 14, 0.92);
-    --glass-border: rgba(255, 255, 255, 0.1);
+
+    /* Veil-Torn Panel Material */
+    --veil-bg: rgba(12, 10, 18, 0.92);
+    --veil-border: rgba(60, 50, 70, 0.8);
 }
 
 /* =============================================================================
@@ -36,41 +33,38 @@
    ============================================================================= */
 
 .theme-vex {
-    --hero-primary: rgb(200, 60, 60);
-    --hero-secondary: rgb(255, 100, 80);
-    --hero-accent: rgb(255, 180, 120);
-    --hero-glow: rgba(200, 60, 60, 0.25);
+    --hero-primary: rgb(200, 160, 60);
+    --hero-secondary: rgb(180, 140, 40);
+    --hero-accent: rgb(255, 200, 100);
+    --hero-glow: rgba(200, 160, 60, 0.25);
 }
 
 .theme-seraphina {
-    --hero-primary: rgb(60, 180, 60);
-    --hero-secondary: rgb(120, 80, 200);
-    --hero-accent: rgb(220, 200, 60);
-    --hero-glow: rgba(60, 180, 60, 0.25);
+    --hero-primary: rgb(140, 80, 200);
+    --hero-secondary: rgb(120, 60, 180);
+    --hero-accent: rgb(200, 160, 255);
+    --hero-glow: rgba(140, 80, 200, 0.25);
 }
 
 .theme-orion {
-    --hero-primary: rgb(60, 60, 200);
-    --hero-secondary: rgb(80, 120, 255);
-    --hero-accent: rgb(60, 220, 255);
-    --hero-glow: rgba(60, 60, 200, 0.25);
+    --hero-primary: rgb(180, 50, 50);
+    --hero-secondary: rgb(160, 40, 40);
+    --hero-accent: rgb(255, 120, 100);
+    --hero-glow: rgba(180, 50, 50, 0.25);
 }
 
 .theme-nyx {
-    --hero-primary: rgb(200, 50, 80);
-    --hero-secondary: rgb(180, 60, 180);
-    --hero-accent: rgb(220, 130, 255);
-    --hero-glow: rgba(200, 50, 80, 0.25);
+    --hero-primary: rgb(60, 180, 200);
+    --hero-secondary: rgb(40, 160, 180);
+    --hero-accent: rgb(120, 220, 240);
+    --hero-glow: rgba(60, 180, 200, 0.25);
 }
 
 /* =============================================================================
-   HIDDEN STATE
+   HIDDEN UTILITY
    ============================================================================= */
 
 .hidden {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
     display: none;
 }
 
@@ -90,7 +84,7 @@ TemplateContainer {
     height: 100%;
     flex-direction: column;
     overflow: hidden;
-    background-color: rgb(4, 4, 8); /* Ensure a base background is visible */
+    background-color: rgb(8, 6, 12);
 }
 
 /* =============================================================================
@@ -129,10 +123,11 @@ TemplateContainer {
     position: absolute;
     width: 100%;
     height: 100%;
-    /* Procedural fog tint based on hero glow */
     background-color: var(--hero-glow, rgba(40, 20, 60, 0.08));
     opacity: 0.4;
-    transition: background-color var(--transition-slow) var(--ease-out-expo);
+    transition-property: background-color;
+    transition-duration: var(--transition-slow);
+    transition-timing-function: var(--ease-out-expo);
 }
 
 /* Layer 5: Vignette Overlay */
@@ -146,190 +141,48 @@ TemplateContainer {
 }
 
 /* =============================================================================
-   GLASS PANEL BASE
+   VEIL-TORN PANEL MATERIAL (.veil-panel)
+   Obsidian/iron textured borders with per-hero accent glow
    ============================================================================= */
 
-.glass-panel {
-    background-color: var(--glass-bg);
-    border-width: 1px;
-    border-color: var(--hero-accent, rgba(120, 120, 140, 0.2));
-    border-radius: 12px;
-    /* Rim lighting: subtle bright edge on top and left */
-    border-top-color: rgba(255, 255, 255, 0.15);
-    border-left-color: rgba(255, 255, 255, 0.1);
-    transition: border-color var(--transition-normal) var(--ease-out-expo);
+.veil-panel {
+    background-color: rgba(12, 10, 18, 0.92);
+    border-width: 2px;
+    border-color: rgba(60, 50, 70, 0.8);
+    border-radius: 6px;
+    padding: 16px;
+    overflow: hidden;
+    transition-property: border-color;
+    transition-duration: 0.4s;
+    transition-timing-function: ease-in-out;
 }
 
-.glass-panel:hover {
-    border-color: var(--hero-accent, rgba(180, 180, 200, 0.4));
+/* Per-hero accent glow on veil-panel borders */
+.theme-vex .veil-panel {
+    border-color: rgba(200, 160, 60, 0.6);
+}
+
+.theme-seraphina .veil-panel {
+    border-color: rgba(140, 80, 200, 0.6);
+}
+
+.theme-orion .veil-panel {
+    border-color: rgba(180, 50, 50, 0.6);
+}
+
+.theme-nyx .veil-panel {
+    border-color: rgba(60, 180, 200, 0.6);
 }
 
 /* =============================================================================
-   LEFT PANEL: HERO INFO (FLOATING)
-   ============================================================================= */
-
-.hero-info-panel {
-    position: absolute;
-    width: 280px;
-    top: var(--panel-margin);
-    left: var(--panel-margin);
-    padding: 24px;
-    z-index: 20;
-    opacity: 1;
-    translate: 0 0;
-    transition: translate var(--transition-normal) var(--ease-out-expo),
-                opacity var(--transition-normal) var(--ease-out-expo);
-    border-top-width: 3px;
-    border-top-color: var(--hero-primary);
-    overflow: hidden;
-}
-
-.hero-info-panel.panel-hidden {
-    translate: -60px 0;
-    opacity: 0;
-}
-
-.hero-name {
-    font-size: 38px;
-    -unity-font-style: bold;
-    color: rgb(255, 255, 255);
-    letter-spacing: 8px;
-    margin-bottom: 2px;
-    transition: color var(--transition-slow) var(--ease-out-expo);
-}
-
-.hero-title {
-    font-size: 15px;
-    color: var(--hero-accent);
-    letter-spacing: 5px;
-    margin-bottom: 16px;
-    opacity: 0.8;
-    border-left-width: 2px;
-    border-left-color: var(--hero-primary);
-    padding-left: 12px;
-}
-
-.hero-quote {
-    font-size: 11px;
-    color: rgba(200, 200, 215, 0.7);
-    -unity-font-style: italic;
-    margin-bottom: 20px;
-    white-space: normal;
-    padding-bottom: 12px;
-    border-bottom-width: 1px;
-    border-bottom-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Info Rows */
-.info-row {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 8px;
-}
-
-.info-label {
-    font-size: 10px;
-    color: rgba(170, 170, 190, 0.7);
-    letter-spacing: 3px;
-}
-
-.info-value {
-    font-size: 13px;
-    color: var(--hero-accent);
-    -unity-font-style: bold;
-    white-space: normal;
-    overflow: hidden;
-    flex-shrink: 1;
-}
-
-/* Starter Stats 2x2 Grid */
-.starter-stats-grid {
-    flex-direction: row;
-    flex-wrap: wrap;
-    margin-top: 16px;
-    justify-content: space-between;
-}
-
-.stat-chip {
-    width: 48%;
-    background-color: rgba(0, 0, 0, 0.2);
-    padding: 8px 12px;
-    margin-bottom: 8px;
-    border-radius: 4px;
-    border-left-width: 2px;
-    border-left-color: var(--hero-primary);
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.stat-chip-label {
-    font-size: 10px;
-    color: rgba(200, 200, 215, 0.6);
-}
-
-.stat-chip-value {
-    font-size: 16px;
-    color: #FFF;
-    -unity-font-style: bold;
-}
-
-/* Champion Section */
-.champion-section {
-    margin-top: 16px;
-    padding-top: 12px;
-    border-top-width: 1px;
-    border-top-color: rgba(255, 255, 255, 0.08);
-}
-
-.champion-name {
-    font-size: 16px;
-    -unity-font-style: bold;
-    color: var(--hero-accent);
-    margin-bottom: 8px;
-}
-
-.champion-tags {
-    flex-direction: row;
-}
-
-.tag {
-    font-size: 9px;
-    color: rgba(200, 200, 215, 0.9);
-    letter-spacing: 2px;
-    background-color: rgba(255, 255, 255, 0.06);
-    padding: 4px 10px;
-    margin-right: 8px;
-    border-radius: 3px;
-    border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.08);
-}
-
-/* Lore / Backstory Section */
-.hero-lore-section {
-    margin-top: 16px;
-    padding-top: 12px;
-    border-top-width: 1px;
-    border-top-color: rgba(255, 255, 255, 0.08);
-    max-height: 120px;
-    overflow: hidden;
-}
-
-.hero-backstory {
-    font-size: 10px;
-    color: rgba(200, 200, 215, 0.6);
-    white-space: normal;
-    -unity-font-style: italic;
-}
-
-/* =============================================================================
-   CENTER: HERO STAGE
+   HERO STAGE (Left half, 50% width)
    ============================================================================= */
 
 .hero-stage {
     position: absolute;
-    width: 100%;
+    left: 0;
+    top: 0;
+    width: 50%;
     height: 100%;
     z-index: 10;
     align-items: center;
@@ -350,7 +203,8 @@ TemplateContainer {
     letter-spacing: 6px;
     -unity-text-align: middle-center;
     align-self: center;
-    transition: opacity 0.6s;
+    transition-property: opacity;
+    transition-duration: 0.6s;
 }
 
 .drag-hint:hover {
@@ -375,100 +229,469 @@ TemplateContainer {
 }
 
 /* =============================================================================
-   RIGHT PANEL: STATS & ABILITIES (FLOATING)
+   INFO PANEL CONTAINER (Right half, tabbed info)
    ============================================================================= */
 
-.stats-panel {
+.info-panel-container {
     position: absolute;
-    width: 280px;
-    top: var(--panel-margin);
-    right: var(--panel-margin);
-    padding: 24px;
+    right: 0;
+    top: 60px;
+    width: 46%;
+    height: 70%;
     z-index: 20;
-    opacity: 1;
-    translate: 0 0;
-    transition: translate var(--transition-normal) var(--ease-out-expo),
-                opacity var(--transition-normal) var(--ease-out-expo);
-    border-top-width: 3px;
-    border-top-color: var(--hero-primary);
+    padding: 20px;
+    overflow: hidden;
+    flex-direction: column;
 }
 
-.stats-panel.panel-hidden {
-    translate: 60px 0;
-    opacity: 0;
+/* =============================================================================
+   TAB SYSTEM
+   ============================================================================= */
+
+.tab-header-strip {
+    flex-direction: row;
+    justify-content: flex-start;
+    padding-bottom: 8px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(60, 50, 70, 0.5);
+    flex-shrink: 0;
+}
+
+.tab-btn {
+    background-color: transparent;
+    color: rgba(180, 170, 190, 0.5);
+    border-width: 0;
+    border-bottom-width: 2px;
+    border-bottom-color: transparent;
+    padding: 8px 16px;
+    font-size: 13px;
+    -unity-font-style: bold;
+    letter-spacing: 2px;
+    transition-property: color, border-bottom-color, opacity;
+    transition-duration: 0.2s, 0.2s, 0.2s;
+}
+
+.tab-btn-active {
+    color: rgba(240, 230, 250, 1);
+    border-bottom-color: rgba(200, 160, 60, 0.9);
+}
+
+.tab-btn:hover {
+    color: rgba(220, 210, 230, 0.8);
+}
+
+.tab-content {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.tab-content-section {
+    display: none;
+    flex-grow: 1;
+    padding: 12px 0;
+}
+
+.tab-content-section.tab-active {
+    display: flex;
+}
+
+/* =============================================================================
+   HERO IDENTITY (Inside tab-overview-content)
+   ============================================================================= */
+
+.hero-name {
+    font-size: 32px;
+    -unity-font-style: bold;
+    color: rgba(240, 230, 250, 1);
+    letter-spacing: 3px;
+    margin-bottom: 2px;
+    transition-property: color;
+    transition-duration: var(--transition-slow);
+    transition-timing-function: var(--ease-out-expo);
+}
+
+.hero-title {
+    font-size: 16px;
+    color: rgba(180, 170, 190, 0.7);
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    opacity: 0.8;
+    border-left-width: 2px;
+    border-left-color: var(--hero-primary);
+    padding-left: 12px;
+}
+
+.hero-quote {
+    font-size: 13px;
+    color: rgba(160, 150, 170, 0.6);
+    -unity-font-style: italic;
+    margin-bottom: 16px;
+    white-space: normal;
+    padding-bottom: 12px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+/* =============================================================================
+   INFO ROWS
+   ============================================================================= */
+
+.hero-class-info {
+    margin-bottom: 8px;
+}
+
+.info-row {
+    flex-direction: row;
+    margin: 2px 0;
+    align-items: flex-start;
+}
+
+.info-label {
+    width: 80px;
+    font-size: 11px;
+    color: rgba(140, 130, 150, 0.6);
+    letter-spacing: 2px;
+}
+
+.info-value {
+    flex-grow: 1;
+    font-size: 13px;
+    color: rgba(220, 210, 230, 0.9);
+    white-space: normal;
+    overflow: hidden;
+    flex-shrink: 1;
+}
+
+/* =============================================================================
+   STARTER STATS GRID
+   ============================================================================= */
+
+.starter-stats-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    justify-content: space-between;
+}
+
+.stat-chip {
+    width: 48%;
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 6px 10px;
+    margin-bottom: 6px;
+    border-radius: 4px;
+    border-left-width: 2px;
+    border-left-color: var(--hero-primary);
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-chip-label {
+    font-size: 10px;
+    color: rgba(160, 150, 170, 0.6);
+}
+
+.stat-chip-value {
+    font-size: 14px;
+    color: rgba(240, 230, 250, 0.95);
+    -unity-font-style: bold;
+}
+
+/* =============================================================================
+   CHAMPION SECTION
+   ============================================================================= */
+
+.champion-section {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top-width: 1px;
+    border-top-color: rgba(60, 50, 70, 0.4);
+}
+
+.champion-name {
+    font-size: 15px;
+    -unity-font-style: bold;
+    color: var(--hero-accent);
+    margin-bottom: 6px;
+}
+
+.champion-tags {
+    flex-direction: row;
+}
+
+.tag {
+    font-size: 9px;
+    color: rgba(200, 200, 215, 0.9);
+    letter-spacing: 2px;
+    background-color: rgba(255, 255, 255, 0.06);
+    padding: 4px 10px;
+    margin-right: 8px;
+    border-radius: 3px;
+    border-width: 1px;
+    border-color: rgba(60, 50, 70, 0.5);
+}
+
+/* =============================================================================
+   ATTRIBUTE BARS SECTION
+   ============================================================================= */
+
+.attribute-bars-section {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top-width: 1px;
+    border-top-color: rgba(60, 50, 70, 0.4);
 }
 
 .section-header {
     font-size: 12px;
-    color: rgba(200, 200, 215, 0.7);
+    color: rgba(180, 170, 190, 0.7);
     letter-spacing: 5px;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
     -unity-font-style: bold;
 }
 
-/* Attribute Bars */
+.attribute-bars {
+    flex-direction: column;
+}
+
 .stat-bar-row {
     flex-direction: row;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .stat-bar-label {
     width: 40px;
     font-size: 10px;
-    color: rgba(170, 170, 190, 0.7);
+    color: rgba(140, 130, 150, 0.7);
     letter-spacing: 3px;
 }
 
 .stat-bar-track {
     flex-grow: 1;
-    height: 14px;
+    height: 12px;
     background-color: rgba(5, 5, 10, 0.7);
-    border-radius: 7px;
-    margin: 0 12px;
+    border-radius: 6px;
+    margin: 0 10px;
     overflow: hidden;
     border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(60, 50, 70, 0.4);
 }
 
 .stat-bar-fill {
     height: 100%;
-    background-color: var(--hero-primary, rgb(200, 60, 60));
-    border-radius: 7px;
+    background-color: var(--hero-primary, rgb(200, 160, 60));
+    border-radius: 6px;
 }
 
 .stat-bar-value {
     width: 30px;
-    font-size: 14px;
-    color: #FFF;
+    font-size: 13px;
+    color: rgba(240, 230, 250, 0.9);
     -unity-text-align: middle-right;
     -unity-font-style: bold;
 }
 
-/* Abilities */
-.abilities-header {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top-width: 1px;
-    border-top-color: rgba(255, 255, 255, 0.1);
+/* =============================================================================
+   ABILITIES (Tab 2)
+   ============================================================================= */
+
+.abilities-list {
+    flex-direction: column;
 }
 
 .ability-slot {
-    font-size: 14px;
-    color: rgb(230, 230, 240);
-    padding: 12px 20px;
-    margin-bottom: 10px;
+    font-size: 13px;
+    color: rgba(230, 220, 240, 0.9);
+    padding: 10px 16px;
+    margin-bottom: 6px;
     background-color: rgba(255, 255, 255, 0.04);
-    border-radius: 6px;
-    border-left-width: 4px;
+    border-radius: 4px;
+    border-left-width: 3px;
     border-left-color: var(--hero-primary);
-    transition: translate var(--transition-fast) var(--ease-out-expo), background-color var(--transition-fast) var(--ease-out-expo), border-left-color var(--transition-fast) var(--ease-out-expo);
+    transition-property: translate, background-color, border-left-color;
+    transition-duration: var(--transition-fast), var(--transition-fast), var(--transition-fast);
+    transition-timing-function: var(--ease-out-expo), var(--ease-out-expo), var(--ease-out-expo);
 }
 
 .ability-slot:hover {
     background-color: rgba(255, 255, 255, 0.1);
-    translate: 8px 0;
-    border-left-color: #FFF;
+    translate: 6px 0;
+    border-left-color: rgba(240, 230, 250, 0.9);
+}
+
+/* =============================================================================
+   LORE (Tab 3)
+   ============================================================================= */
+
+.hero-lore-section {
+    margin-bottom: 12px;
+}
+
+.hero-backstory {
+    font-size: 12px;
+    color: rgba(180, 170, 190, 0.7);
+    white-space: normal;
+    -unity-font-style: italic;
+}
+
+.synergy-detail-section {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top-width: 1px;
+    border-top-color: rgba(60, 50, 70, 0.3);
+}
+
+.hero-synergy-detail {
+    font-size: 12px;
+    color: rgba(180, 170, 190, 0.7);
+    white-space: normal;
+}
+
+.brands-section {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top-width: 1px;
+    border-top-color: rgba(60, 50, 70, 0.3);
+}
+
+.hero-brands-detail {
+    font-size: 12px;
+    color: rgba(180, 170, 190, 0.7);
+    white-space: normal;
+}
+
+/* =============================================================================
+   FOCUS RING (Gamepad Navigation)
+   ============================================================================= */
+
+.focusable-zone {
+    border-width: 2px;
+    border-color: rgba(0, 0, 0, 0);
+    border-radius: 4px;
+    transition-property: border-color, scale;
+    transition-duration: 0.15s, 0.15s;
+    transition-timing-function: ease-out, ease-out;
+}
+
+.focusable-zone:focus {
+    border-color: rgba(255, 180, 60, 0.9);
+    scale: 1.02 1.02;
+}
+
+/* C#-driven focus class for zone-level highlighting */
+.focus-ring-active {
+    border-color: rgba(255, 180, 60, 0.9);
+    scale: 1.02 1.02;
+}
+
+/* Per-hero focus ring colors */
+.theme-vex .focus-ring-active {
+    border-color: rgba(200, 160, 60, 0.9);
+}
+
+.theme-seraphina .focus-ring-active {
+    border-color: rgba(140, 80, 200, 0.9);
+}
+
+.theme-orion .focus-ring-active {
+    border-color: rgba(180, 50, 50, 0.9);
+}
+
+.theme-nyx .focus-ring-active {
+    border-color: rgba(60, 180, 200, 0.9);
+}
+
+/* =============================================================================
+   EMBARK AREA (Bottom-right of info area)
+   ============================================================================= */
+
+.embark-area {
+    position: absolute;
+    bottom: 20px;
+    right: 2%;
+    width: 42%;
+    align-items: flex-end;
+    z-index: 40;
+}
+
+.btn-embark {
+    width: 340px;
+    height: 72px;
+    background-color: transparent;
+    border-width: 0;
+    overflow: visible;
+}
+
+.embark-hex-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(20, 16, 28, 0.98);
+    border-width: 2px;
+    border-color: var(--hero-primary);
+    border-radius: 6px;
+    transition-property: border-color, background-color, scale;
+    transition-duration: var(--transition-normal), var(--transition-normal), var(--transition-normal);
+    transition-timing-function: var(--ease-out-expo), var(--ease-out-expo), var(--ease-out-expo);
+}
+
+.btn-embark:hover .embark-hex-bg {
+    border-color: rgba(240, 230, 250, 0.9);
+    background-color: rgba(35, 30, 45, 0.98);
+    scale: 1.05;
+}
+
+.embark-text {
+    font-size: 22px;
+    -unity-font-style: bold;
+    color: rgba(240, 230, 250, 1);
+    letter-spacing: 8px;
+    transition-property: color, scale;
+    transition-duration: var(--transition-normal), var(--transition-normal);
+}
+
+.btn-embark:hover .embark-text {
+    color: rgba(255, 255, 255, 1);
+    scale: 1.08;
+}
+
+.embark-subtitle {
+    font-size: 10px;
+    color: rgba(180, 170, 190, 0.5);
+    letter-spacing: 4px;
+    margin-top: 4px;
+}
+
+.embark-glow {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: var(--hero-primary);
+    opacity: 0;
+    transition-property: opacity;
+    transition-duration: var(--transition-slow);
+}
+
+.embark-glow.breathing {
+    opacity: 0.08;
+}
+
+/* Embark Progress Ring (hold-to-confirm visual) */
+.embark-progress-ring {
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    border-radius: 32px;
+    border-width: 3px;
+    border-color: rgba(255, 180, 60, 0);
+    transition-property: border-color, opacity;
+    transition-duration: 0.2s, 0.2s;
+}
+
+.embark-progress-ring.hold-active {
+    border-color: rgba(255, 180, 60, 0.9);
+    opacity: 1;
 }
 
 /* =============================================================================
@@ -491,16 +714,18 @@ TemplateContainer {
     height: 50px;
     font-size: 24px;
     color: rgba(255, 255, 255, 0.4);
-    background-color: rgba(15, 12, 20, 0.8);
+    background-color: rgba(12, 10, 18, 0.8);
     border-radius: 25px;
     border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(60, 50, 70, 0.5);
     -unity-text-align: middle-center;
-    transition: color var(--transition-fast) var(--ease-out-expo), border-color var(--transition-fast) var(--ease-out-expo), scale var(--transition-fast) var(--ease-out-expo);
+    transition-property: color, border-color, scale;
+    transition-duration: var(--transition-fast), var(--transition-fast), var(--transition-fast);
+    transition-timing-function: var(--ease-out-expo), var(--ease-out-expo), var(--ease-out-expo);
 }
 
 .nav-arrow:hover {
-    color: #FFF;
+    color: rgba(240, 230, 250, 1);
     border-color: var(--hero-accent);
     scale: 1.1;
 }
@@ -518,20 +743,22 @@ TemplateContainer {
     width: 120px;
     height: 150px;
     margin: 0 12px;
-    background-color: rgba(8, 8, 14, 0.95);
+    background-color: rgba(12, 10, 18, 0.95);
     border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    border-color: rgba(60, 50, 70, 0.4);
+    border-radius: 8px;
     align-items: center;
     justify-content: center;
-    transition: scale var(--transition-normal) var(--ease-out-back), opacity var(--transition-normal) var(--ease-out-back), border-color var(--transition-normal) var(--ease-out-back);
+    transition-property: scale, opacity, border-color;
+    transition-duration: var(--transition-normal), var(--transition-normal), var(--transition-normal);
+    transition-timing-function: var(--ease-out-back), var(--ease-out-back), var(--ease-out-back);
     opacity: 0.7;
 }
 
 .hero-card:hover {
     scale: 1.15;
     opacity: 1;
-    border-color: rgba(255, 255, 255, 0.4);
+    border-color: rgba(180, 170, 190, 0.5);
 }
 
 .hero-card.selected {
@@ -546,8 +773,8 @@ TemplateContainer {
     color: var(--hero-primary);
     opacity: 0.4;
     margin-bottom: 4px;
-    /* Text glow for selected card */
-    transition: opacity var(--transition-normal);
+    transition-property: opacity;
+    transition-duration: var(--transition-normal);
 }
 
 .hero-card.selected .hero-card-initial {
@@ -556,95 +783,25 @@ TemplateContainer {
 
 .hero-card-name {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(240, 230, 250, 0.8);
     letter-spacing: 2px;
 }
 
 .hero-card-role {
     font-size: 8px;
-    color: rgba(200, 200, 215, 0.5);
+    color: rgba(180, 170, 190, 0.5);
     letter-spacing: 3px;
     margin-top: 4px;
 }
 
 .hero-card.teaser {
-    border-color: rgba(255, 255, 255, 0.06);
+    border-color: rgba(60, 50, 70, 0.2);
     opacity: 0.3;
 }
 
 .hero-card.teaser:hover {
     opacity: 0.5;
     scale: 1.05;
-}
-
-/* =============================================================================
-   EMBARK BUTTON (AAA VERSION)
-   ============================================================================= */
-
-.embark-layer {
-    position: absolute;
-    bottom: 180px;
-    width: 100%;
-    align-items: center;
-    z-index: 40;
-}
-
-.btn-embark {
-    width: 400px;
-    height: 80px;
-    background-color: transparent;
-    border-width: 0;
-    overflow: visible;
-}
-
-.embark-hex-bg {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(20, 16, 28, 0.98);
-    border-width: 2px;
-    border-color: var(--hero-primary);
-    border-radius: 6px;
-    transition: border-color var(--transition-normal) var(--ease-out-expo), background-color var(--transition-normal) var(--ease-out-expo), scale var(--transition-normal) var(--ease-out-expo);
-}
-
-.btn-embark:hover .embark-hex-bg {
-    border-color: #FFF;
-    background-color: rgba(35, 30, 45, 0.98);
-    scale: 1.05;
-}
-
-.embark-text {
-    font-size: 24px;
-    -unity-font-style: bold;
-    color: #FFF;
-    letter-spacing: 12px;
-    transition: color var(--transition-normal), scale var(--transition-normal);
-}
-
-.btn-embark:hover .embark-text {
-    color: #FFF;
-    scale: 1.1;
-}
-
-.embark-subtitle {
-    font-size: 10px;
-    color: rgba(200, 200, 215, 0.5);
-    letter-spacing: 4px;
-    margin-top: 4px;
-}
-
-.embark-glow {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-color: var(--hero-primary);
-    opacity: 0;
-    transition: opacity var(--transition-slow);
-}
-
-.embark-glow.breathing {
-    opacity: 0.08;
 }
 
 /* =============================================================================
@@ -656,20 +813,21 @@ TemplateContainer {
     top: 12px;
     left: 12px;
     padding: 10px 20px;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(12, 10, 18, 0.7);
     border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(60, 50, 70, 0.5);
     border-radius: 4px;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(180, 170, 190, 0.5);
     font-size: 12px;
     letter-spacing: 4px;
     z-index: 50;
-    transition: color var(--transition-fast), border-color var(--transition-fast);
+    transition-property: color, border-color;
+    transition-duration: var(--transition-fast), var(--transition-fast);
 }
 
 .btn-back:hover {
-    color: #FFF;
-    border-color: #FFF;
+    color: rgba(240, 230, 250, 1);
+    border-color: rgba(240, 230, 250, 0.6);
 }
 
 .hero-index {
@@ -677,72 +835,137 @@ TemplateContainer {
     bottom: 20px;
     right: 40px;
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.2);
+    color: rgba(180, 170, 190, 0.2);
     letter-spacing: 4px;
 }
 
 /* =============================================================================
-   CONFIRM OVERLAY
+   TOAST NOTIFICATION
    ============================================================================= */
 
-.confirm-overlay {
+.toast-container {
     position: absolute;
-    width: 100%;
-    height: 100%;
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-    background-color: rgba(0, 0, 0, 0.8);
-    transition: opacity var(--transition-normal);
+    bottom: -100px;
+    left: 50%;
+    translate: -50% 0;
+    width: 400px;
+    z-index: 200;
+    transition-property: translate;
+    transition-duration: 0.4s;
+    transition-timing-function: ease-out;
 }
 
-.confirm-popup {
-    width: 500px;
-    padding: 40px;
-    background-color: rgb(15, 12, 20);
+.toast-container.toast-visible {
+    translate: -50% -120px;
+}
+
+.toast-container.toast-hidden {
+    translate: -50% 0;
+}
+
+.toast-content {
+    flex-direction: row;
+    background-color: rgba(40, 15, 15, 0.95);
     border-width: 1px;
-    border-color: var(--hero-accent);
-    border-top-width: 4px;
-    border-top-color: var(--hero-primary);
+    border-color: rgba(200, 60, 60, 0.6);
+    border-radius: 6px;
+    padding: 12px 16px;
+    align-items: center;
 }
 
-.confirm-title {
-    font-size: 24px;
-    -unity-font-style: bold;
-    color: #FFF;
-    letter-spacing: 6px;
-    margin-bottom: 20px;
-    -unity-text-align: middle-center;
+.toast-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    background-color: rgba(200, 60, 60, 0.8);
+    border-radius: 10px;
+    flex-shrink: 0;
 }
 
-.confirm-description {
-    font-size: 14px;
-    color: rgba(200, 200, 215, 0.8);
-    -unity-text-align: middle-center;
-    margin-bottom: 40px;
+.toast-message {
+    color: rgba(240, 200, 200, 0.9);
+    font-size: 13px;
+    flex-grow: 1;
     white-space: normal;
 }
 
-.confirm-buttons {
+.toast-actions {
     flex-direction: row;
-    justify-content: space-between;
+    padding-top: 8px;
+    justify-content: flex-end;
 }
 
-.btn-confirm, .btn-cancel {
-    width: 48%;
-    height: 50px;
-    -unity-font-style: bold;
-    letter-spacing: 4px;
+.toast-btn {
+    background-color: rgba(60, 20, 20, 0.8);
+    color: rgba(240, 200, 200, 0.9);
+    border-width: 1px;
+    border-color: rgba(200, 60, 60, 0.4);
+    border-radius: 4px;
+    padding: 6px 14px;
+    margin-left: 8px;
+    font-size: 12px;
 }
 
-.btn-confirm {
-    background-color: var(--hero-primary);
-    color: #FFF;
+.toast-btn:hover {
+    background-color: rgba(80, 30, 30, 0.9);
+    border-color: rgba(200, 60, 60, 0.7);
 }
 
-.btn-cancel {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.5);
+/* =============================================================================
+   SKELETON SHIMMER (Loading State)
+   ============================================================================= */
+
+.skeleton-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(12, 10, 18, 0.7);
+    z-index: 150;
+    pointer-events: all;
+}
+
+.skeleton-shimmer {
+    background-color: rgba(40, 40, 50, 0.6);
+    border-radius: 4px;
+    min-height: 16px;
+    margin: 4px 0;
+    overflow: hidden;
+}
+
+.shimmer-bar {
+    position: absolute;
+    width: 60px;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.06);
+    rotate: 15deg;
+    translate: -60px 0;
+    transition-property: translate;
+    transition-duration: 1.2s;
+    transition-timing-function: ease-in-out;
+}
+
+.shimmer-bar.shimmer-active {
+    translate: 400px 0;
+}
+
+/* =============================================================================
+   PANEL TRANSITION CLASSES
+   ============================================================================= */
+
+.panel-hidden {
+    opacity: 0;
+    translate: -20px 0;
+}
+
+/* Default panel state (no .panel-hidden) with transitions */
+.info-panel-container {
+    opacity: 1;
+    translate: 0 0;
+    transition-property: opacity, translate, border-color;
+    transition-duration: 0.3s, 0.3s, 0.4s;
+    transition-timing-function: ease-out, ease-out, ease-in-out;
 }
 
 /* =============================================================================
@@ -783,5 +1006,7 @@ TemplateContainer {
     height: 100%;
     background-color: var(--hero-glow, rgba(40, 20, 60, 0.03));
     opacity: 0.15;
-    transition: background-color 1.2s ease-in-out-cubic;
+    transition-property: background-color;
+    transition-duration: 1.2s;
+    transition-timing-function: ease-in-out;
 }
