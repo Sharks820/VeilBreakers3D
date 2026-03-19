@@ -456,8 +456,8 @@ namespace VeilBreakers.UI.Menus
 
         private void ShowSettings()
         {
-            // TODO: Show settings panel overlay
-            ErrorLogger.UI("Settings panel not yet implemented");
+            // Settings panel is opened via MainMenuBootstrap.HandleSettingsClicked()
+            // which subscribes to the OnSettingsClicked event fired above.
         }
 
         private void ShowCredits()

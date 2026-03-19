@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Layout & Structure** - Fix all panel sizing, text overlap, and content rendering at target resolution
 - [ ] **Phase 3: Controller Behavior** - Wire all interactions, fix performance, add gamepad support and audio feedback
 - [x] **Phase 4: Visual Amplification** - Install PrimeTween, add cinematic animations, post-processing, and atmospheric effects
-- [ ] **Phase 5: Game Flow & Quality** - Verify end-to-end flow, polish title screen, pass full quality audit
+- [x] **Phase 5: Game Flow & Quality** - Verify end-to-end flow, polish title screen, pass full quality audit
 
 ## Phase Details
 
@@ -101,8 +101,8 @@ Plans:
 **Plans**: TBD
 
 Plans:
-- [ ] 05-01: TBD
-- [ ] 05-02: TBD
+- [x] 05-01-PLAN.md -- Game flow verification: Bootstrap->MainMenu->CharacterSelect->Overworld, settings button wiring, scene flash check
+- [x] 05-02-PLAN.md -- Code quality audit: compilation, conventions, performance, security scan
 
 ---
 
@@ -141,7 +141,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. Layout & Structure | 2/2 | Complete | 2026-02-22 |
 | 3. Controller Behavior | 3/3 | Complete | 2026-03-19 |
 | 4. Visual Amplification | 4/4 | Complete | 2026-03-19 |
-| 5. Game Flow & Quality | 0/2 | Not started | - |
+| 5. Game Flow & Quality | 2/2 | Complete | 2026-03-19 |
 
 **MCP Server Architecture:**
 

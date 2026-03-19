@@ -547,9 +547,9 @@ namespace VeilBreakers.UI.CharacterSelect
                 _embarkCinematic.OnCinematicComplete += OnComplete;
 
                 var theme = _themeTransitioner.GetCurrentTheme();
-                string heroName = string.IsNullOrEmpty(hero.display_name) ? hero.hero_id?.ToUpper() ?? "UNKNOWN" : hero.display_name.ToUpper();
+                string cinematicName = string.IsNullOrEmpty(hero.display_name) ? hero.hero_id?.ToUpper() ?? "UNKNOWN" : hero.display_name.ToUpper();
                 string heroTitle = hero.title ?? "";
-                _embarkCinematic.PlayEmbarkCinematic(theme, heroName, heroTitle);
+                _embarkCinematic.PlayEmbarkCinematic(theme, cinematicName, heroTitle);
 
                 // Await cinematic completion (~1.2s)
                 await tcs.Task;
