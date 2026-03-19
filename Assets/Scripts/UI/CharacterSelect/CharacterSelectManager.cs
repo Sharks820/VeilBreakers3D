@@ -514,7 +514,8 @@ namespace VeilBreakers.UI.CharacterSelect
             var hero = CurrentHero;
             if (hero == null) return;
             _isEmbarking = true;
-            CharSelectEvents.RaiseEmbarkTriggered();
+            // NOTE: Do NOT call RaiseEmbarkTriggered() here — TriggerEmbark IS the handler
+            // for OnEmbarkTriggered (subscribed in OnEnable). Raising it would re-invoke this method.
             CharSelectEvents.RaiseScreenExiting();
             try
             {
@@ -547,12 +548,21 @@ namespace VeilBreakers.UI.CharacterSelect
                 _embarkCinematic.OnCinematicComplete += OnComplete;
 
                 var theme = _themeTransitioner.GetCurrentTheme();
-                string cinematicName = string.IsNullOrEmpty(hero.display_name) ? hero.hero_id?.ToUpper() ?? "UNKNOWN" : hero.display_name.ToUpper();
-                string heroTitle = hero.title ?? "";
-                _embarkCinematic.PlayEmbarkCinematic(theme, cinematicName, heroTitle);
+                if (theme != null)
+                {
+                    string cinematicName = string.IsNullOrEmpty(hero.display_name) ? hero.hero_id?.ToUpper() ?? "UNKNOWN" : hero.display_name.ToUpper();
+                    string heroTitle = hero.title ?? "";
+                    _embarkCinematic.PlayEmbarkCinematic(theme, cinematicName, heroTitle);
 
-                // Await cinematic completion (~1.2s)
-                await tcs.Task;
+                    // Await cinematic completion (~1.2s)
+                    await tcs.Task;
+                    // Re-sync to main thread (await Task can resume on thread pool)
+                    await Awaitable.MainThreadAsync();
+                }
+                else
+                {
+                    _embarkCinematic.OnCinematicComplete -= OnComplete;
+                }
             }
 
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(destroyCancellationToken);

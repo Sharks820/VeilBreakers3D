@@ -119,8 +119,9 @@ Shader "VeilBreakers/VeilCrack"
                 if (_ShatterProgress > 0.001)
                 {
                     float2 center = float2(0.5, 0.5);
-                    float2 dir = normalize(uv - center);
-                    float dist = length(uv - center);
+                    float2 delta = uv - center;
+                    float dist = length(delta);
+                    float2 dir = dist > 0.0001 ? delta / dist : float2(0, 0);
                     uv += dir * dist * _ShatterProgress * 0.5;
                 }
 

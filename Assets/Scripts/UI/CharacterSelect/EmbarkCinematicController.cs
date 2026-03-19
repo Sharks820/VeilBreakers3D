@@ -24,6 +24,7 @@ namespace VeilBreakers.UI.CharacterSelect
         // =============================================================================
 
         private HeroThemeTransitioner _themeTransitioner;
+        private Camera _dollyCamera;
         private VisualElement _root;
         private VisualElement _leftPanel;
         private VisualElement _rightPanel;
@@ -51,13 +52,15 @@ namespace VeilBreakers.UI.CharacterSelect
             VisualElement leftPanel,
             VisualElement rightPanel,
             VisualElement carousel,
-            HeroThemeTransitioner themeTransitioner)
+            HeroThemeTransitioner themeTransitioner,
+            Camera dollyCamera = null)
         {
             _root = root;
             _leftPanel = leftPanel;
             _rightPanel = rightPanel;
             _carousel = carousel;
             _themeTransitioner = themeTransitioner;
+            _dollyCamera = dollyCamera;
         }
 
         // =============================================================================
@@ -238,8 +241,7 @@ namespace VeilBreakers.UI.CharacterSelect
         /// </summary>
         private void DollyCamera(float targetFOV, float duration)
         {
-            // Use main camera for cinematic dolly
-            var cam = Camera.main;
+            var cam = _dollyCamera != null ? _dollyCamera : Camera.main;
             if (cam == null) return;
 
             float startFOV = cam.fieldOfView;

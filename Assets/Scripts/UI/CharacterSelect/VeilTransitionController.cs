@@ -45,6 +45,10 @@ namespace VeilBreakers.UI.CharacterSelect
         private void Awake()
         {
             _mpb = new MaterialPropertyBlock();
+        }
+
+        private void Start()
+        {
             CreateFullScreenQuad();
             Reset();
         }
@@ -94,7 +98,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _fullScreenQuadRenderer = quad.GetComponent<Renderer>();
             if (_fullScreenQuadRenderer != null && _veilCrackMaterial != null)
             {
-                _fullScreenQuadRenderer.material = _veilCrackMaterial;
+                _fullScreenQuadRenderer.sharedMaterial = _veilCrackMaterial;
                 _fullScreenQuadRenderer.enabled = false; // Hidden until needed
             }
         }
@@ -119,6 +123,7 @@ namespace VeilBreakers.UI.CharacterSelect
             return Tween.Custom(this, 0f, 1f, duration, Ease.InQuad,
                 (ctrl, val) =>
                 {
+                    if (ctrl._fullScreenQuadRenderer == null) return;
                     ctrl._mpb.SetFloat(kCrackProgress, val);
                     ctrl._fullScreenQuadRenderer.SetPropertyBlock(ctrl._mpb);
                 });
@@ -139,6 +144,7 @@ namespace VeilBreakers.UI.CharacterSelect
             return Tween.Custom(this, 0f, 1f, duration, Ease.OutQuad,
                 (ctrl, val) =>
                 {
+                    if (ctrl._fullScreenQuadRenderer == null) return;
                     ctrl._mpb.SetFloat(kShatterProgress, val);
                     ctrl._fullScreenQuadRenderer.SetPropertyBlock(ctrl._mpb);
                 });
@@ -152,6 +158,7 @@ namespace VeilBreakers.UI.CharacterSelect
             return Tween.Custom(this, 0f, 1f, duration, Ease.InQuad,
                 (ctrl, val) =>
                 {
+                    if (ctrl._fullScreenQuadRenderer == null) return;
                     ctrl._mpb.SetFloat(kBackgroundAlpha, val);
                     ctrl._fullScreenQuadRenderer.SetPropertyBlock(ctrl._mpb);
                 });
