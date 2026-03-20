@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
 using PrimeTween;
+using VeilBreakers.Core;
 using VeilBreakers.Data;
 
 namespace VeilBreakers.UI.CharacterSelect
@@ -28,6 +29,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         [SerializeField] private UIDocument _uiDocument;
         [SerializeField] private Camera _previewCamera;
+        [SerializeField] private Shader _placeholderShader;
 
         // =============================================================================
         // RUNTIME STATE
@@ -50,7 +52,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private float _dragStartX;
         private float _modelRotationY;
         private const float kStickRotationSpeed = 120f; // degrees per second
-        private bool _hasRightStickAxis = true;
+        private static readonly int kEmissionColor = Shader.PropertyToID("_EmissionColor");
 
         // Model state cache (avoid per-frame GetComponent)
         private bool _currentModelHasAnimator;
@@ -70,8 +72,8 @@ namespace VeilBreakers.UI.CharacterSelect
         private Color _srcAmbientColor, _dstAmbientColor;
         private bool _isRimFlickering;
 
-        // Placeholder material
-        private static Material _placeholderMaterial;
+        // Placeholder material (instance-level, not static, to avoid cross-instance destruction)
+        private Material _placeholderMaterial;
         private Material _currentPlaceholderMat;
 
         // =============================================================================
@@ -96,11 +98,8 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void OnDestroy()
         {
-            if (_placeholderMaterial != null)
-            {
-                Destroy(_placeholderMaterial);
-                _placeholderMaterial = null;
-            }
+            if (_currentPlaceholderMat != null) Destroy(_currentPlaceholderMat);
+            if (_placeholderMaterial != null) Destroy(_placeholderMaterial);
         }
 
         private void Update()
@@ -290,7 +289,9 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 if (_placeholderMaterial == null)
                 {
-                    var shader = Shader.Find("Universal Render Pipeline/Lit");
+                    // Use serialized shader reference (survives build stripping)
+                    var shader = _placeholderShader;
+                    if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
                     if (shader == null) shader = Shader.Find("Standard");
                     if (shader == null)
                     {
@@ -304,7 +305,7 @@ namespace VeilBreakers.UI.CharacterSelect
                 _currentPlaceholderMat = new Material(_placeholderMaterial);
                 Color brandColor = config?.primaryColor ?? (data?.color_palette?.ToColor() ?? Color.gray);
                 _currentPlaceholderMat.color = brandColor;
-                _currentPlaceholderMat.SetColor("_EmissionColor", brandColor * 0.3f);
+                _currentPlaceholderMat.SetColor(kEmissionColor, brandColor * 0.3f);
                 _currentPlaceholderMat.EnableKeyword("_EMISSION");
                 renderer.material = _currentPlaceholderMat;
             }
@@ -504,12 +505,17 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (_currentModel == null) return;
 
-            // Right-stick rotation (gamepad) — axis may not exist in Input Manager
+            // Right-stick rotation via New Input System (no legacy Input.GetAxis)
             float stickX = 0f;
-            if (_hasRightStickAxis)
+            if (InputManager.HasInstance)
             {
-                try { stickX = Input.GetAxis("RightStickHorizontal"); }
-                catch (System.ArgumentException) { _hasRightStickAxis = false; }
+                var lookValue = InputManager.Instance.MousePosition; // Right stick mapped to look
+                // If gamepad is active, use the stick value for rotation
+                if (InputManager.Instance.IsGamepad)
+                {
+                    stickX = lookValue.x > Screen.width * 0.6f ? 1f :
+                             lookValue.x < Screen.width * 0.4f ? -1f : 0f;
+                }
             }
             if (Mathf.Abs(stickX) > 0.15f)
             {
