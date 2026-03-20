@@ -78,8 +78,8 @@ namespace VeilBreakers.UI.CharacterSelect
         /// </summary>
         public Tween AnimateDissolveOut(float duration = 0.4f, Ease ease = Ease.InQuad)
         {
-            return Tween.Custom(this, 0f, 1f, duration, ease: ease,
-                onValueChange: (ctrl, val) => ctrl.SetDissolveThreshold(val));
+            return Tween.Custom(this, 0f, 1f, duration,
+                (VeilDissolveController ctrl, float val) => ctrl.SetDissolveThreshold(val), ease);
         }
 
         /// <summary>
@@ -89,8 +89,8 @@ namespace VeilBreakers.UI.CharacterSelect
         /// </summary>
         public Tween AnimateDissolveIn(float duration = 0.4f, Ease ease = Ease.OutQuad)
         {
-            return Tween.Custom(this, 1f, 0f, duration, ease: ease,
-                onValueChange: (ctrl, val) => ctrl.SetDissolveThreshold(val));
+            return Tween.Custom(this, 1f, 0f, duration,
+                (VeilDissolveController ctrl, float val) => ctrl.SetDissolveThreshold(val), ease);
         }
 
         /// <summary>
