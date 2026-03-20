@@ -557,15 +557,16 @@ namespace VeilBreakers.UI.CharacterSelect
                 _renderTarget.UnregisterCallback<PointerDownEvent>(OnPointerDown);
                 _renderTarget.UnregisterCallback<PointerMoveEvent>(OnPointerMove);
                 _renderTarget.UnregisterCallback<PointerUpEvent>(OnPointerUp);
-                // C2 fix: clear UI reference before destroying RenderTexture
+                // Clear UI reference and force repaint BEFORE releasing texture to prevent race condition
                 _renderTarget.style.backgroundImage = new StyleBackground(StyleKeyword.None);
+                _renderTarget.MarkDirtyRepaint();
             }
 
             if (_currentPlaceholderMat != null) Destroy(_currentPlaceholderMat);
             if (_currentModel != null) Destroy(_currentModel);
             if (_currentChampion != null) Destroy(_currentChampion);
 
-            // C2/C6 fix: detach camera from stageRoot before destroy so serialized camera survives
+            // Detach camera from stageRoot before destroy so serialized camera survives
             if (_previewCamera != null)
             {
                 _previewCamera.targetTexture = null;
