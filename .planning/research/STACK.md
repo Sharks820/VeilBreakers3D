@@ -1,148 +1,199 @@
-# Technology Stack: Character Select Rebuild
+# Technology Stack: AI Game Development MCP Toolkit
 
-**Project:** VeilBreakers 3D - Character Select Rebuild Milestone
-**Researched:** 2026-02-21
-**Overall Confidence:** MEDIUM-HIGH (verified against Unity 6.3 official docs, some areas training-data-only)
+**Project:** VeilBreakers 3D - Custom MCP Server Toolkit (Blender + Unity + AI Generation APIs)
+**Researched:** 2026-03-18
+**Overall Confidence:** HIGH (verified against official PyPI, MCP spec, GitHub repos, and vendor docs)
 
 ## Context
 
-This stack research is scoped to the Character Select rebuild milestone in an existing Unity 6000.3.6f1 (Unity 6.3 LTS) project. The core engine, combat systems, save system, and data pipeline are already built and validated. This document covers what additional packages, techniques, and patterns are needed specifically for AAA-quality character selection UI, visual polish, game flow fixes, and performance optimization.
+This stack research covers building custom MCP servers that bridge three domains into a unified AI-assisted game development toolkit:
 
-The project already uses UI Toolkit (UXML/USS), URP 17.3.0, and the New Input System 1.18.0.
+1. **Blender** (Python bpy API) -- 3D modeling, materials, scene composition
+2. **Unity** (C# Editor scripting) -- game engine integration, asset import, scene management
+3. **AI Generation APIs** (REST/Python SDK) -- image generation, 3D model generation, texture synthesis
 
----
-
-## Recommended Stack Additions
-
-### Animation & Tweening
-
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| PrimeTween | 1.3.7 | Complex UI animations, sequences, transitions beyond USS capabilities | Zero-allocation, direct VisualElement support (opacity, color, backgroundColor), sequence chaining, Inspector-configurable TweenSettings. DOTween is legacy; PrimeTween is purpose-built for modern Unity with explicit UI Toolkit APIs. | HIGH |
-| USS Transitions (built-in) | Unity 6.3 native | Simple state-based transitions (hover, focus, panel slide) | No additional dependency. Supports 25+ easing functions (ease-in-elastic, ease-in-bounce, etc.). Use for CSS-like hover effects and pseudo-state changes. Reserve PrimeTween for orchestrated multi-element sequences. | HIGH |
-
-**Why PrimeTween over DOTween:** DOTween allocates memory on every tween creation. PrimeTween is zero-allocation by design, supports UI Toolkit VisualElement natively (Tween.VisualElementOpacity, Tween.VisualElementColor, Tween.VisualElementBackgroundColor), and has a direct DOTween migration path. PrimeTween 1.3.7 supports sequences, delays, and Inspector-configured TweenSettings<T> without code changes.
-
-**Why PrimeTween over LitMotion:** LitMotion (5x faster than DOTween) is DOTS-based and optimized for ECS workloads. VeilBreakers uses MonoBehaviour architecture with no DOTS. PrimeTween is the right tool for this codebase -- zero allocation without requiring an architectural shift.
-
-**Why NOT just USS Transitions:** USS transitions only interpolate between two states of a CSS property. They cannot orchestrate multi-element sequences (panel A slides out, THEN panel B slides in, THEN particles play), cannot animate along paths, and have no Timeline/Animator integration. The Character Select rebuild needs coordinated sequences for hero switching, which requires a tweening library.
-
-**Installation:**
-```
-# Via Unity Package Manager > Add package by name
-com.kyrylokuzyk.primetween
-# Or via Asset Store import (includes demo scene)
-```
-
-### Visual Effects (USS Filters -- Unity 6.3 Native)
-
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| USS Filters (built-in) | Unity 6.3 native | Blur, grayscale, sepia, tint, hue-rotate, contrast, invert, opacity effects on VisualElements | New in Unity 6.3 -- CSS-style filter pipeline on any VisualElement subtree. Enables blur(20px), grayscale(100%), tint(#color), hue-rotate(90deg), contrast(200%), and combinations. Filters are animatable via USS transitions. No shader code needed. | HIGH |
-
-**Available built-in filters (Unity 6.3):**
-```
-filter: blur(<length>)         -- Gaussian blur, e.g. blur(20px)
-filter: grayscale(<number>)    -- 0% original, 100% fully grayscale
-filter: invert(<number>)       -- Color inversion
-filter: opacity(<number>)      -- Transparency
-filter: sepia(<number>)        -- Warm brownish tone
-filter: tint(<color>)          -- Color overlay (Unity-specific, not in CSS)
-filter: hue-rotate(<angle>)    -- Color wheel rotation
-filter: contrast(<number>)     -- Contrast adjustment
-```
-
-**Combinable:** `filter: blur(5px) tint(#ff000080) contrast(120%);`
-**Animatable via USS transitions:** `transition: filter 0.5s ease-in-out;`
-
-**Limitation:** USS filters affect only the UI element and its children -- they do NOT blur the 3D scene behind UI. For scene-behind-UI blur (glassmorphism), use a URP full-screen render pass or the Unified-Universal-Blur package.
-
-### Visual Effects (UI Shader Graph -- Unity 6.3 Native)
-
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| UI Shader Graph (built-in) | Unity 6.3 native | Custom material effects on UI elements: glow, animated gradients, distortion, color processing | New in Unity 6.3 -- Create > Shader Graph > URP > UI Shader Graph. Enables custom visual effects directly on VisualElements via material assignment. Shader effects cascade to all child elements. Requires URP (already in project). | MEDIUM |
-
-**What you can build:**
-- Animated gradient backgrounds (brand-colored energy flows per hero)
-- Glow/pulse effects on buttons and panels
-- UV distortion for "veil tear" effects
-- Color processing (grayscale inactive heroes, sepia flashbacks)
-- Dynamic text effects via `TextElement.PostProcessTextVertices` (glyph-level animation)
-
-**Key constraint:** UI Shader Graph creates shaders that render UI mesh elements directly. It CANNOT create post-processing filters that apply to rendered subtrees. For that, use USS filters.
-
-**How to apply:**
-1. Create UI Shader Graph asset
-2. Create Material using that shader
-3. In UI Builder, assign Material to VisualElement's Material dropdown
-4. Shader affects element AND all children
-
-### 3D Character Preview
-
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| Render Texture (built-in) | Unity 6.3 native | Display 3D hero model in character select UI | Standard approach: dedicated Camera renders hero model on isolated layer to RenderTexture, displayed as background-image on VisualElement. Used in Unity's Dragon Crashers sample. No alternative for mixing 3D content into UI Toolkit panels. | HIGH |
-
-**Implementation approach:**
-1. Create RenderTexture asset (1024x1024, ARGB32, 16-bit depth minimum)
-2. Add Camera to CharacterSelect scene rendering only the "HeroPreview" layer
-3. Position hero model prefab on that layer with appropriate lighting
-4. Assign RenderTexture as Camera's Target Texture
-5. In USS: `background-image: url("path/to/RenderTexture");` or set via C# `style.backgroundImage`
-6. Use URP Volume with Bloom + Depth of Field on preview camera for cinematic hero presentation
-
-**Performance note:** RenderTextures are expensive. For a character select screen (not a hot gameplay loop), this is acceptable. Profile to ensure the preview camera is only active when the CharacterSelect scene is loaded.
-
-### URP Post-Processing (Scene-Level Visual Polish)
-
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| URP Volume System | 17.3.0 | Scene-level visual effects for character select environment | Already in project. Configure a Volume Profile on the CharacterSelect scene camera with Bloom, Vignette, Depth of Field, Color Adjustments, and Tonemapping for cinematic presentation. | HIGH |
-
-**Recommended Volume Overrides for Character Select:**
-
-| Effect | Purpose | Settings Guidance |
-|--------|---------|-------------------|
-| Bloom | Hero model glow, brand-energy effects, ambient light bleed | Intensity 0.5-2.0, Threshold 0.8-1.2. Unity 6.3 adds Kawase/Dual filtering (faster than Gaussian). Use Kawase for best quality/perf balance. |
-| Depth of Field (Bokeh) | Cinematic hero focus, background blur | Use Bokeh mode for AAA quality. Gaussian is faster but less convincing. Focus on hero model distance. |
-| Vignette | Frame darkening for dramatic character presentation | Intensity 0.2-0.4, Smoothness 0.3. Subtle -- do not overdo. |
-| Color Adjustments | Per-hero color grading, mood shifts on hero switch | Post Exposure, Saturation, Contrast. Swap profiles per hero for thematic color shifts. |
-| Tonemapping | Consistent exposure across hero environments | ACES mode for cinematic look. |
-| Film Grain | Subtle texture for AAA feel | Intensity 0.1-0.2 maximum. Optional. |
-
-**Per-hero Volume switching:** Create separate Volume Profile assets per hero (or use Volume blending with multiple Volumes at different priorities). Swap/blend on hero change for dramatic mood shifts.
-
-### Input & Navigation
-
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| Input System | 1.18.0 (already installed) | Gamepad/keyboard navigation of character select | Already in project. From Unity 2023.2+, Input System and UI Toolkit are fully integrated -- no EventSystem/InputSystemUIInputModule needed for UI Toolkit panels. Project-wide input actions map directly to UI Toolkit events. | HIGH |
-
-**Critical pattern for gamepad support:**
-- `ClickEvent` (mouse) and `NavigationSubmitEvent` (gamepad A/Enter) are DISTINCT events in UI Toolkit
-- Button handlers must register for BOTH or use `Clickable` manipulator (which handles both)
-- Use `tabIndex` and `focusable` properties to control navigation order
-- `NavigationMoveEvent` handles D-pad/stick navigation between elements
-- Set `delegatesFocus = true` on container elements to auto-pass focus to children
-
-**Existing issue in codebase:** Legacy `Input.mousePosition` mixed with New Input System. All mouse queries must route through InputManager.
+The project already uses `blender-mcp` (ahujasid) and `mcp-unity` (CoderGamester) as reference implementations. This research informs building custom MCP servers that extend beyond their capabilities, specifically for VeilBreakers' monster/hero asset pipeline.
 
 ---
 
-## Existing Stack (No Changes Needed)
+## Recommended Stack
 
-These are already in the project and require no version changes or additions for this milestone.
+### MCP Server Framework (Python)
 
-| Technology | Version | Status |
-|------------|---------|--------|
-| Unity Engine | 6000.3.6f1 (6.3 LTS) | Locked. Do not upgrade. |
-| URP | 17.3.0 | Use existing. Configure Volume Profiles per scene. |
-| Input System | 1.18.0 | Use existing. Fix legacy Input.* calls. |
-| UI Toolkit (UIElements) | 1.0.0 (Unity module) | Use existing. Leverage new 6.3 features (USS filters, UI Shader Graph). |
-| TextMeshPro | Unity module | Use existing for text rendering. |
-| Addressables | 2.8.0 | Use existing for asset loading if hero model prefabs become complex. |
-| Newtonsoft.Json | 3.2.1 (transitive) | Use existing. No changes. |
+| Technology | Version | Purpose | Why | Confidence |
+|------------|---------|---------|-----|------------|
+| Python | 3.12 | Runtime for all custom MCP servers | 3.12 is the sweet spot: fully supported by MCP SDK (>=3.10), supported by Blender 4.x bpy, and has the best performance of the 3.10-3.12 range. Avoid 3.13 for now -- Blender addon compatibility is unverified. | HIGH |
+| mcp (official SDK) | 1.26.0 | MCP protocol implementation, transport, lifecycle | The official Python SDK from Anthropic. Includes FastMCP high-level decorator API (`@mcp.tool()`, `@mcp.resource()`), stdio and Streamable HTTP transports, JSON-RPC message handling, and OAuth support. This IS the protocol implementation -- no alternatives exist. | HIGH |
+| FastMCP (standalone) | 3.1.1 | Higher-level MCP server framework | FastMCP was originally integrated into the MCP SDK as the `@mcp.tool()` decorator API. The standalone FastMCP 3.x adds composition, proxying, and middleware beyond the built-in SDK FastMCP. Use the built-in SDK FastMCP for simple servers; reach for standalone FastMCP 3.x only if you need server composition (chaining multiple MCP servers). Start with the SDK's built-in FastMCP. | MEDIUM |
+| uv | latest | Python package management and virtual environments | The MCP Python SDK officially uses uv. 10-100x faster than pip for dependency resolution. Use `uv init`, `uv add`, `uv sync` for all project setup. Lock files (`uv.lock`) go into version control. This is not optional -- the MCP ecosystem standardized on uv. | HIGH |
+
+**Why Python over TypeScript for custom servers:** The primary integration targets are Blender (Python-only bpy API) and AI generation APIs (Python SDKs are first-class for fal.ai, Replicate, Stability AI, OpenAI). TypeScript SDK exists and is used by mcp-unity's Node.js bridge, but writing Blender integration in TypeScript would require a Python subprocess bridge anyway. Python is the single language that touches all three domains natively.
+
+**Why NOT TypeScript:** The TypeScript MCP SDK v2 is still in pre-alpha (stable v2 anticipated Q1 2026 but not yet released). The v1.x is stable but Python is the better fit for this specific toolkit given Blender's Python API and the AI SDK ecosystem.
+
+### Communication & Transport
+
+| Technology | Version | Purpose | Why | Confidence |
+|------------|---------|---------|-----|------------|
+| stdio transport | MCP spec 2025-03-26 | Primary transport for Claude Code / Cursor integration | stdio is the simplest, lowest-latency transport. Claude Code, Cursor, and Codex all launch MCP servers as subprocesses communicating over stdin/stdout. No network stack overhead. Microsecond-level response times. Use this for all local development servers. | HIGH |
+| TCP sockets (JSON-RPC) | Python `asyncio` stdlib | Communication between MCP server and Blender addon | Proven pattern from ahujasid/blender-mcp: Blender runs a socket server on localhost:9876, MCP server connects as a client, sends JSON commands, receives JSON responses. Keep this exact pattern -- it works and Blender's Python environment cannot run an MCP server directly (GIL + bpy threading constraints). | HIGH |
+| WebSocket (JSON-RPC) | websockets 14.x | Communication between MCP server and Unity Editor | Proven pattern from CoderGamester/mcp-unity: Unity runs a WebSocket server on port 8090, Node.js MCP server connects as client. For a Python MCP server talking to Unity, use the `websockets` library instead of Node.js. Same protocol, different client language. | HIGH |
+| Streamable HTTP | MCP spec 2025-03-26 | Future: remote/multi-user MCP server deployment | Only needed if you want to deploy MCP servers as remote services (e.g., team-shared AI generation endpoint). Not needed for local single-developer workflow. Defer implementation until there is a real multi-user requirement. | LOW (defer) |
+
+**Architecture pattern:**
+
+```
+Claude Code / Cursor (MCP Client)
+       |
+       | stdio (JSON-RPC over stdin/stdout)
+       |
+  [Python MCP Server]  <-- Your custom code lives here
+       |          |
+       |          +-- TCP socket (JSON) --> [Blender Addon] (bpy API)
+       |          |                          localhost:9876
+       |          +-- WebSocket (JSON) ---> [Unity Editor] (C# McpUnityServer)
+       |          |                          localhost:8090
+       |          +-- HTTPS REST ---------> [AI Generation APIs]
+       |                                    fal.ai / Replicate / OpenAI / ComfyUI
+```
+
+### HTTP Client & Async Runtime
+
+| Technology | Version | Purpose | Why | Confidence |
+|------------|---------|---------|-----|------------|
+| httpx | >=0.27.1 | HTTP client for AI API calls | Already a core dependency of the MCP SDK -- do not add a second HTTP library. httpx supports both sync and async, HTTP/1.1 and HTTP/2, and is the MCP team's choice. Use `httpx.AsyncClient` for all outbound API calls. | HIGH |
+| anyio | >=4.5 | Async I/O abstraction | Already a core dependency of the MCP SDK. Provides structured concurrency (`anyio.create_task_group`) that works with both asyncio and trio. Use anyio primitives instead of raw asyncio for compatibility with the MCP runtime. | HIGH |
+| websockets | 14.x | WebSocket client for Unity bridge | Lightweight, well-maintained, async-native WebSocket library. Used for connecting to Unity's WebSocket server. Do NOT use aiohttp for this -- websockets is purpose-built and simpler. | HIGH |
+
+**Why NOT aiohttp:** aiohttp is async-only and optimized for high-concurrency server workloads. For an MCP server making a handful of concurrent API calls, httpx (already bundled) is sufficient. Adding aiohttp would be a redundant dependency.
+
+**Why NOT requests:** Synchronous-only. The MCP server runtime is async (anyio). Using `requests` would block the event loop. httpx is the async-capable equivalent and is already installed.
+
+### AI Generation APIs
+
+| Technology | Version | Purpose | Why | Confidence |
+|------------|---------|---------|-----|------------|
+| fal-client | 0.13.x | Image generation (Stable Diffusion, Flux), 3D model generation (Hunyuan3D v3, Trellis) | fal.ai is the best unified platform for game asset generation in 2026. Single SDK covers both 2D (SDXL, Flux, SD3.5) and 3D (Hunyuan3D v3 with PBR materials, Trellis). Async-native with `subscribe_async`. Pay-per-use, no GPU required locally. Hunyuan3D v3 outputs glTF with PBR textures directly. | HIGH |
+| replicate | latest | Fallback/alternative for 3D generation (TripoSR, Hunyuan3D 2) | Replicate hosts the same models as fal.ai but with broader selection. Use as fallback when fal.ai models are unavailable or for models not yet on fal.ai. Python SDK is well-maintained. TripoSR on Replicate is $0.07/generation. | MEDIUM |
+| openai | latest | GPT Image (gpt-image-1, gpt-image-1.5) for concept art, reference sheets | OpenAI's GPT Image models replaced DALL-E (deprecated May 2026). Best for high-fidelity concept art, character reference sheets, and UI art. NOT for textures (use Stable Diffusion for that). Use for creative direction and reference image generation. | HIGH |
+| Direct REST (via httpx) | N/A | ComfyUI local server API, Stability AI API, any future API | For APIs without a Python SDK or when you want to avoid SDK dependency bloat, use httpx directly with the REST endpoint. ComfyUI exposes a JSON workflow API on localhost -- call it directly rather than adding a ComfyUI Python SDK. | HIGH |
+
+**AI API Strategy:**
+
+| Use Case | Recommended API | Model | Output Format |
+|----------|----------------|-------|---------------|
+| Monster concept art | OpenAI GPT Image | gpt-image-1.5 | PNG |
+| Texture generation (diffuse, normal) | fal.ai | SD3.5 or Flux | PNG |
+| Seamless tileable textures | ComfyUI (local) | SD3.5 + ControlNet Tile | PNG |
+| 3D monster model (hero quality) | fal.ai | Hunyuan3D v3 | glTF/GLB with PBR |
+| 3D prop model (fast iteration) | fal.ai | Trellis | glTF/GLB |
+| 3D character (clean topology for rigging) | Tripo3D API | Tripo v3.0 | glTF with quad topology |
+| Multi-view reference sheets | OpenAI GPT Image | gpt-image-1 | PNG |
+
+**Why NOT run Stable Diffusion locally:** Running SD locally requires a dedicated GPU, VRAM management, model downloads, and CUDA setup. For a development toolkit, cloud APIs are faster to integrate, always have the latest models, and cost cents per generation. ComfyUI local is the exception -- use it when you need custom pipelines (e.g., ControlNet-guided texture generation) that cloud APIs don't support.
+
+### Image Processing
+
+| Technology | Version | Purpose | Why | Confidence |
+|------------|---------|---------|-----|------------|
+| Pillow | 12.1.x | Image format conversion, texture atlas composition, DDS read/write, resizing, channel manipulation | The standard Python image library. Pillow 12.x reads/writes DDS (DirectX textures), PNG, JPEG, TGA, BMP, EXR (with OpenEXR), and more. Use for: AI output post-processing, texture atlas packing, normal map channel manipulation, format conversion for Unity import. | HIGH |
+| numpy | >=1.26 | Pixel-level image manipulation, normal map computation, batch operations | Already a transitive dependency (via Pillow and trimesh). Use for fast pixel operations: normal map generation from height maps, channel splitting/merging, batch color corrections. Avoid Pillow's per-pixel loops -- use numpy arrays. | HIGH |
+
+**Why NOT OpenCV (cv2):** OpenCV is massive (100+ MB), mostly for computer vision tasks (object detection, camera calibration). For game texture processing, Pillow + numpy covers 95% of needs. The remaining 5% (edge detection for normal maps) can use scipy.ndimage which is much lighter. Do not add cv2 unless you need actual computer vision features.
+
+**Why NOT sharp (Node.js):** sharp is excellent but is a Node.js library. All MCP servers are Python. Do not introduce a Node.js subprocess for image processing.
+
+### 3D Mesh Processing
+
+| Technology | Version | Purpose | Why | Confidence |
+|------------|---------|---------|-----|------------|
+| trimesh | 4.11.x | Mesh loading, format conversion, analysis, simplification | The best Python mesh library. Pure Python core with only numpy as hard dependency. Loads/exports OBJ, glTF/GLB, STL, PLY, 3MF, COLLADA. Has mesh simplification, boolean operations, convex hull, ray casting. Use for: validating AI-generated meshes, format conversion (GLB to FBX via intermediate), polygon count analysis, mesh repair. | HIGH |
+| pygltflib | 1.16.x | Direct glTF 2.0 manipulation, PBR material editing, texture embedding | Low-level glTF library for precise control over glTF files. Use when trimesh's glTF support is too abstracted -- e.g., editing PBR material properties, swapping textures in an existing GLB, reading/writing glTF extensions. Complements trimesh, does not replace it. | MEDIUM |
+| pymeshlab | 2025.07 | Advanced mesh operations: remeshing, decimation, topology optimization | PyMeshLab wraps the full MeshLab engine. Use for operations trimesh cannot do: isotropic remeshing, Quadric Edge Collapse decimation (better quality than trimesh's simplify), Poisson surface reconstruction, texture parameterization. Heavy dependency (C++ binaries) -- only install in the mesh-processing MCP server, not in all servers. | MEDIUM |
+
+**Mesh processing pipeline for AI-generated assets:**
+
+```
+AI API output (GLB/OBJ)
+    |
+    v
+[trimesh] -- Load, validate, inspect polygon count
+    |
+    v
+[pymeshlab] -- Remesh/decimate if needed (target poly budget)
+    |
+    v
+[pygltflib] -- Assign/edit PBR materials, embed textures
+    |
+    v
+[trimesh] -- Export to format Unity can import (FBX via assimp, or GLB)
+    |
+    v
+Unity import via MCP tool call
+```
+
+**Why NOT Open3D:** Open3D is focused on point cloud processing and 3D reconstruction (SLAM, depth cameras). It CAN process meshes but is optimized for a different use case. Trimesh + PyMeshLab covers game asset processing better with lighter weight.
+
+**Why NOT Aspose.3D:** Commercial license, expensive, overkill for this use case. Trimesh is MIT-licensed and sufficient.
+
+### Data Validation & Configuration
+
+| Technology | Version | Purpose | Why | Confidence |
+|------------|---------|---------|-----|------------|
+| pydantic | >=2.12.0 | Tool input/output validation, config schemas, API response models | Already a core MCP SDK dependency. Use Pydantic models for ALL tool parameters and return types. The MCP SDK uses Pydantic for JSON Schema generation (tool descriptions sent to LLMs). Defining tool inputs as Pydantic models automatically generates correct schemas. | HIGH |
+| pydantic-settings | >=2.5.2 | Environment variable and .env file configuration | Already a core MCP SDK dependency. Use for API keys (FAL_KEY, OPENAI_API_KEY, REPLICATE_API_TOKEN), port configuration, file paths. Reads from environment variables and .env files. | HIGH |
+| python-dotenv | 1.x | .env file loading for local development | Lightweight .env file loader. pydantic-settings can use it as a backend. Keep API keys in `.env` files, never in code or config committed to git. | HIGH |
+
+### Project Structure & Tooling
+
+| Technology | Version | Purpose | Why | Confidence |
+|------------|---------|---------|-----|------------|
+| uv | latest | Package management, virtual environments, project scaffolding | Official MCP ecosystem tool. Replaces pip, pip-tools, poetry, pipenv. 10-100x faster. `uv init` for project setup, `uv add` for dependencies, `uv sync` for reproducible installs. Lock file (`uv.lock`) committed to git. | HIGH |
+| pyproject.toml | PEP 621 | Project metadata, dependencies, scripts | Standard Python project configuration. Define MCP server entry points as `[project.scripts]` for `uvx` execution. | HIGH |
+| ruff | latest | Linting and formatting | Replaces flake8, black, isort, pylint. Single tool, 10-100x faster (written in Rust). Configure in `pyproject.toml` under `[tool.ruff]`. | HIGH |
+| mypy | latest | Static type checking | Critical for MCP tool parameter correctness. Pydantic models + mypy catches type mismatches before runtime. Use strict mode. | MEDIUM |
+| pytest | 8.x | Testing | Standard Python testing. Use `pytest-asyncio` for testing async MCP tool handlers. Mock AI API calls with `respx` (httpx mock). | MEDIUM |
+| pytest-asyncio | 0.24.x | Async test support | MCP tool handlers are async functions. pytest-asyncio enables `async def test_*()`. | MEDIUM |
+
+### Project Layout (Recommended)
+
+```
+Tools/
+  mcp-toolkit/                    # Root of the custom MCP toolkit
+    pyproject.toml                # uv project config, dependencies, entry points
+    uv.lock                       # Locked dependencies (committed to git)
+    .env                          # API keys (NOT committed to git)
+    .env.example                  # Template for API keys (committed)
+    src/
+      veilbreakers_mcp/
+        __init__.py
+        blender_server.py         # MCP server: Blender bridge tools
+        unity_server.py           # MCP server: Unity bridge tools
+        asset_gen_server.py       # MCP server: AI generation tools
+        mesh_pipeline.py          # MCP server: mesh processing tools
+        shared/
+          __init__.py
+          blender_client.py       # TCP socket client for Blender addon
+          unity_client.py         # WebSocket client for Unity Editor
+          ai_clients.py           # httpx wrappers for AI APIs
+          image_utils.py          # Pillow/numpy image processing
+          mesh_utils.py           # trimesh/pygltflib utilities
+          models.py               # Pydantic models for tool I/O
+          config.py               # pydantic-settings configuration
+    tests/
+      test_blender_tools.py
+      test_unity_tools.py
+      test_asset_gen.py
+      test_mesh_pipeline.py
+    blender_addon/
+      __init__.py                 # Blender addon registration
+      socket_server.py            # TCP socket server running inside Blender
+      operators.py                # Blender operators exposed to MCP
+```
+
+**Why monorepo (single `Tools/mcp-toolkit/`) over separate repos per server:** All servers share common utilities (clients, image processing, mesh processing, config). Separate repos would duplicate shared code or require a private PyPI package. A monorepo with multiple entry points (`[project.scripts]` in pyproject.toml) is the pragmatic choice for a single-developer project. Each server is a separate entry point but shares the same codebase.
+
+**Why `Tools/mcp-toolkit/` inside the Unity project:** Keeps the MCP toolkit co-located with the game project it serves. The `.mcp.json` can reference it directly. Unity ignores non-Assets directories. If the toolkit grows, it can be extracted to a separate repo later.
 
 ---
 
@@ -150,41 +201,103 @@ These are already in the project and require no version changes or additions for
 
 | Category | Recommended | Alternative | Why Not |
 |----------|-------------|-------------|---------|
-| Tweening | PrimeTween 1.3.7 | DOTween Pro | DOTween allocates on every tween. Legacy API. PrimeTween has native VisualElement support. |
-| Tweening | PrimeTween 1.3.7 | LitMotion | DOTS-based architecture; overkill for MonoBehaviour project. Excellent perf but wrong paradigm. |
-| Tweening | PrimeTween 1.3.7 | USS Transitions only | Cannot orchestrate multi-element sequences, no code-driven control, limited to two-state interpolation. |
-| UI Blur | USS filter: blur() | Unified-Universal-Blur package | USS filter handles UI-element blur natively. Only need the package if scene-behind-UI glassmorphism is required. |
-| UI Effects | UI Shader Graph | Custom ShaderLab | UI Shader Graph uses visual node editor, integrates with UI Toolkit material system, no raw HLSL needed. |
-| UI Effects | USS Filters | Custom render passes | USS filters cover 90% of UI visual effects without shader code. Only use render passes for scene-level effects. |
-| 3D Preview | RenderTexture + Camera | Screen Space Overlay model | UI Toolkit does not support 3D objects in its render tree. RenderTexture is the only viable approach. |
-| Particles in UI | RenderTexture approach | UI Toolkit Particles (Asset Store) | RenderTexture particles are consistent with hero preview approach. Asset Store plugin adds dependency risk. If budget allows, evaluate com.kamgam.uitoolkitparticles. |
-| Animation framework | PrimeTween sequences | Unity Timeline | Timeline is scene-bound, not code-driven, harder to trigger dynamically. PrimeTween sequences are code-first, zero-alloc, and composable. |
+| MCP SDK Language | Python (mcp 1.26.0) | TypeScript (MCP SDK v1.x) | Blender API is Python-only. AI SDKs are Python-first. TypeScript SDK v2 is pre-alpha. Would require Python subprocess bridge for Blender anyway. |
+| MCP Framework | Built-in SDK FastMCP | FastMCP 3.1.1 standalone | Standalone FastMCP adds complexity (composition, proxying) not needed for first iteration. Built-in decorator API is sufficient. Upgrade later if needed. |
+| HTTP Client | httpx (bundled with MCP) | aiohttp | aiohttp is async-only, heavier, and redundant with httpx already installed. httpx handles both sync and async. |
+| HTTP Client | httpx (bundled with MCP) | requests | Synchronous-only. Blocks the async MCP event loop. httpx is the async-capable replacement. |
+| WebSocket | websockets 14.x | aiohttp WebSocket client | aiohttp's WebSocket client is part of a larger server framework. websockets is focused, lighter, better documented for client-only use. |
+| Image Processing | Pillow 12.x + numpy | OpenCV (cv2) | 100+ MB dependency for features not needed. Pillow + numpy handles texture processing without computer vision overhead. |
+| Image Processing | Pillow 12.x + numpy | Wand (ImageMagick binding) | ImageMagick is an external system dependency. Pillow is pure Python. Simpler deployment. |
+| Mesh Processing | trimesh 4.11.x | Open3D | Open3D focuses on point clouds and reconstruction. Heavier (C++ binaries for features we don't need). Trimesh is focused on triangle mesh operations. |
+| Mesh Processing | trimesh + pymeshlab | pyvista | pyvista is a VTK wrapper for scientific visualization. Not optimized for game asset pipelines. |
+| 3D API (primary) | fal.ai (fal-client) | Meshy API | Meshy is good but fal.ai has broader model selection (Hunyuan3D v3, Trellis, Flux) under one SDK. Meshy is a fallback option. |
+| 3D API (primary) | fal.ai | Replicate | Replicate is the fallback. fal.ai is faster for image/3D gen with better pricing. Replicate has broader model catalog for edge cases. |
+| Project management | uv | poetry / pip-tools | MCP ecosystem standardized on uv. 10-100x faster. Better lock file format. Official recommendation from MCP SDK team. |
+| Linting | ruff | flake8 + black + isort | Ruff replaces all three in a single tool. 10-100x faster. One config section in pyproject.toml. |
+| Package manager | uv | pip | pip is slow, has no lock file, and uv is a drop-in replacement with massive speed improvements. |
 
 ---
 
-## Performance Optimization Techniques
+## Installation
 
-### UI Toolkit Specific
+```bash
+# Prerequisites: Python 3.12, uv installed
+# On Windows:
+# pip install uv   (or)   winget install astral-sh.uv
 
-| Technique | What | Why | Confidence |
-|-----------|------|-----|------------|
-| `UsageHints.DynamicTransform` | Set on any VisualElement that animates position/rotation/scale | Pushes transform updates directly to GPU, bypasses CPU mesh recalculation. Already used in TransitionController.cs. Apply to ALL animated elements. | HIGH |
-| `UsageHints.DynamicColor` | Set on elements with animated colors/opacity | Optimizes color-change rendering path (fast pass). Apply to elements that fade, pulse, or change color. | MEDIUM |
-| `style.translate` over `style.left/top` | Use translate for position animations | translate operates at transform stage without triggering layout recalculation. left/top/width/height trigger cascading layout updates across siblings. | HIGH |
-| Pre-create all elements | Build full UI tree at init, show/hide via Display.None | Avoids runtime VisualElement instantiation and GC pressure. Never create/destroy elements during hero switching. | HIGH |
-| Cache all Q<> references | Query VisualElements once in OnEnable, store in fields | Q<> and Q() traverse the visual tree. Calling in Update or per-frame callbacks causes unnecessary work. | HIGH |
-| Avoid data binding for animated properties | Do not use runtime binding on properties that change every frame | UI Toolkit's binding system causes large GC allocations per frame (reported community issue). Set animated properties directly via style. | HIGH |
-| Dynamic atlas awareness | Keep UI textures under 8-texture limit per batch | UI Toolkit uses an uber shader with 8-texture slots. Exceeding this breaks batches and increases draw calls. Atlas small textures. | MEDIUM |
-| Profile with UI Toolkit Debugger | Use Window > UI Toolkit > Debugger at runtime | Shows visual tree, computed styles, layout boxes, and helps identify layout thrashing. | HIGH |
+# Initialize project
+cd Tools/mcp-toolkit
+uv init --python 3.12
 
-### General Unity Performance
+# Core MCP SDK
+uv add "mcp[cli]>=1.26.0"
 
-| Technique | What | Why |
-|-----------|------|-----|
-| Incremental GC (already enabled) | Spread GC across frames | Already configured in ProjectSettings. Maintain. |
-| No allocations in Update/callbacks | Use cached references, pre-allocated lists, avoid string concatenation | Core project constraint. Applies to all new character select code. |
-| Profile with Memory Profiler 1.1.9 | Verify zero per-frame allocations on character select screen | Already in project. Use to validate rebuild. |
-| Adaptive Performance 6.0.0 | Runtime performance scaling | Already in project. Useful if character select has heavy effects on low-end hardware. |
+# Communication
+uv add "websockets>=14.0"
+
+# AI Generation APIs
+uv add "fal-client>=0.13.0"
+uv add "openai>=1.60.0"
+uv add "replicate>=1.0.0"
+
+# Image Processing
+uv add "Pillow>=12.1.0"
+uv add "numpy>=1.26.0"
+
+# 3D Mesh Processing
+uv add "trimesh[easy]>=4.11.0"
+uv add "pygltflib>=1.16.0"
+
+# Optional: heavy mesh processing (install only when needed)
+uv add "pymeshlab>=2025.7"
+
+# Configuration
+uv add "python-dotenv>=1.0.0"
+
+# Dev dependencies
+uv add --dev "pytest>=8.0"
+uv add --dev "pytest-asyncio>=0.24.0"
+uv add --dev "respx>=0.22.0"
+uv add --dev "ruff>=0.8.0"
+uv add --dev "mypy>=1.13.0"
+```
+
+### Entry Points (pyproject.toml)
+
+```toml
+[project.scripts]
+vb-blender-mcp = "veilbreakers_mcp.blender_server:main"
+vb-unity-mcp = "veilbreakers_mcp.unity_server:main"
+vb-assetgen-mcp = "veilbreakers_mcp.asset_gen_server:main"
+vb-mesh-mcp = "veilbreakers_mcp.mesh_pipeline:main"
+```
+
+### .mcp.json Integration
+
+```json
+{
+  "mcpServers": {
+    "vb-blender": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["--directory", "Tools/mcp-toolkit", "run", "vb-blender-mcp"],
+      "env": { "BLENDER_PORT": "9876" }
+    },
+    "vb-assetgen": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["--directory", "Tools/mcp-toolkit", "run", "vb-assetgen-mcp"],
+      "env": { "FAL_KEY": "${FAL_KEY}", "OPENAI_API_KEY": "${OPENAI_API_KEY}" }
+    },
+    "vb-mesh": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["--directory", "Tools/mcp-toolkit", "run", "vb-mesh-mcp"],
+      "description": "3D mesh processing, format conversion, validation"
+    }
+  }
+}
+```
 
 ---
 
@@ -192,83 +305,141 @@ These are already in the project and require no version changes or additions for
 
 | Technology | Why Not |
 |------------|---------|
-| Legacy UGUI for new UI | Project constraint: UI Toolkit only. UGUI exists only for VBSceneManager fade canvas (legacy). |
-| IMGUI | Editor-only. Never for runtime UI. |
-| DOTween | Allocates memory. Legacy design. No native UI Toolkit support. |
-| Unity Animator/Animation for UI | Overkill for UI state transitions. USS transitions + PrimeTween cover all cases. Animator adds component overhead. |
-| Timeline for UI sequences | Scene-bound, not composable in code, harder to trigger dynamically. Use PrimeTween sequences. |
-| Custom singleton patterns | Project uses SingletonMonoBehaviour<T>. Do not introduce alternative patterns. |
-| Direct Input.* calls | Must route through InputManager. Legacy Input API mixed in codebase is a known bug to fix. |
-| RuntimeAnimatorController on UI | Heavy. Use USS transitions for simple states, PrimeTween for complex sequences. |
-| Coroutine-based animation | Project already has a coroutine-Task bridge marked for revisit. PrimeTween's sequence API is cleaner and allocation-free. |
-
----
-
-## Package Installation Plan
-
-### New Package (1 addition only)
-
-```
-# Via Package Manager > Add package by name:
-com.kyrylokuzyk.primetween
-
-# Or via manifest.json:
-"com.kyrylokuzyk.primetween": "1.3.7"
-```
-
-### Existing Packages to Configure (not install)
-
-| Package | Configuration Needed |
-|---------|---------------------|
-| URP 17.3.0 | Create CharacterSelect-specific Volume Profile with Bloom (Kawase), DoF (Bokeh), Vignette, Color Adjustments |
-| UI Toolkit module | Leverage new USS filters (blur, tint, contrast) and UI Shader Graph for custom effects |
-| Input System 1.18.0 | Verify NavigationSubmitEvent handlers alongside ClickEvent on all character select buttons |
-| Addressables 2.8.0 | Consider for hero model prefab loading if models become large assets |
-
-### No New Heavy Dependencies
-
-The character select rebuild should add exactly ONE new package (PrimeTween). Everything else leverages Unity 6.3's native capabilities -- USS filters, UI Shader Graph, Volume system, and Input System integration are all built-in and ready to use at the project's current version.
+| TypeScript for Blender integration | Blender's API is Python-only (bpy). A TypeScript server would need to shell out to Python, adding latency and complexity for zero benefit. |
+| aiohttp | Redundant with httpx (already in MCP SDK). Adds ~15MB of dependencies for zero additional capability in this context. |
+| requests | Synchronous-only. Blocks the async MCP event loop. Use httpx instead. |
+| OpenCV (cv2) | 100+ MB. Designed for computer vision, not texture processing. Pillow + numpy is sufficient and 10x lighter. |
+| gRPC | Over-engineered for local IPC. MCP already defines JSON-RPC over stdio. Blender/Unity bridges use TCP/WebSocket JSON. Adding gRPC would be a fourth protocol for no benefit. |
+| Docker for local development | MCP servers run as local subprocesses. Docker adds startup latency (seconds vs milliseconds) and complicates GPU passthrough for local ComfyUI. Use Docker only if deploying remote Streamable HTTP servers. |
+| Flask / Django | The MCP SDK includes Starlette/uvicorn for HTTP transport. Adding another web framework is redundant and creates conflicts. |
+| FastAPI | Same issue as Flask/Django. FastAPI is built on Starlette, which is already in the MCP SDK. If you need HTTP endpoints beyond MCP, use Starlette directly from the SDK's dependencies. |
+| Poetry / Pipenv | uv is the MCP ecosystem standard. Mixing package managers causes lock file conflicts and confuses contributors. |
+| SSE transport (legacy) | SSE transport was deprecated in MCP spec 2025-03-26, replaced by Streamable HTTP. Do not implement SSE servers. |
+| Aspose.3D | Commercial license ($999+/year). Trimesh + PyMeshLab covers all game asset mesh operations for free. |
+| numpy-stl | Trimesh handles STL plus dozens of other formats. numpy-stl is STL-only. Use trimesh. |
 
 ---
 
 ## Version Compatibility Matrix
 
-| Component | Required Version | Project Version | Status |
-|-----------|-----------------|----------------|--------|
-| Unity Engine | 6000.3.x (6.3 LTS) for USS filters, UI Shader Graph | 6000.3.6f1 | COMPATIBLE |
-| URP | 17.x for Kawase bloom, alpha processing | 17.3.0 | COMPATIBLE |
-| Input System | 1.7+ for full UI Toolkit integration | 1.18.0 | COMPATIBLE |
-| PrimeTween | 1.3.7 (latest) | Not installed | TO INSTALL |
-| UI Toolkit module | Built into Unity 6.3 | 1.0.0 | COMPATIBLE |
+| Component | Required Version | Rationale | Status |
+|-----------|-----------------|-----------|--------|
+| Python | 3.12.x | MCP SDK >=3.10, Blender 4.x uses 3.11-3.12, best perf/compat balance | INSTALL |
+| mcp SDK | >=1.26.0 | Latest stable with Streamable HTTP, OAuth, all transports | INSTALL |
+| Blender | 4.x (4.2+ preferred) | bpy API stability, Python 3.11-3.12 embedded | EXTERNAL (user installed) |
+| Unity | 6000.3.6f1 | Locked per PROJECT.md constraint. mcp-unity package required in project | EXISTING |
+| Node.js | 18+ | Only for mcp-unity bridge server (existing). Not used for custom Python servers | EXISTING |
+| fal.ai | Account + FAL_KEY | Pay-per-use API. No local GPU needed | EXTERNAL |
+| OpenAI | Account + API key | Pay-per-use API | EXTERNAL |
+| ComfyUI | Local install (optional) | Only needed for custom SD pipelines. Not required for cloud-only workflow | OPTIONAL |
+
+---
+
+## MCP Server Minimal Example
+
+```python
+"""Minimal MCP server showing the SDK pattern."""
+from mcp.server.fastmcp import FastMCP
+
+mcp = FastMCP("veilbreakers-assetgen")
+
+@mcp.tool()
+async def generate_monster_concept(
+    description: str,
+    style: str = "dark fantasy",
+    width: int = 1024,
+    height: int = 1024,
+) -> str:
+    """Generate concept art for a VeilBreakers monster.
+
+    Args:
+        description: Monster description (e.g., 'corrupted wolf with void crystals')
+        style: Art style directive
+        width: Image width in pixels
+        height: Image height in pixels
+
+    Returns:
+        Path to the generated image file
+    """
+    import httpx
+    # Use httpx (already in MCP SDK deps) to call fal.ai
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "https://fal.run/fal-ai/flux/schnell",
+            headers={"Authorization": f"Key {get_fal_key()}"},
+            json={
+                "prompt": f"{description}, {style}, game character concept art",
+                "image_size": {"width": width, "height": height},
+            },
+        )
+        result = response.json()
+        # Download and save image...
+        return f"Generated monster concept: {result['images'][0]['url']}"
+
+@mcp.resource("monsters://brands")
+async def get_brand_list() -> str:
+    """List all VeilBreakers monster brands."""
+    return "IRON, SAVAGE, SURGE, VENOM, DREAD, LEECH, GRACE, MEND, RUIN, VOID"
+
+if __name__ == "__main__":
+    mcp.run(transport="stdio")
+```
+
+---
+
+## Key Architectural Decisions
+
+### Decision 1: Separate MCP Servers per Domain (Not One Monolith)
+
+**Decision:** Four separate MCP server entry points (blender, unity, asset-gen, mesh), sharing a common Python package.
+
+**Rationale:** MCP clients (Claude Code) load each server as a separate subprocess. A monolith with 40+ tools would overwhelm the tool selection heuristic. Separate servers allow:
+- Loading only what is needed (e.g., asset-gen without Blender running)
+- Independent failure (Blender crash does not kill the mesh processor)
+- Clearer tool namespacing in the LLM's tool list
+
+### Decision 2: TCP Sockets for Blender, WebSocket for Unity
+
+**Decision:** Keep the same IPC patterns as the reference implementations (ahujasid/blender-mcp, CoderGamester/mcp-unity).
+
+**Rationale:** These patterns are battle-tested. Blender's bpy API has GIL constraints that make embedding an MCP server inside Blender impractical. The socket server addon pattern works around this. Unity's WebSocket server is already integrated via the mcp-unity package. Changing protocols would break compatibility with the existing Unity package.
+
+### Decision 3: Cloud APIs First, Local ComfyUI as Escape Hatch
+
+**Decision:** Default to fal.ai/OpenAI cloud APIs. ComfyUI local only for custom pipelines.
+
+**Rationale:** Cloud APIs have the latest models (Hunyuan3D v3, GPT Image 1.5, Flux), require no GPU, and cost cents per generation. Local ComfyUI is kept as an option for ControlNet-guided texture generation pipelines that cloud APIs cannot replicate. This avoids forcing GPU requirements on the development setup.
 
 ---
 
 ## Sources
 
 ### Official Documentation (HIGH confidence)
-- [USS Transitions - Unity 6.3 Manual](https://docs.unity3d.com/6000.3/Documentation/Manual/UIE-Transitions.html)
-- [USS Filters - Unity 6.3 Manual](https://docs.unity3d.com/6000.3/Documentation/Manual/ui-systems/uss-filter.html)
-- [Built-in Filters - Unity 6.3 Manual](https://docs.unity3d.com/Manual/ui-systems/built-in-filters.html)
-- [UI Shader Graph Introduction - Unity 6.3 Manual](https://docs.unity3d.com/6000.3/Documentation/Manual/ui-systems/introduction-to-ui-shader-graph.html)
-- [UI Shader Graph Getting Started - Unity 6.3 Manual](https://docs.unity3d.com/6000.3/Documentation/Manual/ui-systems/get-started-with-ui-shader-graph.html)
-- [Focus System - Unity 6.3 Manual](https://docs.unity3d.com/6000.3/Documentation/Manual/UIE-focus-order.html)
-- [Performance Considerations - Unity 6.3 Manual](https://docs.unity3d.com/6000.3/Documentation/Manual/UIE-performance-consideration-runtime.html)
-- [UsageHints Optimization - Unity 6.0 Manual](https://docs.unity3d.com/6000.0/Documentation/Manual/UIE-use-usage-hints-to-reduce-draw-calls-and-geometry-regeneration.html)
-- [URP Post-Processing - Unity 6.3 Manual](https://docs.unity3d.com/6000.3/Documentation/Manual/urp/post-processing-and-full-screen-effects-urp.html)
-- [URP Volumes - Unity 6.3 Manual](https://docs.unity3d.com/6000.3/Documentation/Manual/urp/Volumes.html)
-- [What's New in Unity 6.3 - Unity 6.3 Manual](https://docs.unity3d.com/6000.3/Documentation/Manual/WhatsNewUnity63.html)
-- [Unity 6.3 LTS Release](https://unity.com/releases/editor/whats-new/6000.3.6f1)
+- [MCP Python SDK - GitHub](https://github.com/modelcontextprotocol/python-sdk) -- v1.26.0, FastMCP API, transport details
+- [MCP Python SDK - PyPI](https://pypi.org/project/mcp/) -- Version 1.26.0, Python >=3.10
+- [MCP Specification - Transports](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports) -- stdio and Streamable HTTP spec
+- [MCP TypeScript SDK - GitHub](https://github.com/modelcontextprotocol/typescript-sdk) -- v2 pre-alpha, v1.x stable
+- [FastMCP - PyPI](https://pypi.org/project/fastmcp/) -- v3.1.1 standalone
+- [MCP SDK Dependencies - DeepWiki](https://deepwiki.com/modelcontextprotocol/python-sdk/1.1-installation-and-dependencies) -- Full dependency list with version constraints
+- [MCP Transport Comparison - AWS Builder](https://builder.aws.com/content/35A0IphCeLvYzly9Sw40G1dVNzc/mcp-transport-mechanisms-stdio-vs-streamable-http) -- stdio vs Streamable HTTP analysis
+- [trimesh - PyPI](https://pypi.org/project/trimesh/) -- v4.11.4, format support, dependencies
+- [Pillow - PyPI](https://pypi.org/project/pillow/) -- v12.1.1, DDS support details
+- [Pillow DDS Format](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html) -- DDS read/write capabilities
+- [fal.ai 3D Models](https://fal.ai/3d-models) -- Hunyuan3D v3, Trellis API
+- [fal-client PyPI](https://pypi.org/project/fal-client/) -- v0.13.x
+- [OpenAI Image Generation](https://platform.openai.com/docs/guides/image-generation) -- GPT Image models, DALL-E deprecation
+- [pygltflib - PyPI](https://pypi.org/project/pygltflib/) -- glTF 2.0 manipulation
+- [uv Documentation](https://docs.astral.sh/uv/guides/projects/) -- Project setup, dependency management
 
-### Community / Verified Sources (MEDIUM confidence)
-- [PrimeTween GitHub](https://github.com/KyryloKuzyk/PrimeTween) - Zero-allocation tween library with UI Toolkit support
-- [PrimeTween UI Animations - DeepWiki](https://deepwiki.com/KyryloKuzyk/PrimeTween/4.2-ui-animations) - API details for VisualElement animation
-- [UI Toolkit Advanced E-Book (Unity 6 2025)](https://github.com/unity-e-book/UIToolkit/blob/main/UI_Toolkit_for_advanced_Unity_developers_Unity_6_2025.md) - Official Unity e-book with optimization patterns
-- [Dragon Crashers Sample](https://assetstore.unity.com/packages/essentials/tutorial-projects/dragon-crashers-ui-toolkit-sample-project-231178) - Reference implementation with render texture character preview
-- [Unity 6 UI Toolkit Updates Blog](https://unity.com/blog/unity-6-ui-toolkit-updates) - Feature announcements
-- [Scalable Performant UI in Unity 6](https://unity.com/resources/scalable-performant-ui-uitoolkit-unity-6) - Performance e-book
+### Reference Implementations (HIGH confidence)
+- [blender-mcp (ahujasid)](https://github.com/ahujasid/blender-mcp) -- TCP socket architecture, Blender addon pattern
+- [mcp-unity (CoderGamester)](https://github.com/CoderGamester/mcp-unity) -- WebSocket bridge, Unity C# server, Node.js MCP client
+- [mcp-game-asset-gen (Flux159)](https://github.com/Flux159/mcp-game-asset-gen) -- TypeScript game asset generation MCP, fal.ai/OpenAI integration
 
-### Community Discussion (LOW confidence -- validate before using)
-- [UI Toolkit Binding GC Allocations](https://discussions.unity.com/t/ui-toolkit-binding-system-causing-large-gc-allocations/1697259) - Binding system GC issue reports
-- [Glassmorphism Request](https://discussions.unity.com/t/suggesting-native-glassmorphism-support-in-ui-toolkit-for-modern-transparent-ui-designs/1694475) - Background blur not natively supported
-- [Unified-Universal-Blur](https://github.com/lukakldiashvili/Unified-Universal-Blur) - Third-party scene blur if needed
-- [UI Toolkit Roadmap Discussion](https://discussions.unity.com/t/ui-toolkits-missing-roadmap-from-unite-2025-whats-coming-in-6-4-6-6/1696853) - Future UI Toolkit plans
+### Ecosystem Research (MEDIUM confidence)
+- [MCP Transport Future - Blog](https://blog.modelcontextprotocol.io/posts/2025-12-19-mcp-transport-future/) -- Transport evolution direction
+- [PyMeshLab - GitHub](https://github.com/cnr-isti-vclab/PyMeshLab) -- v2025.07 release
+- [3D API Comparison 2026](https://www.3daistudio.com/blog/best-3d-model-generation-apis-2026) -- Meshy, Tripo, Rodin, fal.ai comparison
+- [httpx vs aiohttp vs requests](https://www.speakeasy.com/blog/python-http-clients-requests-vs-httpx-vs-aiohttp) -- HTTP client comparison
+- [MCP Game Development Servers](https://mcpmarket.com/categories/game-development) -- Ecosystem overview
+- [ComfyUI API Guide](https://comfyui.org/en/programmatic-image-generation-api-workflow) -- Programmatic workflow execution

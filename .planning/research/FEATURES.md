@@ -1,225 +1,333 @@
-# Feature Research: Character Select Screen
+# Feature Landscape: AI Game Development MCP Toolkit
 
-**Domain:** AAA RPG Character Selection Screen (Monster RPG, Dark Fantasy)
-**Researched:** 2026-02-21
-**Confidence:** MEDIUM-HIGH (based on analysis of existing AAA RPGs: Pokemon, Persona, Final Fantasy, Genshin Impact, Monster Hunter, Fire Emblem; cross-referenced with game UI databases, UX case studies, and current codebase state)
+**Domain:** AI-powered game development automation toolkit (MCP-based)
+**Researched:** 2026-03-18
+**Confidence:** MEDIUM-HIGH (verified against existing tool repos, official MCP docs, AI gamedev ecosystem surveys)
 
-## Feature Landscape
+## Scope
 
-### Table Stakes (Users Expect These)
+This research covers three pillars of an AI-powered game development toolkit delivered via Model Context Protocol (MCP):
 
-Features users assume exist. Missing any of these makes the screen feel broken, unfinished, or amateurish.
+1. **Blender Automation** -- rigging, animation, topology, texturing, environment generation
+2. **Unity Automation** -- visual testing, scene building, VFX, audio, AI/mobs, performance
+3. **Asset Pipeline** -- AI 3D generation, texture generation, mesh processing, engine import
+
+The analysis benchmarks against existing tools: `blender-mcp` (ahujasid), `mcp-unity` (CoderGamester), `Unity-MCP` (IvanMurzak), `gamedev-mcp-hub` (FryMyCalamari), `Blender-MCP-Server` (poly-mcp), `Ludo.ai MCP`, and standalone AI asset generators (Meshy, Tripo3D).
+
+---
+
+## Table Stakes (Must Have or Tool Is Useless)
+
+Features users expect from any AI game development toolkit. Missing any of these means the tool is not taken seriously.
+
+### Blender Automation -- Table Stakes
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| **Hero navigation (prev/next cycling)** | Every character select screen has this; players need to browse all options | LOW | Already implemented via `NavigatePrev()`/`NavigateNext()` with wrap-around. Working. |
-| **Hero identity display (name, title, role)** | Players need to know who they are picking; Pokemon shows species/type, FF shows job/class | LOW | Already implemented in `HeroDataPanelController`. Populates name, title, quote, path, role, synergy. |
-| **Stat preview (comparative data)** | Players make informed decisions by comparing stats; every RPG shows base stats at selection | MEDIUM | Partially implemented. Left panel shows HP/ATK/DEF/SPD chips. Right panel shows D&D attribute bars (STR/DEX/CON/INT/WIS/CHA). Both update on hero change. Bar fill animation works via USS width transitions. |
-| **Starter monster/companion preview** | In monster RPGs (Pokemon, Monster Hunter) the starter creature is the real decision point; it must be prominent | MEDIUM | Partially implemented. Champion section exists in left panel (name + brand/role tags). No visual preview of the monster -- only text. 3D champion model support exists in `HeroStageController` but all `championModelPrefab` fields are null. |
-| **Confirm before committing** | Accidental selection leads to frustration; every RPG has "Are you sure?" before locking a choice | LOW | Already implemented. Confirm overlay with CONFIRM/CANCEL buttons. Updates description dynamically. |
-| **Back navigation to main menu** | Players must be able to go back without penalty; universal pattern | LOW | Already implemented. Back button + NavigationCancel event both route to MainMenu scene. |
-| **Gamepad/keyboard navigation** | Console-quality RPGs require controller support; PC gamers increasingly use controllers | MEDIUM | Partially implemented. `NavigationMoveEvent` (left/right), `NavigationSubmitEvent`, `NavigationCancelEvent` are handled. No focus ring visual or d-pad feedback for button highlighting. |
-| **Visual hero differentiation** | Each character must feel distinct at a glance -- different colors, silhouettes, energy | MEDIUM | Theme class system exists (`theme-vex`, `theme-seraphina`, etc.) applied to root. Per-hero lighting rig in `HeroStageController`. Per-hero fog tinting in `CharSelectEnvironmentController`. Good foundation but depends on USS rules being complete. |
-| **Smooth transitions between heroes** | Snappy, not jerky. Persona 5 set the bar: sub-200ms transitions with style | MEDIUM | Partially implemented. 150ms transition lock exists. USS class toggle for `panel-hidden` with 50ms delay creates slide-in. But no exit animation -- panels just snap to hidden then slide back. Need enter AND exit choreography. |
-| **Loading feedback / perceived performance** | Screen must never feel stuck; skeleton/shimmer during data load | LOW | Not implemented. `InitializeWhenReady()` waits for GameDatabase with no visual feedback. Screen is blank or shows stale defaults during the 0-10s load window. |
-| **Abilities/skills preview** | Players want to know what their hero can do before committing; Pokemon shows move list, FF shows abilities | LOW | Already implemented. `HeroStatsPanelController` shows 5 ability slots populated from `innate_skills[]` with display name lookup from GameDatabase. |
-| **Audio feedback on navigation** | Every button press, hero switch, and embark action needs sound. Silence = broken. Genshin Impact character switch has layered sound design with whoosh + chime + impact | MEDIUM | Not implemented in character select controllers. `AudioManager` and `MusicManager` exist globally but no SFX triggers are wired for hero switching, button clicks, or embark sequence. |
+| **Object CRUD (create, read, update, delete)** | Every Blender MCP does this. Basic scene manipulation is the entry point. Without it, the AI cannot interact with the 3D workspace at all. | LOW | `blender-mcp` and `poly-mcp/Blender-MCP-Server` both provide this. 13+ tools typically. Standard via `bpy` Python API. |
+| **Material creation and assignment** | Textureless models are useless. Materials must be creatable and assignable to objects and faces. | LOW | All existing Blender MCPs handle basic material ops. PBR node tree setup (Principled BSDF) is the minimum. |
+| **Scene inspection and state query** | The AI must know what exists in the scene before modifying it. Without read-back, operations are blind. | LOW | `blender-mcp` provides `get_scene_info`. Essential for any agentic workflow -- the LLM needs to "see" state. |
+| **Transform operations (move, rotate, scale)** | Spatial positioning is fundamental to 3D work. Every tool in the ecosystem provides this. | LOW | Standard. Must support both local and world space, and batch operations on selections. |
+| **Import/Export (FBX, OBJ, glTF/GLB)** | Assets must flow between Blender and game engines. FBX is the Unity/UE standard. glTF is the web/interchange standard. | LOW | `poly-mcp/Blender-MCP-Server` lists file operations. Must handle scale/axis conversion correctly (Y-up vs Z-up). |
+| **Viewport screenshot capture** | The AI must see its own work. Without visual feedback, it cannot iterate or verify results. This is the single most important feedback mechanism. | LOW | `blender-mcp` supports this. Critical for closed-loop iteration. Must support configurable resolution and camera angle. |
+| **Arbitrary Python execution (sandboxed)** | Escape hatch for operations not covered by named tools. Every complex Blender workflow eventually needs custom Python. | MEDIUM | `blender-mcp` provides `execute_blender_code`. Security is the concern -- must sandbox or audit. This is how gaps get filled. |
 
-### Differentiators (Competitive Advantage)
+### Unity Automation -- Table Stakes
 
-Features that make VeilBreakers' character select feel AAA rather than indie. These are what players remember and screenshot.
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| **GameObject CRUD** | Creating, selecting, updating, and deleting GameObjects is the minimum viable Unity interaction. Every Unity MCP provides this. | LOW | `mcp-unity` (CoderGamester) and `Unity-MCP` (IvanMurzak) both provide 20+ scene/hierarchy tools. |
+| **Component manipulation** | Adding/removing/updating components is how Unity objects get behavior. Without this, the AI cannot configure anything. | LOW | Must handle serialized fields, references, and nested properties. Both major Unity MCPs support this. |
+| **Scene hierarchy query** | The AI must understand the scene graph to make decisions. Hierarchy traversal with component introspection is essential. | LOW | `mcp-unity` provides `unity://gameobject/{id}` resources. Must return transform, components, children, and active state. |
+| **Asset database browsing** | Finding existing assets (textures, prefabs, scripts, materials) is required before the AI can reference or use them. | LOW | `mcp-unity` provides `unity://assets` resource. Must support search/filter by type and path. |
+| **Console log access** | The AI must read Unity's console output to diagnose errors, warnings, and runtime messages. Without this, debugging is impossible. | LOW | Both major Unity MCPs expose console logs. Must support pagination and severity filtering. |
+| **Script compilation trigger** | After code changes, compilation must be triggerable. The AI needs to verify its code changes compile before proceeding. | LOW | `mcp-unity` provides `recompile_scripts`. Essential for any code-generation workflow. |
+| **Editor screenshot capture** | Visual verification of scene state, game view, or specific cameras. The AI must confirm visual outcomes. | LOW | `Unity-MCP` (IvanMurzak) supports camera screenshots. Critical for visual QA and iteration. |
+| **Prefab operations** | Creating prefabs from scene objects and instantiating prefabs into scenes. Core Unity workflow. | MEDIUM | `mcp-unity` provides `create_prefab` and `add_asset_to_scene`. Must handle prefab variants and nested prefabs. |
+
+### Asset Pipeline -- Table Stakes
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| **Text-to-3D model generation** | The fundamental promise of AI asset tooling. Without this, the toolkit has no generative capability. | MEDIUM | Meshy, Tripo3D, Ludo.ai, and Hyper3D all provide APIs. Quality varies significantly. Must output game-ready formats (FBX/GLB). |
+| **Image-to-3D model generation** | Concept art to 3D is the most requested pipeline. Artists create 2D concepts; AI converts to 3D. | MEDIUM | Meshy and Tripo3D both support image-to-3D. Quality is approaching production-ready for stylized assets in 2026. |
+| **Format conversion (GLB/FBX/OBJ)** | Generated assets must be in formats that game engines accept. Format interop is non-negotiable. | LOW | Most generators output GLB natively. FBX export is essential for Unity (animation/rig compat). |
+| **Texture map generation (diffuse at minimum)** | A model without textures is useless for game development. At minimum, diffuse/albedo must be generated alongside geometry. | MEDIUM | All major generators include basic texturing. PBR map quality (normal, roughness, metallic) varies by provider. |
+
+---
+
+## Differentiators (Competitive Advantage -- What Makes This AAA-Grade)
+
+Features that set a toolkit apart from the existing `blender-mcp` + `mcp-unity` + `gamedev-mcp-hub` combination. These are what make the difference between "another MCP wrapper" and "an actual game development platform."
+
+### Blender Automation -- Differentiators
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| **3D hero model with drag-to-rotate** | Persona 5 proved menus can be the star. A rotating 3D hero in a lit stage makes the screen feel cinematic. Players engage longer. | HIGH | Foundation exists in `HeroStageController`: RenderTexture, 5-light rig, drag rotation, placeholder capsule fallback. All `modelPrefab` fields are currently null (placeholder mode). Getting actual 3D models working is the key differentiator unlock. |
-| **Per-hero dynamic backgrounds** | Genshin Impact changes backgrounds per region. VeilBreakers already generates per-hero procedural nebula textures and tints fog. When polished, this creates a "whole world changes" feeling on each hero switch. | MEDIUM | Implemented but unpolished. `GenerateNebula()` creates per-hero Perlin noise textures on CPU (GC pressure). Parallax background with 3 layers (deep void, fog, vignette) responds to mouse. Needs: pre-baked textures per hero, smoother color transitions between heroes. |
-| **Cinematic overlay system (scanlines, vignette, veil glow)** | Dark Souls, Bloodborne, and Persona 5 all use post-processing-style overlays on menus to create atmosphere. VeilBreakers has a dedicated overlay layer for this. | MEDIUM | UXML structure exists (`cinematic-overlays` with scanlines, vignette, veil-glow elements). Implementation depends on USS styling. Low CPU cost since these are static/animated CSS elements. |
-| **Per-hero themed music/ambience** | Each hero having their own musical motif during selection creates emotional connection. Genshin does this with region music; Persona 5's menu music is iconic. | MEDIUM | Not implemented. `MusicManager` has crossfading support. Need: 4 ambient tracks or musical stems that crossfade on hero switch. Could use existing AudioManager infrastructure. |
-| **Animated stat bars with stagger** | Stat bars that fill sequentially (like a cascade) rather than all at once feel more polished. Persona 5 uses staggered animations everywhere. | LOW | Stat bars exist with width transitions via USS. Adding stagger is ~50 lines: schedule bar fill updates with increasing delays (50ms, 100ms, 150ms...). Pure USS + schedule approach. |
-| **Hero lore/backstory panel** | Pokemon shows Pokedex entries; Fire Emblem shows character bios. A scrollable or paginated lore section deepens engagement. | LOW | `hero-quote` label exists. Could expand to multi-paragraph backstory from HeroData. UXML has room in left panel. Data needs `backstory` field in hero JSON. |
-| **Starter monster 3D preview alongside hero** | Showing the champion monster next to the hero in the 3D stage (like Pokemon showing the starter) makes the pair feel like a team. | HIGH | `HeroStageController` already has `championModelPrefab` and `championOffset`/`championScale` support. Needs actual 3D monster models to work. Infrastructure is ready. |
-| **Embark sequence cinematic** | Instead of a hard scene cut, play a brief cinematic: screen darkens, hero silhouette illuminates, particles converge, then fade to loading. Persona 5's "Take Your Time" loading screen is legendary. | HIGH | Not implemented. Current embark flow: confirm -> create save -> `SceneManager.LoadScene()`. Could add: USS animation sequence (1-2 seconds) before scene transition using `ScreenTransition`. |
-| **Particle effects on hero switch** | Subtle particles (embers, motes, energy wisps) that burst on hero change and settle into the hero's theme color. | MEDIUM | Not implemented. Would need either UI Toolkit particle simulation (custom) or a world-space particle system composited via additional RenderTexture. CSS-only shimmer/glow effects are easier and still impactful. |
-| **Glass-morphism panel styling** | Frosted glass panels with backdrop blur create depth and premium feel. Already in the UXML class naming convention (`glass-panel`). | LOW | UXML uses `glass-panel` class on both info panels and confirm popup. USS implementation determines quality. UI Toolkit supports `backdrop-filter` in newer Unity versions -- needs verification for Unity 6000.3.6f1. |
-| **Teaser slot for upcoming heroes** | The carousel already has a "?" / "COMING SOON" teaser card. This builds anticipation and signals the game is alive. | LOW | Already implemented in `CarouselController.CreateTeaserCard()`. Just needs visual polish in USS. |
+| **AI-powered auto-rigging with game-ready skeletons** | Existing Blender MCPs have ZERO rigging tools. Going from mesh to rigged character requires Mixamo (limited to humanoids) or manual work (hours). Automating this via Rigify/AccuRIG integration or Tripo AI's universal rig would be transformative. Supports humanoid, quadruped, creature types. | HIGH | Gap in every existing MCP. Tripo AI offers universal rig. AccuRIG 2 is free. Integration path: call rigging tool APIs from MCP, validate result, return rigged FBX. |
+| **Animation retargeting and library** | Apply Mixamo/motion capture animations to any rigged character. Currently requires manual setup in Blender. Automating retarget + NLA strip creation saves hours per character. | HIGH | DeepMotion Animate 3D converts 2D video to 3D animation. Cascadeur provides AI-assisted keyframe animation. Neither is MCP-integrated today. |
+| **Intelligent retopology with polycount control** | AI-generated meshes have terrible topology for game use (50K+ tris, non-manifold, no edge loops). Automated retopology to game-ready polycount (1K-10K tris) with proper edge flow for deformation is essential for production. | HIGH | Tripo AI offers polycount/LOD slider. InstantMeshes and Blender's Voxel Remesh are free alternatives. No MCP wraps these today. |
+| **PBR texture baking pipeline** | Bake high-poly detail into game-ready texture maps (normal, AO, roughness, metallic, emissive) on low-poly mesh. Currently a 15-step manual Blender process. Automating this turns a 2-hour task into a 30-second tool call. | HIGH | Blender has all baking infrastructure via Cycles. No existing MCP exposes baking tools. Ubisoft's open-source "Generative Base Material" (SIGGRAPH Asia 2025) shows the direction. |
+| **Environment scene composition** | Place multiple objects in a scene with proper spacing, grounding (on terrain), lighting, and composition. Current MCPs create objects but do not compose scenes intelligently. | HIGH | No existing MCP provides intelligent placement. Would need: terrain-aware placement, collision avoidance, aesthetic composition rules. Infinigen (Princeton) shows procedural approach. |
+| **Modifier stack automation** | Apply and configure modifier stacks (subdivision, bevel, mirror, array, solidify, decimate) based on asset purpose (hero asset vs background prop). Current MCPs list modifiers but do not intelligently select them. | MEDIUM | `poly-mcp/Blender-MCP-Server` lists modeling tools including modifiers. Differentiator is intelligent defaults: "make this game-ready" applies decimate + normal transfer + UV unwrap automatically. |
+| **UV unwrapping with smart projection** | Automated UV unwrapping with seam placement optimized for texture resolution and minimal stretching. Critical for texturing pipeline. | MEDIUM | Blender's Smart UV Project and Lightmap Pack are available via Python. No MCP exposes these with quality controls. |
+| **Geometry Nodes procedural generation** | Create procedural assets (foliage, rocks, fences, modular pieces) via Geometry Nodes. One parametric setup generates hundreds of variants. | HIGH | `poly-mcp/Blender-MCP-Server` lists geometry nodes category. Actually composing useful node trees programmatically is extremely difficult for LLMs -- likely needs high-level templates. |
 
-### Anti-Features (Commonly Requested, Often Problematic)
+### Unity Automation -- Differentiators
 
-Features that seem good but create complexity without proportional value, or actively harm the experience.
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| **Visual regression testing with AI-powered diff** | Capture screenshots of game views, compare against baselines, detect meaningful visual changes while ignoring noise (animation frames, particle randomness). No Unity MCP provides this. Would enable automated QA after every AI-driven change. | HIGH | Percy.io demonstrates AI-powered visual diff for web. Adapting to Unity game views is novel. Must handle: camera position consistency, deterministic rendering, threshold tuning. |
+| **VFX Graph/Particle System authoring** | Create and configure particle effects via MCP. Current Unity MCPs can add ParticleSystem components but cannot configure emission, shape, color gradients, or modules programmatically. VFX is 100% manual today. | HIGH | Unity's VFX Graph and Shuriken are complex systems with dozens of modules. Wrapping these as MCP tools would be first-of-kind. Start with template-based VFX (fire, smoke, sparks, magic) rather than freeform. |
+| **Audio asset management and SFX wiring** | Generate placeholder SFX via AI (Ludo.ai, SFX Engine), import into Unity, wire to AudioSource components on GameObjects, configure spatial blend and mixing. Currently zero audio tooling in any Unity MCP. | HIGH | Ludo.ai MCP already generates audio. Gap is the Unity-side wiring: creating AudioSource components, assigning clips, configuring 3D spatial settings, hooking to events. |
+| **Scene composition from prefab library** | Build game levels by placing prefabs according to layout rules: spawn points, enemy placement, item distribution, walkable area definition. Current MCPs can place objects but have no concept of game design patterns. | HIGH | Novel capability. Would need: prefab catalog awareness, placement rules (spacing, density, height), validation (reachability, visibility). |
+| **Performance profiling integration** | Trigger Unity Profiler captures, analyze results for common issues (GC spikes, draw call counts, overdraw), and suggest optimizations. No MCP exposes profiler data today. | HIGH | Unity's Profiler API is accessible via C#. Would need to capture frames, extract metrics, and provide actionable analysis. Could flag: allocation hotspots, shader complexity, batch breaking. |
+| **Material and shader configuration** | Create URP materials, assign shaders, configure properties (colors, textures, smoothness, metallic, emission). Current MCPs handle basic material creation but not shader-specific property configuration. | MEDIUM | `mcp-unity` provides `create_material` and `modify_material`. Differentiator is URP-aware configuration: understanding Lit vs Unlit vs UI shaders and their specific properties. |
+| **Test Runner integration** | Run EditMode and PlayMode tests, capture results, feed failures back to the AI for diagnosis. Enables test-driven development via AI. | MEDIUM | `mcp-unity` already exposes test runner resources. Differentiator is running tests after changes and feeding failures into a fix-iterate loop. |
+| **Play Mode control with runtime inspection** | Enter Play Mode, inspect runtime state (variable values, component states), capture runtime screenshots, and detect runtime errors. Essential for verifying gameplay behavior. | HIGH | Play Mode domain reloads currently disconnect MCP bridges. Solving this reliably would be a major differentiator. |
 
-| Feature | Why Requested | Why Problematic | Alternative |
-|---------|---------------|-----------------|-------------|
-| **Character creation/customization** | Players want to "make it their own" | VeilBreakers has 4 authored heroes with specific identities, backstories, and game balance. Custom characters would break narrative coherence, require massive art/animation pipelines, and dilute brand identity. Pokemon doesn't let you customize starters; Persona doesn't let you redesign Joker. | Polish the 4 heroes to be memorable. Customization comes through monster team composition and corruption choices, not hero appearance. |
-| **Difficulty selection on this screen** | "AAA games have difficulty settings" | Clutters the character select flow. Difficulty is a game-wide setting, not a per-hero decision. Adding it here creates decision paralysis (hero choice + difficulty = 4x3 = 12 combinations to evaluate). | Put difficulty in Settings menu (accessible from MainMenu). Keep character select focused on hero identity. |
-| **Detailed damage calculator/theory-crafting** | Min-maxers want to see exact formulas | Overwhelms casual players. The character select is about first impressions and identity, not spreadsheets. Showing too much math makes the game feel like homework. | Show simple stat comparisons (bar charts). Save detailed math for in-game character sheets and strategy guides. |
-| **Auto-play/demo mode if idle** | "Fighting games do this" | Fighting games cycle through characters to attract quarters. An RPG character select is visited intentionally, not idled at. Auto-cycling heroes would be disorienting. The parallax background already provides ambient visual interest. | Subtle idle animations on the 3D model (breathing, head turn, idle stance) -- already partially implemented with procedural breathing on placeholder models. |
-| **Mini-tutorial or guided selection** | "Help new players choose" | Patronizing for experienced RPG players. If the hero information (stats, abilities, champion, lore) is well-presented, players can make informed decisions without hand-holding. | Add brief, optional tooltip on first visit: "Each hero follows a different Path. Choose based on your playstyle." Dismissible, never forced. |
-| **Real-time multiplayer hero locking** | "What if two players pick the same hero" | VeilBreakers is explicitly single-player (stated in PROJECT.md scope). Building multiplayer hero-locking UI is wasted effort. | Out of scope per project constraints. |
-| **Excessive screen shake/juice** | "Make it more dynamic" | Constant motion causes fatigue and accessibility issues (motion sensitivity). Persona 5 is stylish but controlled -- every animation has purpose. Random shaking is noise. | Use motion purposefully: slide-in for panels, pulse for embark glow, subtle parallax. Reserve strong effects for the embark confirmation moment. |
-| **Loading screen between MainMenu and CharSelect** | "Show a loading bar" | The scene is lightweight (UI + data lookup). Adding a dedicated loading screen for <1s loads makes the game feel slower, not faster. | Use `ScreenTransition` fade (already supported). If data takes >500ms, show a skeleton/shimmer state rather than a separate loading screen. |
+### Asset Pipeline -- Differentiators
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| **End-to-end generation pipeline: prompt to engine-ready asset** | Text prompt -> 3D model -> retopology -> PBR textures -> rigging -> FBX export -> Unity import -> material setup -> prefab creation. No existing tool does this end-to-end. Each step exists in isolation. Orchestrating the full pipeline is the killer feature. | VERY HIGH | Requires: AI generation API (Meshy/Tripo), Blender MCP for processing, Unity MCP for import. The orchestration layer is the differentiator, not any single step. Atlas AI (closed beta, AAA studios) claims 10-50x faster with this approach. |
+| **Full PBR map generation (normal, roughness, metallic, AO, emissive)** | Albedo-only textures look flat. Full PBR maps with proper metallic/roughness values make assets look professional in URP/HDRP. Most generators produce albedo + normal at best. | HIGH | Scenario.ai and TextureWorks generate full PBR sets. Tripo3D includes PBR in generation. Quality gap is in metallic/roughness accuracy. |
+| **LOD chain generation** | Automatically generate LOD0 through LOD3 from a source mesh, with proper polycount reduction and UV preservation at each level. Import as Unity LOD Group. | HIGH | Tripo AI offers polycount slider. Blender's Decimate modifier can generate LOD levels. No tool chains these into a proper LOD Group for Unity import. |
+| **Automatic collision mesh generation** | Generate simplified collision meshes (convex hulls, box approximations) from visual meshes. Required for physics but never generated by AI tools. | MEDIUM | Blender can generate convex hulls. Unity's Mesh Collider uses the visual mesh by default (expensive). Providing optimized collision meshes saves runtime performance. |
+| **Texture atlas generation** | Combine multiple material textures into atlas sheets for draw call reduction. Essential for mobile and large-scene optimization. | MEDIUM | Blender has texture baking to atlas. Unity has Sprite Atlas for 2D. No MCP automates 3D texture atlasing. |
+| **Asset validation pipeline** | Verify generated assets meet game requirements: polycount budgets, texture resolution limits, UV coverage, material count limits, bone count limits for rigged models. Reject or flag non-compliant assets before engine import. | MEDIUM | Novel concept for MCP tooling. Would catch: over-tessellated meshes, missing UVs, non-manifold geometry, excessive materials. Saves debugging time downstream. |
+| **Style consistency enforcement** | Ensure generated assets match a project's art style (toon, realistic, stylized) by providing reference images and style parameters to generation APIs. | MEDIUM | Scenario.ai allows training on project-specific styles. Meshy supports style parameters. Enforcing consistency across a batch of assets is the gap. |
+
+---
+
+## Anti-Features (Things to Deliberately NOT Build)
+
+Features that seem valuable but create complexity without proportional value, or actively harm the developer experience.
+
+| Anti-Feature | Why It Seems Good | Why Avoid | What to Do Instead |
+|--------------|-------------------|-----------|-------------------|
+| **Custom LLM training/fine-tuning interface** | "Train the AI on our game's style" | Fine-tuning LLMs is a completely different domain (ML infrastructure, GPU clusters, dataset curation). An MCP toolkit should use the best available foundation models, not try to train its own. This is a year-long research project, not a feature. | Provide style reference images and project context to existing models via prompts. Use Scenario.ai's per-project training for texture/asset style if needed. |
+| **Full game engine reimplementation** | "Let the AI build the entire game" | The dream of "describe a game, AI builds it" fails at production quality. Generated code is fragile, untestable, and unmaintainable. Building an "AI game engine" competes with Unity/Unreal, which is unwinnable. | Automate specific, well-defined tasks (asset generation, scene setup, testing) and leave architecture decisions to human developers. |
+| **Real-time collaborative editing** | "Multiple AI agents editing simultaneously" | Concurrent edits to Unity scenes or Blender files cause merge conflicts, state corruption, and race conditions. The file formats (`.unity`, `.blend`) are not designed for concurrent access. | Sequential tool execution with state verification between steps. One agent operates at a time per application instance. |
+| **In-game runtime AI agent** | "AI NPCs that use the MCP toolkit" | MCP is a development-time protocol for tooling, not a runtime game system. Mixing development tooling with game runtime creates security vulnerabilities (arbitrary code execution in shipped games) and performance issues. | Keep MCP strictly for development. Use Unity ML-Agents or custom behavior trees for runtime AI. |
+| **Photorealistic rendering pipeline** | "Generate photorealistic assets" | Game assets need to be stylistically consistent and performance-optimized, not photorealistic. Chasing photorealism leads to massive texture sizes, high polycounts, and assets that look wrong next to hand-crafted ones. | Focus on "game-ready" output: optimized polycounts, appropriate texture resolutions, style-consistent PBR values. Let the game's post-processing (bloom, color grading) handle visual polish. |
+| **Version control integration** | "Auto-commit assets, manage branches" | Git operations on binary assets (.fbx, .png, .blend) are fraught with LFS issues, merge conflicts, and repository bloat. Automating this amplifies mistakes. | Provide asset export to known directories. Let human developers manage version control of binaries via their existing Git LFS / Plastic SCM / Perforce workflow. |
+| **Cross-engine abstraction layer** | "Support Unity AND Unreal AND Godot in one API" | Each engine has fundamentally different architectures (ECS vs MonoBehaviour vs Node), different asset formats, different scripting languages. A cross-engine abstraction is either too shallow to be useful or too complex to maintain. | Build engine-specific MCP servers with shared conventions. `gamedev-mcp-hub` already aggregates multiple engines via routing, which is the right architectural approach. |
+| **AI-generated game design documents** | "AI designs the game for you" | Game design is creative direction, not automation. AI-generated GDDs are generic, lack vision, and produce games that feel soulless. 81% of devs already use AI for brainstorming (GDC 2026 survey) -- the brainstorming is the human part. | Provide tools that help implement human-authored designs faster, not tools that replace the design process. |
+
+---
 
 ## Feature Dependencies
 
 ```
-[GameDatabase Ready]
+[Text-to-3D Generation API]
     |
-    +--requires--> [Hero Data Population]
-    |                   |
-    |                   +--requires--> [Stat Bars / Abilities Display]
-    |                   +--requires--> [Champion Monster Info]
-    |                   +--requires--> [Embark Flow (save creation)]
+    +--enables--> [Image-to-3D Generation]
+    +--enables--> [Basic Mesh Output]
+                      |
+                      +--requires--> [Retopology Pipeline]
+                      |                   |
+                      |                   +--requires--> [UV Unwrapping]
+                      |                   |                   |
+                      |                   |                   +--requires--> [PBR Texture Baking]
+                      |                   |                   +--requires--> [Texture Atlas Generation]
+                      |                   |
+                      |                   +--requires--> [LOD Chain Generation]
+                      |                   +--requires--> [Collision Mesh Generation]
+                      |
+                      +--requires--> [Auto-Rigging Pipeline]
+                      |                   |
+                      |                   +--requires--> [Animation Retargeting]
+                      |                   +--requires--> [Bone Weight Optimization]
+                      |
+                      +--requires--> [Asset Validation Pipeline]
+                      |
+                      +--requires--> [Format Export (FBX/GLB)]
+                                          |
+                                          +--requires--> [Unity Asset Import]
+                                                              |
+                                                              +--requires--> [Material Auto-Setup]
+                                                              +--requires--> [Prefab Creation]
+                                                              +--requires--> [LOD Group Setup]
+
+[Blender Scene Inspection]
     |
-    +--requires--> [Carousel Generation]
-                        |
-                        +--requires--> [Hero Navigation]
-                                            |
-                                            +--requires--> [Theme Switching]
-                                            +--requires--> [3D Model Swap]
-                                            +--requires--> [Background Change]
-                                            +--requires--> [Audio Crossfade]
-
-[USS Stylesheet Consolidation]
+    +--enables--> [Object CRUD]
+    +--enables--> [Viewport Screenshot]
+    |                 |
+    |                 +--enables--> [Visual Feedback Loop] (AI sees its own work)
     |
-    +--requires--> [Glass Panel Styling]
-    +--requires--> [Transition Animations]
-    +--requires--> [Cinematic Overlays]
-    +--requires--> [Stat Bar Animations]
+    +--enables--> [Material Operations]
+    +--enables--> [Modifier Stack Automation]
+    +--enables--> [Environment Scene Composition]
 
-[3D Hero Models (Art Asset)]
+[Unity Scene Hierarchy Query]
     |
-    +--requires--> [3D Model Preview] (currently placeholder capsules)
-    +--requires--> [Champion Monster 3D Preview]
-    +--requires--> [Drag-to-Rotate Interaction]
-    +--requires--> [Hero-Specific Idle Animations]
-
-[Audio Assets (SFX + Music)]
+    +--enables--> [GameObject CRUD]
+    +--enables--> [Component Manipulation]
+    +--enables--> [Editor Screenshot]
+    |                 |
+    |                 +--enables--> [Visual Regression Testing]
     |
-    +--requires--> [Navigation SFX]
-    +--requires--> [Per-Hero Ambience/Music]
-    +--requires--> [Embark Sequence Audio]
+    +--enables--> [Prefab Operations]
+    +--enables--> [Scene Composition from Prefabs]
 
-[InputManager Integration]
+[Console Log Access]
     |
-    +--requires--> [Gamepad Focus Ring]
-    +--requires--> [Parallax via InputManager] (fix legacy Input.mousePosition)
-
-[Transition Animation System]
+    +--enables--> [Script Compilation Trigger]
+    |                 |
+    |                 +--enables--> [Compile Error Diagnosis]
     |
-    +--enhances--> [Hero Switch Feel]
-    +--enhances--> [Embark Sequence Cinematic]
-    +--enhances--> [Panel Slide Choreography]
+    +--enables--> [Runtime Error Detection]
+    +--enables--> [Performance Profiling Integration]
 
-[Loading State Feedback] --enhances--> [Perceived Performance]
+[Test Runner Integration]
+    |
+    +--enhances--> [Visual Regression Testing]
+    +--enhances--> [Code Generation Verification]
+    +--enhances--> [Performance Profiling]
 
-[Per-Hero Music] --conflicts--> [Single Background Track] (must choose one approach)
+[Audio Generation (Ludo.ai API)]
+    |
+    +--requires--> [Unity Audio Asset Import]
+    +--requires--> [AudioSource Component Wiring]
 ```
 
-### Dependency Notes
+### Critical Dependency Chains
 
-- **Hero Data Population requires GameDatabase Ready:** All downstream UI population waits on `InitializeWhenReady()` coroutine. Without data, nothing renders.
-- **USS Consolidation is a prerequisite for all visual polish:** Currently 4 duplicate stylesheets exist (CONCERNS.md). Any visual feature work will be confused by conflicting styles until consolidated to a single canonical file.
-- **3D Models are an art pipeline dependency:** The entire 3D preview differentiator is blocked on having actual hero and monster models. All code infrastructure exists but serves capsule placeholders. This is the single biggest art dependency.
-- **Audio is a separate asset pipeline:** Navigation SFX and per-hero music require audio assets that don't exist yet. The code integration (wiring `AudioManager.PlaySFX()` calls) is straightforward once assets exist.
-- **Per-Hero Music conflicts with Single Background Track:** Must decide: one ambient track for the whole screen (simpler) or crossfading per-hero themes (more premium). Recommend per-hero themes because the `MusicManager` already supports crossfading.
+1. **Generation-to-Engine Chain:** Text prompt -> AI generation -> mesh cleanup (retopo) -> texturing -> rigging -> export -> import -> material setup -> prefab. Each step depends on the previous. The orchestration layer must handle failures at any point gracefully (retry, fallback, or report).
 
-## MVP Definition
+2. **Visual Feedback Loop:** Both Blender and Unity screenshots feed back to the LLM for verification. Without this loop, the AI operates blind and quality drops catastrophically. This should be wired into every operation that changes visual state.
 
-### Launch With (v1) -- Functional & Clean
+3. **Validation Gate:** Asset validation should sit between Blender export and Unity import. Catching bad assets before they enter the engine prevents cascading errors (missing UVs causing shader errors, too-high polycounts causing frame drops).
 
-Minimum viable character select that works correctly and feels intentional.
+---
 
-- [x] Hero navigation (prev/next/carousel click) -- already working
-- [x] Hero identity display (name/title/role/quote) -- already working
-- [x] Stat preview (both panels) -- already working
-- [x] Confirm/cancel flow -- already working
-- [x] Back to main menu -- already working
-- [ ] **Fix: USS stylesheet consolidation** (4 files -> 1 canonical) -- blocks all visual work
-- [ ] **Fix: Loading state feedback** (shimmer/skeleton while GameDatabase loads) -- prevents blank screen on slow load
-- [ ] **Fix: Audio feedback on navigation** (click SFX, hero switch whoosh, embark confirm sound) -- silence feels broken
-- [ ] **Fix: Gamepad focus ring** (visible highlight on focused button) -- controller users can't see what's selected
-- [ ] **Fix: Legacy Input.mousePosition** (route through InputManager) -- consistency, future-proofing
-- [ ] **Fix: Panel exit animations** (slide-out before slide-in, not snap-then-slide) -- polish
+## MVP Recommendation
 
-### Add After Validation (v1.x) -- Premium Feel
+### Phase 1: Foundation (make existing MCPs work together)
 
-Features to add once the foundation is solid and clean.
+Prioritize orchestration over new capability:
 
-- [ ] **Animated stat bar stagger** -- trigger when hero changes, cascading fill delays
-- [ ] **Per-hero dynamic background polish** -- pre-bake nebula textures (eliminate GC allocation), smooth color transitions
-- [ ] **Cinematic overlay tuning** -- scanline opacity, vignette animation, veil glow pulse
-- [ ] **Glass-morphism panel blur** -- if Unity 6000.3.6f1 supports `backdrop-filter` in USS
-- [ ] **Embark sequence cinematic** -- 1-2 second animation before scene transition
-- [ ] **Per-hero ambient music** -- 4 tracks that crossfade on hero switch via MusicManager
-- [ ] **Hero lore expansion** -- backstory text in left panel, loaded from hero JSON data
-- [ ] **Starter monster visual preview** -- even a 2D sprite/icon in the champion section improves it
+1. **Blender MCP with screenshot feedback** -- Use existing `blender-mcp` as base, ensure viewport capture works reliably
+2. **Unity MCP with scene inspection** -- Use existing `mcp-unity` (CoderGamester) as base, ensure hierarchy + screenshot works
+3. **Asset format bridge** -- Export from Blender (FBX/GLB), import into Unity, verify material setup
+4. **Text-to-3D via external API** -- Integrate Meshy or Tripo3D for generation, route output through Blender for cleanup
 
-### Future Consideration (v2+) -- Full AAA
+**Rationale:** The gap today is not that tools do not exist. It is that they do not talk to each other. The first differentiating value is orchestrating Blender + Unity + AI generation into a single workflow.
 
-Features to defer until 3D art pipeline is active.
+### Phase 2: Blender Processing Pipeline (make AI-generated assets game-ready)
 
-- [ ] **3D hero models replacing placeholders** -- the single biggest visual upgrade, blocked on art
-- [ ] **3D champion monster models** -- infrastructure ready, needs monster model assets
-- [ ] **Hero-specific idle animations** -- requires rigged models + Animator controllers per hero
-- [ ] **Particle effects on hero switch** -- energy burst, color-themed motes
-- [ ] **Advanced camera choreography** -- zoom, pan, or dolly on hero switch for cinematic feel
+5. **Retopology automation** -- Decimate/remesh AI-generated meshes to game budgets
+6. **UV unwrapping automation** -- Smart UV Project with quality controls
+7. **PBR texture baking** -- High-poly to low-poly bake pipeline
+8. **Auto-rigging integration** -- Rigify or AccuRIG for humanoid characters
 
-## Feature Prioritization Matrix
+**Rationale:** AI-generated meshes are not game-ready out of the box. The processing pipeline is what transforms "cool demo" into "production asset."
 
-| Feature | User Value | Implementation Cost | Priority |
-|---------|------------|---------------------|----------|
-| USS consolidation (4->1) | HIGH (unblocks everything) | LOW | **P1** |
-| Loading state feedback | HIGH (prevents blank screen) | LOW | **P1** |
-| Audio feedback (SFX) | HIGH (silence = broken) | LOW (wiring existing system) | **P1** |
-| Gamepad focus ring | HIGH (controller unusable without it) | LOW | **P1** |
-| Legacy Input fix | MEDIUM (consistency) | LOW | **P1** |
-| Panel exit animations | MEDIUM (polish) | LOW | **P1** |
-| Stat bar stagger animation | MEDIUM (premium feel) | LOW | **P2** |
-| Per-hero background polish | MEDIUM (atmosphere) | MEDIUM (pre-bake textures) | **P2** |
-| Cinematic overlays tuning | MEDIUM (atmosphere) | LOW | **P2** |
-| Per-hero ambient music | MEDIUM (emotional connection) | MEDIUM (needs audio assets) | **P2** |
-| Glass-morphism blur | LOW-MEDIUM (visual depth) | LOW (if USS supports it) | **P2** |
-| Embark sequence cinematic | MEDIUM (memorable moment) | MEDIUM | **P2** |
-| Hero lore expansion | LOW-MEDIUM (engagement) | LOW (data + layout) | **P2** |
-| Starter monster 2D preview | MEDIUM (monster RPG identity) | LOW (sprite in champion section) | **P2** |
-| 3D hero models | HIGH (game-changing) | HIGH (art pipeline) | **P3** |
-| 3D champion monsters | MEDIUM (team preview) | HIGH (art pipeline) | **P3** |
-| Hero idle animations | MEDIUM (life) | HIGH (rigging + animation) | **P3** |
-| Hero switch particles | LOW (juice) | MEDIUM | **P3** |
+### Phase 3: Unity Intelligence (make the toolkit understand game development)
 
-**Priority key:**
-- **P1:** Must fix for functional, clean character select (bugs + baseline UX)
-- **P2:** Should add for premium feel (polish + atmosphere)
-- **P3:** Future when 3D art pipeline delivers assets
+9. **Visual regression testing** -- Screenshot capture + AI-powered comparison
+10. **VFX template system** -- Pre-built particle effect templates configurable via MCP
+11. **Audio pipeline** -- Generate + import + wire SFX to GameObjects
+12. **Performance profiling** -- Capture + analyze + suggest optimizations
+
+**Rationale:** Unity-side intelligence is what makes the toolkit useful for ongoing development, not just initial asset creation.
+
+### Phase 4: End-to-End Pipeline (the killer feature)
+
+13. **Orchestrated prompt-to-prefab pipeline** -- Full end-to-end from text description to Unity prefab
+14. **Asset validation gates** -- Quality checks at each pipeline stage
+15. **Style consistency system** -- Enforce art direction across generated assets
+16. **LOD chain generation** -- Multi-level detail for performance optimization
+
+**Rationale:** End-to-end orchestration is what Atlas AI (closed beta, AAA studios) claims enables 10-50x faster asset creation. This is the ultimate differentiator.
+
+### Defer Indefinitely
+
+- **Cross-engine abstraction** -- Focus on Unity first, do it well
+- **Custom LLM training** -- Use foundation models, do not train your own
+- **Runtime AI agents** -- Development tool, not runtime system
+- **Photorealistic rendering** -- Game-ready, not cinema-grade
+
+---
+
+## Existing Tool Gap Analysis
+
+| Capability | blender-mcp | mcp-unity (CoderGamester) | Unity-MCP (IvanMurzak) | gamedev-mcp-hub | Ludo.ai MCP | Gap? |
+|------------|-------------|---------------------------|------------------------|-----------------|-------------|------|
+| Object CRUD | YES | YES | YES | Aggregates | N/A | NO |
+| Materials | YES (basic) | YES | YES | Aggregates | N/A | PARTIAL -- no PBR pipeline |
+| Screenshot feedback | YES | PARTIAL | YES | N/A | N/A | NO |
+| Rigging | NO | N/A | N/A | NO | NO | **CRITICAL GAP** |
+| Animation | NO (basic keyframes) | N/A | PARTIAL | PARTIAL | NO | **MAJOR GAP** |
+| Retopology | NO | N/A | N/A | NO | NO | **CRITICAL GAP** |
+| PBR Texture Baking | NO | N/A | N/A | NO | NO | **CRITICAL GAP** |
+| UV Unwrapping | NO | N/A | N/A | NO | NO | **MAJOR GAP** |
+| AI 3D Generation | Via Hyper3D | NO | NO | Via Meshy | NO (separate) | PARTIAL |
+| AI Texture Generation | NO | NO | NO | NO | YES (images) | **MAJOR GAP** |
+| AI Audio Generation | NO | NO | NO | NO | YES | PARTIAL |
+| VFX/Particles | NO | NO | PARTIAL | NO | NO | **CRITICAL GAP** |
+| Visual Testing | NO | NO | PARTIAL | NO | NO | **CRITICAL GAP** |
+| Performance Profiling | NO | NO | NO | NO | NO | **CRITICAL GAP** |
+| Scene Composition | NO | BASIC | BASIC | NO | NO | **MAJOR GAP** |
+| Asset Validation | NO | NO | NO | NO | NO | **CRITICAL GAP** |
+| End-to-End Pipeline | NO | NO | NO | NO | NO | **CRITICAL GAP** |
+| LOD Generation | NO | NO | NO | NO | NO | **MAJOR GAP** |
+| Collision Mesh | NO | NO | NO | NO | NO | **MAJOR GAP** |
+
+**Key finding:** Existing tools handle basic CRUD operations well. The entire processing and intelligence layer is missing. No tool converts AI-generated output into production-ready game assets. No tool provides game-development-aware automation (visual testing, performance profiling, VFX authoring). The gap is not in basic operations -- it is in the pipeline between "raw AI output" and "shipping game."
+
+---
 
 ## Competitor Feature Analysis
 
-| Feature | Pokemon (SV) | Persona 5 | Final Fantasy (XVI) | Genshin Impact | VeilBreakers (Current) | VeilBreakers (Target) |
-|---------|-------------|-----------|-------------------|----------------|----------------------|---------------------|
-| Hero/starter visual | 3D model + animation | 2D art with motion | 3D cinematic | 3D model + idle anim | Placeholder capsule | 3D model (v2+), 2D art (v1.x) |
-| Stat preview | Type + nature hints | Full stat sheet | Job abilities | Full stat page | Dual stat panels | Keep dual panels, add stagger |
-| Theme per character | Type-colored UI | Red+black universal | Class-themed | Element-colored | Per-hero theme class | Polish theme transitions |
-| Transition style | Slide/fade | Flashy angular wipes | Cinematic cuts | Card flip | 150ms lock + slide-in | Enter+exit choreography |
-| Audio on switch | Type chime | Menu percussion | Orchestral sting | Element whoosh | None | Layered SFX + music crossfade |
-| Confirmation | "Are you sure?" | - | - | - | Overlay popup | Keep, add animation |
-| Background change | Static | Animated abstract | Static scene | Region-based | Procedural nebula + parallax | Pre-baked + smooth transitions |
-| Companion preview | Full 3D starter | Persona preview | Summon preview | - | Text only | 2D sprite (v1.x), 3D (v2+) |
-| Controller support | Full | Full | Full | Full (console) | Partial (no focus ring) | Full with visual feedback |
-| Lore/backstory | Pokedex entry | Social links context | - | Character story | Quote only | Expandable lore section |
+| Feature | blender-mcp | mcp-unity | gamedev-mcp-hub | Ludo.ai | Atlas AI (private beta) | **Target Toolkit** |
+|---------|-------------|-----------|-----------------|---------|------------------------|-------------------|
+| Basic 3D ops | Yes | Yes | Aggregates | N/A | Yes | Yes (table stakes) |
+| AI generation | Via Hyper3D | No | Via Meshy | Yes (images, 3D, audio) | Yes (multi-model) | Yes (multi-provider) |
+| Mesh processing | No | N/A | No | No | Yes | **Yes (differentiator)** |
+| Rigging | No | N/A | No | No | Yes | **Yes (differentiator)** |
+| Visual QA | No | Partial | No | No | Unknown | **Yes (differentiator)** |
+| VFX authoring | No | No | No | No | No | **Yes (differentiator)** |
+| Audio pipeline | No | No | No | Generate only | Unknown | **Yes (differentiator)** |
+| End-to-end | No | No | No | Partial (generate only) | Yes (AAA studios) | **Yes (differentiator)** |
+| Performance | No | No | No | No | Unknown | **Yes (differentiator)** |
+| Asset validation | No | No | No | No | Yes | **Yes (differentiator)** |
+
+---
 
 ## Sources
 
-- [Game UI Database - Character Select](https://www.gameuidatabase.com/index.php?scrn=41) -- Comprehensive visual reference for 1,300+ games (HIGH confidence)
-- [Persona 5 UI/UX Analysis - Ridwan Khan](https://ridwankhan.com/the-ui-and-ux-of-persona-5-183180eb7cce) -- Design breakdown of what makes P5 menus premium (MEDIUM confidence)
-- [Persona 5 UI Style & Substance - Design Bootcamp](https://medium.com/design-bootcamp/how-persona-5s-ui-balances-both-style-and-substance-de8cb1b807ef) -- How P5 balances flash with readability (MEDIUM confidence)
-- [Xbox Accessibility Guideline 107 - Microsoft](https://learn.microsoft.com/en-us/gaming/accessibility/xbox-accessibility-guidelines/107) -- Controller navigation and accessibility standards (HIGH confidence)
-- [Game Accessibility Guidelines](https://gameaccessibilityguidelines.com/full-list/) -- Comprehensive accessibility checklist (HIGH confidence)
-- [Unity USS Transitions](https://docs.unity3d.com/6000.2/Documentation/Manual/UIE-Transitions.html) -- Official docs for UI Toolkit animation (HIGH confidence)
-- [Genshin Impact Character Switch Sound Design](https://www.daviddumaisaudio.com/genshin-impact-character-switch-sound-design-tutorial/) -- Layered audio design for character switching (MEDIUM confidence)
-- [Adaptive Audio for Game Designers - Gamasutra](https://www.gamedeveloper.com/audio/design-with-music-in-mind-a-guide-to-adaptive-audio-for-game-designers) -- Music transition techniques (MEDIUM confidence)
-- [Skeleton Screens - NNGroup](https://www.nngroup.com/articles/skeleton-screens/) -- Perceived performance through loading states (HIGH confidence)
-- [Glassmorphism UI Best Practices](https://uxpilot.ai/blogs/glassmorphism-ui) -- Glass panel design patterns (MEDIUM confidence)
-- Existing codebase analysis: `Assets/Scripts/UI/CharacterSelect/` (8 files), `Assets/UI/Screens/CharacterSelect.uxml`, `Assets/UI/Styles/CharacterSelect.uss` (HIGH confidence -- direct code review)
+### Primary Sources (HIGH confidence)
+- [blender-mcp GitHub (ahujasid)](https://github.com/ahujasid/blender-mcp) -- 16.3K+ stars, primary Blender MCP reference
+- [mcp-unity GitHub (CoderGamester)](https://github.com/CoderGamester/mcp-unity) -- Primary Unity MCP with WebSocket bridge
+- [Unity-MCP GitHub (IvanMurzak)](https://github.com/IvanMurzak/Unity-MCP) -- 50+ tools, Roslyn execution
+- [Blender-MCP-Server (poly-mcp)](https://github.com/poly-mcp/Blender-MCP-Server) -- 51 tools, thread-safe execution
+- [gamedev-mcp-hub GitHub (FryMyCalamari)](https://github.com/FryMyCalamari/gamedev-mcp-hub) -- 165+ tools aggregator
+- [Ludo.ai API & MCP Integration](https://ludo.ai/blog/introducing-ludo-ai-api-mcp-integration) -- 9 tools for game asset creation
+
+### AI Generation Tools (MEDIUM confidence)
+- [Meshy AI](https://www.meshy.ai/) -- 3D generation with Unity/Blender plugins
+- [Tripo3D](https://www.tripo3d.ai/) -- Text/image-to-3D with polycount control, universal rig
+- [Scenario.ai](https://www.scenario.com/blog/ai-texture-generation) -- Game-ready PBR texture generation
+- [AccuRIG 2 (Reallusion)](https://magazine.reallusion.com/2025/07/30/accurig-2-vs-mixamo-smarter-auto-rigging-for-3d-animators/) -- Free auto-rigging alternative to Mixamo
+- [Atlas AI Platform](https://www.globenewswire.com/news-release/2026/03/09/3252089/0/en/Atlas-Launches-AI-Agents-That-Build-Game-Production-Pipelines.html) -- Multi-agent pipeline for AAA studios (closed beta)
+
+### Industry Analysis (MEDIUM confidence)
+- [GDC 2026 State of the Game Industry](https://gdconf.com/article/gdc-2026-state-of-the-game-industry-reveals-impact-of-layoffs-generative-ai-and-more/) -- 52% skepticism, 81% brainstorming use
+- [State of AI Game Development 2025](https://medium.com/@theresearchlab/the-state-of-ai-game-development-in-2025-progress-and-barriers-42dc95aafc58) -- Barriers and progress
+- [AI Reshaping Game Development Pipelines 2026](https://studiokrew.com/blog/ai-reshaping-game-development-pipeline-2026/) -- Pipeline trends
+- [JetBrains Game Dev Report 2025](https://blog.jetbrains.com/dotnet/2026/01/29/game-dev-in-2025-excerpts-from-the-state-of-game-development-report/) -- Developer tool preferences
+
+### Visual Testing (MEDIUM confidence)
+- [Percy Visual Testing](https://percy.io/blog/visual-screenshot-testing) -- AI-powered visual diff reference
+- [AltTester Unity Automation](https://alttester.com/tools/) -- Unity test automation tools
+
+### Blender & Rigging (MEDIUM confidence)
+- [Tripo AI Rigging Tools](https://www.tripo3d.ai/content/en/guide/the-best-ai-auto-rigger-tools-for-blender) -- Universal rig for game characters
+- [Ubisoft Generative Base Material (SIGGRAPH Asia 2025)](https://www.ubisoft.com/en-us/studio/laforge/news/1i3YOvQX2iArLlScBPqBZs/generative-base-material-an-opensource-prototype-for-pbr-material-estimation-debuting-at-siggraph-asia-2025) -- Open-source PBR estimation
 
 ---
-*Feature research for: VeilBreakers 3D Character Select Screen*
-*Researched: 2026-02-21*
+*Feature research for: AI Game Development MCP Toolkit*
+*Researched: 2026-03-18*

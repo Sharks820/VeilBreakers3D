@@ -1,489 +1,692 @@
-# Architecture Research
+# Architecture Patterns: Multi-MCP-Server Game Development Toolkit
 
-**Domain:** Unity 6 RPG Character Select Screen (UI Toolkit)
-**Researched:** 2026-02-21
-**Confidence:** HIGH
+**Domain:** AI-assisted game development MCP toolkit (3 servers)
+**Researched:** 2026-03-18
+**Confidence:** HIGH (verified against MCP specification, existing open-source implementations, and official FastMCP documentation)
 
 ## System Overview
 
+The toolkit consists of three MCP servers that collectively cover the Blender-to-Unity game development pipeline. Each server is independently deployable and communicates with the AI host (Claude Code, Cursor, etc.) via the standard MCP protocol. Servers do NOT communicate with each other directly -- the AI host orchestrates cross-server workflows by calling tools on each server sequentially and passing data through the shared filesystem.
+
 ```
-+-------------------------------------------------------------------+
-|                    CHARACTER SELECT SCREEN                          |
-+-------------------------------------------------------------------+
-|                                                                    |
-|  +-----------------------+    +-----------------------------+      |
-|  | CharacterSelectManager|    |     CharSelectEvents        |      |
-|  | (Orchestrator)        |--->|     (Scoped Event Bus)      |      |
-|  +-----------+-----------+    +----+--------+--------+------+      |
-|              |                     |        |        |             |
-|  +-----------v-----------+         v        v        v             |
-|  |  Data Loading         |    +---------+ +------+ +----------+   |
-|  |  GameDatabase ------->|    |Carousel | |Hero  | |Hero      |   |
-|  |  HeroDisplayConfig    |    |Ctrl     | |Data  | |Stats     |   |
-|  +---+---+---+-----------+    |         | |Panel | |Panel     |   |
-|      |   |   |                +---------+ +------+ +----------+   |
-|      |   |   |                     |        |        |            |
-|      v   v   v                     v        v        v            |
-|  +--------+ +--------+ +-------+  +----------------------------+  |
-|  |HeroStage| |Environ | |Trans. |  |     UXML / USS             |  |
-|  |Ctrl     | |Ctrl    | |Ctrl   |  |     (Visual Layer)         |  |
-|  |(3D/RT)  | |(BG/FX) | |(stub) |  +----------------------------+  |
-|  +----+----+ +---+----+ +---+---+                                  |
-|       |          |           |                                     |
-+-------+----------+-----------+-------------------------------------+
-        |          |
-   +----v----+ +---v---+
-   |Preview  | |Parallax|    <-- 3D World / GPU
-   |Camera   | |Input   |
-   |RT 1024x | |Legacy! |
-   +---------+ +--------+
++=========================================================================+
+|                        AI HOST (Claude Code / Cursor / IDE)             |
+|  The host maintains 3 MCP client instances, one per server.             |
+|  Cross-server orchestration happens here -- the LLM reasons about       |
+|  which server to call next and passes data via filesystem references.   |
++====+==================+==================+=============================+
+     |                  |                  |
+     | MCP Client 1     | MCP Client 2     | MCP Client 3
+     | (stdio)          | (stdio)          | (stdio)
+     |                  |                  |
++----v----+       +-----v-----+      +-----v------+
+| BLENDER |       |   ASSET   |      |   UNITY    |
+| GAMEDEV |       | PIPELINE  |      |  ENHANCED  |
+| SERVER  |       |  SERVER   |      |   SERVER   |
++---------+       +-----------+      +------------+
+| Python  |       | Python    |      | Node.js    |
+| FastMCP |       | FastMCP   |      | TypeScript |
+| ~8 tools|       | ~8 tools  |      | ~10 tools  |
++----+----+       +-----+-----+      +-----+------+
+     |                  |                  |
+     | TCP Socket       | HTTP/CLI         | WebSocket
+     | (localhost:9876)  | (external APIs)  | (localhost:8090)
+     |                  |                  |
++----v----+       +-----v-----+      +-----v------+
+| BLENDER |       | AI APIs   |      | UNITY      |
+| (bpy)   |       | Meshy     |      | EDITOR     |
+| Addon   |       | Scenario  |      | C# Scripts |
+| Plugin  |       | Local CLI |      | McpToolBase|
++---------+       +-----------+      +------------+
 
-EXTERNAL INTEGRATIONS:
-  GameDatabase (Singleton) -- JSON hero/monster/skill data
-  SaveManager (Singleton)  -- Save creation on embark
-  ThemeManager (Singleton)  -- Per-hero USS theme classes
-  ScreenTransition (Singleton) -- Fade overlay for scene changes
-  EventBus (Global Static) -- NOT used by CharSelect (uses CharSelectEvents instead)
+Shared Filesystem (project directory):
+  Assets/           <-- Unity reads, asset pipeline writes, Blender exports to
+  Assets/Art/       <-- Primary artifact exchange directory
+  Assets/Resources/ <-- ScriptableObjects, configs
+  *.blend           <-- Blender source files
+  temp/pipeline/    <-- Intermediate processing artifacts
 ```
-
-### Component Responsibilities
-
-| Component | Responsibility | Communicates With |
-|-----------|----------------|-------------------|
-| **CharacterSelectManager** | Orchestrator: loads data, wires buttons, manages hero navigation index, drives embark flow, applies theme classes | CharSelectEvents (raises all events), GameDatabase, SaveManager, ScreenTransition |
-| **CharSelectEvents** | Scoped static event bus for character select only. 8 events with null-safe raise helpers and ClearAll() for cleanup | All controllers subscribe; only Manager raises events |
-| **CarouselController** | Generates hero cards dynamically, handles card click selection, updates hero index label | CharSelectEvents (subscribes OnScreenReady, OnHeroChanged), GameDatabase, Manager (direct ref for NavigateToHero) |
-| **HeroDataPanelController** | Left panel: hero name, title, quote, path, role, synergy, starter stats, champion monster info | CharSelectEvents (subscribes OnHeroChanged), GameDatabase (monster lookup) |
-| **HeroStatsPanelController** | Right panel: D&D attribute bars (STR/DEX/CON/INT/WIS/CHA) with animated fills, abilities list | CharSelectEvents (subscribes OnHeroChanged), GameDatabase (skill lookup) |
-| **HeroStageController** | 3D hero preview: RenderTexture pipeline, camera, 5-light rig, model swap, drag rotation, placeholder capsules | CharSelectEvents (subscribes OnHeroChanged, OnScreenExiting), HeroDisplayConfig |
-| **CharSelectEnvironmentController** | Background parallax layers, procedural nebula generation, fog tinting per hero | CharSelectEvents (subscribes OnHeroChanged, OnScreenReady), uses legacy Input.mousePosition |
-| **TransitionController** | STUB: Subscribes to OnHeroChanged but body is empty. Reserved for future veil tear effects | CharSelectEvents (subscribes OnHeroChanged) |
-| **HeroDisplayConfig** | ScriptableObject: per-hero visual config (camera, lighting, colors, model prefabs, animations, audio, VFX, champion) | Read by Manager, HeroStageController, HeroDataPanelController |
 
 ## Recommended Architecture
 
-### Current Pattern: Event-Driven Sub-Controller Composition
+### Core Principle: Host-Orchestrated, Filesystem-Mediated
 
-The existing architecture follows a sound pattern that should be preserved and refined:
+MCP servers are architecturally isolated by design. Per the MCP specification: "Servers should not be able to read the whole conversation, nor see into other servers." Cross-server communication is mediated by the AI host, which:
 
-**Orchestrator + Sub-Controllers + Scoped Events**
+1. Calls Server A to produce an artifact (e.g., export FBX from Blender)
+2. Receives the file path in the tool response
+3. Passes that path to Server B as input (e.g., process textures in asset pipeline)
+4. Passes the processed path to Server C (e.g., import into Unity)
 
-This is effectively a variant of **MVP (Model-View-Presenter)** adapted for Unity:
-- **Model**: `HeroData` (from GameDatabase JSON) + `HeroDisplayConfig` (ScriptableObject)
-- **View**: UXML layout + USS styles (the visual elements)
-- **Presenter**: `CharacterSelectManager` as orchestrator, sub-controllers as focused presenters per UI region
+This is not a limitation -- it is the correct pattern. The host has the context to make intelligent decisions about what to pass between servers, retry on failure, and adapt the workflow based on intermediate results.
 
-**Why this pattern is correct for this project:**
-1. Each controller owns one visual region -- no god-class problem
-2. The scoped `CharSelectEvents` bus prevents pollution of the global `EventBus`
-3. Controllers subscribe/unsubscribe in OnEnable/OnDisable -- proper lifecycle
-4. Manager raises events, controllers react -- unidirectional data flow
-5. UXML defines structure, USS defines style, C# manages behavior -- clean separation
+**Confidence: HIGH** -- Verified against the [MCP Architecture Specification (2025-06-18)](https://modelcontextprotocol.io/specification/2025-06-18/architecture) which explicitly states each client maintains a 1:1 relationship with a server, and the host coordinates across clients.
 
-**Confidence: HIGH** -- This aligns with Unity's official MVC/MVP guidance for UI Toolkit and matches the established codebase patterns.
+### Component Boundaries
 
-### Architecture Adjustments for Rebuild
+| Component | Responsibility | Communicates With | Technology |
+|-----------|----------------|-------------------|------------|
+| **blender-gamedev** | 3D modeling automation: scene creation, object manipulation, material setup, UV layout, rigging helpers, game-ready export | Blender via TCP socket to addon | Python + FastMCP + Blender bpy addon |
+| **asset-pipeline** | Asset processing: AI texture generation, mesh optimization, format conversion, batch processing, validation | External APIs (Meshy, Scenario, etc.) + local CLI tools | Python + FastMCP + httpx/aiohttp |
+| **unity-enhanced** | Unity Editor control: scene management, GameObject manipulation, component editing, prefab operations, build automation | Unity Editor via WebSocket to C# scripts | Node.js/TypeScript + MCP SDK + C# Editor scripts |
+| **Shared Filesystem** | Artifact exchange: exported models, processed textures, import-ready assets | All three servers read/write | Project directory structure |
 
-The pattern is right. The problems are in execution detail, not architecture. Specific fixes needed:
+## Server 1: blender-gamedev
 
-1. **TransitionController is a dead stub** -- Either fill it with the coordination logic it was designed for (centralized panel slide-in/out sequencing) or delete it. Currently it wastes a MonoBehaviour and an event subscription doing nothing.
+### Architecture: Three-Tier FastMCP + TCP Socket Bridge
 
-2. **Panel controllers duplicate animation logic** -- Both `HeroDataPanelController.AnimatePanel()` and `HeroStatsPanelController.AnimatePanel()` do identical class-toggle-with-schedule patterns. This should be centralized in TransitionController (its stated purpose) or extracted to a shared utility.
+```
+AI Host
+  |
+  | stdio (MCP protocol)
+  v
++---------------------------+
+| blender-gamedev Server    |
+| (Python / FastMCP)        |
+|                           |
+| @mcp.tool() decorators    |
+| BlenderConnection class   |  <-- Singleton TCP client
+| Tool implementations      |
++----------+----------------+
+           |
+           | TCP Socket (JSON protocol)
+           | localhost:9876 (configurable)
+           |
++----------v----------------+
+| Blender Addon             |
+| (bpy Python environment)  |
+|                           |
+| BlenderMCPServer class    |
+| - TCP socket listener     |
+| - Daemon thread for I/O   |
+| - Command queue           |
+| - bpy.app.timers bridge   |
+|                           |
+| Handler registry:         |
+| - scene operations        |
+| - object manipulation     |
+| - material/shader ops     |
+| - export operations       |
+| - gamedev-specific ops    |
++---------------------------+
+```
 
-3. **CarouselController has a direct reference to Manager** -- It holds `[SerializeField] private CharacterSelectManager _manager` for `NavigateToHero()` calls. This breaks the event-driven pattern. Instead, CarouselController should raise a navigation request event, and Manager should handle it.
+### Why This Architecture
 
-4. **Environment controller uses legacy Input API** -- `Input.mousePosition` on line 88 violates the project constraint of routing all input through `InputManager`. Must use the new Input System.
+The Blender bpy API is fundamentally thread-unsafe -- all bpy calls MUST execute on Blender's main thread. This forces a specific pattern:
 
-5. **Nebula generation is expensive and blocks main thread** -- `GenerateNebula()` allocates a `Color[]` array of 65,536 elements every hero switch. This should either be pre-baked per hero or run on a background thread using `Unity.Jobs`.
+1. FastMCP server runs as its own Python process (separate from Blender)
+2. Communication happens over TCP socket to a Blender addon
+3. The addon receives commands on a background thread
+4. Commands are dispatched to the main thread via `bpy.app.timers.register(callback, first_interval=0.0)`
+5. Results are captured in a closure and sent back over the socket
+
+This is the same proven pattern used by [ahujasid/blender-mcp](https://github.com/ahujasid/blender-mcp) (the most popular Blender MCP implementation) and [poly-mcp/Blender-MCP-Server](https://github.com/poly-mcp/Blender-MCP-Server).
+
+**Confidence: HIGH** -- Verified against [Blender's official bpy.app.timers documentation](https://docs.blender.org/api/current/bpy.app.timers.html) and the [Blender developer forum thread on thread safety](https://devtalk.blender.org/t/thread-safety-with-bpy-api/16468).
+
+### Socket Protocol
+
+```
+Command:  {"type": "create_game_object", "params": {"name": "Dragon", "mesh_type": "imported", "file": "dragon.fbx"}}
+Response: {"status": "success", "result": {"object_name": "Dragon", "vertex_count": 12500, "bounds": [...]}}
+Error:    {"status": "error", "message": "File not found: dragon.fbx"}
+```
+
+### Compound Action Tool Design (~8 tools, not 80)
+
+Instead of exposing individual API calls as tools (which would create 80+ tools and severe token bloat), group operations by game development workflow intent:
+
+| Tool | Action Parameter | Operations Covered |
+|------|------------------|--------------------|
+| `blender_scene` | `create`, `inspect`, `clear`, `configure` | Scene creation, inspection, clearing, render settings |
+| `blender_object` | `create`, `modify`, `delete`, `duplicate`, `parent` | Object CRUD, transforms, hierarchy |
+| `blender_material` | `create`, `assign`, `modify`, `setup_pbr` | Material creation, PBR setup, texture assignment |
+| `blender_mesh` | `edit`, `optimize`, `unwrap_uv`, `decimate` | Mesh editing, UV mapping, LOD generation |
+| `blender_rig` | `create_armature`, `auto_weight`, `add_constraint` | Rigging, weight painting, IK setup |
+| `blender_export` | `fbx`, `gltf`, `obj` | Game-ready export with per-format presets |
+| `blender_viewport` | `screenshot`, `navigate`, `set_shading` | Viewport capture and navigation |
+| `blender_execute` | (code string) | Escape hatch: run arbitrary bpy Python |
+
+This compound action pattern (using an `action` parameter to multiplex operations within a single tool) follows the design used by [CoderGamester/mcp-unity](https://github.com/CoderGamester/mcp-unity) which consolidates 80+ operations into ~33 tools using action parameters. The rationale from [Anthropic's engineering blog on code execution with MCP](https://www.anthropic.com/engineering/code-execution-with-mcp) confirms that reducing tool count is critical: each tool definition costs 200+ tokens in context, so 26 tools across 3 servers costs ~5,200 tokens vs 200+ tools costing ~40,000+ tokens.
+
+**Confidence: HIGH** -- Token reduction validated by [SEP-1576](https://github.com/modelcontextprotocol/modelcontextprotocol/issues/1576) and [Speakeasy's 100x reduction case study](https://www.speakeasy.com/blog/how-we-reduced-token-usage-by-100x-dynamic-toolsets-v2).
+
+## Server 2: asset-pipeline
+
+### Architecture: FastMCP + External API Orchestration
+
+```
+AI Host
+  |
+  | stdio (MCP protocol)
+  v
++---------------------------+
+| asset-pipeline Server     |
+| (Python / FastMCP)        |
+|                           |
+| @mcp.tool() decorators    |
+| API client classes        |
+| Local tool wrappers       |
+| File I/O utilities        |
++----------+----------------+
+           |
+           | HTTP / CLI subprocess
+           |
+     +-----+-----+-----+
+     |     |     |     |
+     v     v     v     v
+  Meshy  Scenario Local  Custom
+  API    API     Tools  Scripts
+  (3D)   (Tex)  (CLI)  (Python)
+```
+
+### Why This Architecture
+
+The asset pipeline server is the simplest architecturally -- it is a pure FastMCP server with no bridge layer needed. It wraps external APIs and local CLI tools behind MCP tool interfaces. Unlike the Blender and Unity servers, there is no application-side addon or bridge; the server directly calls APIs and manipulates files.
+
+The key design decision: all tool outputs are files written to the shared filesystem. Tool responses return file paths, not file contents. This keeps token usage minimal and enables the host to pass paths to other servers.
+
+### Compound Action Tool Design (~8 tools)
+
+| Tool | Action Parameter | Operations Covered |
+|------|------------------|--------------------|
+| `pipeline_generate_3d` | `from_text`, `from_image`, `check_status`, `download` | AI 3D model generation (Meshy, Tripo, etc.) |
+| `pipeline_generate_texture` | `from_text`, `from_image`, `tile`, `pbr_maps` | AI texture generation (Scenario, etc.) |
+| `pipeline_optimize_mesh` | `decimate`, `retopology`, `lod_chain`, `validate` | Mesh optimization and LOD generation |
+| `pipeline_convert` | `fbx_to_gltf`, `gltf_to_fbx`, `obj_to_fbx`, `resize_textures` | Format conversion and texture resizing |
+| `pipeline_validate` | `check_mesh`, `check_textures`, `check_materials`, `full_audit` | Asset validation and quality checks |
+| `pipeline_batch` | `process_folder`, `bulk_convert`, `bulk_optimize` | Batch processing operations |
+| `pipeline_import_asset` | `from_url`, `from_sketchfab`, `from_polyhaven` | Asset sourcing from marketplaces |
+| `pipeline_status` | `list_jobs`, `check_job`, `cancel_job` | Async job tracking for long-running API calls |
+
+### Async Job Pattern
+
+AI generation APIs (Meshy, Tripo, Hunyuan3D) are asynchronous -- you submit a request, get a job ID, and poll for completion. The server should:
+
+1. Submit the generation request, return a job ID immediately
+2. The host can call `pipeline_status` to poll
+3. When complete, call `pipeline_generate_3d` with action `download` and the job ID
+4. The server downloads the result to the shared filesystem and returns the path
+
+This avoids long-running tool calls that time out the MCP connection.
+
+## Server 3: unity-enhanced
+
+### Architecture: Node.js MCP Gateway + C# WebSocket Bridge
+
+```
+AI Host
+  |
+  | stdio (MCP protocol)
+  v
++---------------------------+
+| unity-enhanced Server     |
+| (Node.js / TypeScript)    |
+|                           |
+| MCP SDK tool handlers     |
+| Zod schema validation     |
+| WebSocket client          |
++----------+----------------+
+           |
+           | WebSocket (JSON-RPC)
+           | ws://localhost:8090 (configurable)
+           |
++----------v----------------+
+| Unity Editor Scripts      |
+| (C# / Editor assembly)    |
+|                           |
+| McpWebSocketServer        |  <-- Listens for connections
+| McpToolBase subclasses    |  <-- Tool implementations
+| McpResourceBase subclasses|  <-- Resource providers
+|                           |
+| Tool categories:          |
+| - Scene management        |
+| - GameObject CRUD         |
+| - Component manipulation  |
+| - Asset database ops      |
+| - Prefab operations       |
+| - Build & test            |
++---------------------------+
+```
+
+### Why This Architecture
+
+Unity's editor scripting API (UnityEditor namespace) runs in a C# environment inside the Unity Editor process. Unlike Blender, Unity cannot directly run a Python MCP server. The established pattern (used by [CoderGamester/mcp-unity](https://github.com/CoderGamester/mcp-unity), [mitchchristow/unity-mcp](https://github.com/mitchchristow/unity-mcp), and [CoplayDev/unity-mcp](https://github.com/CoplayDev/unity-mcp)) is:
+
+1. C# Editor scripts create a WebSocket server inside Unity
+2. A Node.js process runs the MCP server (using the official TypeScript MCP SDK)
+3. The Node.js server connects to Unity's WebSocket as a client
+4. MCP tool calls are translated to WebSocket messages, forwarded to Unity, executed, and results returned
+
+Node.js is the bridge because the official MCP SDK has first-class TypeScript support, stdio transport is trivial in Node.js, and the WebSocket client library ecosystem is mature.
+
+**Confidence: HIGH** -- This is the dominant pattern across all major Unity MCP implementations in 2025-2026.
+
+### Why "Enhanced" (Not a Fork)
+
+The existing mcp-unity implementations are general-purpose editor control. This server should be **game-development-enhanced** with:
+
+- VeilBreakers-specific tools (ScriptableObject editing, brand/path data, combat testing)
+- Game asset import with automatic URP material setup
+- Prefab creation from imported models with colliders and LOD groups
+- Play mode control for testing game flows
+- Console log filtering by VeilBreakers subsystem prefixes
+
+### Compound Action Tool Design (~10 tools)
+
+| Tool | Action Parameter | Operations Covered |
+|------|------------------|--------------------|
+| `unity_scene` | `create`, `load`, `save`, `get_hierarchy`, `get_info` | Scene lifecycle and inspection |
+| `unity_gameobject` | `create`, `delete`, `find`, `duplicate`, `set_transform`, `set_parent` | GameObject CRUD and hierarchy |
+| `unity_component` | `add`, `remove`, `update`, `get_fields` | Component manipulation |
+| `unity_asset` | `import`, `find`, `refresh`, `get_info` | Asset database operations |
+| `unity_prefab` | `create`, `instantiate`, `apply_overrides`, `unpack` | Prefab workflow |
+| `unity_material` | `create`, `assign`, `set_property`, `setup_urp` | Material and shader setup |
+| `unity_build` | `compile`, `run_tests`, `execute_menu_item` | Build and test automation |
+| `unity_console` | `get_logs`, `clear`, `filter` | Console log access |
+| `unity_selection` | `select`, `get_selected`, `focus` | Editor selection and focus |
+| `unity_play` | `enter`, `exit`, `pause`, `step` | Play mode control |
+
+### Extensibility Pattern
+
+Following mcp-unity's pattern, custom tools inherit from `McpToolBase`:
+
+```csharp
+// C# side: Unity Editor
+public class CreateMonsterTool : McpToolBase
+{
+    public override string Name => "unity_create_monster";
+
+    public override async Task<McpToolResult> Execute(JObject parameters)
+    {
+        string monsterId = parameters["monster_id"].Value<string>();
+        // Create ScriptableObject, set up prefab, etc.
+        return McpToolResult.Success(new { prefab_path = path });
+    }
+}
+```
+
+```typescript
+// TypeScript side: Node.js MCP server
+server.tool("unity_create_monster", {
+    monster_id: z.string(),
+    brand: z.enum(["IRON", "SAVAGE", "SURGE", ...]),
+}, async (params) => {
+    return await unityBridge.execute("unity_create_monster", params);
+});
+```
 
 ## Data Flow
 
-### Hero Selection Flow (Primary)
+### Primary Pipeline: Blender to Unity
 
 ```
-User clicks Nav Arrow / Carousel Card / Gamepad
-    |
-    v
-CharacterSelectManager.NavigateToHero(index)
-    |
-    +-- Validates: not transitioning, valid index, different hero
-    |
-    +-- Sets _currentIndex, _isTransitioning = true
-    |
-    +-- ApplyThemeClass(heroId)   // Swaps USS theme on root
-    |
-    +-- CharSelectEvents.RaiseHeroChanged(index, heroData, config)
-    |       |
-    |       +-> CarouselController.HandleHeroChanged()
-    |       |       Updates card selection highlight, hero index label
-    |       |
-    |       +-> HeroDataPanelController.HandleHeroChanged()
-    |       |       Populates left panel text, looks up champion monster
-    |       |       Triggers panel slide-in via USS class toggle
-    |       |
-    |       +-> HeroStatsPanelController.HandleHeroChanged()
-    |       |       Updates stat bar widths, abilities list
-    |       |       Triggers panel slide-in via USS class toggle
-    |       |
-    |       +-> HeroStageController.HandleHeroChanged()
-    |       |       Destroys old model, instantiates new (or placeholder)
-    |       |       Applies camera/lighting config from HeroDisplayConfig
-    |       |
-    |       +-> CharSelectEnvironmentController.HandleHeroChanged()
-    |       |       Tints fog particles, generates procedural nebula texture
-    |       |
-    |       +-> TransitionController.HandleHeroChanged()
-    |               (STUB: does nothing)
-    |
-    +-- CharSelectEvents.RaiseHeroDataLoaded(heroData)
-    |       (Currently no subscribers for this event)
-    |
-    +-- CharSelectEvents.RaiseHeroSelected()
-    |       (Currently no subscribers for this event)
-    |
-    +-- UpdateEmbarkText()   // Updates embark button text
-    |
-    +-- StartCoroutine(EndTransitionAfterDelay(0.15f))
-            Sets _isTransitioning = false after 150ms
+1. AUTHOR IN BLENDER
+   Host calls: blender_object(action="create", ...)
+   Host calls: blender_material(action="setup_pbr", ...)
+   Host calls: blender_mesh(action="optimize", target_tris=5000)
+   Host calls: blender_export(action="fbx", path="Assets/Art/Models/dragon.fbx")
+   Returns:    {"status": "success", "path": "Assets/Art/Models/dragon.fbx", "stats": {...}}
+
+2. PROCESS IN PIPELINE (optional)
+   Host calls: pipeline_optimize_mesh(action="lod_chain", input="Assets/Art/Models/dragon.fbx", levels=[1.0, 0.5, 0.25])
+   Returns:    {"status": "success", "outputs": ["dragon_LOD0.fbx", "dragon_LOD1.fbx", "dragon_LOD2.fbx"]}
+
+   Host calls: pipeline_generate_texture(action="pbr_maps", input="dragon_albedo.png")
+   Returns:    {"status": "success", "outputs": {"normal": "...", "roughness": "...", "metallic": "..."}}
+
+3. IMPORT TO UNITY
+   Host calls: unity_asset(action="refresh")  -- triggers AssetDatabase.Refresh()
+   Host calls: unity_asset(action="import", path="Assets/Art/Models/dragon.fbx", settings={...})
+   Host calls: unity_prefab(action="create", source="Assets/Art/Models/dragon.fbx", add_collider=true, setup_lod=true)
+   Host calls: unity_material(action="setup_urp", prefab="Assets/Prefabs/Dragon.prefab")
+   Returns:    {"status": "success", "prefab": "Assets/Prefabs/Dragon.prefab"}
 ```
 
-### Embark Flow (Secondary)
+### Secondary Flow: AI-Generated Assets
 
 ```
-User clicks Embark button
-    |
-    v
-ShowConfirmPopup()
-    +-- Removes "hidden" class from confirm-overlay
-    +-- RaiseEmbarkRequested()
-    |
-User clicks Confirm
-    |
-    v
-ExecuteEmbark()
-    +-- RaiseEmbarkConfirmed()
-    +-- RaiseScreenExiting()
-    |       +-> HeroStageController.HandleScreenExiting() (no-op)
-    |
-    +-- StartCoroutine(EmbarkSequence)
-            |
-            +-- CreateOrRotateNewGameSave(hero)
-            |       +-- SaveManager.GetBestNewGameSlotAsync()  (busy-wait poll)
-            |       +-- SaveManager.CreateNewSaveAsync()       (busy-wait poll)
-            |       +-- SaveManager.SaveAsync()                (busy-wait poll)
-            |
-            +-- ScreenTransition.Transition(() => LoadScene("Overworld"))
-                    OR direct SceneManager.LoadScene() if no transition
+1. GENERATE
+   Host calls: pipeline_generate_3d(action="from_text", prompt="low-poly dragon monster", style="stylized")
+   Returns:    {"job_id": "abc123", "status": "processing", "eta_seconds": 120}
+
+2. POLL & DOWNLOAD
+   Host calls: pipeline_status(action="check_job", job_id="abc123")
+   Returns:    {"status": "complete", "download_url": "https://..."}
+
+   Host calls: pipeline_generate_3d(action="download", job_id="abc123", output="Assets/Art/Models/dragon_gen.glb")
+   Returns:    {"status": "success", "path": "Assets/Art/Models/dragon_gen.glb"}
+
+3. PROCESS & IMPORT (same as primary flow steps 2-3)
 ```
 
-### Initialization Flow
+### Tertiary Flow: Texture-Only Pipeline
 
 ```
-Scene loads -> OnEnable()
-    |
-    +-- EnsureFullScreenLayout()     // Walk tree setting flexGrow
-    +-- EnsureCriticalManagers()     // Create singletons if missing
-    +-- StartCoroutine(InitializeWhenReady)
-            |
-            +-- Poll GameDatabase.IsReady (10s timeout)
-            +-- LoadHeroData()           // Sort heroes, reorder configs
-            +-- CacheUIReferences()      // Q<> all buttons/elements
-            +-- BindUI()                 // Register click/nav callbacks
-            +-- ApplyInitialState()      // Index 0, theme, raise events
-            +-- RaiseScreenReady()
-                    |
-                    +-> CarouselController.HandleScreenReady()
-                    |       BuildCarousel() -- creates all hero cards
-                    |
-                    +-> CharSelectEnvironmentController.HandleScreenReady()
-                            Reset parallax position
+1. Host calls: pipeline_generate_texture(action="from_text", prompt="dark crystal scales", size=1024, tileable=true)
+   Returns:    {"path": "Assets/Art/Textures/crystal_scales.png"}
+
+2. Host calls: unity_asset(action="refresh")
+3. Host calls: unity_material(action="create", shader="Universal Render Pipeline/Lit", textures={"_BaseMap": "Assets/Art/Textures/crystal_scales.png"})
+   Returns:    {"material_path": "Assets/Art/Materials/CrystalScales.mat"}
 ```
 
 ### Data Sources
 
 | Data | Source | Format | Access Pattern |
 |------|--------|--------|----------------|
-| Hero identity (name, stats, skills) | `GameDatabase.GetAllHeroes()` | JSON -> `HeroData` | Loaded once at init, sorted by hero_id |
-| Hero visuals (camera, lighting, colors) | `HeroDisplayConfig` ScriptableObjects | Asset | Serialized array on Manager, reordered to match hero sort |
-| Monster info (champion display) | `GameDatabase.GetMonster(id)` | JSON -> `MonsterData` | Looked up per hero switch |
-| Skill names | `GameDatabase.GetSkill(id)` | JSON -> `SkillData` | Looked up per hero switch |
-| Save slot | `SaveManager.GetBestNewGameSlotAsync()` | Task<int> | Called once on embark, busy-wait polled |
+| 3D models (authored) | Blender via blender-gamedev | FBX/glTF export to filesystem | blender_export tool writes to Assets/Art/Models/ |
+| 3D models (generated) | AI APIs via asset-pipeline | glTF/GLB download to filesystem | pipeline_generate_3d downloads to Assets/Art/Models/ |
+| Textures (generated) | AI APIs via asset-pipeline | PNG/EXR to filesystem | pipeline_generate_texture writes to Assets/Art/Textures/ |
+| Processed assets | Local tools via asset-pipeline | Various formats to filesystem | pipeline_optimize_mesh, pipeline_convert write to filesystem |
+| Unity scenes/prefabs | Unity Editor via unity-enhanced | Unity native formats | unity_scene, unity_prefab tools operate in-editor |
+| ScriptableObjects | Unity Editor via unity-enhanced | .asset files | unity_component tool edits serialized fields |
+| Build artifacts | Unity Editor via unity-enhanced | .exe, logs | unity_build tool triggers compilation |
 
-## Architectural Patterns
+## Patterns to Follow
 
-### Pattern 1: Scoped Event Bus (CharSelectEvents)
+### Pattern 1: Compound Action Tools
 
-**What:** A static class with typed events scoped to one screen, separate from the global EventBus. Events are null-safe to raise. `ClearAll()` nulls all delegates on scene exit.
+**What:** Each MCP tool covers a domain (e.g., "objects", "materials") and accepts an `action` parameter to select the specific operation. Parameters vary by action.
 
-**When to use:** Any screen with 3+ controllers that need to react to shared state changes without coupling to each other.
+**When:** Always. This is the primary tool design pattern for the entire toolkit.
 
-**Trade-offs:**
-- PRO: Prevents global event namespace pollution
-- PRO: ClearAll() prevents cross-scene leaks
-- CON: Static events can still leak if OnDisable is not called (e.g., disabled GameObject)
-- CON: No event ordering guarantees
+**Why:** Token efficiency. Each tool definition costs ~200 tokens in the LLM context window. 26 compound tools across 3 servers = ~5,200 tokens. 200 atomic tools = ~40,000 tokens. The LLM is also better at selecting from a small tool set.
 
-**Example (current, correct):**
-```csharp
-// Controller subscribes
-private void OnEnable()
-{
-    CharSelectEvents.OnHeroChanged += HandleHeroChanged;
-}
-private void OnDisable()
-{
-    CharSelectEvents.OnHeroChanged -= HandleHeroChanged;
-}
-
-// Manager raises
-CharSelectEvents.RaiseHeroChanged(index, heroData, config);
+**Example:**
+```python
+@mcp.tool()
+async def blender_object(
+    action: Literal["create", "modify", "delete", "duplicate", "parent"],
+    name: str = None,
+    mesh_type: str = None,
+    position: list[float] = None,
+    rotation: list[float] = None,
+    scale: list[float] = None,
+    parent: str = None,
+    target: str = None,
+) -> dict:
+    """Manage Blender objects. Actions: create, modify, delete, duplicate, parent."""
+    if action == "create":
+        return await blender.send_command("create_object", {"name": name, "mesh_type": mesh_type, ...})
+    elif action == "modify":
+        return await blender.send_command("modify_object", {"name": name, "position": position, ...})
+    # ...
 ```
 
-### Pattern 2: USS Class-Toggle Animation
+**Confidence: HIGH** -- Pattern validated by mcp-unity (33 tools covering 80+ operations) and Anthropic's token efficiency guidance.
 
-**What:** Animate UI elements by adding/removing USS classes that define transition properties. The USS handles interpolation; C# just toggles the trigger class.
+### Pattern 2: Filesystem as Integration Bus
 
-**When to use:** All panel transitions, hero selection highlighting, confirm popup show/hide.
+**What:** Servers exchange data through the shared project filesystem. Tool responses contain file paths, not file contents. The AI host reads paths from one tool's response and passes them as inputs to the next tool.
 
-**Trade-offs:**
-- PRO: Animation logic lives in USS, not C# -- designers can tune without recompiling
-- PRO: Leverages GPU-accelerated USS transitions
-- CON: Same-frame class add after element creation skips the transition (must use schedule.Execute)
-- CON: Limited to animatable USS properties (no arbitrary curves)
+**When:** Any cross-server data flow. Blender exports to a path, asset pipeline reads from that path and writes to another, Unity imports from the final path.
 
-**Critical implementation detail:**
-```csharp
-// WRONG: Adding and removing in same scope skips transition
-panel.AddToClassList("panel-hidden");
-panel.RemoveFromClassList("panel-hidden"); // No animation!
+**Why:** MCP servers are isolated by design. No direct inter-server communication exists in the protocol. The filesystem is the natural shared resource for game development artifacts (models, textures, configs). File paths are tiny compared to file contents, preserving token budget.
 
-// CORRECT: Defer the removal to next frame
-panel.AddToClassList("panel-hidden");
-panel.schedule.Execute(() => panel.RemoveFromClassList("panel-hidden")).ExecuteLater(50);
+**Example flow:**
+```
+blender_export(format="fbx", path="Assets/Art/Models/dragon.fbx")
+  -> returns {"path": "Assets/Art/Models/dragon.fbx"}
+
+pipeline_optimize_mesh(input="Assets/Art/Models/dragon.fbx", action="decimate", target_ratio=0.5)
+  -> returns {"path": "Assets/Art/Models/dragon_optimized.fbx"}
+
+unity_asset(action="import", path="Assets/Art/Models/dragon_optimized.fbx")
+  -> returns {"imported": true, "asset_guid": "abc123"}
 ```
 
-**USS side (required for transitions to work):**
-```css
-.glass-panel {
-    transition-property: translate, opacity;
-    transition-duration: 0.4s;
-    transition-timing-function: ease-out-back;
-    translate: 0 0;
-    opacity: 1;
-}
+**Confidence: HIGH** -- This follows the MCP specification's isolation principle and mirrors the [Remote MCP Adapter's artifact:// pattern](https://github.com/aakashh242/remote-mcp-adapter).
 
-.panel-hidden {
-    translate: -40px 0;
-    opacity: 0;
-}
+### Pattern 3: Timer-Bridged Main Thread Execution (Blender)
+
+**What:** Socket commands received on a background thread are dispatched to Blender's main thread via `bpy.app.timers.register(callback, first_interval=0.0)`. The background thread blocks on an Event/condition until the main thread callback completes and stores the result in a shared container.
+
+**When:** Every Blender bpy API call. No exceptions.
+
+**Why:** bpy is not thread-safe. Calling bpy from any thread other than the main thread causes crashes, data corruption, or silent failures. The timer mechanism is Blender's official way to schedule work on the main thread.
+
+**Confidence: HIGH** -- Verified against [Blender Developer Forum](https://devtalk.blender.org/t/thread-safety-with-bpy-api/16468) and [official bpy.app.timers docs](https://docs.blender.org/api/current/bpy.app.timers.html).
+
+### Pattern 4: WebSocket JSON-RPC Bridge (Unity)
+
+**What:** The Node.js MCP server acts as a WebSocket client connecting to a WebSocket server running inside Unity Editor (C# `McpWebSocketServer`). Messages use a JSON-RPC-like format with method name, parameters, and correlation IDs.
+
+**When:** Every Unity Editor operation.
+
+**Why:** Unity's scripting runs in C#. The MCP SDK is TypeScript/Python. A WebSocket bridge connects the two process spaces. The C# side runs in the Editor process with full access to UnityEditor APIs. The Node.js side handles MCP protocol details.
+
+**Message format:**
+```json
+// Request (Node.js -> Unity)
+{"id": "req-001", "method": "unity_gameobject", "params": {"action": "create", "name": "Dragon", "position": [0, 0, 0]}}
+
+// Response (Unity -> Node.js)
+{"id": "req-001", "status": "success", "result": {"instance_id": 12345, "path": "/Dragon"}}
 ```
 
-**Confidence: HIGH** -- Verified against Unity 6 official USS transition documentation.
+**Confidence: HIGH** -- This is the exact pattern used by all three major Unity MCP implementations: [CoderGamester/mcp-unity](https://github.com/CoderGamester/mcp-unity), [mitchchristow/unity-mcp](https://github.com/mitchchristow/unity-mcp), [CoplayDev/unity-mcp](https://github.com/CoplayDev/unity-mcp).
 
-### Pattern 3: RenderTexture 3D Preview Pipeline
+### Pattern 5: Async Job Tracking for Long-Running Operations
 
-**What:** Dedicated camera renders hero model to a RenderTexture, which is displayed as a background-image on a VisualElement. Separate layer (31) isolates preview from game rendering.
+**What:** For operations that take longer than a few seconds (AI generation, large exports, build compilation), return a job ID immediately. Provide a separate polling tool for status checks. Provide a download/retrieve action for completed jobs.
 
-**When to use:** Any 3D model display within UI Toolkit screens.
+**When:** AI model generation (30s-5min), AI texture generation (10s-60s), Unity builds (30s+), large Blender exports (10s+).
 
-**Trade-offs:**
-- PRO: Full 3D rendering with custom lighting in UI context
-- PRO: Supports drag rotation and animations
-- CON: Extra camera + RT = GPU cost (mitigated by being the only active scene content)
-- CON: RT resolution must balance quality vs. memory (current 1024x1536 is reasonable)
+**Why:** MCP tool calls have implicit timeouts. Long-running synchronous calls risk timeout failures. The async pattern lets the host decide when to poll and handles retries naturally.
 
-**Current implementation is sound.** The 5-light rig with per-hero config is AAA-quality thinking. Key improvement: when real model prefabs replace placeholders, the animation system needs to drive Animator states from HeroDisplayConfig clips.
-
-### Pattern 4: Coroutine-Task Bridge (Busy-Wait Polling)
-
-**What:** Unity coroutines poll `Task.IsCompleted` in a while loop to bridge async/await with Unity's coroutine system.
-
-**When to use:** When calling async methods (SaveManager) from MonoBehaviour contexts that must yield.
-
-**Trade-offs:**
-- PRO: Works without UniTask dependency
-- CON: Busy-wait is wasteful (checks every frame)
-- CON: No cancellation token support
-- CON: Error handling is manual (`IsFaulted` checks)
-
-**This is flagged as "[!] Revisit" in PROJECT.md.** For the rebuild, the existing pattern is functional and low-risk. A UniTask migration would be an improvement but is out of scope.
+**Confidence: MEDIUM** -- Standard async API pattern. Not MCP-specific, but critical for game dev tools where operations are inherently slow.
 
 ## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: Direct Manager Reference from Sub-Controllers
+### Anti-Pattern 1: Direct Server-to-Server Communication
 
-**What people do:** Serialize a direct reference from CarouselController to CharacterSelectManager and call `_manager.NavigateToHero(index)` directly.
+**What people do:** Try to make the asset pipeline server call the Blender server directly, or have Unity call the asset pipeline.
 
-**Why it's wrong:** Breaks the event-driven architecture. Creates a bidirectional coupling: Manager raises events to controllers, but one controller also calls back directly. This makes CarouselController untestable in isolation and creates a hidden dependency.
+**Why it is wrong:** MCP servers are isolated by design. There is no standard mechanism for server-to-server communication. Building custom bridges between servers creates a brittle dependency graph, bypasses the host's security model, and makes servers untestable in isolation.
 
-**Do this instead:** Add a navigation request event to CharSelectEvents:
-```csharp
-// In CharSelectEvents:
-public static event Action<int> OnNavigationRequested;
-public static void RaiseNavigationRequested(int index) => OnNavigationRequested?.Invoke(index);
+**Do this instead:** Let the AI host orchestrate. The host calls Server A, gets a result, and passes relevant data to Server B. The host has the context to make intelligent routing decisions.
 
-// In CarouselController:
-private void OnCardClicked(int index) => CharSelectEvents.RaiseNavigationRequested(index);
+### Anti-Pattern 2: One Mega-Server with 200 Tools
 
-// In CharacterSelectManager:
-CharSelectEvents.OnNavigationRequested += NavigateToHero;
-```
+**What people do:** Put all Blender, asset pipeline, and Unity tools into a single MCP server to "simplify" configuration.
 
-### Anti-Pattern 2: Legacy Input API in New Input System Project
+**Why it is wrong:** Token bloat is the primary cost. Every tool definition loads into the LLM context even if only a few are used. 200 tools at ~200 tokens each = 40,000 tokens wasted. Additionally, a Python server cannot directly call C# Unity APIs -- the language boundary forces separation.
 
-**What people do:** Use `Input.mousePosition` directly instead of going through InputManager.
+**Do this instead:** Three focused servers with ~8-10 compound tools each. Total tool definitions in context: ~26 tools at ~200 tokens = ~5,200 tokens. The LLM can hold all tool definitions comfortably and select accurately.
 
-**Why it's wrong:** Breaks gamepad support, violates the project's input routing constraint, and mixes two input APIs creating maintenance confusion.
+### Anti-Pattern 3: Returning File Contents in Tool Responses
 
-**Do this instead:** Read pointer/mouse position through the new Input System:
-```csharp
-var pointer = Pointer.current;
-if (pointer != null)
-{
-    Vector2 mousePos = pointer.position.ReadValue();
-    // ...
-}
-```
-Or better: have InputManager expose a `GetPointerPosition()` method.
+**What people do:** Read an entire FBX file or texture and return it as base64 in the tool response.
 
-### Anti-Pattern 3: Per-Switch Texture Generation on Main Thread
+**Why it is wrong:** A single 3D model can be 5-50MB. Even a texture is 1-10MB. Returning file contents in tool responses wastes enormous amounts of tokens and provides no value -- the LLM cannot meaningfully process binary data.
 
-**What people do:** `CharSelectEnvironmentController.GenerateNebula()` allocates 65K Color array and runs nested loop with Perlin noise on every hero switch.
+**Do this instead:** Return file paths. The filesystem is the data bus. Return metadata (vertex count, file size, format) for the LLM to reason about.
 
-**Why it's wrong:** Allocates ~1MB per switch (GC pressure), blocks main thread during what should be a smooth transition, and the texture is low-res enough that pre-baking per hero would be trivial.
+### Anti-Pattern 4: Calling bpy from Background Threads
 
-**Do this instead:** Pre-generate 4 nebula textures at screen init (or bake them as assets), then swap by reference. If dynamic generation is desired, use `Unity.Jobs` + `NativeArray` for zero-GC generation on a worker thread.
+**What people do:** Execute Blender commands directly in the socket handler thread.
 
-### Anti-Pattern 4: Duplicate Animation Logic Across Controllers
+**Why it is wrong:** Blender's Python API is not thread-safe. Calling bpy from a non-main thread causes crashes, corrupted scene state, or silently wrong results. This is documented officially and confirmed by community experience.
 
-**What people do:** Both panel controllers have identical `AnimatePanel()` methods that toggle the same USS class pattern.
+**Do this instead:** Always use `bpy.app.timers.register()` to schedule execution on the main thread. Block the handler thread until execution completes.
 
-**Why it's wrong:** Violates DRY. If timing or approach changes, two files must be updated. TransitionController exists explicitly for this purpose but is an empty stub.
+### Anti-Pattern 5: Synchronous Long-Running Tool Calls
 
-**Do this instead:** Either:
-- (A) Have TransitionController coordinate all panel transitions centrally, or
-- (B) Extract a static helper: `UIPanelAnimator.SlideIn(VisualElement panel, string hiddenClass, int delayMs)`
+**What people do:** Make an AI generation API call and block the tool for 2 minutes waiting for completion.
 
-### Anti-Pattern 5: Raising Redundant Events
+**Why it is wrong:** MCP tool calls can time out. The host cannot display progress. The user cannot cancel. If the connection drops, the job is lost.
 
-**What people do:** Manager raises `OnHeroChanged`, `OnHeroDataLoaded`, AND `OnHeroSelected` on every hero switch. Currently nothing subscribes to `OnHeroDataLoaded` or `OnHeroSelected`.
+**Do this instead:** Return a job ID immediately. Provide polling and download actions. Let the host manage the wait, show progress to the user, and retry if needed.
 
-**Why it's wrong:** Three events that always fire together create confusion about which to subscribe to. Subscribers must guess which event carries the data they need.
+## Transport Decisions
 
-**Do this instead:** `OnHeroChanged` already carries index + HeroData + HeroDisplayConfig. Remove `OnHeroDataLoaded` and `OnHeroSelected` unless they serve a genuinely distinct lifecycle purpose (e.g., data loaded vs. visual transition complete).
+### All Three Servers: stdio Transport
+
+**Recommendation:** Use stdio transport for all three servers. The AI host spawns each server as a child process and communicates over stdin/stdout.
+
+**Rationale:**
+- All servers run on the same machine as the AI host (local game development)
+- stdio eliminates network overhead (microsecond latency vs millisecond)
+- No port management, firewall issues, or CORS configuration
+- Simpler deployment: just a command in the MCP config file
+- This is the recommended transport for local tools per the [MCP specification](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports)
+
+**The internal bridges** (Blender TCP socket on 9876, Unity WebSocket on 8090) are separate from the MCP transport. The MCP protocol runs over stdio between host and server. The application bridges run over sockets between the server processes and their respective applications.
+
+**Confidence: HIGH** -- stdio is explicitly recommended for local servers by the MCP specification. SSE is deprecated. Streamable HTTP is for remote/cloud deployment.
+
+## Scalability Considerations
+
+| Concern | Single Developer | Small Team (2-5) | Studio (10+) |
+|---------|-----------------|-------------------|---------------|
+| Server deployment | Local stdio, spawned by host | Local stdio per developer | Consider shared asset-pipeline server via Streamable HTTP |
+| Asset storage | Local project directory | Git LFS for shared assets | Dedicated asset server, pipeline writes to shared NAS |
+| API keys | Local .env per developer | Shared .env or secrets manager | Centralized secrets management |
+| Blender instances | One per developer | One per developer | Could pool Blender instances for batch processing |
+| Unity instances | One per developer | One per developer | One per developer (Editor is inherently single-user) |
+| Configuration | Per-project .mcp.json | Per-project .mcp.json in repo | Per-project + team overrides |
 
 ## Build Order Implications
 
-Based on dependency analysis, the rebuild should follow this order:
+Based on dependency analysis and complexity, servers should be built in this order:
 
-### Phase 1: Infrastructure Cleanup (Foundation)
+### Phase 1: blender-gamedev Server (Foundation)
 
-Fix the plumbing before the visuals. Everything downstream depends on this.
+**Build first because:**
+- It produces the artifacts that flow downstream
+- The Blender TCP bridge pattern is well-documented with reference implementations
+- FastMCP + Python is the simplest server implementation
+- Can be tested independently with any MCP host -- no Unity dependency
+- The Blender addon pattern is proven (ahujasid/blender-mcp has 5k+ stars)
 
-1. **Delete or fix TransitionController** -- It's dead code consuming an event subscription
-2. **Fix CharSelectEnvironmentController Input.mousePosition** -- Replace with New Input System
-3. **Add OnNavigationRequested event** -- Remove direct Manager reference from CarouselController
-4. **Consolidate USS files** -- 4 duplicate/stale stylesheets (CharacterSelect.uss, CharacterSelectAAA.uss, CharacterSelect_Backup.uss, plus VeilBreakers.uss vs VeilBreakersUI.uss) must be resolved to one authoritative file per scope
-5. **Remove unused events** -- Clean up OnHeroDataLoaded, OnHeroSelected if truly unused
+**Dependencies:** None. Standalone.
 
-**Rationale:** Every subsequent phase will touch these controllers and styles. Fixing infrastructure first prevents cascading bugs.
+**Validates:** TCP socket bridge pattern, compound action tool design, FastMCP project structure, Blender addon architecture.
 
-### Phase 2: Layout and Structure (UXML/USS)
+### Phase 2: asset-pipeline Server (Processing Layer)
 
-Fix the visual structure so content displays correctly.
+**Build second because:**
+- It depends on file outputs from blender-gamedev (or can be tested with sample files)
+- Pure Python FastMCP -- no bridge layer needed, simplest architecture
+- Can wrap APIs incrementally (start with one, add more)
+- Validates the filesystem-as-integration-bus pattern with real files from Phase 1
 
-1. **Fix text overlap and panel sizing** -- Known layout bugs in hero info panel
-2. **Fix monster area display** -- Champion section positioning
-3. **Fix hero stories and synergy/brands display** -- Content rendering issues
-4. **Ensure full-screen layout works without the `EnsureFullScreenLayout()` hack** -- The walk-up-tree-setting-flexGrow pattern suggests the UXML root isn't configured correctly
+**Dependencies:** Filesystem paths from Phase 1 (or mock files for testing).
 
-**Rationale:** Layout must be correct before animations and effects can be tuned.
+**Validates:** Async job pattern, API wrapper design, batch processing, cross-server file passing.
 
-### Phase 3: Controllers (Behavior)
+### Phase 3: unity-enhanced Server (Consumption Layer)
 
-Fix functional issues in the controller logic.
+**Build third because:**
+- It is the most architecturally complex (three languages: TypeScript + C# + JSON protocol)
+- It consumes outputs from Phases 1 and 2
+- The WebSocket bridge between Node.js and C# requires careful error handling
+- Existing mcp-unity implementations provide reference code to build from
+- Building this last means the upstream servers are stable and produce real assets to test with
 
-1. **Fix all 6 button interactions** (Back, Prev, Next, Embark, Confirm, Cancel)
-2. **Fix carousel card generation and selection** -- Verify dynamic card creation works with theme changes
-3. **Fix embark flow** -- Save creation + scene transition sequence
-4. **Performance: eliminate GenerateNebula allocation** -- Pre-bake or jobify
-5. **Performance: cache all VisualElement queries** -- Ensure no repeated Q<> calls
+**Dependencies:** Filesystem artifacts from Phases 1-2 for integration testing. Unity Editor running.
 
-**Rationale:** Behavior must work before visual polish. Performance fixes here prevent GC spikes during hero transitions.
+**Validates:** WebSocket bridge, C# Editor tool extensibility, full pipeline integration.
 
-### Phase 4: Visual Amplification (AAA Polish)
+### Phase 4: Integration & Orchestration (End-to-End)
 
-Add the visual quality layer.
+**Build last because:**
+- Requires all three servers operational
+- Focus on the host-side experience: workflow prompts, error recovery, progress reporting
+- Build example workflows that chain all three servers
+- Write MCP prompt templates for common game dev workflows
 
-1. **Implement USS transitions on all animated elements** -- Use `transition-property: translate, opacity, scale; transition-duration: 0.4s;`
-2. **Implement coordinated panel transitions** -- Left panel slides from left, right panel slides from right, staggered timing
-3. **Add embark button breathing glow animation** -- USS @keyframes or scheduled opacity cycling
-4. **Enhance hero stage lighting** -- Per-hero lighting configs already exist in HeroDisplayConfig
-5. **Add cinematic overlay effects** -- Scanlines, vignette, veil glow (UXML elements exist, need USS activation)
-6. **Use `usageHints = UsageHints.DynamicTransform`** on all animated elements (partially done, needs audit)
+**Dependencies:** All three servers operational.
 
-**Rationale:** Visual polish is the final layer. Must not be attempted until layout and behavior are solid.
+**Validates:** Full Blender-to-Unity pipeline, cross-server orchestration, real game development workflows.
 
 ## Integration Points
 
-### Existing Singleton Integrations
+### MCP Configuration (.mcp.json)
 
-| Singleton | Integration Pattern | Usage in CharSelect | Considerations |
-|-----------|---------------------|---------------------|----------------|
-| **GameDatabase** | Poll `IsReady`, then call typed getters | `GetAllHeroes()`, `GetMonster()`, `GetSkill()` | 10s timeout if not ready; data is immutable after load |
-| **SaveManager** | Async Task methods, busy-wait polled via coroutine | `GetBestNewGameSlotAsync()`, `CreateNewSaveAsync()`, `SaveAsync()` | Must handle `IsFaulted`/`IsCanceled`; slot rotation logic |
-| **ThemeManager** | `ApplyThemeClass()` on root VisualElement | Per-hero USS class (theme-vex, theme-seraphina, etc.) | Manager applies directly via USS class list, not through ThemeManager singleton |
-| **ScreenTransition** | `Transition(Action duringBlack)` | Scene exit fade to Overworld or MainMenu | Optional: falls back to direct `SceneManager.LoadScene` if not present |
-| **InputManager** | Should wrap all input; currently bypassed | NOT USED by CharSelect (bug) | EnvironmentController uses `Input.mousePosition` directly |
-| **AudioManager** | Not currently integrated | HeroDisplayConfig has `selectionSFX`, `embarkSFX`, `ambientLoop` fields | Audio integration is prepared in data but not wired in code |
+```json
+{
+  "mcpServers": {
+    "blender-gamedev": {
+      "command": "uvx",
+      "args": ["blender-gamedev-mcp"],
+      "env": {
+        "BLENDER_PORT": "9876",
+        "BLENDER_HOST": "localhost"
+      }
+    },
+    "asset-pipeline": {
+      "command": "uvx",
+      "args": ["asset-pipeline-mcp"],
+      "env": {
+        "MESHY_API_KEY": "${MESHY_API_KEY}",
+        "SCENARIO_API_KEY": "${SCENARIO_API_KEY}",
+        "ASSET_OUTPUT_DIR": "./Assets/Art"
+      }
+    },
+    "unity-enhanced": {
+      "command": "npx",
+      "args": ["-y", "unity-enhanced-mcp"],
+      "env": {
+        "UNITY_WS_PORT": "8090"
+      }
+    }
+  }
+}
+```
 
-### Internal Component Boundaries
+### Artifact Exchange Directory Structure
 
-| Boundary | Communication | Direction | Notes |
-|----------|---------------|-----------|-------|
-| Manager -> All Controllers | CharSelectEvents | Unidirectional (Raise) | Manager is sole event source (correct) |
-| Controllers -> Manager | Should be CharSelectEvents | Currently mixed: events + direct ref | CarouselController has direct `_manager` reference (fix) |
-| Controllers -> UI | VisualElement Q<> queries | Direct manipulation | All controllers cache references in OnEnable (correct) |
-| Controllers -> GameDatabase | Singleton.Instance | Direct read-only | Multiple controllers query independently (acceptable for read-only) |
-| Manager -> SaveManager | Async Task polling | Coroutine bridge | Busy-wait pattern is functional but wasteful |
-| Manager -> Scene System | ScreenTransition or SceneManager | Direct call | Dual-path (with/without transition) adds complexity |
+```
+project-root/
+  Assets/
+    Art/
+      Models/          <-- Blender exports here, pipeline processes here, Unity imports here
+        Raw/           <-- Unprocessed exports from Blender
+        Processed/     <-- Pipeline-optimized assets
+      Textures/
+        Generated/     <-- AI-generated textures from pipeline
+        Processed/     <-- Resized/converted textures
+      Materials/       <-- Unity materials referencing processed textures
+    Prefabs/           <-- Unity prefabs created from imported models
+    Resources/         <-- ScriptableObjects (monster data, hero configs, etc.)
+  temp/
+    pipeline/          <-- Intermediate processing artifacts (not committed to git)
+    jobs/              <-- Async job tracking files
+```
 
-### USS/UXML Integration
+### Error Propagation
 
-| File | Purpose | Status |
-|------|---------|--------|
-| `CharacterSelect.uxml` | Screen layout structure | Active, well-structured |
-| `CharacterSelect.uss` | Master stylesheet with theme variables | Active, AAA quality |
-| `CharacterSelectAAA.uss` | Unknown -- likely a previous iteration | STALE: consolidate or delete |
-| `CharacterSelect_Backup.uss` | Backup of previous styles | STALE: delete |
-| `VeilBreakers.uss` | Global game styles | Potentially overlapping |
-| `VeilBreakersUI.uss` | Global UI styles | Potentially overlapping with above |
-| `VeilBreakersTheme.uss` | Theme variables (imported by CharacterSelect.uss) | Active, correct |
+Each tier has its own error domain:
 
-## Performance Optimization Checklist
-
-Based on Unity's official UI Toolkit performance guidance:
-
-| Optimization | Current Status | Action |
-|--------------|----------------|--------|
-| `UsageHints.DynamicTransform` on animated elements | Partial (CarouselController, EnvironmentController) | Audit all animated panels, add to hero-info-panel, stats-panel |
-| `UsageHints.GroupTransform` on parallax parent | Missing | Add to parallax-bg container |
-| Use `translate` instead of `left/top` for movement | Correct in EnvironmentController | Verify all panel animations use translate |
-| No `Q<>` calls in Update/hot paths | Correct (all cached in OnEnable) | Maintain during rebuild |
-| No allocations in Update | Violation: `GenerateNebula()` per hero switch | Pre-bake textures or use NativeArray |
-| `DisplayStyle.None` for hidden elements | Used for confirm-overlay | Verify all hidden elements use this pattern |
-| Minimize style class changes in large hierarchies | Theme class changes on root propagate to all children | Monitor perf; consider scoping theme to specific panels |
+| Server | Error Source | Propagation |
+|--------|-------------|-------------|
+| blender-gamedev | Blender crashes, bpy exceptions, socket timeout | Caught in addon handler, returned as `{"status": "error", "message": "..."}`, FastMCP returns error to host |
+| asset-pipeline | API rate limits, network errors, invalid input | Caught in tool function, returned as MCP tool error with retry guidance |
+| unity-enhanced | Unity compilation errors, missing references, WebSocket disconnect | C# catches in McpToolBase, returns error JSON, Node.js propagates to host |
+| Cross-server | File not found, wrong format, corrupted asset | Host detects error in tool response, can retry or try alternative approach |
 
 ## Sources
 
-- [Unity 6 UI Toolkit Performance Guide](https://docs.unity3d.com/6000.3/Documentation/Manual/best-practice-guides/ui-toolkit-for-advanced-unity-developers/optimizing-performance.html) -- HIGH confidence (official docs)
-- [USS Transitions Documentation](https://docs.unity3d.com/Manual//UIE-Transitions.html) -- HIGH confidence (official docs)
-- [Unity MVC/MVP Patterns Learn Course](https://learn.unity.com/course/design-patterns-unity-6/tutorial/build-a-modular-codebase-with-mvc-and-mvp-programming-patterns) -- HIGH confidence (official Unity Learn)
-- [Unity MVVM Pattern Tutorial](https://learn.unity.com/tutorial/model-view-viewmodel-pattern) -- HIGH confidence (official Unity Learn)
-- [UsageHints DynamicTransform Documentation](https://docs.unity3d.com/6000.0/Documentation/Manual/UIE-use-usage-hints-to-reduce-draw-calls-and-geometry-regeneration.html) -- HIGH confidence (official docs)
-- [UI Toolkit Scalable & Performant Guide](https://unity.com/resources/scalable-performant-ui-uitoolkit-unity-6) -- MEDIUM confidence (Unity marketing/resource page)
-- [Unity Discussions: USS Transition Issues](https://discussions.unity.com/t/issue-with-ui-toolkit-transition-animations/1513067) -- MEDIUM confidence (community verified)
+- [MCP Architecture Specification (2025-06-18)](https://modelcontextprotocol.io/specification/2025-06-18/architecture) -- HIGH confidence (official spec)
+- [MCP Transport Specification](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports) -- HIGH confidence (official spec)
+- [Anthropic: Code Execution with MCP](https://www.anthropic.com/engineering/code-execution-with-mcp) -- HIGH confidence (official engineering blog)
+- [FastMCP Server Composition](https://gofastmcp.com/servers/composition) -- HIGH confidence (official FastMCP docs)
+- [CoderGamester/mcp-unity](https://github.com/CoderGamester/mcp-unity) -- HIGH confidence (reference implementation, MIT license)
+- [ahujasid/blender-mcp](https://github.com/ahujasid/blender-mcp) -- HIGH confidence (reference implementation)
+- [ahujasid/blender-mcp DeepWiki](https://deepwiki.com/ahujasid/blender-mcp) -- HIGH confidence (architecture analysis)
+- [Blender bpy.app.timers](https://docs.blender.org/api/current/bpy.app.timers.html) -- HIGH confidence (official Blender docs)
+- [Blender Thread Safety Forum](https://devtalk.blender.org/t/thread-safety-with-bpy-api/16468) -- MEDIUM confidence (developer forum)
+- [SEP-1576: Token Bloat Mitigation](https://github.com/modelcontextprotocol/modelcontextprotocol/issues/1576) -- HIGH confidence (official standards proposal)
+- [Speakeasy: 100x Token Reduction](https://www.speakeasy.com/blog/how-we-reduced-token-usage-by-100x-dynamic-toolsets-v2) -- MEDIUM confidence (vendor case study)
+- [KlavisAI: 4 MCP Design Patterns](https://www.klavis.ai/blog/less-is-more-mcp-design-patterns-for-ai-agents) -- MEDIUM confidence (industry analysis)
+- [poly-mcp/Blender-MCP-Server](https://github.com/poly-mcp/Blender-MCP-Server) -- MEDIUM confidence (alternative implementation)
+- [mitchchristow/unity-mcp](https://github.com/mitchchristow/unity-mcp) -- MEDIUM confidence (alternative implementation with 80 tools)
+- [IBM: MCP Architecture Patterns](https://developer.ibm.com/articles/mcp-architecture-patterns-ai-systems/) -- MEDIUM confidence (vendor analysis)
+- [Arcade.dev: 54 MCP Tool Patterns](https://arcade.dev/blog/mcp-tool-patterns) -- MEDIUM confidence (industry analysis)
 
 ---
-*Architecture research for: VeilBreakers 3D Character Select Rebuild*
-*Researched: 2026-02-21*
+*Architecture research for: Multi-MCP-Server Game Development Toolkit*
+*Researched: 2026-03-18*

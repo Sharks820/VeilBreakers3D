@@ -24,6 +24,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Overworld.unity
     guid: db827a44b8bdd7c41b626bd534b8600e
   m_configObjects:
+    com.unity.adaptivePerformance.basic.provider_settings: {fileID: 11400000, guid: 3e2c885dbe7598348b9b7bbc58a0dfe8, type: 2}
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 2242da52f2649624794ca51f8cf18eb3, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 613dbe84ad069474380f2e786fe71ff3, type: 2}
     com.unity.addressableassets: {fileID: 11400000, guid: b7081ef8b1c8d0244a357e83d89c0dc6, type: 2}
