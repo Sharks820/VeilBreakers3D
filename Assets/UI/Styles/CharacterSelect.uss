@@ -74,14 +74,19 @@
 
 TemplateContainer {
     flex-grow: 1;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
 }
 
 .character-select-root {
     position: absolute;
     left: 0;
     top: 0;
-    width: 100%;
-    height: 100%;
+    right: 0;
+    bottom: 0;
     flex-direction: column;
     overflow: hidden;
     background-color: rgb(8, 6, 12);
@@ -93,10 +98,10 @@ TemplateContainer {
 
 .parallax-bg {
     position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
     left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
 }
 
 /* Layer 1: Deepest Void */
@@ -182,8 +187,8 @@ TemplateContainer {
     position: absolute;
     left: 0;
     top: 0;
-    width: 50%;
-    height: 100%;
+    right: 50%;
+    bottom: 0;
     z-index: 10;
     align-items: center;
     justify-content: center;
