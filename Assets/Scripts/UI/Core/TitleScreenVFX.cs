@@ -1710,6 +1710,7 @@ namespace VeilBreakers.UI.Core
 
             // Root container for the ember
             var root = new VisualElement();
+            root.usageHints = UsageHints.DynamicTransform | UsageHints.DynamicColor;
             root.style.position = Position.Absolute;
             root.pickingMode = PickingMode.Ignore;
 
@@ -1833,6 +1834,7 @@ namespace VeilBreakers.UI.Core
         private void CreateAsh()
         {
             var element = new VisualElement();
+            element.usageHints = UsageHints.DynamicTransform | UsageHints.DynamicColor;
             element.style.position = Position.Absolute;
             element.pickingMode = PickingMode.Ignore;
 
@@ -1886,6 +1888,7 @@ namespace VeilBreakers.UI.Core
         private void CreateSpark()
         {
             var element = new VisualElement();
+            element.usageHints = UsageHints.DynamicTransform | UsageHints.DynamicColor;
             element.style.position = Position.Absolute;
             // AAA: Bright yellow-white core
             element.style.backgroundColor = new Color(1f, 0.95f, 0.7f, 0.95f);
@@ -1922,6 +1925,7 @@ namespace VeilBreakers.UI.Core
         private void CreateMicroSpark()
         {
             var element = new VisualElement();
+            element.usageHints = UsageHints.DynamicTransform | UsageHints.DynamicColor;
             element.style.position = Position.Absolute;
             element.pickingMode = PickingMode.Ignore;
 
@@ -1967,6 +1971,7 @@ namespace VeilBreakers.UI.Core
         private void CreateSmoke()
         {
             var element = new VisualElement();
+            element.usageHints = UsageHints.DynamicTransform | UsageHints.DynamicColor;
             element.style.position = Position.Absolute;
             element.pickingMode = PickingMode.Ignore;
 

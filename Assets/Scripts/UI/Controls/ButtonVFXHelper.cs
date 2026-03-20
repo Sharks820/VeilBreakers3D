@@ -131,6 +131,7 @@ namespace VeilBreakers.UI.Controls
         private static void CreateRipple(Button button, Vector2 localPosition)
         {
             var ripple = new VisualElement();
+            ripple.usageHints = UsageHints.DynamicTransform | UsageHints.DynamicColor;
             ripple.AddToClassList(kRippleClass);
             ripple.style.position = Position.Absolute;
             ripple.style.left = localPosition.x;
@@ -366,6 +367,7 @@ namespace VeilBreakers.UI.Controls
             for (int i = 0; i < count; i++)
             {
                 var particle = new VisualElement();
+                particle.usageHints = UsageHints.DynamicTransform | UsageHints.DynamicColor;
                 particle.style.position = Position.Absolute;
                 float size = UnityEngine.Random.Range(3f, 6f);
                 particle.style.width = size;
