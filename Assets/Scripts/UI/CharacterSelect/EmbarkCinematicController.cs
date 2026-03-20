@@ -19,6 +19,16 @@ namespace VeilBreakers.UI.CharacterSelect
         [SerializeField] private VeilTransitionController _veilTransition;
         [SerializeField] private HeroStageController _stageController;
 
+        /// <summary>
+        /// Programmatically wires dependencies. Called by CharacterSelectManager.EnsureCharSelectComponents().
+        /// Only sets fields that are currently null (preserves Inspector assignments).
+        /// </summary>
+        public void AutoWire(VeilTransitionController veilTransition, HeroStageController stageController)
+        {
+            if (_veilTransition == null) _veilTransition = veilTransition;
+            if (_stageController == null) _stageController = stageController;
+        }
+
         // =============================================================================
         // RUNTIME STATE
         // =============================================================================
@@ -226,17 +236,21 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             var seq = Sequence.Create();
 
+            // Use Tween.Custom for VisualElement translate (Tween.Position is for Transforms only)
             if (_leftPanel != null)
             {
-                seq.Group(Tween.Position(_leftPanel, new Vector3(-300f, 0f, 0f), 0.2f, Ease.InCubic));
+                seq.Group(Tween.Custom(_leftPanel, 0f, -300f, 0.2f, Ease.InCubic,
+                    (el, val) => el.style.translate = new Translate(val, 0)));
             }
             if (_rightPanel != null)
             {
-                seq.Group(Tween.Position(_rightPanel, new Vector3(300f, 0f, 0f), 0.2f, Ease.InCubic));
+                seq.Group(Tween.Custom(_rightPanel, 0f, 300f, 0.2f, Ease.InCubic,
+                    (el, val) => el.style.translate = new Translate(val, 0)));
             }
             if (_carousel != null)
             {
-                seq.Group(Tween.Position(_carousel, new Vector3(0f, 200f, 0f), 0.2f, Ease.InCubic));
+                seq.Group(Tween.Custom(_carousel, 0f, 200f, 0.2f, Ease.InCubic,
+                    (el, val) => el.style.translate = new Translate(0, val)));
             }
 
             return seq;

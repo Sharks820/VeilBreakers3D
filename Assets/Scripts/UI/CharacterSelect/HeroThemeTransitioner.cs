@@ -27,6 +27,19 @@ namespace VeilBreakers.UI.CharacterSelect
         [SerializeField] private VeilDissolveController _dissolveController;
         [SerializeField] private HeroStageController _stageController;
 
+        /// <summary>
+        /// Programmatically wires all dependencies. Called by CharacterSelectManager.EnsureCharSelectComponents().
+        /// Only sets fields that are currently null (preserves Inspector assignments).
+        /// </summary>
+        public void AutoWire(HeroThemeConfig[] themes, VolumeProfileTransitioner volumeTransitioner,
+            VeilDissolveController dissolveController, HeroStageController stageController)
+        {
+            if (_heroThemes == null || _heroThemes.Length == 0) _heroThemes = themes;
+            if (_volumeTransitioner == null) _volumeTransitioner = volumeTransitioner;
+            if (_dissolveController == null) _dissolveController = dissolveController;
+            if (_stageController == null) _stageController = stageController;
+        }
+
         // =============================================================================
         // INTERNAL SUBSYSTEMS (created in Init, not MonoBehaviours)
         // =============================================================================

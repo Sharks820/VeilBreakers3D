@@ -735,18 +735,8 @@ namespace VeilBreakers.UI.Menus
                     // Click burst for impact feedback on all buttons
                     ButtonVFXHelper.AddClickBurst(button);
 
-                    // Charge line effect for held buttons
-                    ButtonVFXHelper.AddChargeEffect(button);
-
                     // Gamepad/keyboard focus choreography
                     ButtonVFXHelper.AddFocusEffect(button);
-
-                    // Primary buttons get click burst only (shimmer/pulse border removed per user feedback)
-                    bool isPrimary = button.name == "btn-new-game" || button.name == "btn-continue";
-                    if (isPrimary)
-                    {
-                        ButtonVFXHelper.AddClickBurst(button);
-                    }
                 }
             }
 

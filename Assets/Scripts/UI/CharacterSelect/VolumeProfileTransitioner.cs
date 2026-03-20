@@ -18,6 +18,59 @@ namespace VeilBreakers.UI.CharacterSelect
 
         [SerializeField] private Volume _volume;
 
+        /// <summary>
+        /// Finds a Volume component in the scene if none is assigned.
+        /// Called by CharacterSelectManager.EnsureCharSelectComponents().
+        /// </summary>
+        public void AutoWireVolume()
+        {
+            if (_volume != null) return;
+
+            // Try to find existing Volume in scene
+            _volume = FindAnyObjectByType<Volume>();
+            if (_volume != null)
+            {
+                Debug.Log("[VolumeProfileTransitioner] Auto-wired to existing scene Volume.");
+                return;
+            }
+
+            // Create a new Volume with a default profile
+            var volumeGo = new GameObject("[CharSelect-Volume]");
+            volumeGo.transform.SetParent(transform);
+            _volume = volumeGo.AddComponent<Volume>();
+            _volume.isGlobal = true;
+            _volume.priority = 1f;
+
+            // Create a minimal VolumeProfile at runtime
+            var profile = ScriptableObject.CreateInstance<VolumeProfile>();
+
+            var bloom = profile.Add<Bloom>();
+            bloom.intensity.overrideState = true;
+            bloom.intensity.value = 0.5f;
+            bloom.tint.overrideState = true;
+            bloom.tint.value = Color.white;
+
+            var vignette = profile.Add<Vignette>();
+            vignette.intensity.overrideState = true;
+            vignette.intensity.value = 0.3f;
+            vignette.color.overrideState = true;
+            vignette.color.value = Color.black;
+
+            var colorAdj = profile.Add<ColorAdjustments>();
+            colorAdj.saturation.overrideState = true;
+            colorAdj.saturation.value = 10f;
+            colorAdj.colorFilter.overrideState = true;
+            colorAdj.colorFilter.value = Color.white;
+
+            var chromatic = profile.Add<ChromaticAberration>();
+            chromatic.intensity.overrideState = true;
+            chromatic.intensity.value = 0f;
+
+            _volume.sharedProfile = profile;
+
+            Debug.Log("[VolumeProfileTransitioner] Created runtime Volume with default profile.");
+        }
+
         // =============================================================================
         // CACHED OVERRIDE REFERENCES
         // =============================================================================

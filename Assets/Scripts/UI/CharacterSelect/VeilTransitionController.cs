@@ -50,6 +50,11 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void Start()
         {
+            if (_veilCrackMaterial == null)
+            {
+                Debug.LogWarning("[VeilTransitionController] No VeilCrack material assigned. Veil crack effects will be skipped.");
+                return;
+            }
             CreateFullScreenQuad();
             Reset();
         }
@@ -113,6 +118,8 @@ namespace VeilBreakers.UI.CharacterSelect
         /// </summary>
         public Tween PlayCrackSpread(float duration, Color accentColor)
         {
+            if (_fullScreenQuadRenderer == null) return Tween.Custom(0f, 1f, duration, val => { });
+
             ShowQuad();
 
             _mpb.SetColor(kCrackColor, accentColor);
@@ -135,6 +142,8 @@ namespace VeilBreakers.UI.CharacterSelect
         /// </summary>
         public Tween PlayShatter(Color accentColor, float duration = 0.3f)
         {
+            if (_fullScreenQuadRenderer == null) return Tween.Custom(0f, 1f, duration, val => { });
+
             if (_shatterParticles != null)
             {
                 var main = _shatterParticles.main;
@@ -156,6 +165,8 @@ namespace VeilBreakers.UI.CharacterSelect
         /// </summary>
         public Tween PlayWhiteOut(float duration = 0.2f)
         {
+            if (_fullScreenQuadRenderer == null) return Tween.Custom(0f, 1f, duration, val => { });
+
             return Tween.Custom(this, 0f, 1f, duration,
                 onValueChange: (ctrl, val) =>
                 {
@@ -170,6 +181,8 @@ namespace VeilBreakers.UI.CharacterSelect
         /// </summary>
         public Tween PlayMaterialize(Color accentColor, float duration = 1f)
         {
+            if (_fullScreenQuadRenderer == null) return Tween.Custom(0f, 1f, duration, val => { });
+
             ShowQuad();
 
             _mpb.SetColor(kCrackColor, accentColor);

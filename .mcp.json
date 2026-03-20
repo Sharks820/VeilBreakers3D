@@ -58,6 +58,15 @@
         "BLENDER_PORT": "9876"
       },
       "description": "3D modeling - create/edit models, scenes, materials, render from Blender"
+    },
+    "vb-unity": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["--directory", "C:/Users/Conner/OneDrive/Documents/veilbreakers-gamedev-toolkit/Tools/mcp-toolkit", "run", "vb-unity-mcp"],
+      "env": {
+        "UNITY_PROJECT_PATH": "C:/Users/Conner/OneDrive/Documents/VeilBreakers3DCurrent"
+      },
+      "description": "VeilBreakers Unity toolkit - VFX, audio, UI, scene, gameplay, performance tools"
     }
   },
   "_profile": {

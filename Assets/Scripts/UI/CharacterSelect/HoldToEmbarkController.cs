@@ -29,6 +29,15 @@ namespace VeilBreakers.UI.CharacterSelect
         [SerializeField] private UIDocument _uiDocument;
         [SerializeField] private CharSelectFocusManager _focusManager;
 
+        /// <summary>
+        /// Programmatically wires dependencies. Called by CharacterSelectManager.EnsureCharSelectComponents().
+        /// </summary>
+        public void AutoWire(UIDocument uiDocument, CharSelectFocusManager focusManager)
+        {
+            if (_uiDocument == null) _uiDocument = uiDocument;
+            if (_focusManager == null) _focusManager = focusManager;
+        }
+
         // =============================================================================
         // STATE
         // =============================================================================

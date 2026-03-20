@@ -57,6 +57,15 @@ namespace VeilBreakers.UI.CharacterSelect
 
         [SerializeField] private UIDocument _uiDocument;
 
+        /// <summary>
+        /// Programmatically wires the UIDocument reference.
+        /// Called by CharacterSelectManager.EnsureCharSelectComponents().
+        /// </summary>
+        public void AutoWire(UIDocument uiDocument)
+        {
+            if (_uiDocument == null) _uiDocument = uiDocument;
+        }
+
         // =============================================================================
         // STATE
         // =============================================================================

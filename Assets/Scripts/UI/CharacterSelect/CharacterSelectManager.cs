@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
@@ -182,9 +183,133 @@ namespace VeilBreakers.UI.CharacterSelect
             }
         }
 
+        // =============================================================================
+        // AUTO-WIRE: Ensures all Phase 3-4 components exist on this GameObject
+        // =============================================================================
+
+        /// <summary>
+        /// Finds or creates all required MonoBehaviour components and wires their
+        /// cross-references programmatically. Eliminates Inspector assignment requirements.
+        /// </summary>
+        private void EnsureCharSelectComponents()
+        {
+            // --- VeilDissolveController (no dependencies) ---
+            var dissolveCtrl = GetComponent<VeilDissolveController>();
+            if (dissolveCtrl == null) dissolveCtrl = gameObject.AddComponent<VeilDissolveController>();
+
+            // --- VolumeProfileTransitioner (needs Volume) ---
+            var volumeTransitioner = GetComponent<VolumeProfileTransitioner>();
+            if (volumeTransitioner == null) volumeTransitioner = gameObject.AddComponent<VolumeProfileTransitioner>();
+            volumeTransitioner.AutoWireVolume();
+
+            // --- VeilTransitionController (optional: material, particles, camera) ---
+            var veilTransition = GetComponent<VeilTransitionController>();
+            if (veilTransition == null) veilTransition = gameObject.AddComponent<VeilTransitionController>();
+
+            // --- HeroStageController (should already exist in scene) ---
+            var stageCtrl = GetComponent<HeroStageController>();
+
+            // --- HeroThemeTransitioner (needs HeroThemeConfig[], VolumeProfileTransitioner, VeilDissolveController, HeroStageController) ---
+            if (_themeTransitioner == null) _themeTransitioner = GetComponent<HeroThemeTransitioner>();
+            if (_themeTransitioner == null) _themeTransitioner = gameObject.AddComponent<HeroThemeTransitioner>();
+            _themeTransitioner.AutoWire(
+                LoadOrCreateHeroThemeConfigs(),
+                volumeTransitioner,
+                dissolveCtrl,
+                stageCtrl
+            );
+
+            // --- EmbarkCinematicController (needs VeilTransitionController, HeroStageController) ---
+            if (_embarkCinematic == null) _embarkCinematic = GetComponent<EmbarkCinematicController>();
+            if (_embarkCinematic == null) _embarkCinematic = gameObject.AddComponent<EmbarkCinematicController>();
+            _embarkCinematic.AutoWire(veilTransition, stageCtrl);
+
+            // --- CharSelectFocusManager (needs UIDocument) ---
+            var focusManager = GetComponent<CharSelectFocusManager>();
+            if (focusManager == null) focusManager = gameObject.AddComponent<CharSelectFocusManager>();
+            focusManager.AutoWire(_uiDocument);
+
+            // --- HoldToEmbarkController (needs UIDocument, CharSelectFocusManager) ---
+            var holdToEmbark = GetComponent<HoldToEmbarkController>();
+            if (holdToEmbark == null) holdToEmbark = gameObject.AddComponent<HoldToEmbarkController>();
+            holdToEmbark.AutoWire(_uiDocument, focusManager);
+
+            Debug.Log("[CharSelectManager] All Phase 3-4 components auto-wired successfully.");
+        }
+
+        /// <summary>
+        /// Loads HeroThemeConfig ScriptableObjects from Resources, or creates runtime defaults.
+        /// </summary>
+        private HeroThemeConfig[] LoadOrCreateHeroThemeConfigs()
+        {
+            // Try loading from Resources first
+            var loaded = Resources.LoadAll<HeroThemeConfig>("CharacterSelect/HeroThemes");
+            if (loaded != null && loaded.Length > 0) return loaded;
+
+            // Create runtime defaults for each hero
+            var configs = new HeroThemeConfig[4];
+            configs[0] = CreateDefaultTheme("vex", "Vex",
+                new Color(0.78f, 0.63f, 0.24f), // Amber gold
+                new Color(1f, 0.78f, 0.39f, 0.25f),
+                new Color(0.2f, 0.16f, 0.06f));
+            configs[1] = CreateDefaultTheme("seraphina", "Seraphina",
+                new Color(0.55f, 0.31f, 0.78f), // Violet
+                new Color(0.78f, 0.63f, 1f, 0.25f),
+                new Color(0.14f, 0.08f, 0.2f));
+            configs[2] = CreateDefaultTheme("orion", "Orion",
+                new Color(0.71f, 0.2f, 0.2f),  // Crimson
+                new Color(1f, 0.47f, 0.39f, 0.25f),
+                new Color(0.2f, 0.05f, 0.05f));
+            configs[3] = CreateDefaultTheme("nyx", "Nyx",
+                new Color(0.24f, 0.71f, 0.78f), // Cyan
+                new Color(0.47f, 0.86f, 0.94f, 0.25f),
+                new Color(0.06f, 0.18f, 0.2f));
+
+            Debug.Log("[CharSelectManager] Created 4 runtime HeroThemeConfigs (no assets found in Resources/CharacterSelect/HeroThemes).");
+            return configs;
+        }
+
+        private static HeroThemeConfig CreateDefaultTheme(string heroId, string name, Color primary, Color glow, Color dark)
+        {
+            var config = ScriptableObject.CreateInstance<HeroThemeConfig>();
+            config.name = $"HeroTheme_{name}";
+            config.heroId = heroId;
+            config.primaryColor = primary;
+            config.glowColor = glow;
+            config.darkColor = dark;
+            config.dissolveEdgeColor = primary * 2f; // HDR edge
+            config.fillLightColor = Color.Lerp(Color.white, primary, 0.3f);
+            config.fillLightIntensity = 0.8f;
+            config.rimLightColor = glow;
+            config.rimLightIntensity = 1.2f;
+            config.ambientColor = dark;
+            config.rimFlicker = heroId == "nyx";
+            config.musicIntensity = 0.6f;
+            config.musicWarmth = heroId == "vex" ? 0.8f : heroId == "nyx" ? 0.2f : 0.5f;
+            config.musicTension = heroId == "orion" ? 0.8f : 0.4f;
+            config.musicSynth = heroId == "nyx" ? 0.8f : 0.3f;
+            config.musicPerc = heroId == "vex" || heroId == "orion" ? 0.7f : 0.3f;
+            config.musicPad = heroId == "seraphina" ? 0.8f : 0.4f;
+            config.musicFilter = heroId == "seraphina" || heroId == "nyx" ? 0.6f : 0.3f;
+            config.scanlineOpacity = heroId == "nyx" ? 0.12f : 0.05f;
+            config.vignetteIntensity = heroId == "orion" ? 0.40f : 0.25f;
+            config.vignetteBorderWidth = 80f;
+            config.veilGlowOpacity = 0.08f;
+            config.dissolveNoiseScale = heroId == "nyx" ? 1.5f : 1f;
+            config.dissolveDuration = 0.4f;
+            config.glitchResolveSpeed = heroId == "nyx" ? 30f : heroId == "vex" ? 60f : 50f;
+            config.chromaticAberrationIntensity = heroId == "nyx" ? 0.15f : 0f;
+            config.monsterAuraColor = primary;
+            return config;
+        }
+
         private IEnumerator InitializeWhenReady()
         {
             ShowSkeletonLoading();
+
+            // Auto-wire Phase 3-4 components before data loading
+            EnsureCharSelectComponents();
+
             float timeout = 10f;
             float elapsed = 0f;
             while (GameDatabase.Instance == null || !GameDatabase.Instance.IsReady)
@@ -207,6 +332,11 @@ namespace VeilBreakers.UI.CharacterSelect
             }
             HideSkeletonLoading();
             CacheUIReferences();
+            if (_root == null)
+            {
+                Debug.LogError("[CharSelectManager] Failed to cache UI references. UIDocument may not be assigned.");
+                yield break;
+            }
             SetAnimationHints();
             InitVisualSystems();
             BindUI();
@@ -675,10 +805,11 @@ namespace VeilBreakers.UI.CharacterSelect
         /// </summary>
         private void SetAnimationHints()
         {
+            if (_root == null) return;
+
             SetHint(_btnBack);
             SetHint(_btnEmbark);
             var embarkHexBg = _root.Q<VisualElement>(kEmbarkHexBg);
-            Debug.Assert(embarkHexBg != null, $"[CharSelectManager] Missing element: {kEmbarkHexBg}");
             SetHint(embarkHexBg);
             SetHint(_embarkGlow);
             SetHint(_btnPrev);
