@@ -27,7 +27,8 @@
       "type": "stdio",
       "command": "node",
       "args": ["Tools/mcp/launch-unity-mcp.js"],
-      "description": "Unity Editor control - screenshots, scenes, GameObjects, builds, console output, prefabs, components"
+      "disabled": true,
+      "description": "Unity Editor control - screenshots, scenes, GameObjects, builds, console output, prefabs, components. DISABLED: com.gamelovers.mcp-unity package not in PackageCache. Re-enable after installing the Unity package."
     },
     "gemini-cli": {
       "type": "stdio",

@@ -72,11 +72,19 @@
         ]
       },
       {
-        "matcher": "mcp__mcp-unity__recompile_scripts",
+        "matcher": "mcp__mcp-unity__recompile_scripts|Bash",
         "hooks": [
           {
             "type": "command",
             "command": "node .claude/hooks/clear-cs-pending.js"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/gsd-context-monitor.js"
           }
         ]
       }
