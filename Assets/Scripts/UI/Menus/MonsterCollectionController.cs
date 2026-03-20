@@ -352,6 +352,8 @@ namespace VeilBreakers.UI.Menus
             // Create some test captured monsters
             var allMonsters = GameDatabase.Instance?.GetAllMonsters() ?? new List<MonsterData>();
 
+            if (allMonsters.Count == 0) return;
+
             // Simulate captured monsters with levels and corruption
             int captureCount = Mathf.Min(12, allMonsters.Count);
             for (int i = 0; i < captureCount; i++)

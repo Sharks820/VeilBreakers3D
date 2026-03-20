@@ -89,15 +89,15 @@ namespace VeilBreakers.UI.CharacterSelect
                 float targetAlpha = theme.vignetteIntensity;
                 float startAlpha = _currentVignetteAlpha;
 
-                seq.Group(Tween.Custom(startAlpha, targetAlpha, duration,
-                    onValueChange: val =>
+                seq.Group(Tween.Custom(this, startAlpha, targetAlpha, duration,
+                    onValueChange: (ctrl, val) =>
                     {
-                        _currentVignetteAlpha = val;
+                        ctrl._currentVignetteAlpha = val;
                         var borderColor = new Color(0f, 0f, 0f, val);
-                        _vignette.style.borderTopColor = borderColor;
-                        _vignette.style.borderBottomColor = borderColor;
-                        _vignette.style.borderLeftColor = borderColor;
-                        _vignette.style.borderRightColor = borderColor;
+                        ctrl._vignette.style.borderTopColor = borderColor;
+                        ctrl._vignette.style.borderBottomColor = borderColor;
+                        ctrl._vignette.style.borderLeftColor = borderColor;
+                        ctrl._vignette.style.borderRightColor = borderColor;
                     }));
             }
 

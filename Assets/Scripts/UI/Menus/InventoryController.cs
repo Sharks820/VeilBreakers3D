@@ -897,13 +897,17 @@ namespace VeilBreakers.UI.Menus
 
         private void UseItem(ItemData item)
         {
-            if (!_playerInventory.ContainsKey(item.item_id)) return;
+            if (!_playerInventory.TryGetValue(item.item_id, out int currentQty)) return;
 
             // Decrease quantity
-            _playerInventory[item.item_id]--;
-            if (_playerInventory[item.item_id] <= 0)
+            currentQty--;
+            if (currentQty <= 0)
             {
                 _playerInventory.Remove(item.item_id);
+            }
+            else
+            {
+                _playerInventory[item.item_id] = currentQty;
             }
 
             OnItemUsed?.Invoke(item);
@@ -922,15 +926,18 @@ namespace VeilBreakers.UI.Menus
 
         private void DropItem(ItemData item, int amount)
         {
-            if (!_playerInventory.ContainsKey(item.item_id)) return;
+            if (!_playerInventory.TryGetValue(item.item_id, out int currentAmount)) return;
 
-            int currentAmount = _playerInventory[item.item_id];
             int toDrop = Mathf.Min(amount, currentAmount);
 
-            _playerInventory[item.item_id] -= toDrop;
-            if (_playerInventory[item.item_id] <= 0)
+            int remaining = currentAmount - toDrop;
+            if (remaining <= 0)
             {
                 _playerInventory.Remove(item.item_id);
+            }
+            else
+            {
+                _playerInventory[item.item_id] = remaining;
             }
 
             OnItemDropped?.Invoke(item, toDrop);
@@ -1073,9 +1080,9 @@ namespace VeilBreakers.UI.Menus
         /// </summary>
         public void AddItem(string itemId, int amount = 1)
         {
-            if (_playerInventory.ContainsKey(itemId))
+            if (_playerInventory.TryGetValue(itemId, out int existing))
             {
-                _playerInventory[itemId] += amount;
+                _playerInventory[itemId] = existing + amount;
             }
             else
             {
@@ -1090,13 +1097,17 @@ namespace VeilBreakers.UI.Menus
         /// </summary>
         public bool RemoveItem(string itemId, int amount = 1)
         {
-            if (!_playerInventory.ContainsKey(itemId)) return false;
-            if (_playerInventory[itemId] < amount) return false;
+            if (!_playerInventory.TryGetValue(itemId, out int currentQty)) return false;
+            if (currentQty < amount) return false;
 
-            _playerInventory[itemId] -= amount;
-            if (_playerInventory[itemId] <= 0)
+            int remaining = currentQty - amount;
+            if (remaining <= 0)
             {
                 _playerInventory.Remove(itemId);
+            }
+            else
+            {
+                _playerInventory[itemId] = remaining;
             }
 
             RefreshItemGrid();
@@ -1108,7 +1119,7 @@ namespace VeilBreakers.UI.Menus
         /// </summary>
         public bool HasItem(string itemId, int amount = 1)
         {
-            return _playerInventory.ContainsKey(itemId) && _playerInventory[itemId] >= amount;
+            return _playerInventory.TryGetValue(itemId, out int currentQty) && currentQty >= amount;
         }
     }
 }

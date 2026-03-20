@@ -86,7 +86,7 @@ namespace VeilBreakers.Core
         // The active party: 1 Hero + up to 3 Monsters (max 4 total)
         public ActiveHero CurrentHero { get; private set; }
         public List<PartyMember> Party { get; private set; } = new List<PartyMember>();
-        public const int MAX_PARTY_SIZE = 3;  // Monsters only (hero is separate)
+        // Use Constants.MAX_PARTY_SIZE instead of duplicating the value here
 
         // Currency and inventory
         public int Currency { get; private set; } = 0;
@@ -248,7 +248,7 @@ namespace VeilBreakers.Core
         /// </summary>
         public bool AddToParty(string monsterId, int level = 1, float corruption = 50f)
         {
-            if (Party.Count >= MAX_PARTY_SIZE)
+            if (Party.Count >= Constants.MAX_PARTY_SIZE)
             {
                 Debug.LogWarning("[GameManager] Party is full!");
                 return false;

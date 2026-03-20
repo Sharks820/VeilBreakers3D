@@ -253,13 +253,21 @@ namespace VeilBreakers.UI.Core
         // TEXT COLORS
         // =============================================================================
 
-        public Color TextPrimary => new Color(235/255f, 225/255f, 215/255f);
-        public Color TextSecondary => new Color(165/255f, 155/255f, 145/255f);
-        public Color TextDisabled => new Color(75/255f, 68/255f, 65/255f);
-        public Color TextHighlight => new Color(255/255f, 245/255f, 220/255f);
-        public Color TextError => new Color(255/255f, 100/255f, 100/255f);
-        public Color TextSuccess => new Color(100/255f, 200/255f, 100/255f);
-        public Color TextWarning => new Color(255/255f, 200/255f, 80/255f);
+        private static readonly Color _textPrimary = new Color(235/255f, 225/255f, 215/255f);
+        private static readonly Color _textSecondary = new Color(165/255f, 155/255f, 145/255f);
+        private static readonly Color _textDisabled = new Color(75/255f, 68/255f, 65/255f);
+        private static readonly Color _textHighlight = new Color(255/255f, 245/255f, 220/255f);
+        private static readonly Color _textError = new Color(255/255f, 100/255f, 100/255f);
+        private static readonly Color _textSuccess = new Color(100/255f, 200/255f, 100/255f);
+        private static readonly Color _textWarning = new Color(255/255f, 200/255f, 80/255f);
+
+        public Color TextPrimary => _textPrimary;
+        public Color TextSecondary => _textSecondary;
+        public Color TextDisabled => _textDisabled;
+        public Color TextHighlight => _textHighlight;
+        public Color TextError => _textError;
+        public Color TextSuccess => _textSuccess;
+        public Color TextWarning => _textWarning;
 
         // =============================================================================
         // UTILITY
