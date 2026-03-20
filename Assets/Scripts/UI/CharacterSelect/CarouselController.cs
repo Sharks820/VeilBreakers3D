@@ -159,8 +159,12 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 var prev = _heroCards[_selectedIndex];
                 prev.RemoveFromClassList("selected");
-                Tween.Scale(prev, new Vector3(0.9f, 0.9f, 1f), 0.3f, Ease.InCubic);
-                Tween.Position(prev, Vector3.zero, 0.3f, Ease.InCubic);
+                Tween.Custom(prev, 1f, 0.9f, 0.3f,
+                    onValueChange: (el, val) => el.style.scale = new Scale(new Vector2(val, val)),
+                    ease: Ease.InCubic);
+                Tween.Custom(prev, prev.style.translate.value.y.value, 0f, 0.3f,
+                    onValueChange: (el, val) => el.style.translate = new Translate(0, val),
+                    ease: Ease.InCubic);
                 Tween.VisualElementOpacity(prev, 0.6f, 0.3f);
             }
 
@@ -170,8 +174,12 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 var card = _heroCards[_selectedIndex];
                 card.AddToClassList("selected");
-                Tween.Scale(card, new Vector3(1.15f, 1.15f, 1f), 0.3f, Ease.OutCubic);
-                Tween.Position(card, new Vector3(0f, -5f, 0f), 0.3f, Ease.OutCubic);
+                Tween.Custom(card, 0.9f, 1.15f, 0.3f,
+                    onValueChange: (el, val) => el.style.scale = new Scale(new Vector2(val, val)),
+                    ease: Ease.OutCubic);
+                Tween.Custom(card, 0f, -5f, 0.3f,
+                    onValueChange: (el, val) => el.style.translate = new Translate(0, val),
+                    ease: Ease.OutCubic);
                 Tween.VisualElementOpacity(card, 1f, 0.3f);
                 ButtonVFXHelper.AddBreathing(card, 0.008f, 3000f);
             }

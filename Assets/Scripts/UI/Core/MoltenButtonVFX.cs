@@ -100,8 +100,8 @@ namespace VeilBreakers.UI.Core
             // Hover lava fill and molten highlight are too noisy without art tuning - keep disabled.
             _enableHoverLavaFill = false;
             _enableMoltenHighlight = false;
-            // Cracks add visual depth on hover - safe to enable without sheet mode.
-            _enableCracks = true;
+            // Cracks disabled - they create orange scratch lines that obscure button text.
+            _enableCracks = false;
 
             if (_uiDocument == null)
             {
