@@ -929,6 +929,12 @@ TemplateContainer {
     bottom: 0;
     background-color: rgba(12, 10, 18, 0.7);
     z-index: 150;
+    pointer-events: all;
+}
+
+/* When hidden, ensure it doesn't block input (display:none handles this,
+   but pointer-events:none is belt-and-suspenders for the .hidden class) */
+.skeleton-overlay.hidden {
     pointer-events: none;
 }
 

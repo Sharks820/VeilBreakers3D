@@ -167,7 +167,7 @@ namespace VeilBreakers.UI.CharacterSelect
                 Tween.Custom(1.15f, 0.9f, 0.3f,
                     val => p.style.scale = new Scale(new Vector2(val, val)),
                     Ease.InCubic);
-                Tween.Custom(0f, 0f, 0.3f,
+                Tween.Custom(-5f, 0f, 0.3f,
                     val => p.style.translate = new Translate(0, val),
                     Ease.InCubic);
                 Tween.VisualElementOpacity(prev, 0.6f, 0.3f);
