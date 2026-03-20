@@ -229,15 +229,15 @@ namespace VeilBreakers.Core
             return instance;
         }
 
-        private UI.Core.FPSCounter EnsureFPSCounter(string objectName)
+        private UI.Menus.FPSCounter EnsureFPSCounter(string objectName)
         {
-            if (UI.Core.FPSCounter.Instance == null)
+            if (UI.Menus.FPSCounter.Instance == null)
             {
                 var fpsObject = new GameObject(objectName);
-                fpsObject.AddComponent<UI.Core.FPSCounter>();
+                fpsObject.AddComponent<UI.Menus.FPSCounter>();
                 Log("  - Created FPSCounter");
             }
-            return UI.Core.FPSCounter.Instance;
+            return UI.Menus.FPSCounter.Instance;
         }
 
         // =============================================================================
