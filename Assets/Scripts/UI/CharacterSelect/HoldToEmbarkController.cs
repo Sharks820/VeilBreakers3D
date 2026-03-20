@@ -90,10 +90,11 @@ namespace VeilBreakers.UI.CharacterSelect
                 _btnEmbark.UnregisterCallback<PointerLeaveEvent>(OnPointerLeave);
             }
 
-            // Cleanup audio
+            // Cleanup generated audio clips (owned by this component)
             if (_holdDroneClip != null) { Destroy(_holdDroneClip); _holdDroneClip = null; }
             if (_embarkCompleteClip != null) { Destroy(_embarkCompleteClip); _embarkCompleteClip = null; }
-            if (_sfxSource != null) { Destroy(_sfxSource); _sfxSource = null; }
+            // Don't destroy shared AudioSource - other components may reference it
+            _sfxSource = null;
 
             // Reset state
             _isInitialized = false;

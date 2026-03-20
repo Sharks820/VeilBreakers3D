@@ -121,10 +121,11 @@ namespace VeilBreakers.UI.CharacterSelect
                 _root.UnregisterCallback<NavigationMoveEvent>(OnNavigationMove);
             }
 
-            // Cleanup audio
+            // Cleanup generated audio clips (owned by this component)
             if (_navTickClip != null) { Destroy(_navTickClip); _navTickClip = null; }
             if (_heroSwitchClip != null) { Destroy(_heroSwitchClip); _heroSwitchClip = null; }
-            if (_sfxSource != null) { Destroy(_sfxSource); _sfxSource = null; }
+            // Don't destroy shared AudioSource - other components may reference it
+            _sfxSource = null;
 
             _isInitialized = false;
             _currentFocusTarget = null;

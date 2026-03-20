@@ -647,6 +647,9 @@ namespace VeilBreakers.Managers
 
         private void UpdateAllEffects(float deltaTime)
         {
+            // Early-out when no effects are active (avoids enumerator allocation)
+            if (_effectsByTarget.Count == 0) return;
+
             // Use reusable list to avoid allocation and handle collection modification
             _tempRemoveList.Clear();
             _tempTargetList.Clear();

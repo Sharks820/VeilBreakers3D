@@ -146,9 +146,8 @@ namespace VeilBreakers.UI.Menus
             {
                 AdvanceDialogue();
             }
-
-            // Skip typewriter effect
-            if (_isDisplayingText && (InputManager.Instance.GetMouseButtonDown(0) || InputManager.Instance.GetActionDown(InputManager.GameAction.DialogueAdvance)))
+            // Skip typewriter effect (else prevents same-frame double-fire after CompleteCurrentLine sets _isWaitingForInput)
+            else if (_isDisplayingText && (InputManager.Instance.GetMouseButtonDown(0) || InputManager.Instance.GetActionDown(InputManager.GameAction.DialogueAdvance)))
             {
                 CompleteCurrentLine();
             }

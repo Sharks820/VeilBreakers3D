@@ -194,6 +194,7 @@ namespace VeilBreakers.UI.CharacterSelect
             return Tween.Custom(this, 1f, 0f, duration,
                 onValueChange: (ctrl, val) =>
                 {
+                    if (ctrl._fullScreenQuadRenderer == null) return;
                     ctrl._mpb.SetFloat(kBackgroundAlpha, val);
                     ctrl._mpb.SetFloat(kShatterProgress, val);
                     ctrl._mpb.SetFloat(kCrackProgress, val);

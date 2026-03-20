@@ -369,7 +369,7 @@ namespace VeilBreakers.UI.Menus
             // Phase 1: Buttons scatter outward (0.25s)
             if (_buttonContainer != null)
             {
-                var buttons = _buttonContainer.Query<Button>().ToList();
+                var buttons = _cachedButtons; // Use cached list (no allocation)
                 for (int i = 0; i < buttons.Count; i++)
                 {
                     var btn = buttons[i];

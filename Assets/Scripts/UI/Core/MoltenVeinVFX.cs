@@ -151,7 +151,8 @@ namespace VeilBreakers.UI.Core
                 vein.pickingMode = PickingMode.Ignore;
 
                 // Position across screen
-                float xPos = startXPos + (totalWidth / (_veinCount - 1)) * i - _veinWidth / 2f;
+                float spacing = _veinCount > 1 ? totalWidth / (_veinCount - 1) : 0f;
+                float xPos = startXPos + spacing * i - _veinWidth / 2f;
                 float yPos = _screenHeight * _originY;
 
                 vein.style.left = xPos;
