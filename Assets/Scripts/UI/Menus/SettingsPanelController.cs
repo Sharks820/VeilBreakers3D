@@ -347,8 +347,13 @@ namespace VeilBreakers.UI.Menus
             }
         }
 
+        private bool _eventsBound;
+
         private void BindEvents()
         {
+            if (_eventsBound) return;
+            _eventsBound = true;
+
             _btnClose?.RegisterCallback<ClickEvent>(OnCloseClicked);
             _btnReset?.RegisterCallback<ClickEvent>(OnResetClicked);
             _btnApply?.RegisterCallback<ClickEvent>(OnApplyClicked);
@@ -384,6 +389,9 @@ namespace VeilBreakers.UI.Menus
 
         private void UnbindEvents()
         {
+            if (!_eventsBound) return;
+            _eventsBound = false;
+
             _btnClose?.UnregisterCallback<ClickEvent>(OnCloseClicked);
             _btnReset?.UnregisterCallback<ClickEvent>(OnResetClicked);
             _btnApply?.UnregisterCallback<ClickEvent>(OnApplyClicked);

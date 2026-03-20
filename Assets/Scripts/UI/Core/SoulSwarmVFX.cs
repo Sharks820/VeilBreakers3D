@@ -102,6 +102,13 @@ namespace VeilBreakers.UI.Core
         private void OnDisable()
         {
             StopVFX();
+
+            // Unregister mouse callbacks to prevent leak if MonoBehaviour is destroyed while UIDocument persists
+            if (_uiDocument != null && _uiDocument.rootVisualElement != null)
+            {
+                _uiDocument.rootVisualElement.UnregisterCallback<MouseMoveEvent>(OnMouseMove);
+                _uiDocument.rootVisualElement.UnregisterCallback<MouseLeaveEvent>(OnMouseLeave);
+            }
         }
 
         // =============================================================================

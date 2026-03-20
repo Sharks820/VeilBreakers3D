@@ -308,29 +308,40 @@ namespace VeilBreakers.UI.Menus
             }
         }
 
+        private static readonly int kBaseColor = Shader.PropertyToID("_BaseColor");
+        private static readonly int kColor = Shader.PropertyToID("_Color");
+        private MaterialPropertyBlock _mpb;
+
         private void SetRenderersAlpha(GameObject obj, float alpha)
         {
             if (obj == null) return;
 
+            _mpb ??= new MaterialPropertyBlock();
+
             var renderers = obj.GetComponentsInChildren<Renderer>();
             foreach (var renderer in renderers)
             {
-                foreach (var mat in renderer.materials)
+                renderer.GetPropertyBlock(_mpb);
+
+                // Use MaterialPropertyBlock to avoid material copies (renderer.materials leaks)
+                foreach (var mat in renderer.sharedMaterials)
                 {
-                    if (mat.HasProperty("_Color"))
+                    if (mat == null) continue;
+                    if (mat.HasProperty(kColor))
                     {
                         Color c = mat.color;
                         c.a = alpha;
-                        mat.color = c;
+                        _mpb.SetColor(kColor, c);
                     }
-                    else if (mat.HasProperty("_BaseColor"))
+                    else if (mat.HasProperty(kBaseColor))
                     {
-                        // URP shader property
-                        Color c = mat.GetColor("_BaseColor");
+                        Color c = mat.GetColor(kBaseColor);
                         c.a = alpha;
-                        mat.SetColor("_BaseColor", c);
+                        _mpb.SetColor(kBaseColor, c);
                     }
                 }
+
+                renderer.SetPropertyBlock(_mpb);
             }
         }
     }

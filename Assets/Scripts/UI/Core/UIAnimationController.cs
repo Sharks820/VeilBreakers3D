@@ -29,10 +29,15 @@ namespace VeilBreakers.UI.Core
         // =============================================================================
 
         private static UIAnimationController _instance;
+        private static bool _isQuitting;
+
+        public static bool HasInstance => _instance != null;
+
         public static UIAnimationController Instance
         {
             get
             {
+                if (_isQuitting) return null;
                 if (_instance == null)
                 {
                     var go = new GameObject("UIAnimationController");
@@ -41,6 +46,13 @@ namespace VeilBreakers.UI.Core
                 }
                 return _instance;
             }
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            _instance = null;
+            _isQuitting = false;
         }
 
         private void Awake()
@@ -54,6 +66,11 @@ namespace VeilBreakers.UI.Core
 
             // Setup default easing curves
             SetupDefaultCurves();
+        }
+
+        private void OnApplicationQuit()
+        {
+            _isQuitting = true;
         }
 
         private void SetupDefaultCurves()
