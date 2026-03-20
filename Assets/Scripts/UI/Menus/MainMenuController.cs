@@ -625,7 +625,22 @@ namespace VeilBreakers.UI.Menus
         {
             if (_sfxSource != null && _embarkTransitionClip != null)
             {
-                _sfxSource.PlayOneShot(_embarkTransitionClip, 1f);
+                // Play click first, then fade in the demon laugh after a beat
+                if (_clickClip != null)
+                {
+                    _sfxSource.PlayOneShot(_clickClip, 0.8f);
+                }
+                // Delay the transition sound slightly so click plays clean first
+                StartCoroutine(PlayDelayedTransitionSound(0.15f));
+            }
+        }
+
+        private IEnumerator PlayDelayedTransitionSound(float delay)
+        {
+            yield return new WaitForSecondsRealtime(delay);
+            if (_sfxSource != null && _embarkTransitionClip != null)
+            {
+                _sfxSource.PlayOneShot(_embarkTransitionClip, 0.9f);
             }
         }
 
