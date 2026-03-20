@@ -71,6 +71,12 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             _cinematicSequence.Stop();
             CleanupCinematicLabel();
+            // Clean up any orphaned flash elements created by BuildAccentFlash
+            if (_root != null)
+            {
+                var flash = _root.Q<VisualElement>("embark-accent-flash");
+                flash?.RemoveFromHierarchy();
+            }
         }
 
         // =============================================================================

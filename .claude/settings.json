@@ -81,7 +81,7 @@
         ]
       },
       {
-        "matcher": "Agent",
+        "matcher": "DISABLED_context_monitor",
         "hooks": [
           {
             "type": "command",

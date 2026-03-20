@@ -91,8 +91,9 @@ namespace VeilBreakers.UI.CharacterSelect
             CharSelectEvents.OnScreenReady += HandleScreenReady;
             CharSelectEvents.OnHeroChanged += HandleHeroChanged;
 
-            // Create a local AudioSource for SFX playback
-            _sfxSource = gameObject.AddComponent<AudioSource>();
+            // Get or create AudioSource (guard against re-enable adding duplicates)
+            _sfxSource = GetComponent<AudioSource>();
+            if (_sfxSource == null) _sfxSource = gameObject.AddComponent<AudioSource>();
             _sfxSource.playOnAwake = false;
             _sfxSource.spatialBlend = 0f; // 2D sound
 

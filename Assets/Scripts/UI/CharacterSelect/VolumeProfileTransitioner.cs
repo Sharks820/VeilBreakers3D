@@ -62,7 +62,11 @@ namespace VeilBreakers.UI.CharacterSelect
             }
 
             // CRITICAL: Instantiate volume profile at runtime to prevent Editor asset mutation.
-            // Volume.sharedProfile returns the asset reference; modifying it would persist changes.
+            if (_volume.sharedProfile == null)
+            {
+                Debug.LogError("[VolumeProfileTransitioner] Volume has no sharedProfile assigned.");
+                return;
+            }
             _volume.profile = Instantiate(_volume.sharedProfile);
 
             var profile = _volume.profile;

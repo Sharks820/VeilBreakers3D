@@ -319,6 +319,12 @@ namespace VeilBreakers.Managers
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             _currentSceneName = scene.name;
+
+            // Clear static EventBus subscribers on scene load to prevent leaked delegates
+            // from destroyed objects causing MissingReferenceExceptions.
+            // Persistent singletons re-subscribe in their OnEnable.
+            EventBus.ClearAllListeners();
+
             Debug.Log($"[VBSceneManager] Scene loaded: {scene.name}");
         }
 

@@ -79,16 +79,19 @@ namespace VeilBreakers.Managers
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            // Only dispose if no save/load operations are in flight to avoid ObjectDisposedException
-            if (!_isSaving && !_isLoading)
-                _saveMutex?.Dispose();
+            // SemaphoreSlim is GC-safe - don't Dispose while operations might be in flight.
+            // Disposing during an active save/load race causes ObjectDisposedException.
         }
 
         private void OnApplicationPause(bool pauseStatus)
         {
             if (pauseStatus && HasActiveSave)
             {
-                // Synchronous path for mobile pause - async may not complete before OS kills app
+                // Guard: skip auto-save if a save is already in progress to prevent deadlock.
+                // GetAwaiter().GetResult() on an async method that acquires _saveMutex will
+                // deadlock the main thread if the mutex is already held.
+                if (_isSaving || _isLoading) return;
+
                 try
                 {
                     AutoSaveAsync("app_pause").GetAwaiter().GetResult();
