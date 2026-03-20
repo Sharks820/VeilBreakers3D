@@ -19,6 +19,29 @@ namespace VeilBreakers.UI.Menus
     public class MainMenuBootstrap : MonoBehaviour
     {
         // =============================================================================
+        // CACHED TRANSITION LISTS
+        // =============================================================================
+
+        private static readonly List<StylePropertyName> kDimProperties = new()
+        {
+            new StylePropertyName("opacity"),
+            new StylePropertyName("scale")
+        };
+        private static readonly List<TimeValue> kDimDurations = new()
+        {
+            new TimeValue(0.3f, TimeUnit.Second),
+            new TimeValue(0.3f, TimeUnit.Second)
+        };
+        private static readonly List<StylePropertyName> kDimBgProperties = new()
+        {
+            new StylePropertyName("background-color")
+        };
+        private static readonly List<TimeValue> kDimBgDurations = new()
+        {
+            new TimeValue(0.3f, TimeUnit.Second)
+        };
+
+        // =============================================================================
         // CONFIGURATION
         // =============================================================================
 
@@ -488,21 +511,13 @@ namespace VeilBreakers.UI.Menus
             var mainContainer = _root?.Q<VisualElement>("main-container");
             var rootBg = _root?.Q<VisualElement>("root-background");
 
-            const float kDimDuration = 0.3f;
-
             if (dim)
             {
                 // Reduce opacity and slightly scale background for defocus illusion
                 if (mainContainer != null)
                 {
-                    mainContainer.style.transitionProperty = new List<StylePropertyName>
-                    {
-                        new("opacity"), new("scale")
-                    };
-                    mainContainer.style.transitionDuration = new List<TimeValue>
-                    {
-                        new(kDimDuration, TimeUnit.Second), new(kDimDuration, TimeUnit.Second)
-                    };
+                    mainContainer.style.transitionProperty = kDimProperties;
+                    mainContainer.style.transitionDuration = kDimDurations;
                     mainContainer.style.opacity = 0.3f;
                     mainContainer.style.scale = new Scale(new Vector2(1.02f, 1.02f));
                 }
@@ -510,14 +525,8 @@ namespace VeilBreakers.UI.Menus
                 // Darken root backdrop
                 if (rootBg != null)
                 {
-                    rootBg.style.transitionProperty = new List<StylePropertyName>
-                    {
-                        new("background-color")
-                    };
-                    rootBg.style.transitionDuration = new List<TimeValue>
-                    {
-                        new(kDimDuration, TimeUnit.Second)
-                    };
+                    rootBg.style.transitionProperty = kDimBgProperties;
+                    rootBg.style.transitionDuration = kDimBgDurations;
                     rootBg.style.backgroundColor = new Color(0.02f, 0.01f, 0.03f, 0.7f);
                 }
             }

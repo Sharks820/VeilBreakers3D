@@ -295,7 +295,7 @@ namespace VeilBreakers.Core
         /// </summary>
         public static void ClearAllListeners()
         {
-            Debug.LogWarning("[EventBus] Clearing all listeners");
+            Debug.Log("[EventBus] Clearing all listeners (domain reload)");
             OnGameStarted = null;
             OnGamePaused = null;
             OnGameResumed = null;

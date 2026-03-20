@@ -20,6 +20,59 @@ namespace VeilBreakers.UI.Menus
     public class MainMenuController : MonoBehaviour
     {
         // =============================================================================
+        // CACHED TRANSITION LISTS
+        // =============================================================================
+
+        private static readonly List<StylePropertyName> kScatterProperties = new()
+        {
+            new StylePropertyName("opacity"),
+            new StylePropertyName("translate")
+        };
+        private static readonly List<TimeValue> kScatterDurations = new()
+        {
+            new TimeValue(0.25f, TimeUnit.Second),
+            new TimeValue(0.25f, TimeUnit.Second)
+        };
+        private static readonly List<EasingFunction> kScatterEasing = new()
+        {
+            new EasingFunction(EasingMode.EaseIn),
+            new EasingFunction(EasingMode.EaseIn)
+        };
+
+        private static readonly List<StylePropertyName> kTitleExitProperties = new()
+        {
+            new StylePropertyName("opacity"),
+            new StylePropertyName("scale")
+        };
+        private static readonly List<TimeValue> kTitleExitDurations = new()
+        {
+            new TimeValue(0.3f, TimeUnit.Second),
+            new TimeValue(0.3f, TimeUnit.Second)
+        };
+
+        private static readonly List<StylePropertyName> kFlashProperties = new()
+        {
+            new StylePropertyName("background-color")
+        };
+        private static readonly List<TimeValue> kFlashInDurations = new()
+        {
+            new TimeValue(0.15f, TimeUnit.Second)
+        };
+        private static readonly List<TimeValue> kFlashOutDurations = new()
+        {
+            new TimeValue(0.4f, TimeUnit.Second)
+        };
+
+        private static readonly List<StylePropertyName> kRootFadeProperties = new()
+        {
+            new StylePropertyName("opacity")
+        };
+        private static readonly List<TimeValue> kRootFadeDurations = new()
+        {
+            new TimeValue(0.35f, TimeUnit.Second)
+        };
+
+        // =============================================================================
         // CONFIGURATION
         // =============================================================================
 
@@ -373,18 +426,9 @@ namespace VeilBreakers.UI.Menus
                 for (int i = 0; i < buttons.Count; i++)
                 {
                     var btn = buttons[i];
-                    btn.style.transitionProperty = new List<StylePropertyName>
-                    {
-                        new("opacity"), new("translate")
-                    };
-                    btn.style.transitionDuration = new List<TimeValue>
-                    {
-                        new(0.25f, TimeUnit.Second), new(0.25f, TimeUnit.Second)
-                    };
-                    btn.style.transitionTimingFunction = new List<EasingFunction>
-                    {
-                        new(EasingMode.EaseIn), new(EasingMode.EaseIn)
-                    };
+                    btn.style.transitionProperty = kScatterProperties;
+                    btn.style.transitionDuration = kScatterDurations;
+                    btn.style.transitionTimingFunction = kScatterEasing;
                     // Alternate buttons slide left/right
                     float slideX = (i % 2 == 0) ? -80f : 80f;
                     btn.style.translate = new Translate(slideX, 0);
@@ -395,14 +439,8 @@ namespace VeilBreakers.UI.Menus
             // Phase 1b: Title scales up and fades
             if (_titleSection != null)
             {
-                _titleSection.style.transitionProperty = new List<StylePropertyName>
-                {
-                    new("opacity"), new("scale")
-                };
-                _titleSection.style.transitionDuration = new List<TimeValue>
-                {
-                    new(0.3f, TimeUnit.Second), new(0.3f, TimeUnit.Second)
-                };
+                _titleSection.style.transitionProperty = kTitleExitProperties;
+                _titleSection.style.transitionDuration = kTitleExitDurations;
                 _titleSection.style.opacity = 0f;
                 _titleSection.style.scale = new Scale(new Vector2(1.1f, 1.1f));
             }
@@ -422,8 +460,8 @@ namespace VeilBreakers.UI.Menus
             _root.Add(flash);
 
             // Flash in
-            flash.style.transitionProperty = new List<StylePropertyName> { new("background-color") };
-            flash.style.transitionDuration = new List<TimeValue> { new(0.15f, TimeUnit.Second) };
+            flash.style.transitionProperty = kFlashProperties;
+            flash.style.transitionDuration = kFlashInDurations;
             flash.schedule.Execute(() =>
             {
                 flash.style.backgroundColor = new Color(1f, 0.9f, 0.7f, 0.6f);
@@ -432,7 +470,7 @@ namespace VeilBreakers.UI.Menus
             yield return new WaitForSecondsRealtime(0.15f);
 
             // Phase 3: Flash fades to black (0.4s)
-            flash.style.transitionDuration = new List<TimeValue> { new(0.4f, TimeUnit.Second) };
+            flash.style.transitionDuration = kFlashOutDurations;
             flash.style.backgroundColor = new Color(0f, 0f, 0f, 1f);
 
             // Also fade entire root content behind the flash

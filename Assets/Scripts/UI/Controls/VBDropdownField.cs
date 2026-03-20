@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -22,11 +21,16 @@ namespace VeilBreakers.UI.Controls
             {
                 if (!string.IsNullOrWhiteSpace(value))
                 {
-                    var parsed = value
-                        .Split(',')
-                        .Select(choice => choice.Trim())
-                        .Where(choice => !string.IsNullOrWhiteSpace(choice))
-                        .ToList();
+                    var parts = value.Split(',');
+                    var parsed = new List<string>(parts.Length);
+                    for (int i = 0; i < parts.Length; i++)
+                    {
+                        var trimmed = parts[i].Trim();
+                        if (!string.IsNullOrWhiteSpace(trimmed))
+                        {
+                            parsed.Add(trimmed);
+                        }
+                    }
                     SetChoices(parsed);
                 }
             }

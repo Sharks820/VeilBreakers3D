@@ -20,6 +20,58 @@ namespace VeilBreakers.UI.Controls
         private const string kClickClass = "button--clicked";
         private const string kPressedClass = "button--pressed";
 
+        // Cached transition lists to avoid per-call allocation
+        private static readonly List<StylePropertyName> kShimmerProperties = new()
+        {
+            new StylePropertyName("left"),
+            new StylePropertyName("opacity")
+        };
+        private static readonly List<TimeValue> kShimmerDurations = new()
+        {
+            new TimeValue(0.6f, TimeUnit.Second),
+            new TimeValue(0.15f, TimeUnit.Second)
+        };
+        private static readonly List<EasingFunction> kShimmerEasing = new()
+        {
+            new EasingFunction(EasingMode.EaseInOut),
+            new EasingFunction(EasingMode.EaseOut)
+        };
+
+        private static readonly List<StylePropertyName> kBurstProperties = new()
+        {
+            new StylePropertyName("translate"),
+            new StylePropertyName("opacity"),
+            new StylePropertyName("scale")
+        };
+        private static readonly List<TimeValue> kBurstDurations = new()
+        {
+            new TimeValue(0.4f, TimeUnit.Second),
+            new TimeValue(0.35f, TimeUnit.Second),
+            new TimeValue(0.4f, TimeUnit.Second)
+        };
+        private static readonly List<EasingFunction> kBurstEasing = new()
+        {
+            new EasingFunction(EasingMode.EaseOut),
+            new EasingFunction(EasingMode.EaseIn),
+            new EasingFunction(EasingMode.EaseOut)
+        };
+
+        private static readonly List<StylePropertyName> kChargeProperties = new()
+        {
+            new StylePropertyName("width"),
+            new StylePropertyName("opacity")
+        };
+        private static readonly List<TimeValue> kChargeDurations = new()
+        {
+            new TimeValue(0.8f, TimeUnit.Second),
+            new TimeValue(0.15f, TimeUnit.Second)
+        };
+        private static readonly List<EasingFunction> kChargeEasing = new()
+        {
+            new EasingFunction(EasingMode.EaseOut),
+            new EasingFunction(EasingMode.EaseOut)
+        };
+
         // =============================================================================
         // SETUP
         // =============================================================================
@@ -211,21 +263,9 @@ namespace VeilBreakers.UI.Controls
             shimmer.style.scale = new Scale(new Vector2(1f, 1.5f));
             shimmer.pickingMode = PickingMode.Ignore;
 
-            shimmer.style.transitionProperty = new List<StylePropertyName>
-            {
-                new StylePropertyName("left"),
-                new StylePropertyName("opacity")
-            };
-            shimmer.style.transitionDuration = new List<TimeValue>
-            {
-                new TimeValue(0.6f, TimeUnit.Second),
-                new TimeValue(0.15f, TimeUnit.Second)
-            };
-            shimmer.style.transitionTimingFunction = new List<EasingFunction>
-            {
-                new EasingFunction(EasingMode.EaseInOut),
-                new EasingFunction(EasingMode.EaseOut)
-            };
+            shimmer.style.transitionProperty = kShimmerProperties;
+            shimmer.style.transitionDuration = kShimmerDurations;
+            shimmer.style.transitionTimingFunction = kShimmerEasing;
 
             button.Insert(0, shimmer);
 
@@ -341,24 +381,9 @@ namespace VeilBreakers.UI.Controls
                 particle.pickingMode = PickingMode.Ignore;
 
                 // CSS transitions for outward movement + fade
-                particle.style.transitionProperty = new List<StylePropertyName>
-                {
-                    new StylePropertyName("translate"),
-                    new StylePropertyName("opacity"),
-                    new StylePropertyName("scale")
-                };
-                particle.style.transitionDuration = new List<TimeValue>
-                {
-                    new TimeValue(0.4f, TimeUnit.Second),
-                    new TimeValue(0.35f, TimeUnit.Second),
-                    new TimeValue(0.4f, TimeUnit.Second)
-                };
-                particle.style.transitionTimingFunction = new List<EasingFunction>
-                {
-                    new EasingFunction(EasingMode.EaseOut),
-                    new EasingFunction(EasingMode.EaseIn),
-                    new EasingFunction(EasingMode.EaseOut)
-                };
+                particle.style.transitionProperty = kBurstProperties;
+                particle.style.transitionDuration = kBurstDurations;
+                particle.style.transitionTimingFunction = kBurstEasing;
 
                 host.Add(particle);
 
@@ -424,21 +449,9 @@ namespace VeilBreakers.UI.Controls
             chargeLine.style.opacity = 0;
             chargeLine.pickingMode = PickingMode.Ignore;
 
-            chargeLine.style.transitionProperty = new List<StylePropertyName>
-            {
-                new StylePropertyName("width"),
-                new StylePropertyName("opacity")
-            };
-            chargeLine.style.transitionDuration = new List<TimeValue>
-            {
-                new TimeValue(0.8f, TimeUnit.Second),
-                new TimeValue(0.15f, TimeUnit.Second)
-            };
-            chargeLine.style.transitionTimingFunction = new List<EasingFunction>
-            {
-                new EasingFunction(EasingMode.EaseOut),
-                new EasingFunction(EasingMode.EaseOut)
-            };
+            chargeLine.style.transitionProperty = kChargeProperties;
+            chargeLine.style.transitionDuration = kChargeDurations;
+            chargeLine.style.transitionTimingFunction = kChargeEasing;
 
             button.Add(chargeLine);
 

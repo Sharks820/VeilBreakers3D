@@ -17,7 +17,28 @@ namespace VeilBreakers.Systems
         // =============================================================================
 
         private static VERASystem _instance;
-        public static VERASystem Instance => _instance;
+        private static bool _isQuitting;
+
+        public static VERASystem Instance
+        {
+            get
+            {
+                if (_isQuitting) return null;
+                return _instance;
+            }
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            _instance = null;
+            _isQuitting = false;
+        }
+
+        private void OnApplicationQuit()
+        {
+            _isQuitting = true;
+        }
 
         // =============================================================================
         // CONFIGURATION
@@ -82,10 +103,15 @@ namespace VeilBreakers.Systems
             DontDestroyOnLoad(gameObject);
         }
 
-        private void Start()
+        private void OnEnable()
         {
             SubscribeToEvents();
             UpdatePersonality();
+        }
+
+        private void OnDisable()
+        {
+            UnsubscribeFromEvents();
         }
 
         private void Update()
@@ -96,7 +122,6 @@ namespace VeilBreakers.Systems
 
         private void OnDestroy()
         {
-            UnsubscribeFromEvents();
             if (_instance == this)
                 _instance = null;
         }
