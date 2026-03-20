@@ -247,9 +247,8 @@ namespace VeilBreakers.Core
         public static void ClearConsole()
         {
             var assembly = System.Reflection.Assembly.GetAssembly(typeof(UnityEditor.Editor));
-            var type = assembly.GetType("UnityEditor.LogEntries");
-            var method = type.GetMethod("Clear");
-            method?.Invoke(null, null);
+            var type = assembly?.GetType("UnityEditor.LogEntries");
+            type?.GetMethod("Clear")?.Invoke(null, null);
         }
         #endif
     }

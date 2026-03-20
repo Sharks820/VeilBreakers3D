@@ -474,8 +474,8 @@ namespace VeilBreakers.UI.Menus
             flash.style.backgroundColor = new Color(0f, 0f, 0f, 1f);
 
             // Also fade entire root content behind the flash
-            _root.style.transitionProperty = new List<StylePropertyName> { new("opacity") };
-            _root.style.transitionDuration = new List<TimeValue> { new(0.35f, TimeUnit.Second) };
+            _root.style.transitionProperty = kRootFadeProperties;
+            _root.style.transitionDuration = kRootFadeDurations;
 
             yield return new WaitForSecondsRealtime(0.45f);
 

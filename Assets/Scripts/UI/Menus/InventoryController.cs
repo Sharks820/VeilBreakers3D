@@ -431,7 +431,7 @@ namespace VeilBreakers.UI.Menus
                 {
                     var item = _allItems[i];
 
-                    if (!_playerInventory.ContainsKey(item.item_id) || _playerInventory[item.item_id] <= 0)
+                    if (!_playerInventory.TryGetValue(item.item_id, out int qty) || qty <= 0)
                         continue;
 
                     if (!_showAllCategories && item.GetCategory() != _currentCategory)
@@ -972,6 +972,7 @@ namespace VeilBreakers.UI.Menus
             // Assuming ~8 items per row (72px slots + margins in ~600px width)
             int itemsPerRow = 8;
             if (_filteredItems.Count == 0) return;
+            if (_selectedIndex < 0) return;
 
             int newIndex = _selectedIndex - itemsPerRow;
             if (newIndex < 0) newIndex = _filteredItems.Count + newIndex;
@@ -985,6 +986,7 @@ namespace VeilBreakers.UI.Menus
         {
             int itemsPerRow = 8;
             if (_filteredItems.Count == 0) return;
+            if (_selectedIndex < 0) return;
 
             int newIndex = (_selectedIndex + itemsPerRow) % _filteredItems.Count;
             OnItemSlotClicked(newIndex);
