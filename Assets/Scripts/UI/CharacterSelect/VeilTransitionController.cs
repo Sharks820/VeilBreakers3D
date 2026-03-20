@@ -16,6 +16,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         [SerializeField] private Material _veilCrackMaterial;
         [SerializeField] private ParticleSystem _shatterParticles;
+        [SerializeField] private Camera _targetCamera;
 
         // =============================================================================
         // SHADER PROPERTY IDS
@@ -77,7 +78,7 @@ namespace VeilBreakers.UI.CharacterSelect
             if (col != null) Destroy(col);
 
             // Position in front of camera
-            var cam = Camera.main;
+            var cam = _targetCamera != null ? _targetCamera : Camera.main;
             if (cam != null)
             {
                 float distance = cam.nearClipPlane + 0.1f;

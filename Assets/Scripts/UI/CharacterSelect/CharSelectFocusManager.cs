@@ -242,7 +242,7 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 if (dirIndex == 2)
                 {
-                    CharSelectEvents.RaiseNavigationRequested(_currentHeroIndex - 1);
+                    CharSelectEvents.RaiseNavigationRequested(Mathf.Max(0, _currentHeroIndex - 1));
                 }
                 else
                 {
