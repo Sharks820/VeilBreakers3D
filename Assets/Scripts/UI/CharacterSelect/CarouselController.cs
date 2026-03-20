@@ -163,7 +163,7 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 var prev = _heroCards[_selectedIndex];
                 prev.RemoveFromClassList("selected");
-                float prevScale = prev.resolvedStyle.scale.x > 0 ? prev.resolvedStyle.scale.x : 1f;
+                float prevScale = prev.resolvedStyle.scale.value.x > 0 ? prev.resolvedStyle.scale.value.x : 1f;
                 Tween.Custom(prev, prevScale, 0.9f, 0.3f,
                     onValueChange: (el, val) => el.style.scale = new Scale(new Vector2(val, val)),
                     ease: Ease.InCubic);
@@ -180,7 +180,7 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 var card = _heroCards[_selectedIndex];
                 card.AddToClassList("selected");
-                float cardScale = card.resolvedStyle.scale.x > 0 ? card.resolvedStyle.scale.x : 0.9f;
+                float cardScale = card.resolvedStyle.scale.value.x > 0 ? card.resolvedStyle.scale.value.x : 0.9f;
                 Tween.Custom(card, cardScale, 1.15f, 0.3f,
                     onValueChange: (el, val) => el.style.scale = new Scale(new Vector2(val, val)),
                     ease: Ease.OutCubic);
