@@ -57,6 +57,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             _carouselStrip.Clear();
             _heroCards.Clear();
+            _selectedIndex = -1; // Reset so next UpdateSelection re-applies highlight
 
             // Fetch and sort once, not per card
             if (!GameDatabase.HasInstance) return;
@@ -162,10 +163,12 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 var prev = _heroCards[_selectedIndex];
                 prev.RemoveFromClassList("selected");
-                Tween.Custom(prev, 1f, 0.9f, 0.3f,
+                float prevScale = prev.resolvedStyle.scale.x > 0 ? prev.resolvedStyle.scale.x : 1f;
+                Tween.Custom(prev, prevScale, 0.9f, 0.3f,
                     onValueChange: (el, val) => el.style.scale = new Scale(new Vector2(val, val)),
                     ease: Ease.InCubic);
-                Tween.Custom(prev, prev.style.translate.value.y.value, 0f, 0.3f,
+                float prevY = prev.resolvedStyle.translate.y;
+                Tween.Custom(prev, prevY, 0f, 0.3f,
                     onValueChange: (el, val) => el.style.translate = new Translate(0, val),
                     ease: Ease.InCubic);
                 Tween.VisualElementOpacity(prev, 0.6f, 0.3f);
@@ -177,10 +180,12 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 var card = _heroCards[_selectedIndex];
                 card.AddToClassList("selected");
-                Tween.Custom(card, 0.9f, 1.15f, 0.3f,
+                float cardScale = card.resolvedStyle.scale.x > 0 ? card.resolvedStyle.scale.x : 0.9f;
+                Tween.Custom(card, cardScale, 1.15f, 0.3f,
                     onValueChange: (el, val) => el.style.scale = new Scale(new Vector2(val, val)),
                     ease: Ease.OutCubic);
-                Tween.Custom(card, 0f, -5f, 0.3f,
+                float cardY = card.resolvedStyle.translate.y;
+                Tween.Custom(card, cardY, -5f, 0.3f,
                     onValueChange: (el, val) => el.style.translate = new Translate(0, val),
                     ease: Ease.OutCubic);
                 Tween.VisualElementOpacity(card, 1f, 0.3f);
