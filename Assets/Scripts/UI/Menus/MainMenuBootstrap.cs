@@ -381,12 +381,16 @@ namespace VeilBreakers.UI.Menus
         {
             if (_root == null) return;
 
+            // Load dark fantasy sounds from Resources (overrides any Inspector-assigned clips)
+            var hoverClip = Resources.Load<AudioClip>("Audio/SFX/menu_button_hover") ?? _buttonHoverSound;
+            var clickClip = Resources.Load<AudioClip>("Audio/SFX/menu_button_click") ?? _buttonClickSound;
+
             // Add hover/click sounds to all buttons (store delegates for cleanup)
             var allButtons = _root.Query<Button>().ToList();
             foreach (var button in allButtons)
             {
-                EventCallback<MouseEnterEvent> hoverCb = evt => PlaySound(_buttonHoverSound);
-                EventCallback<ClickEvent> clickCb = evt => PlaySound(_buttonClickSound);
+                EventCallback<MouseEnterEvent> hoverCb = evt => PlaySound(hoverClip);
+                EventCallback<ClickEvent> clickCb = evt => PlaySound(clickClip);
                 button.RegisterCallback(hoverCb);
                 button.RegisterCallback(clickCb);
                 _soundCallbacks.Add((button, hoverCb, clickCb));

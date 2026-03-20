@@ -418,7 +418,14 @@ namespace VeilBreakers.UI.Menus
             }
 
             PlayEmbarkTransitionSound();
-            StartCoroutine(TransitionToScene(_characterSelectScene));
+            // Delay transition to let the demon laugh/veil tear sound play (1s of the ~2s sound)
+            StartCoroutine(DelayedTransition(_characterSelectScene, 1.0f));
+        }
+
+        private IEnumerator DelayedTransition(string sceneName, float delay)
+        {
+            yield return new WaitForSecondsRealtime(delay);
+            StartCoroutine(TransitionToScene(sceneName));
         }
 
         private IEnumerator TransitionToScene(string sceneName)

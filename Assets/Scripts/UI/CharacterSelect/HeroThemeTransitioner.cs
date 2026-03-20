@@ -167,6 +167,12 @@ namespace VeilBreakers.UI.CharacterSelect
                     onEntryComplete: () =>
                     {
                         Debug.Log("[HeroThemeTransitioner] Entry animation COMPLETE — applying first theme");
+
+                        // Force-ensure panels are visible after animation (debug: prevents stuck opacity 0)
+                        if (_heroStage != null) { _heroStage.style.opacity = 1f; _heroStage.style.translate = new Translate(0, 0); }
+                        if (_infoPanel != null) { _infoPanel.style.opacity = 1f; _infoPanel.style.translate = new Translate(0, 0); }
+                        if (_carousel != null) { _carousel.style.opacity = 1f; _carousel.style.translate = new Translate(0, 0); }
+
                         // After entrance, transition to first hero's full theme
                         if (firstTheme != null)
                         {
