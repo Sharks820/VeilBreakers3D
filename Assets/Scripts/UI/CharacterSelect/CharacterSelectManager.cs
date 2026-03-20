@@ -305,11 +305,14 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private IEnumerator InitializeWhenReady()
         {
+            Debug.Log("[CharSelect:INIT] Step 1: ShowSkeletonLoading");
             ShowSkeletonLoading();
 
             // Auto-wire Phase 3-4 components before data loading
+            Debug.Log("[CharSelect:INIT] Step 2: EnsureCharSelectComponents");
             EnsureCharSelectComponents();
 
+            Debug.Log("[CharSelect:INIT] Step 3: Waiting for GameDatabase...");
             float timeout = 10f;
             float elapsed = 0f;
             while (GameDatabase.Instance == null || !GameDatabase.Instance.IsReady)
@@ -323,25 +326,31 @@ namespace VeilBreakers.UI.CharacterSelect
                 }
                 yield return null;
             }
+            Debug.Log($"[CharSelect:INIT] Step 4: GameDatabase ready. Loading hero data...");
             LoadHeroData();
             if (_heroList == null || _heroList.Count == 0)
             {
                 HideSkeletonLoading();
+                Debug.LogError("[CharSelect:INIT] FAILED: No heroes found!");
                 CharSelectEvents.RaiseErrorOccurred("No heroes found. Please restart.");
                 yield break;
             }
+            Debug.Log($"[CharSelect:INIT] Step 5: {_heroList.Count} heroes loaded. CacheUIReferences...");
             HideSkeletonLoading();
             CacheUIReferences();
             if (_root == null)
             {
-                Debug.LogError("[CharSelectManager] Failed to cache UI references. UIDocument may not be assigned.");
+                Debug.LogError("[CharSelect:INIT] FAILED: _root is null! UIDocument may not be assigned.");
                 yield break;
             }
+            Debug.Log($"[CharSelect:INIT] Step 6: UI cached. root={_root.name}, btnEmbark={(_btnEmbark != null ? "OK" : "NULL")}, infoPanelContainer={(_infoPanelContainer != null ? "OK" : "NULL")}");
             SetAnimationHints();
+            Debug.Log("[CharSelect:INIT] Step 7: InitVisualSystems...");
             InitVisualSystems();
             BindUI();
             ApplyInitialState();
             _isInitialized = true;
+            Debug.Log("[CharSelect:INIT] Step 8: RaiseScreenReady — initialization COMPLETE");
             CharSelectEvents.RaiseScreenReady();
         }
 

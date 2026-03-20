@@ -140,11 +140,17 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void HandleScreenReady()
         {
-            if (!_isInitialized) return;
+            if (!_isInitialized)
+            {
+                Debug.LogWarning("[HeroThemeTransitioner] HandleScreenReady called but NOT initialized!");
+                return;
+            }
 
             if (!_hasPlayedEntrance)
             {
                 _hasPlayedEntrance = true;
+
+                Debug.Log($"[HeroThemeTransitioner] Playing entrance animation. heroStage={(_heroStage != null ? "OK" : "NULL")}, infoPanel={(_infoPanel != null ? "OK" : "NULL")}, carousel={(_carousel != null ? "OK" : "NULL")}, entryAnimator={(_entryAnimator != null ? "OK" : "NULL")}");
 
                 // Get the first hero's theme for the entrance sequence
                 HeroThemeConfig firstTheme = (_heroThemes != null && _heroThemes.Length > 0)
@@ -160,6 +166,7 @@ namespace VeilBreakers.UI.CharacterSelect
                     firstTheme,
                     onEntryComplete: () =>
                     {
+                        Debug.Log("[HeroThemeTransitioner] Entry animation COMPLETE — applying first theme");
                         // After entrance, transition to first hero's full theme
                         if (firstTheme != null)
                         {
