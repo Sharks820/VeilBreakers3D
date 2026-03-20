@@ -78,8 +78,9 @@ namespace VeilBreakers.UI.CharacterSelect
             // =====================================================================
             if (leftPanel != null)
             {
-                seq.Insert(0.1f, Tween.Custom(leftPanel, -300f, 0f, 0.4f, Ease.OutCubic,
-                    (el, val) => el.style.translate = new Translate(val, 0)));
+                seq.Insert(0.1f, Tween.Custom(leftPanel, -300f, 0f, 0.4f,
+                    onValueChange: (el, val) => el.style.translate = new Translate(val, 0),
+                    ease: Ease.OutCubic));
                 seq.Insert(0.1f, Tween.VisualElementOpacity(leftPanel, 1f, 0.3f, Ease.OutQuad));
             }
 
@@ -88,8 +89,9 @@ namespace VeilBreakers.UI.CharacterSelect
             // =====================================================================
             if (rightPanel != null)
             {
-                seq.Insert(0.2f, Tween.Custom(rightPanel, 300f, 0f, 0.4f, Ease.OutCubic,
-                    (el, val) => el.style.translate = new Translate(val, 0)));
+                seq.Insert(0.2f, Tween.Custom(rightPanel, 300f, 0f, 0.4f,
+                    onValueChange: (el, val) => el.style.translate = new Translate(val, 0),
+                    ease: Ease.OutCubic));
                 seq.Insert(0.2f, Tween.VisualElementOpacity(rightPanel, 1f, 0.3f, Ease.OutQuad));
             }
 
@@ -98,8 +100,9 @@ namespace VeilBreakers.UI.CharacterSelect
             // =====================================================================
             if (carousel != null)
             {
-                seq.Insert(0.35f, Tween.Custom(carousel, 200f, 0f, 0.35f, Ease.OutCubic,
-                    (el, val) => el.style.translate = new Translate(0, val)));
+                seq.Insert(0.35f, Tween.Custom(carousel, 200f, 0f, 0.35f,
+                    onValueChange: (el, val) => el.style.translate = new Translate(0, val),
+                    ease: Ease.OutCubic));
                 seq.Insert(0.35f, Tween.VisualElementOpacity(carousel, 1f, 0.25f, Ease.OutQuad));
             }
 

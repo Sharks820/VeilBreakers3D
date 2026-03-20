@@ -239,18 +239,21 @@ namespace VeilBreakers.UI.CharacterSelect
             // Use Tween.Custom for VisualElement translate (Tween.Position is for Transforms only)
             if (_leftPanel != null)
             {
-                seq.Group(Tween.Custom(_leftPanel, 0f, -300f, 0.2f, Ease.InCubic,
-                    (el, val) => el.style.translate = new Translate(val, 0)));
+                seq.Group(Tween.Custom(_leftPanel, 0f, -300f, 0.2f,
+                    onValueChange: (el, val) => el.style.translate = new Translate(val, 0),
+                    ease: Ease.InCubic));
             }
             if (_rightPanel != null)
             {
-                seq.Group(Tween.Custom(_rightPanel, 0f, 300f, 0.2f, Ease.InCubic,
-                    (el, val) => el.style.translate = new Translate(val, 0)));
+                seq.Group(Tween.Custom(_rightPanel, 0f, 300f, 0.2f,
+                    onValueChange: (el, val) => el.style.translate = new Translate(val, 0),
+                    ease: Ease.InCubic));
             }
             if (_carousel != null)
             {
-                seq.Group(Tween.Custom(_carousel, 0f, 200f, 0.2f, Ease.InCubic,
-                    (el, val) => el.style.translate = new Translate(0, val)));
+                seq.Group(Tween.Custom(_carousel, 0f, 200f, 0.2f,
+                    onValueChange: (el, val) => el.style.translate = new Translate(0, val),
+                    ease: Ease.InCubic));
             }
 
             return seq;
