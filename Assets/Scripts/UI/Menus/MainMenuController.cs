@@ -106,6 +106,12 @@ namespace VeilBreakers.UI.Menus
         private VisualElement _buttonContainer;
         private List<Button> _cachedButtons; // Cache for entrance animation (avoid ToList allocation)
         private bool _hasValidSave;
+
+        // Dark fantasy audio
+        private AudioSource _sfxSource;
+        private AudioClip _hoverClip;
+        private AudioClip _clickClip;
+        private AudioClip _embarkTransitionClip;
         private bool _initialized;
         private TitleScreenVFX _titleVfx; // For logo aura hover response
         private bool _eventsBound;
@@ -228,6 +234,9 @@ namespace VeilBreakers.UI.Menus
 
             // Bind button events
             BindEvents();
+
+            // Initialize audio system
+            InitAudio();
 
             // Start animations
             PlayEntranceAnimation();
@@ -408,6 +417,7 @@ namespace VeilBreakers.UI.Menus
                 GameManager.Instance.ResetGame();
             }
 
+            PlayEmbarkTransitionSound();
             StartCoroutine(TransitionToScene(_characterSelectScene));
         }
 
@@ -576,10 +586,40 @@ namespace VeilBreakers.UI.Menus
         // AUDIO
         // =============================================================================
 
+        private void InitAudio()
+        {
+            _sfxSource = GetComponent<AudioSource>();
+            if (_sfxSource == null) _sfxSource = gameObject.AddComponent<AudioSource>();
+            _sfxSource.playOnAwake = false;
+            _sfxSource.spatialBlend = 0f;
+
+            _hoverClip = Resources.Load<AudioClip>("Audio/SFX/menu_button_hover");
+            _clickClip = Resources.Load<AudioClip>("Audio/SFX/menu_button_click");
+            _embarkTransitionClip = Resources.Load<AudioClip>("Audio/SFX/menu_embark_transition");
+        }
+
         private void PlayButtonSound()
         {
-            // TODO: Integrate with AudioManager
-            // AudioManager.Instance?.PlaySFX("UI_Click");
+            if (_sfxSource != null && _clickClip != null)
+            {
+                _sfxSource.PlayOneShot(_clickClip, 0.8f);
+            }
+        }
+
+        private void PlayHoverSound()
+        {
+            if (_sfxSource != null && _hoverClip != null)
+            {
+                _sfxSource.PlayOneShot(_hoverClip, 0.5f);
+            }
+        }
+
+        private void PlayEmbarkTransitionSound()
+        {
+            if (_sfxSource != null && _embarkTransitionClip != null)
+            {
+                _sfxSource.PlayOneShot(_embarkTransitionClip, 1f);
+            }
         }
 
         // =============================================================================
@@ -655,6 +695,9 @@ namespace VeilBreakers.UI.Menus
 
             // Cache TitleScreenVFX for logo hover response
             _titleVfx = FindAnyObjectByType<TitleScreenVFX>();
+
+            // Initialize audio system
+            InitAudio();
 
             // Play entrance animations and apply button VFX
             PlayEntranceAnimation();
@@ -957,6 +1000,9 @@ namespace VeilBreakers.UI.Menus
 
                 // Hover light propagation to adjacent buttons
                 PropagateHoverLight(button, true);
+
+                // Dark fantasy hover sound
+                PlayHoverSound();
 
                 // Notify logo VFX of button hover
                 if (_titleVfx != null)
