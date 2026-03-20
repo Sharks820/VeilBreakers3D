@@ -140,40 +140,30 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void HandleScreenReady()
         {
-            if (!_isInitialized)
-            {
-                Debug.LogWarning("[HeroThemeTransitioner] HandleScreenReady called but NOT initialized!");
-                return;
-            }
+            if (!_isInitialized) return;
 
             if (!_hasPlayedEntrance)
             {
                 _hasPlayedEntrance = true;
 
-                Debug.Log($"[HeroThemeTransitioner] Playing entrance animation. heroStage={(_heroStage != null ? "OK" : "NULL")}, infoPanel={(_infoPanel != null ? "OK" : "NULL")}, carousel={(_carousel != null ? "OK" : "NULL")}, entryAnimator={(_entryAnimator != null ? "OK" : "NULL")}");
-
-                // Get the first hero's theme for the entrance sequence
                 HeroThemeConfig firstTheme = (_heroThemes != null && _heroThemes.Length > 0)
                     ? _heroThemes[0]
                     : null;
 
                 var entrySequence = _entryAnimator.BuildScreenEntrySequence(
                     _heroStage,
-                    _heroStage, // left panel is the hero stage in the layout
+                    _heroStage,
                     _infoPanel,
                     _carousel,
                     _overlayController,
                     firstTheme,
                     onEntryComplete: () =>
                     {
-                        Debug.Log("[HeroThemeTransitioner] Entry animation COMPLETE — applying first theme");
-
-                        // Force-ensure panels are visible after animation (debug: prevents stuck opacity 0)
+                        // Ensure panels visible after animation
                         if (_heroStage != null) { _heroStage.style.opacity = 1f; _heroStage.style.translate = new Translate(0, 0); }
                         if (_infoPanel != null) { _infoPanel.style.opacity = 1f; _infoPanel.style.translate = new Translate(0, 0); }
                         if (_carousel != null) { _carousel.style.opacity = 1f; _carousel.style.translate = new Translate(0, 0); }
 
-                        // After entrance, transition to first hero's full theme
                         if (firstTheme != null)
                         {
                             _currentTheme = firstTheme;

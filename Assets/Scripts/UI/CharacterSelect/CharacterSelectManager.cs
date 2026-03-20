@@ -336,14 +336,12 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private IEnumerator InitializeWhenReady()
         {
-            Debug.Log("[CharSelect:INIT] Step 1: ShowSkeletonLoading");
+            // ShowSkeletonLoading
             ShowSkeletonLoading();
 
             // Auto-wire Phase 3-4 components before data loading
-            Debug.Log("[CharSelect:INIT] Step 2: EnsureCharSelectComponents");
             EnsureCharSelectComponents();
 
-            Debug.Log("[CharSelect:INIT] Step 3: Waiting for GameDatabase...");
             float timeout = 10f;
             float elapsed = 0f;
             while (GameDatabase.Instance == null || !GameDatabase.Instance.IsReady)
@@ -357,7 +355,6 @@ namespace VeilBreakers.UI.CharacterSelect
                 }
                 yield return null;
             }
-            Debug.Log($"[CharSelect:INIT] Step 4: GameDatabase ready. Loading hero data...");
             LoadHeroData();
             if (_heroList == null || _heroList.Count == 0)
             {
@@ -366,7 +363,6 @@ namespace VeilBreakers.UI.CharacterSelect
                 CharSelectEvents.RaiseErrorOccurred("No heroes found. Please restart.");
                 yield break;
             }
-            Debug.Log($"[CharSelect:INIT] Step 5: {_heroList.Count} heroes loaded. CacheUIReferences...");
             HideSkeletonLoading();
             CacheUIReferences();
             if (_root == null)
@@ -374,83 +370,14 @@ namespace VeilBreakers.UI.CharacterSelect
                 Debug.LogError("[CharSelect:INIT] FAILED: _root is null! UIDocument may not be assigned.");
                 yield break;
             }
-            Debug.Log($"[CharSelect:INIT] Step 6: UI cached. root={_root.name}, btnEmbark={(_btnEmbark != null ? "OK" : "NULL")}, infoPanelContainer={(_infoPanelContainer != null ? "OK" : "NULL")}");
             SetAnimationHints();
-            Debug.Log("[CharSelect:INIT] Step 7: InitVisualSystems...");
             InitVisualSystems();
             BindUI();
             ApplyInitialState();
             _isInitialized = true;
-            Debug.Log("[CharSelect:INIT] Step 8: RaiseScreenReady — initialization COMPLETE");
             CharSelectEvents.RaiseScreenReady();
 
-            // === NUCLEAR DEBUG: Force all panels visible + diagnostic overlay ===
-            yield return null; // Wait one frame for layout to resolve
-            ForceDebugVisibility();
-        }
-
-        /// <summary>
-        /// Nuclear debug: forces all panels visible, logs resolved sizes, adds a bright diagnostic label.
-        /// Remove this method once the blank screen issue is resolved.
-        /// </summary>
-        private void ForceDebugVisibility()
-        {
-            if (_root == null) { Debug.LogError("[CharSelect:DEBUG] _root is NULL!"); return; }
-
-            // Log resolved sizes of the root and all key elements
-            var rootRect = _root.resolvedStyle;
-            Debug.Log($"[CharSelect:DEBUG] ROOT resolved: {rootRect.width}x{rootRect.height}, display={_root.resolvedStyle.display}, opacity={_root.resolvedStyle.opacity}");
-
-            // Check TemplateContainer (UIDocument wraps UXML in one)
-            var templateContainer = _uiDocument.rootVisualElement;
-            if (templateContainer != null)
-            {
-                Debug.Log($"[CharSelect:DEBUG] UIDoc root: {templateContainer.resolvedStyle.width}x{templateContainer.resolvedStyle.height}");
-            }
-
-            // Force-show all key elements and log their state
-            ForceShowElement("hero-stage", _root.Q<VisualElement>("hero-stage"));
-            ForceShowElement("info-panel-container", _infoPanelContainer);
-            ForceShowElement("carousel-container", _root.Q<VisualElement>("carousel-container"));
-            ForceShowElement("tab-header-strip", _root.Q<VisualElement>("tab-header-strip"));
-            ForceShowElement("btn-embark", _btnEmbark);
-
-            // Add bright diagnostic label that's IMPOSSIBLE to miss
-            var debugLabel = new Label(">>> CHARSELECT LOADED - IF YOU SEE THIS, UI IS RENDERING <<<");
-            debugLabel.style.position = Position.Absolute;
-            debugLabel.style.left = 0;
-            debugLabel.style.top = Length.Percent(50);
-            debugLabel.style.width = Length.Percent(100);
-            debugLabel.style.fontSize = 28;
-            debugLabel.style.color = Color.red;
-            debugLabel.style.backgroundColor = new Color(0, 0, 0, 0.8f);
-            debugLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
-            debugLabel.pickingMode = PickingMode.Ignore;
-            debugLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-            _root.Add(debugLabel);
-
-            // Force all children of root to be visible (catches any hidden/display:none)
-            _root.style.opacity = 1f;
-            _root.style.display = DisplayStyle.Flex;
-            foreach (var child in _root.Children())
-            {
-                child.style.opacity = 1f;
-                child.style.display = DisplayStyle.Flex;
-            }
-        }
-
-        private void ForceShowElement(string name, VisualElement el)
-        {
-            if (el == null)
-            {
-                Debug.LogWarning($"[CharSelect:DEBUG] {name} is NULL — not found in UXML!");
-                return;
-            }
-            var r = el.resolvedStyle;
-            Debug.Log($"[CharSelect:DEBUG] {name}: {r.width}x{r.height}, opacity={r.opacity}, display={r.display}, translate=({r.translate.x},{r.translate.y})");
-            el.style.opacity = 1f;
-            el.style.display = DisplayStyle.Flex;
-            el.style.translate = new Translate(0, 0);
+            // Debug overlay removed — CharSelect is working
         }
 
         // =============================================================================
