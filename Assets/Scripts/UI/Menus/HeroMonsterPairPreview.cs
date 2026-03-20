@@ -328,6 +328,7 @@ namespace VeilBreakers.UI.Menus
                     var mat = materials[i];
                     if (mat == null) continue;
 
+                    _mpb.Clear();
                     renderer.GetPropertyBlock(_mpb, i);
 
                     if (mat.HasProperty(kBaseColor))

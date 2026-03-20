@@ -95,6 +95,12 @@ namespace VeilBreakers.UI.Core
         {
             if (_vfxContainer != null)
             {
+                // Re-register mouse callbacks after disable/enable cycle
+                if (_uiDocument != null && _uiDocument.rootVisualElement != null)
+                {
+                    _uiDocument.rootVisualElement.RegisterCallback<MouseMoveEvent>(OnMouseMove);
+                    _uiDocument.rootVisualElement.RegisterCallback<MouseLeaveEvent>(OnMouseLeave);
+                }
                 StartVFX();
             }
         }
