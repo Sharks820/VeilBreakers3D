@@ -929,7 +929,7 @@ TemplateContainer {
     bottom: 0;
     background-color: rgba(12, 10, 18, 0.7);
     z-index: 150;
-    pointer-events: all;
+    pointer-events: none;
 }
 
 .skeleton-shimmer {

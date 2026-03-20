@@ -379,24 +379,7 @@ namespace VeilBreakers.UI.Menus
 
         private void SetupButtonSounds()
         {
-            if (_root == null) return;
-
-            // Load dark fantasy sounds from Resources ONLY (ignore old Inspector-assigned boop clips)
-            var hoverClip = Resources.Load<AudioClip>("Audio/SFX/menu_button_hover");
-            var clickClip = Resources.Load<AudioClip>("Audio/SFX/menu_button_click");
-            if (hoverClip == null) Debug.LogWarning("[MainMenuBootstrap] menu_button_hover.mp3 not found in Resources/Audio/SFX/");
-            if (clickClip == null) Debug.LogWarning("[MainMenuBootstrap] menu_button_click.mp3 not found in Resources/Audio/SFX/");
-
-            // Add hover/click sounds to all buttons (store delegates for cleanup)
-            var allButtons = _root.Query<Button>().ToList();
-            foreach (var button in allButtons)
-            {
-                EventCallback<MouseEnterEvent> hoverCb = evt => PlaySound(hoverClip);
-                EventCallback<ClickEvent> clickCb = evt => PlaySound(clickClip);
-                button.RegisterCallback(hoverCb);
-                button.RegisterCallback(clickCb);
-                _soundCallbacks.Add((button, hoverCb, clickCb));
-            }
+            // Audio is now handled by MainMenuController.InitAudio() — no duplicate sound registration here
         }
 
         private void PlaySound(AudioClip clip)
