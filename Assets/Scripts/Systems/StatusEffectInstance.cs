@@ -15,6 +15,8 @@ namespace VeilBreakers.Systems
         // IDENTIFICATION
         // =============================================================================
 
+        private static long _nextInstanceId;
+
         /// <summary>Unique instance ID for this application</summary>
         public string instanceId;
 
@@ -126,7 +128,7 @@ namespace VeilBreakers.Systems
 
             var instance = new StatusEffectInstance
             {
-                instanceId = Guid.NewGuid().ToString(),
+                instanceId = (++_nextInstanceId).ToString(),
                 effectData = data,
                 source = source,
                 target = target,

@@ -227,47 +227,36 @@ namespace VeilBreakers.UI.CharacterSelect
         // LERP APPLICATION
         // =============================================================================
 
+        // Note: overrideState is pre-set in EnsureOverrideStates() at Awake time.
+        // No need to re-set it every frame during the lerp.
         private void ApplyLerp(float t)
         {
             if (_bloom != null)
             {
-                _bloom.intensity.overrideState = true;
                 _bloom.intensity.value = Mathf.Lerp(_srcBloomIntensity, _dstBloomIntensity, t);
-
-                _bloom.tint.overrideState = true;
                 _bloom.tint.value = Color.Lerp(_srcBloomTint, _dstBloomTint, t);
             }
 
             if (_vignette != null)
             {
-                _vignette.intensity.overrideState = true;
                 _vignette.intensity.value = Mathf.Lerp(_srcVignetteIntensity, _dstVignetteIntensity, t);
-
-                _vignette.color.overrideState = true;
                 _vignette.color.value = Color.Lerp(_srcVignetteColor, _dstVignetteColor, t);
             }
 
             if (_dof != null)
             {
-                _dof.gaussianStart.overrideState = true;
                 _dof.gaussianStart.value = Mathf.Lerp(_srcDofStart, _dstDofStart, t);
-
-                _dof.gaussianEnd.overrideState = true;
                 _dof.gaussianEnd.value = Mathf.Lerp(_srcDofEnd, _dstDofEnd, t);
             }
 
             if (_colorAdj != null)
             {
-                _colorAdj.saturation.overrideState = true;
                 _colorAdj.saturation.value = Mathf.Lerp(_srcColorSat, _dstColorSat, t);
-
-                _colorAdj.colorFilter.overrideState = true;
                 _colorAdj.colorFilter.value = Color.Lerp(_srcColorFilter, _dstColorFilter, t);
             }
 
             if (_chromatic != null)
             {
-                _chromatic.intensity.overrideState = true;
                 _chromatic.intensity.value = Mathf.Lerp(_srcChromaticIntensity, _dstChromaticIntensity, t);
             }
         }
