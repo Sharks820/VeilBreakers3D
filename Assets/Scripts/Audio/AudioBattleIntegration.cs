@@ -19,6 +19,7 @@ namespace VeilBreakers.Audio
 
         [Header("Settings")]
         [SerializeField] private bool _autoSubscribe = true;
+        private static readonly WaitForSeconds _retryWait = new WaitForSeconds(0.5f);
 
         [Header("Hit Sound Mapping")]
         [SerializeField] private int _lightDamageThreshold = 50;
@@ -121,7 +122,7 @@ namespace VeilBreakers.Audio
         /// </summary>
         private IEnumerator RetrySubscribeCoroutine()
         {
-            yield return new WaitForSeconds(0.5f);
+            yield return _retryWait;
             _subscribeRetryCoroutine = null;
             SubscribeToBattleEvents();
         }

@@ -29,6 +29,7 @@ namespace VeilBreakers.UI.Core
         // =============================================================================
 
         private VisualElement _overlay;
+        private PanelSettings _runtimePanelSettings;
         private bool _isTransitioning;
 
         public bool IsTransitioning => _isTransitioning;
@@ -49,6 +50,12 @@ namespace VeilBreakers.UI.Core
             CreateOverlay();
         }
 
+        protected override void OnDestroy()
+        {
+            if (_runtimePanelSettings != null) Destroy(_runtimePanelSettings);
+            base.OnDestroy();
+        }
+
         private void CreateOverlay()
         {
             // Create a minimal UI Document for the transition overlay if not assigned
@@ -59,11 +66,11 @@ namespace VeilBreakers.UI.Core
                 _transitionDocument = go.AddComponent<UIDocument>();
 
                 // Create panel settings
-                var panelSettings = ScriptableObject.CreateInstance<PanelSettings>();
-                panelSettings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
-                panelSettings.referenceResolution = new Vector2Int(1920, 1080);
-                panelSettings.sortingOrder = 9999; // Always on top
-                _transitionDocument.panelSettings = panelSettings;
+                _runtimePanelSettings = ScriptableObject.CreateInstance<PanelSettings>();
+                _runtimePanelSettings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
+                _runtimePanelSettings.referenceResolution = new Vector2Int(1920, 1080);
+                _runtimePanelSettings.sortingOrder = 9999; // Always on top
+                _transitionDocument.panelSettings = _runtimePanelSettings;
             }
 
             // Create overlay element

@@ -36,6 +36,8 @@ namespace VeilBreakers.Core
 
         private bool _isInitialized = false;
         public bool IsInitialized => _isInitialized;
+        private WaitForSeconds _splashWait;
+        private static readonly WaitForSeconds kTestDelayWait = new WaitForSeconds(0.5f);
 
         // =============================================================================
         // UNITY LIFECYCLE
@@ -65,7 +67,7 @@ namespace VeilBreakers.Core
         private IEnumerator LoadFirstSceneAfterDelay()
         {
             // Wait for minimum splash time (allows splash screen to be visible)
-            yield return new WaitForSeconds(_minimumSplashTime);
+            yield return _splashWait ??= new WaitForSeconds(_minimumSplashTime);
 
             // Wait for VBSceneManager to be ready (max 2 seconds)
             float waitTime = 0f;
@@ -153,7 +155,7 @@ namespace VeilBreakers.Core
 
         private IEnumerator RunTestsDelayed()
         {
-            yield return new WaitForSeconds(0.5f);
+            yield return kTestDelayWait;
             RunSystemTests();
         }
 
@@ -227,15 +229,15 @@ namespace VeilBreakers.Core
             return instance;
         }
 
-        private UI.Menus.FPSCounter EnsureFPSCounter(string objectName)
+        private UI.Core.FPSCounter EnsureFPSCounter(string objectName)
         {
-            if (UI.Menus.FPSCounter.Instance == null)
+            if (UI.Core.FPSCounter.Instance == null)
             {
                 var fpsObject = new GameObject(objectName);
-                fpsObject.AddComponent<UI.Menus.FPSCounter>();
+                fpsObject.AddComponent<UI.Core.FPSCounter>();
                 Log("  - Created FPSCounter");
             }
-            return UI.Menus.FPSCounter.Instance;
+            return UI.Core.FPSCounter.Instance;
         }
 
         // =============================================================================

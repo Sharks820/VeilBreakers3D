@@ -28,6 +28,7 @@ namespace VeilBreakers.Core
 
         public GameState CurrentState { get; private set; } = GameState.MainMenu;
         public bool IsPaused => CurrentState == GameState.Paused;
+        private GameState _stateBeforePause = GameState.Exploring;
 
         // =============================================================================
         // PARTY DATA
@@ -135,6 +136,7 @@ namespace VeilBreakers.Core
         {
             if (CurrentState != GameState.Paused)
             {
+                _stateBeforePause = CurrentState;
                 ChangeState(GameState.Paused);
             }
         }
@@ -144,7 +146,7 @@ namespace VeilBreakers.Core
             if (CurrentState == GameState.Paused)
             {
                 Time.timeScale = 1f;
-                CurrentState = GameState.Exploring;
+                CurrentState = _stateBeforePause;
                 EventBus.GameResumed();
             }
         }

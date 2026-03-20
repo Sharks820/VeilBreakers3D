@@ -97,8 +97,15 @@ namespace VeilBreakers.Managers
             // Run sequential migrations
             Debug.Log($"[MigrationRunner] Migrating from v{data.version} to v{_currentVersion}...");
 
+            int maxIterations = _currentVersion - data.version + 1;
+            int iterations = 0;
             while (data.version < _currentVersion)
             {
+                if (++iterations > maxIterations)
+                {
+                    Debug.LogError($"[MigrationRunner] Migration loop exceeded max iterations ({maxIterations}). Possible circular dependency.");
+                    return null;
+                }
                 if (!_migrations.TryGetValue(data.version, out ISaveMigration migration))
                 {
                     Debug.LogError($"[MigrationRunner] No migration found from v{data.version}");

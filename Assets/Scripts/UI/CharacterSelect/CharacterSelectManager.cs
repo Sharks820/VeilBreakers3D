@@ -199,7 +199,12 @@ namespace VeilBreakers.UI.CharacterSelect
                 yield return null;
             }
             LoadHeroData();
-            if (_heroList == null || _heroList.Count == 0) yield break;
+            if (_heroList == null || _heroList.Count == 0)
+            {
+                HideSkeletonLoading();
+                CharSelectEvents.RaiseErrorOccurred("No heroes found. Please restart.");
+                yield break;
+            }
             HideSkeletonLoading();
             CacheUIReferences();
             SetAnimationHints();

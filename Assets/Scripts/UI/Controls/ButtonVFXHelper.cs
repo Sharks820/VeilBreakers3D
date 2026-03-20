@@ -248,7 +248,7 @@ namespace VeilBreakers.UI.Controls
                 DoDirectionalShimmer(shimmer, button, false);
             }
 
-            button.schedule.Execute(DoAutoShimmer).ExecuteLater((long)(interval * 1000));
+            // Single repeating schedule (removed duplicate ExecuteLater that caused double-fire)
             button.schedule.Execute(DoAutoShimmer).Every((long)(interval * 1000));
         }
 

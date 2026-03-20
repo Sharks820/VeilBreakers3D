@@ -10,6 +10,10 @@ namespace VeilBreakers.Core
     /// </summary>
     public static class EventBus
     {
+        // Clear all static state on domain reload (prevents stale references in Editor)
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticState() => ClearAllListeners();
+
         // =============================================================================
         // GAME STATE EVENTS
         // =============================================================================
