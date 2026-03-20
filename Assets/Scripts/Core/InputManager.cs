@@ -97,6 +97,7 @@ namespace VeilBreakers.Core
         protected override void OnDestroy()
         {
             InputSystem.onActionChange -= OnActionChange;
+            _inputActions?.Disable();
             _inputActions?.Dispose();
             base.OnDestroy();
         }

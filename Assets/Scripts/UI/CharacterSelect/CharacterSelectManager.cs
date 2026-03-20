@@ -131,10 +131,41 @@ namespace VeilBreakers.UI.CharacterSelect
         private void OnEnable()
         {
             EnsureCriticalManagers();
+            FixUIDocumentSizing(); // Must run before any UI init
             SceneManager.sceneUnloaded += OnSceneUnloaded;
             CharSelectEvents.OnNavigationRequested += NavigateToHero;
             CharSelectEvents.OnEmbarkTriggered += TriggerEmbark;
             StartCoroutine(InitializeWhenReady());
+        }
+
+        /// <summary>
+        /// Forces the UIDocument visual tree to fill the screen.
+        /// Unity 6 TemplateContainer doesn't always auto-stretch to the panel size,
+        /// causing position:absolute children with height:100% to resolve to 0px.
+        /// </summary>
+        private void FixUIDocumentSizing()
+        {
+            if (_uiDocument == null) return;
+            var docRoot = _uiDocument.rootVisualElement;
+            if (docRoot == null) return;
+
+            // Force the UIDocument root to fill the screen
+            docRoot.style.position = Position.Absolute;
+            docRoot.style.left = 0;
+            docRoot.style.top = 0;
+            docRoot.style.right = 0;
+            docRoot.style.bottom = 0;
+
+            // Also fix the TemplateContainer (first child of docRoot)
+            if (docRoot.childCount > 0)
+            {
+                var templateContainer = docRoot[0];
+                templateContainer.style.position = Position.Absolute;
+                templateContainer.style.left = 0;
+                templateContainer.style.top = 0;
+                templateContainer.style.right = 0;
+                templateContainer.style.bottom = 0;
+            }
         }
 
         private void OnDisable()
