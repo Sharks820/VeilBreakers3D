@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
@@ -40,12 +39,31 @@ namespace VeilBreakers.UI.Menus
         private VisualElement _root;
         private Dictionary<string, int> _playerInventory = new Dictionary<string, int>();
         private List<ItemData> _allItems;
-        private List<ItemData> _filteredItems = new List<ItemData>();
+        private readonly List<ItemData> _filteredItems = new List<ItemData>();
         private ItemData _selectedItem;
         private int _selectedIndex = -1;
         private ItemCategory _currentCategory = ItemCategory.CONSUMABLE;
         private bool _showAllCategories = true;
         private SortMode _currentSortMode = SortMode.Name;
+
+        // Cached sort comparisons to avoid delegate allocation per frame
+        private static readonly Comparison<ItemData> _sortByName =
+            (a, b) => string.Compare(a.display_name, b.display_name, StringComparison.Ordinal);
+        private static readonly Comparison<ItemData> _sortByRarityThenName =
+            (a, b) =>
+            {
+                int cmp = b.rarity.CompareTo(a.rarity);
+                return cmp != 0 ? cmp : string.Compare(a.display_name, b.display_name, StringComparison.Ordinal);
+            };
+        private static readonly Comparison<ItemData> _sortByValue =
+            (a, b) => b.sell_price.CompareTo(a.sell_price);
+        private static readonly Comparison<ItemData> _sortByCategoryThenName =
+            (a, b) =>
+            {
+                int cmp = a.GetCategory().CompareTo(b.GetCategory());
+                return cmp != 0 ? cmp : string.Compare(a.display_name, b.display_name, StringComparison.Ordinal);
+            };
+        // Quantity sort needs inventory reference — created as instance method
 
         private enum SortMode
         {
@@ -404,22 +422,44 @@ namespace VeilBreakers.UI.Menus
 
         private void RefreshItemGrid()
         {
-            // Filter items
-            _filteredItems = _allItems
-                .Where(item => _playerInventory.ContainsKey(item.item_id) && _playerInventory[item.item_id] > 0)
-                .Where(item => _showAllCategories || item.GetCategory() == _currentCategory)
-                .ToList();
+            // Filter — single pass, no LINQ, reuses existing list
+            _filteredItems.Clear();
 
-            // Sort items
-            _filteredItems = _currentSortMode switch
+            if (_allItems != null)
             {
-                SortMode.Name => _filteredItems.OrderBy(i => i.display_name).ToList(),
-                SortMode.Rarity => _filteredItems.OrderByDescending(i => i.rarity).ThenBy(i => i.display_name).ToList(),
-                SortMode.Value => _filteredItems.OrderByDescending(i => i.sell_price).ToList(),
-                SortMode.Quantity => _filteredItems.OrderByDescending(i => _playerInventory.GetValueOrDefault(i.item_id, 0)).ToList(),
-                SortMode.Category => _filteredItems.OrderBy(i => i.GetCategory()).ThenBy(i => i.display_name).ToList(),
-                _ => _filteredItems
-            };
+                for (int i = 0; i < _allItems.Count; i++)
+                {
+                    var item = _allItems[i];
+
+                    if (!_playerInventory.ContainsKey(item.item_id) || _playerInventory[item.item_id] <= 0)
+                        continue;
+
+                    if (!_showAllCategories && item.GetCategory() != _currentCategory)
+                        continue;
+
+                    _filteredItems.Add(item);
+                }
+            }
+
+            // Sort — in-place with cached comparison delegates, no LINQ
+            switch (_currentSortMode)
+            {
+                case SortMode.Name:
+                    _filteredItems.Sort(_sortByName);
+                    break;
+                case SortMode.Rarity:
+                    _filteredItems.Sort(_sortByRarityThenName);
+                    break;
+                case SortMode.Value:
+                    _filteredItems.Sort(_sortByValue);
+                    break;
+                case SortMode.Quantity:
+                    _filteredItems.Sort(CompareByQuantityDescending);
+                    break;
+                case SortMode.Category:
+                    _filteredItems.Sort(_sortByCategoryThenName);
+                    break;
+            }
 
             // Update UI
             PopulateItemGrid();
@@ -431,6 +471,13 @@ namespace VeilBreakers.UI.Menus
             {
                 ClearSelection();
             }
+        }
+
+        private int CompareByQuantityDescending(ItemData a, ItemData b)
+        {
+            int qtyA = _playerInventory.GetValueOrDefault(a.item_id, 0);
+            int qtyB = _playerInventory.GetValueOrDefault(b.item_id, 0);
+            return qtyB.CompareTo(qtyA);
         }
 
         // =============================================================================
@@ -464,7 +511,7 @@ namespace VeilBreakers.UI.Menus
             icon.AddToClassList("item-slot-icon");
 
             // Try to get icon from mappings
-            var mapping = _itemIconMappings?.FirstOrDefault(m => m.itemId == item.item_id);
+            ItemIconMapping mapping = FindIconMapping(item.item_id);
             if (mapping?.icon != null)
             {
                 icon.style.backgroundImage = new StyleBackground(mapping.icon);
@@ -523,11 +570,26 @@ namespace VeilBreakers.UI.Menus
             };
         }
 
+        private ItemIconMapping FindIconMapping(string itemId)
+        {
+            if (_itemIconMappings == null) return null;
+            for (int i = 0; i < _itemIconMappings.Count; i++)
+            {
+                if (_itemIconMappings[i].itemId == itemId)
+                    return _itemIconMappings[i];
+            }
+            return null;
+        }
+
         private void UpdateItemCount()
         {
             if (_itemCount == null) return;
 
-            int totalItems = _playerInventory.Values.Sum();
+            int totalItems = 0;
+            foreach (var kvp in _playerInventory)
+            {
+                totalItems += kvp.Value;
+            }
             // TODO: Add capacity display when GameManager provides max capacity
             _itemCount.text = $"{_filteredItems.Count} items ({totalItems} total)";
         }
@@ -614,7 +676,7 @@ namespace VeilBreakers.UI.Menus
             SetRarityBorder(_selectedItem.GetRarity());
 
             // Try to set icon
-            var mapping = _itemIconMappings?.FirstOrDefault(m => m.itemId == _selectedItem.item_id);
+            var mapping = FindIconMapping(_selectedItem.item_id);
             if (mapping?.icon != null && _itemIcon != null)
             {
                 _itemIcon.style.backgroundImage = new StyleBackground(mapping.icon);

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
@@ -39,7 +38,7 @@ namespace VeilBreakers.UI.Menus
 
         private VisualElement _root;
         private List<CapturedMonster> _capturedMonsters = new List<CapturedMonster>();
-        private List<CapturedMonster> _filteredMonsters = new List<CapturedMonster>();
+        private readonly List<CapturedMonster> _filteredMonsters = new List<CapturedMonster>();
         private CapturedMonster _selectedMonster;
         private int _selectedIndex = -1;
 
@@ -48,6 +47,37 @@ namespace VeilBreakers.UI.Menus
         private Rarity? _filterRarity = null;
         private string _searchQuery = "";
         private SortMode _currentSortMode = SortMode.Level;
+
+        // GC-free search: pre-cached lowercased display names
+        private readonly Dictionary<CapturedMonster, string> _lowercaseNameCache = new Dictionary<CapturedMonster, string>();
+
+        // Cached sort comparisons to avoid delegate allocation per frame
+        private static readonly Comparison<CapturedMonster> _sortByName =
+            (a, b) => string.Compare(a.DisplayName, b.DisplayName, StringComparison.Ordinal);
+        private static readonly Comparison<CapturedMonster> _sortByLevelThenName =
+            (a, b) =>
+            {
+                int cmp = b.Level.CompareTo(a.Level);
+                return cmp != 0 ? cmp : string.Compare(a.DisplayName, b.DisplayName, StringComparison.Ordinal);
+            };
+        private static readonly Comparison<CapturedMonster> _sortByRarityThenLevel =
+            (a, b) =>
+            {
+                int cmp = b.Data.rarity.CompareTo(a.Data.rarity);
+                return cmp != 0 ? cmp : b.Level.CompareTo(a.Level);
+            };
+        private static readonly Comparison<CapturedMonster> _sortByBrandThenName =
+            (a, b) =>
+            {
+                int cmp = a.Data.brand.CompareTo(b.Data.brand);
+                return cmp != 0 ? cmp : string.Compare(a.DisplayName, b.DisplayName, StringComparison.Ordinal);
+            };
+        private static readonly Comparison<CapturedMonster> _sortByCorruptionThenName =
+            (a, b) =>
+            {
+                int cmp = b.Corruption.CompareTo(a.Corruption);
+                return cmp != 0 ? cmp : string.Compare(a.DisplayName, b.DisplayName, StringComparison.Ordinal);
+            };
 
         private enum SortMode
         {
@@ -228,8 +258,13 @@ namespace VeilBreakers.UI.Menus
             // Brand filter
             if (_filterBrandDropdown != null)
             {
-                var brandChoices = new List<string> { "All Brands" };
-                brandChoices.AddRange(Enum.GetNames(typeof(Brand)).Where(b => b != "NONE"));
+                var brandNames = Enum.GetNames(typeof(Brand));
+                var brandChoices = new List<string>(brandNames.Length) { "All Brands" };
+                for (int i = 0; i < brandNames.Length; i++)
+                {
+                    if (brandNames[i] != "NONE")
+                        brandChoices.Add(brandNames[i]);
+                }
                 _filterBrandDropdown.choices = brandChoices;
                 _filterBrandDropdown.index = 0;
             }
@@ -289,13 +324,27 @@ namespace VeilBreakers.UI.Menus
         private void LoadCollection()
         {
             _capturedMonsters.Clear();
+            _lowercaseNameCache.Clear();
 
             // TODO: Load from SaveManager/GameManager
             // For now, create test data
             LoadTestData();
 
+            // Pre-cache lowercased display names for search
+            RebuildNameCache();
+
             RefreshGrid();
             UpdateCollectionCount();
+        }
+
+        private void RebuildNameCache()
+        {
+            _lowercaseNameCache.Clear();
+            for (int i = 0; i < _capturedMonsters.Count; i++)
+            {
+                var m = _capturedMonsters[i];
+                _lowercaseNameCache[m] = m.DisplayName.ToLower();
+            }
         }
 
         private void LoadTestData()
@@ -390,24 +439,53 @@ namespace VeilBreakers.UI.Menus
 
         private void RefreshGrid()
         {
-            // Filter
-            _filteredMonsters = _capturedMonsters
-                .Where(m => !_filterBrand.HasValue || m.Data.GetPrimaryBrand() == _filterBrand.Value)
-                .Where(m => !_filterRarity.HasValue || m.Data.GetRarity() == _filterRarity.Value)
-                .Where(m => string.IsNullOrEmpty(_searchQuery) ||
-                           (m.DisplayName.ToLower().Contains(_searchQuery)))
-                .ToList();
+            // Filter — single pass, no LINQ, reuses existing list
+            _filteredMonsters.Clear();
+            bool hasSearchQuery = !string.IsNullOrEmpty(_searchQuery);
 
-            // Sort
-            _filteredMonsters = _currentSortMode switch
+            for (int i = 0; i < _capturedMonsters.Count; i++)
             {
-                SortMode.Name => _filteredMonsters.OrderBy(m => m.DisplayName).ToList(),
-                SortMode.Level => _filteredMonsters.OrderByDescending(m => m.Level).ThenBy(m => m.DisplayName).ToList(),
-                SortMode.Rarity => _filteredMonsters.OrderByDescending(m => m.Data.rarity).ThenByDescending(m => m.Level).ToList(),
-                SortMode.Brand => _filteredMonsters.OrderBy(m => m.Data.brand).ThenBy(m => m.DisplayName).ToList(),
-                SortMode.Corruption => _filteredMonsters.OrderByDescending(m => m.Corruption).ThenBy(m => m.DisplayName).ToList(),
-                _ => _filteredMonsters
-            };
+                var m = _capturedMonsters[i];
+
+                if (_filterBrand.HasValue && m.Data.GetPrimaryBrand() != _filterBrand.Value)
+                    continue;
+
+                if (_filterRarity.HasValue && m.Data.GetRarity() != _filterRarity.Value)
+                    continue;
+
+                if (hasSearchQuery)
+                {
+                    if (!_lowercaseNameCache.TryGetValue(m, out string cachedName))
+                    {
+                        cachedName = m.DisplayName.ToLower();
+                        _lowercaseNameCache[m] = cachedName;
+                    }
+                    if (!cachedName.Contains(_searchQuery))
+                        continue;
+                }
+
+                _filteredMonsters.Add(m);
+            }
+
+            // Sort — in-place with cached comparison delegates, no LINQ
+            switch (_currentSortMode)
+            {
+                case SortMode.Name:
+                    _filteredMonsters.Sort(_sortByName);
+                    break;
+                case SortMode.Level:
+                    _filteredMonsters.Sort(_sortByLevelThenName);
+                    break;
+                case SortMode.Rarity:
+                    _filteredMonsters.Sort(_sortByRarityThenLevel);
+                    break;
+                case SortMode.Brand:
+                    _filteredMonsters.Sort(_sortByBrandThenName);
+                    break;
+                case SortMode.Corruption:
+                    _filteredMonsters.Sort(_sortByCorruptionThenName);
+                    break;
+            }
 
             PopulateGrid();
             UpdateEmptyState();
@@ -451,7 +529,18 @@ namespace VeilBreakers.UI.Menus
             portrait.AddToClassList("monster-card-portrait");
 
             // Try to get portrait from mappings
-            var mapping = _portraitMappings?.FirstOrDefault(m => m.monsterId == monster.Data.monster_id);
+            MonsterPortraitMapping mapping = null;
+            if (_portraitMappings != null)
+            {
+                for (int j = 0; j < _portraitMappings.Count; j++)
+                {
+                    if (_portraitMappings[j].monsterId == monster.Data.monster_id)
+                    {
+                        mapping = _portraitMappings[j];
+                        break;
+                    }
+                }
+            }
             if (mapping?.portrait != null)
             {
                 portrait.style.backgroundImage = new StyleBackground(mapping.portrait);
@@ -876,6 +965,7 @@ namespace VeilBreakers.UI.Menus
         public void AddMonster(CapturedMonster monster)
         {
             _capturedMonsters.Add(monster);
+            _lowercaseNameCache[monster] = monster.DisplayName.ToLower();
             UpdateCollectionCount();
             RefreshGrid();
         }
@@ -888,6 +978,7 @@ namespace VeilBreakers.UI.Menus
             bool removed = _capturedMonsters.Remove(monster);
             if (removed)
             {
+                _lowercaseNameCache.Remove(monster);
                 UpdateCollectionCount();
                 RefreshGrid();
             }

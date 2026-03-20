@@ -144,6 +144,7 @@ namespace VeilBreakers.UI.Core
                 // Main vein element
                 var vein = new VisualElement();
                 vein.name = $"vein-{i}";
+                vein.usageHints = UsageHints.DynamicTransform | UsageHints.DynamicColor;
                 vein.style.position = Position.Absolute;
                 vein.style.width = _veinWidth;
                 vein.style.height = _veinHeight;
@@ -175,6 +176,7 @@ namespace VeilBreakers.UI.Core
                 // Glow overlay
                 var glow = new VisualElement();
                 glow.name = $"vein-glow-{i}";
+                glow.usageHints = UsageHints.DynamicTransform | UsageHints.DynamicColor;
                 glow.style.position = Position.Absolute;
                 glow.style.left = -20;
                 glow.style.top = -20;
@@ -269,6 +271,13 @@ namespace VeilBreakers.UI.Core
             // Smooth intensity changes
             vein.Intensity = Mathf.Lerp(vein.Intensity, totalIntensity, deltaTime * 8f);
 
+            // Dirty threshold: skip style writes when intensity change is negligible
+            if (Mathf.Abs(vein.Intensity - vein.PreviousIntensity) < 0.005f)
+            {
+                return;
+            }
+            vein.PreviousIntensity = vein.Intensity;
+
             // Calculate opacity
             float opacity = Mathf.Lerp(_baseOpacity, _pulseOpacity, vein.Intensity);
             vein.Element.style.opacity = opacity;
@@ -329,6 +338,7 @@ namespace VeilBreakers.UI.Core
             public Vector2 BasePosition;
             public float PhaseOffset;
             public float Intensity;
+            public float PreviousIntensity = -1f; // Force first-frame update
             public float VerticalOffset;
             public float ScaleVariation;
         }

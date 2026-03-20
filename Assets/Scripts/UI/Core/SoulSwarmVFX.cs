@@ -154,6 +154,7 @@ namespace VeilBreakers.UI.Core
         {
             // Glow layer
             var glow = new VisualElement();
+            glow.usageHints = UsageHints.DynamicTransform | UsageHints.DynamicColor;
             glow.style.position = Position.Absolute;
             glow.style.borderTopLeftRadius = 50;
             glow.style.borderTopRightRadius = 50;
@@ -164,6 +165,7 @@ namespace VeilBreakers.UI.Core
 
             // Core
             var core = new VisualElement();
+            core.usageHints = UsageHints.DynamicTransform | UsageHints.DynamicColor;
             core.style.position = Position.Absolute;
             core.style.borderTopLeftRadius = 50;
             core.style.borderTopRightRadius = 50;
@@ -175,6 +177,7 @@ namespace VeilBreakers.UI.Core
 
             // Trail
             var trail = new VisualElement();
+            trail.usageHints = UsageHints.DynamicTransform | UsageHints.DynamicColor;
             trail.style.position = Position.Absolute;
             trail.style.borderTopLeftRadius = 2;
             trail.style.borderTopRightRadius = 2;
@@ -339,6 +342,12 @@ namespace VeilBreakers.UI.Core
             particle.TrailElement.style.height = particle.Size * 0.5f;
             particle.TrailElement.style.left = glowSize / 2f;
             particle.TrailElement.style.top = glowSize / 2f;
+            particle.TrailElement.style.scale = new Scale(new Vector2(1f, 1f));
+
+            // Reset dirty tracking for fresh spawn
+            particle.PreviousPosition = new Vector2(float.MinValue, float.MinValue);
+            particle.PreviousOpacity = -1f;
+            particle.PreviousTrailWidth = -1f;
 
             _particles.Add(particle);
         }
@@ -390,11 +399,31 @@ namespace VeilBreakers.UI.Core
             float distanceFade = Mathf.Clamp01(distanceToMouse / 300f);
             float opacity = fadeIn * (0.5f + 0.5f * distanceFade);
 
-            // Apply position via translate (paint-only, skips layout recalc unlike left/top)
-            float halfWidth = particle.Element.resolvedStyle.width / 2f;
-            float halfHeight = particle.Element.resolvedStyle.height / 2f;
-            particle.Element.style.translate = new Translate(particle.Position.x - halfWidth, particle.Position.y - halfHeight);
-            particle.Element.style.opacity = opacity;
+            // Batch-skip: skip all style writes for particles with negligible opacity
+            if (opacity < 0.01f)
+            {
+                return;
+            }
+
+            // Dirty check: skip style writes when position delta is below threshold
+            float positionDelta = (particle.Position - particle.PreviousPosition).magnitude;
+            bool positionDirty = positionDelta >= 0.5f;
+            bool opacityDirty = Mathf.Abs(opacity - particle.PreviousOpacity) >= 0.005f;
+
+            if (positionDirty)
+            {
+                // Apply position via translate (paint-only, skips layout recalc unlike left/top)
+                float halfWidth = particle.Element.resolvedStyle.width / 2f;
+                float halfHeight = particle.Element.resolvedStyle.height / 2f;
+                particle.Element.style.translate = new Translate(particle.Position.x - halfWidth, particle.Position.y - halfHeight);
+                particle.PreviousPosition = particle.Position;
+            }
+
+            if (opacityDirty)
+            {
+                particle.Element.style.opacity = opacity;
+                particle.PreviousOpacity = opacity;
+            }
 
             // Rotate trail to face movement direction
             float speed = particle.Velocity.magnitude;
@@ -402,12 +431,25 @@ namespace VeilBreakers.UI.Core
             {
                 float trailAngle = Mathf.Atan2(particle.Velocity.y, particle.Velocity.x) * Mathf.Rad2Deg;
                 particle.TrailElement.style.rotate = new Rotate(trailAngle + 180f);
-                particle.TrailElement.style.width = Mathf.Min(30f, speed * 0.1f);
-                particle.TrailElement.style.opacity = kTrailOpacityVisible;
+
+                // Use style.scale instead of style.width to avoid layout recalculation
+                float trailScaleX = Mathf.Min(30f, speed * 0.1f) / 2f; // Normalize: base width is 2px
+                if (Mathf.Abs(trailScaleX - particle.PreviousTrailWidth) >= 0.05f)
+                {
+                    particle.TrailElement.style.scale = new Scale(new Vector2(trailScaleX, 1f));
+                    particle.PreviousTrailWidth = trailScaleX;
+                }
+                if (opacityDirty)
+                {
+                    particle.TrailElement.style.opacity = kTrailOpacityVisible;
+                }
             }
             else
             {
-                particle.TrailElement.style.opacity = 0;
+                if (opacityDirty)
+                {
+                    particle.TrailElement.style.opacity = 0;
+                }
             }
         }
 
@@ -490,6 +532,11 @@ namespace VeilBreakers.UI.Core
                 particle.CoreElement.style.left = (glowSize - particle.Size) / 2f;
                 particle.CoreElement.style.top = (glowSize - particle.Size) / 2f;
 
+                // Reset dirty tracking for fresh spawn
+                particle.PreviousPosition = new Vector2(float.MinValue, float.MinValue);
+                particle.PreviousOpacity = -1f;
+                particle.PreviousTrailWidth = -1f;
+
                 _particles.Add(particle);
             }
         }
@@ -520,6 +567,10 @@ namespace VeilBreakers.UI.Core
             public bool IsAlive;
             public float SpiralPhase;
             public float SpiralDirection;
+            // Dirty tracking: skip style writes when changes are negligible
+            public Vector2 PreviousPosition = new Vector2(float.MinValue, float.MinValue);
+            public float PreviousOpacity = -1f;
+            public float PreviousTrailWidth = -1f;
         }
     }
 }
