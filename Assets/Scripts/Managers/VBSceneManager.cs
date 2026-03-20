@@ -320,10 +320,11 @@ namespace VeilBreakers.Managers
         {
             _currentSceneName = scene.name;
 
-            // Clear static EventBus subscribers on scene load to prevent leaked delegates
-            // from destroyed objects causing MissingReferenceExceptions.
-            // Persistent singletons re-subscribe in their OnEnable.
-            EventBus.ClearAllListeners();
+            // NOTE: EventBus.ClearAllListeners() is NOT called here because persistent
+            // singletons (VERASystem, AutoSaveManager, etc.) subscribe in Start() and
+            // would silently stop receiving events after the first scene transition.
+            // Instead, each scene-scoped subscriber is responsible for unsubscribing
+            // in OnDisable/OnDestroy. CharSelectEvents.ClearAll() handles the CharSelect flow.
 
             Debug.Log($"[VBSceneManager] Scene loaded: {scene.name}");
         }

@@ -107,7 +107,11 @@ namespace VeilBreakers.Combat
                 }
             }
 
-            // Subscribe to death events (store handlers for proper cleanup)
+            // Unsubscribe any existing death handlers before re-subscribing (prevents leaks on battle restart)
+            foreach (var kvp in _deathHandlers)
+            {
+                if (kvp.Key != null) kvp.Key.OnDeath -= kvp.Value;
+            }
             _deathHandlers.Clear();
             for (int i = 0; i < _playerParty.Count; i++)
             {
