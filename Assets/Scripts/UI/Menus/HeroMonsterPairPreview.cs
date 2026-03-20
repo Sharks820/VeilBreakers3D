@@ -321,27 +321,30 @@ namespace VeilBreakers.UI.Menus
             var renderers = obj.GetComponentsInChildren<Renderer>();
             foreach (var renderer in renderers)
             {
-                renderer.GetPropertyBlock(_mpb);
-
-                // Use MaterialPropertyBlock to avoid material copies (renderer.materials leaks)
-                foreach (var mat in renderer.sharedMaterials)
+                var materials = renderer.sharedMaterials;
+                // Apply per-material-index to avoid multi-material color crushing
+                for (int i = 0; i < materials.Length; i++)
                 {
+                    var mat = materials[i];
                     if (mat == null) continue;
-                    if (mat.HasProperty(kColor))
-                    {
-                        Color c = mat.color;
-                        c.a = alpha;
-                        _mpb.SetColor(kColor, c);
-                    }
-                    else if (mat.HasProperty(kBaseColor))
+
+                    renderer.GetPropertyBlock(_mpb, i);
+
+                    if (mat.HasProperty(kBaseColor))
                     {
                         Color c = mat.GetColor(kBaseColor);
                         c.a = alpha;
                         _mpb.SetColor(kBaseColor, c);
                     }
-                }
+                    else if (mat.HasProperty(kColor))
+                    {
+                        Color c = mat.color;
+                        c.a = alpha;
+                        _mpb.SetColor(kColor, c);
+                    }
 
-                renderer.SetPropertyBlock(_mpb);
+                    renderer.SetPropertyBlock(_mpb, i);
+                }
             }
         }
     }

@@ -154,6 +154,9 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void UpdateSelection(int index)
         {
+            // Guard: skip if same card selected (prevents overlapping tweens)
+            if (index == _selectedIndex) return;
+
             // Deselect previous card: shrink, dim, stop breathing
             if (_selectedIndex >= 0 && _selectedIndex < _heroCards.Count)
             {
