@@ -1,7 +1,7 @@
 # VeilBreakers 3D - Comprehensive Bug Scan & Optimization Report
-**Date:** 2026-03-20
+**Date:** 2026-03-20 (Updated: 2026-03-21)
 **Scanned:** 128 C# files across Assets/Scripts/
-**Method:** 5 parallel scanning agents + manual deep-dive analysis
+**Method:** 9 parallel scanning agents (2 passes) + manual deep-dive of 15+ critical files
 
 ---
 
@@ -11,10 +11,10 @@ The codebase is **well-architected overall** - combat systems avoid LINQ in hot 
 
 | Severity | Count | Category |
 |----------|-------|----------|
-| CRITICAL | 3 | Performance/Production readiness |
-| HIGH | 6 | Performance/Memory |
-| MEDIUM | 6 | Code quality/Risk |
-| LOW | 4 | Style/Minor |
+| CRITICAL | 4 | Performance/Production readiness/Design |
+| HIGH | 9 | Performance/Memory/Lifecycle |
+| MEDIUM | 8 | Code quality/Risk/Threading |
+| LOW | 6 | Style/Minor/Documentation |
 | OPTIMIZATION | 7 | Upgrade opportunities |
 
 ---
@@ -262,6 +262,102 @@ Test class with excessive logging. Not a production issue since tests don't ship
 
 ---
 
+---
+
+## SECOND PASS - Additional Findings
+
+### C4. Dual StatusEffect Systems (Design Bug)
+**File:** `Assets/Scripts/Combat/Combatant.cs` + `Assets/Scripts/Managers/StatusEffectManager.cs`
+**Severity:** CRITICAL
+
+Combatant has its own `_statusEffects` list (lines 50, 387-424), AND StatusEffectManager tracks effects separately in `_effectsByTarget`. These two systems are **not synchronized**:
+
+- `Combatant.ApplyStatus()` adds to local `_statusEffects` list
+- `StatusEffectManager.ApplyEffect()` adds to its own `_effectsByTarget` dictionary
+- Neither system knows about the other's state
+
+This means effects can be "applied" in one system but invisible to the other, causing:
+- Ghost effects (showing in UI but not ticking)
+- Missed effects (ticking but not queryable)
+- Double effects if both paths are used
+
+**Fix:** Deprecate `Combatant.ApplyStatus/RemoveStatus/HasStatus` and route ALL status effect operations through `StatusEffectManager`. Or make Combatant's methods delegate to StatusEffectManager.
+
+---
+
+### H7. GeometryChangedEvent Callbacks Never Unregistered (5 files)
+**Files:** MoltenButtonVFX.cs, ParallaxBackground.cs, MenuVFXController.cs, MoltenVeinVFX.cs, SoulSwarmVFX.cs
+
+All register `GeometryChangedEvent` callbacks on `_uiDocument.rootVisualElement` but never unregister them. Only `TitleScreenVFX.cs` properly unregisters (line 1179).
+
+**Fix:** Add cleanup in OnDisable/OnDestroy:
+```csharp
+_uiDocument?.rootVisualElement?.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
+```
+
+---
+
+### H8. ButtonVFXHelper - 15+ RegisterCallback Without Cleanup
+**File:** `Assets/Scripts/UI/Controls/ButtonVFXHelper.cs`
+
+~15 `RegisterCallback` calls using lambdas across various methods (PointerDown, PointerUp, MouseEnter, Click, Focus, etc.). No corresponding `UnregisterCallback` anywhere. Lambda captures prevent GC if buttons are recreated.
+
+**Fix:** Store callback references and unregister on element detach, or use non-lambda methods.
+
+---
+
+### H9. Uncached WaitForSeconds in Coroutines
+**Files:**
+- `VERAVoiceController.cs:327` - `new WaitForSeconds(_glitchDuration)` (per-glitch allocation)
+- `AudioManager.cs:260,603` - `new WaitForSeconds(delay)` (per-fade allocation)
+- `HeroMonsterPairPreview.cs:166,177,186` - 3 separate `new WaitForSeconds` per preview cycle
+
+**Fix:** Cache as static/instance fields where duration is constant. For variable durations, use a WaitForSeconds cache dictionary or accept the allocation.
+
+---
+
+### M7. CaptureManager.RemoveMonsterFromBattle - Re-entrant Event Risk
+**File:** `Assets/Scripts/Capture/CaptureManager.cs:728`
+```csharp
+monster.TakeDamage(monster.MaxHP + 1); // Force death
+```
+
+Forces death by dealing MaxHP+1 damage. This triggers `OnDeath` events on the Combatant, which triggers `HandleCombatantDeath` in BattleManager, which fires `OnCombatantDeath` events. If CaptureManager also listens to death events, this creates a re-entrant callback chain that could corrupt state.
+
+**Fix:** Add a `_removingMonster` guard flag, or use a dedicated `ForceRemove()` method that bypasses the damage/death event chain.
+
+---
+
+### M8. EventBus.ClearAllListeners Race with Subscribers
+**File:** `Assets/Scripts/Core/EventBus.cs:15`
+
+`[RuntimeInitializeOnLoadMethod(SubsystemRegistration)]` calls `ClearAllListeners()` during domain reload. ClearAllListeners is also public. If called during scene transitions, subscribers that haven't re-subscribed yet via OnEnable lose their registrations silently.
+
+**Fix:** ClearAllListeners should only be called via the static initializer attribute. Remove or restrict public access, or add a warning log if called at unexpected times.
+
+---
+
+### L5. SynergySystem ANTI Tier is All-or-Nothing
+**File:** `Assets/Scripts/Systems/SynergySystem.cs:64-68`
+
+A single weak-brand party member forces the entire party to ANTI synergy tier. This is by design but creates a cliff effect in party building. Worth considering a graduated approach for balance.
+
+---
+
+### L6. DamageCalculator Corruption Logic is Non-Obvious
+**File:** `Assets/Scripts/Combat/DamageCalculator.cs:74-75`
+```csharp
+damage *= (1f + attackerCorruptionMod);
+damage *= (1f - defenderCorruptionMod);
+```
+
+When `defenderCorruptionMod` is negative (Corrupted=-0.10, Abyssal=-0.20), the formula becomes:
+- Abyssal defender: `damage *= (1 - (-0.20)) = 1.20` (takes 20% MORE damage)
+
+This is **correct per spec** (Abyssal has -20% stat penalty), but the double-negative makes the code confusing. Should add a comment explaining this.
+
+---
+
 ## Optimization Opportunities
 
 ### O1. Centralize All Resource Loading
@@ -339,23 +435,40 @@ The codebase demonstrates several strong patterns that should be maintained:
 ## Recommended Priority Actions
 
 ### Immediate (Before Next Build)
-1. Change `StatusEffectManager._debugLogging` default to `false`
-2. Gate SaveManager/GameDatabase/MigrationRunner Debug.Logs behind conditional compilation
+1. **C4** - Unify dual StatusEffect systems (Combatant._statusEffects vs StatusEffectManager)
+2. **C2** - Change `StatusEffectManager._debugLogging` default to `false`
+3. **C1** - Gate SaveManager/GameDatabase/MigrationRunner Debug.Logs behind conditional compilation
 
 ### Short-Term (This Sprint)
-3. Create `VBDebug` utility and migrate all 263 Debug.Log calls
-4. Migrate TitleScreenVFX and MoltenButtonVFX Resources.Load calls to UIAssets
-5. Cache Camera.main in EmbarkCinematicController and VeilTransitionController
-6. Add save data range validation
+4. **C1** - Create `VBDebug` utility and migrate all 263 Debug.Log calls
+5. **C3** - Migrate TitleScreenVFX and MoltenButtonVFX Resources.Load calls to UIAssets
+6. **H7** - Unregister GeometryChangedEvent callbacks in 5 VFX controllers
+7. **H1** - Cache Camera.main in EmbarkCinematicController and VeilTransitionController
+8. **M1** - Add save data range validation
+9. **M7** - Add re-entrancy guard in CaptureManager.RemoveMonsterFromBattle
 
 ### Medium-Term (Next Sprint)
-7. Migrate ALL remaining Resources.Load calls to SO references
-8. Implement ListPool for StatusEffectManager queries
-9. Add HashSet for BattleManager party membership
-10. Fix SaveManager.OnApplicationPause blocking pattern
-11. Add [RequireComponent] attributes where missing
+10. **C3** - Migrate ALL remaining Resources.Load calls to SO references
+11. **H8** - Fix ButtonVFXHelper callback leak pattern
+12. **O3** - Implement ListPool for StatusEffectManager queries
+13. **O4** - Add HashSet for BattleManager party membership
+14. **H4** - Fix SaveManager.OnApplicationPause blocking pattern
+15. **M6** - Add [RequireComponent] attributes where missing
 
 ---
 
-*Report generated by Claude Opus 4.6 - 5 parallel scanning agents + manual deep-dive*
+---
+
+## Master Branch Safety Assessment
+
+This report is **documentation only** (no code changes). Safe to merge to master:
+- No C# file modifications
+- No compilation risk
+- No runtime behavior changes
+- No breaking changes
+
+---
+
+*Report generated by Claude Opus 4.6 - 9 parallel scanning agents (2 passes) + manual deep-dive of 15+ critical files*
+*Total findings: 4 Critical, 9 High, 8 Medium, 6 Low, 7 Optimization Opportunities*
 *Session: claude/bug-scan-optimization-LJVRn*
