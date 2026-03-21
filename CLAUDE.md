@@ -233,29 +233,25 @@ namespace VeilBreakers.[Category]
 
 ---
 
-# CLAUDE + GEMINI HYBRID APPROACH
+# CLAUDE + GEMINI + CODEX HYBRID APPROACH
 
-## When to Use Gemini
+## When to Use External Reviewers
 
-| Situation | Action |
-|-----------|--------|
-| Need second opinion on architecture | `gemini -p "Analyze this design..."` |
-| Complex debugging stuck | Get Gemini's perspective |
-| Research/web search | Gemini has web access |
-| Balance validation | Ask Gemini to review calculations |
-| Code review | Cross-check with Gemini |
+| Situation | Tool | Action |
+|-----------|------|--------|
+| Second opinion on architecture | Gemini CLI | `gemini -p "Analyze..."` or `mcp__gemini-cli__chat` |
+| Code review | Codex CLI | `codex -p "Review..."` or `mcp__codex-cli__chat` |
+| Complex debugging stuck | Either | Get a different perspective |
+| Research/web search | Gemini CLI | Gemini has web access |
+| Balance validation | Either | Cross-check calculations |
 
-## Gemini Strengths to Leverage
-- Web search and current information
-- Alternative reasoning approaches
-- Code analysis from different angle
-- Validation of complex logic
-
-## Claude Strengths to Use
+## Claude Strengths
 - Deep codebase understanding via Serena
 - Unity/C# expertise via Context7
-- Direct tool execution
-- Conversation continuity
+- VB-Toolkit (37 game dev tools)
+- Direct tool execution + conversation continuity
+- csharp-lsp real-time diagnostics
+- Semgrep auto-scanning
 
 ---
 

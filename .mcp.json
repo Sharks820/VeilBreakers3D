@@ -72,7 +72,11 @@
       "args": ["--directory", "C:/Users/Conner/OneDrive/Documents/veilbreakers-gamedev-toolkit/Tools/mcp-toolkit", "run", "vb-blender-mcp"],
       "env": {
         "BLENDER_PORT": "9876",
-        "BLENDER_HOST": "localhost"
+        "BLENDER_HOST": "localhost",
+        "ELEVENLABS_API_KEY": "${ELEVENLABS_API_KEY}",
+        "GEMINI_API_KEY": "${GEMINI_API_KEY}",
+        "TRIPO_API_KEY": "${TRIPO_API_KEY}",
+        "FAL_KEY": "${FAL_KEY}"
       },
       "description": "VeilBreakers Blender toolkit - 15 compound tools: mesh, UV, texture, rig, animation, environment, worldbuilding, asset pipeline, concept art + AAA quality"
     },
@@ -81,7 +85,9 @@
       "command": "uv",
       "args": ["--directory", "C:/Users/Conner/OneDrive/Documents/veilbreakers-gamedev-toolkit/Tools/mcp-toolkit", "run", "vb-unity-mcp"],
       "env": {
-        "UNITY_PROJECT_PATH": "C:/Users/Conner/OneDrive/Documents/VeilBreakers3DCurrent"
+        "UNITY_PROJECT_PATH": "C:/Users/Conner/OneDrive/Documents/VeilBreakers3DCurrent",
+        "ELEVENLABS_API_KEY": "${ELEVENLABS_API_KEY}",
+        "GEMINI_API_KEY": "${GEMINI_API_KEY}"
       },
       "description": "VeilBreakers Unity toolkit - VFX, audio, UI, scene, gameplay, performance tools"
     }
