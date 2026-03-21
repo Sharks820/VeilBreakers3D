@@ -96,7 +96,7 @@ namespace VeilBreakers.Managers
                 }
                 else
                 {
-                    Debug.LogWarning("[SaveManager] Save mutex contended during pause, skipping auto-save.");
+                    ErrorLogger.Warn("[SaveManager] Save mutex contended during pause, skipping auto-save.");
                 }
             }
         }
@@ -121,13 +121,13 @@ namespace VeilBreakers.Managers
             if (!Directory.Exists(SavesDirectory))
             {
                 Directory.CreateDirectory(SavesDirectory);
-                Debug.Log($"[SaveManager] Created saves directory: {SavesDirectory}");
+                ErrorLogger.Log($"[SaveManager] Created saves directory: {SavesDirectory}");
             }
 
             // Cleanup orphaned temp files
             SaveFileHandler.CleanupOrphanedTempFiles(SavesDirectory);
 
-            Debug.Log($"[SaveManager] Initialized. Saves directory: {SavesDirectory}");
+            ErrorLogger.Log($"[SaveManager] Initialized. Saves directory: {SavesDirectory}");
         }
 
         // =============================================================================
@@ -157,7 +157,7 @@ namespace VeilBreakers.Managers
         /// <returns>True if save succeeded</returns>
         public async Task<bool> AutoSaveAsync(string reason = "checkpoint")
         {
-            Debug.Log($"[SaveManager] Auto-save triggered: {reason}");
+            ErrorLogger.Log($"[SaveManager] Auto-save triggered: {reason}");
             EventBus.AutoSaveTriggered(reason);
 
             // Keep two rolling auto-save checkpoints so recovery doesn't depend on a single file.
@@ -218,14 +218,14 @@ namespace VeilBreakers.Managers
 
             try
             {
-                Debug.Log($"[SaveManager] Loading slot {slot}...");
+                ErrorLogger.Log($"[SaveManager] Loading slot {slot}...");
 
                 // Read file
                 byte[] fileData = await SaveFileHandler.ReadFileAsync(path);
                 if (fileData == null)
                 {
                     // Try backup recovery
-                    Debug.LogWarning("[SaveManager] Primary file failed, attempting backup recovery...");
+                    ErrorLogger.Warn("[SaveManager] Primary file failed, attempting backup recovery...");
                     fileData = await SaveFileHandler.TryRecoverFromBackup(path);
 
                     if (fileData == null)
