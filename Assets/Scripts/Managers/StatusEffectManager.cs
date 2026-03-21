@@ -42,6 +42,8 @@ namespace VeilBreakers.Managers
         private readonly List<GameObject> _tempTargetList = new List<GameObject>();
         private readonly List<StatusEffectInstance> _tempEffectList = new List<StatusEffectInstance>();
         private readonly List<(GameObject, StatusEffectInstance)> _tempRemoveList = new List<(GameObject, StatusEffectInstance)>();
+        private readonly List<StatusEffectInstance> _tempCategoryBuffer = new List<StatusEffectInstance>();
+        private static readonly List<StatusEffectInstance> _emptyEffectList = new List<StatusEffectInstance>(0);
 
         // =============================================================================
         // EVENTS
@@ -470,18 +472,18 @@ namespace VeilBreakers.Managers
         public List<StatusEffectInstance> GetEffectsByCategory(GameObject target, EffectCategory category)
         {
             if (target == null || !_effectsByTarget.TryGetValue(target, out var effects))
-                return new List<StatusEffectInstance>();
+                return _emptyEffectList;
 
             // Manual loop to avoid LINQ allocation
-            var result = new List<StatusEffectInstance>();
+            _tempCategoryBuffer.Clear();
             for (int i = 0; i < effects.Count; i++)
             {
                 if (effects[i].Category == category)
                 {
-                    result.Add(effects[i]);
+                    _tempCategoryBuffer.Add(effects[i]);
                 }
             }
-            return result;
+            return _tempCategoryBuffer;
         }
 
         /// <summary>

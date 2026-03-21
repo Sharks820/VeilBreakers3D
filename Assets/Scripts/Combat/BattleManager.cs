@@ -53,6 +53,9 @@ namespace VeilBreakers.Combat
         // Track death event handlers for proper cleanup
         private Dictionary<Combatant, Action> _deathHandlers = new Dictionary<Combatant, Action>();
 
+        // O(1) party membership lookup (maintained alongside _playerParty)
+        private readonly HashSet<Combatant> _playerPartySet = new HashSet<Combatant>();
+
         // Pre-allocated buffers to avoid GC allocations in Update
         private const int kMaxPartySize = 6;
         private Brand[] _brandBuffer = new Brand[kMaxPartySize];
@@ -80,6 +83,13 @@ namespace VeilBreakers.Combat
             _playerParty = players ?? new List<Combatant>();
             _enemyParty = enemies ?? new List<Combatant>();
             _championPath = championPath;
+
+            // Build O(1) lookup set for party membership
+            _playerPartySet.Clear();
+            for (int i = 0; i < _playerParty.Count; i++)
+            {
+                if (_playerParty[i] != null) _playerPartySet.Add(_playerParty[i]);
+            }
 
             // Set player (first in party who is marked as player)
             _player = null;
@@ -659,7 +669,7 @@ namespace VeilBreakers.Combat
             return combatant != null
                    && combatant.IsAlive
                    && combatant != _player
-                   && _playerParty.Contains(combatant);
+                   && _playerPartySet.Contains(combatant); // O(1) instead of O(n)
         }
     }
 }

@@ -265,9 +265,11 @@ namespace VeilBreakers.UI.CharacterSelect
         /// <summary>
         /// Dolly camera into hero (narrow FOV for dramatic close-up).
         /// </summary>
+        private Camera _cachedMainCamera;
         private void DollyCamera(float targetFOV, float duration)
         {
-            var cam = _dollyCamera != null ? _dollyCamera : Camera.main;
+            if (_cachedMainCamera == null) _cachedMainCamera = Camera.main;
+            var cam = _dollyCamera != null ? _dollyCamera : _cachedMainCamera;
             if (cam == null) return;
 
             float startFOV = cam.fieldOfView;
