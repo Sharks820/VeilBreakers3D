@@ -178,19 +178,21 @@ EventBus.BattleStarted(); // Should be EventBus.BattleResumed()
 | HIGH-15 | `QuickCommandManager.cs:55` | Static cache survives scene loads with stale data |
 | HIGH-16 | `QuickCommandManager.cs:326` | Ground position validation rejects world origin (0,0,0) |
 
-### Managers/Systems (10)
+### Managers/Systems (12)
 | ID | File | Issue |
 |----|------|-------|
 | HIGH-17 | `AutoSaveManager.cs:172` | Fire-and-forget async; unobserved exceptions crash Mono runtime |
 | HIGH-18 | `SaveFileHandler.cs:296` | `ReadAsync` may not read all bytes (partial read) |
-| HIGH-19 | `StatusEffectManager.cs` | Tick-based effects use `Time.deltaTime`; pause breaks poison/regen |
-| HIGH-20 | `MigrationRunner.cs` | No rollback on failed migration; partially-migrated save is corrupt |
-| HIGH-21 | `BrandSystem.cs` | Effectiveness table lookup doesn't validate both brands exist |
-| HIGH-22 | `CorruptionSystem.cs` | Threshold boundaries overlap; exactly 10% maps to two tiers |
-| HIGH-23 | `PathSystem.cs` | Shared static buffer mutated across calls without copy |
-| HIGH-24 | `SynergySystem.cs` | Synergy calculation caches result but never invalidates on party change |
-| HIGH-25 | `VBSceneManager.cs` | Async scene load with no cancellation on re-entry |
-| HIGH-26 | `SettingsManager.cs` | PlayerPrefs.Save() called per setting change instead of batched |
+| HIGH-19 | `BrandSystem.cs:32-45` | **Brand matrix has 4+ asymmetry violations** (SAVAGE/GRACE mutual weakness, MEND/LEECH not reciprocal, LEECH/VENOM not reciprocal, DREAD/GRACE not reciprocal) |
+| HIGH-20 | `SynergySystem.cs:61-69` | **Anti-synergy short-circuits**: one weak brand in party negates all strong matches, returns ANTI immediately |
+| HIGH-21 | `PathSystem.cs:26-36` | Shared static buffer mutated across calls; callers who cache reference get corrupted data |
+| HIGH-22 | `StatusEffectManager.cs:296-337` | **Cleanse sort direction backwards**: ascending when comment says descending; lowest priority cleansed first |
+| HIGH-23 | `StatusEffectManager.cs:572-623` | Shared `_tempEffectList` used for shields AND break-on-damage in same call; reentrant corruption risk |
+| HIGH-24 | `VERASystem.cs:586-592` | `LoadSaveData` sets veil integrity and personality without validation or consistency check |
+| HIGH-25 | `VERASystem.cs:95-104` | Manual singleton pattern; OnDestroy doesn't unsubscribe events (only OnDisable does) |
+| HIGH-26 | `AutoSaveManager.cs:68-82` | Double unsubscribe in OnDisable + OnDestroy; destroyed instance handlers stay on EventBus |
+| HIGH-27 | `VBSceneManager.cs:180-203` | Synchronous LoadScene mid-coroutine; no re-entry protection during fade-in |
+| HIGH-28 | `SaveManager.cs:515-518` | `OnApplicationQuit` updates playtime but never saves to disk |
 
 ### Audio/Capture (4)
 | ID | File | Issue |
