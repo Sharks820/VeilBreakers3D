@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using VeilBreakers.Core;
 using VeilBreakers.Data;
 using IOPath = System.IO.Path;  // Alias to avoid conflict with VeilBreakers.Data.Path
 
@@ -249,12 +250,12 @@ namespace VeilBreakers.Managers
                         throw;
                     }
 
-                    Debug.Log($"[SaveFileHandler] File written successfully: {filePath}");
+                    ErrorLogger.Log($"[SaveFileHandler] File written successfully: {filePath}");
                     return true;
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogWarning($"[SaveFileHandler] Write attempt {attempt}/{MAX_RETRIES} failed: {ex.Message}");
+                    ErrorLogger.Warn($"[SaveFileHandler] Write attempt {attempt}/{MAX_RETRIES} failed: {ex.Message}");
 
                     // Cleanup temp file
                     try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { }
@@ -332,11 +333,11 @@ namespace VeilBreakers.Managers
                     File.Copy(filePath, bak1);
                 }
 
-                Debug.Log($"[SaveFileHandler] Backups rotated for: {filePath}");
+                ErrorLogger.Log($"[SaveFileHandler] Backups rotated for: {filePath}");
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"[SaveFileHandler] Backup rotation failed: {ex.Message}");
+                ErrorLogger.Warn($"[SaveFileHandler] Backup rotation failed: {ex.Message}");
             }
         }
 
@@ -351,7 +352,7 @@ namespace VeilBreakers.Managers
             // Try bak1 first (most recent)
             if (File.Exists(bak1))
             {
-                Debug.Log($"[SaveFileHandler] Attempting recovery from .bak1");
+                ErrorLogger.Log($"[SaveFileHandler] Attempting recovery from .bak1");
                 byte[] data = await ReadFileAsync(bak1);
                 if (data != null && ValidateMagicBytes(data))
                 {
@@ -362,7 +363,7 @@ namespace VeilBreakers.Managers
             // Try bak2 as last resort
             if (File.Exists(bak2))
             {
-                Debug.Log($"[SaveFileHandler] Attempting recovery from .bak2");
+                ErrorLogger.Log($"[SaveFileHandler] Attempting recovery from .bak2");
                 byte[] data = await ReadFileAsync(bak2);
                 if (data != null && ValidateMagicBytes(data))
                 {
@@ -393,7 +394,7 @@ namespace VeilBreakers.Managers
                         if ((DateTime.Now - fileInfo.LastWriteTime).TotalMinutes > 1)
                         {
                             File.Delete(tempFile);
-                            Debug.Log($"[SaveFileHandler] Cleaned up orphan: {tempFile}");
+                            ErrorLogger.Log($"[SaveFileHandler] Cleaned up orphan: {tempFile}");
                         }
                     }
                     catch { }
@@ -401,7 +402,7 @@ namespace VeilBreakers.Managers
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"[SaveFileHandler] Cleanup failed: {ex.Message}");
+                ErrorLogger.Warn($"[SaveFileHandler] Cleanup failed: {ex.Message}");
             }
         }
 
@@ -632,7 +633,7 @@ namespace VeilBreakers.Managers
         private static void PersistKeyToFile(byte[] key)
         {
             try { File.WriteAllText(kKeyFilePath, Convert.ToBase64String(key)); }
-            catch (Exception ex) { Debug.LogWarning($"[SaveFileHandler] Could not persist key file: {ex.Message}"); }
+            catch (Exception ex) { ErrorLogger.Warn($"[SaveFileHandler] Could not persist key file: {ex.Message}"); }
         }
 
         private static byte[] CombineSalt(byte[] a, byte[] b)

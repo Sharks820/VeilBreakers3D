@@ -187,7 +187,7 @@ namespace VeilBreakers.Audio
             }
 
             OnZoneChanged?.Invoke(zoneName);
-            Debug.Log($"[AudioManager] Zone changed to: {zoneName}");
+            ErrorLogger.Audio($"[AudioManager] Zone changed to: {zoneName}");
         }
 
         /// <summary>
@@ -201,7 +201,7 @@ namespace VeilBreakers.Audio
             _preloadingZone = nextZone;
             StartCoroutine(LoadBankCoroutine(AudioConfig.GetZoneBankName(nextZone)));
 
-            Debug.Log($"[AudioManager] Preloading zone: {nextZone}");
+            ErrorLogger.Audio($"[AudioManager] Preloading zone: {nextZone}");
         }
 
         // =============================================================================
@@ -453,7 +453,7 @@ namespace VeilBreakers.Audio
             // FMOD Integration:
             // FMODUnity.RuntimeManager.PlayOneShot(eventPath);
 
-            Debug.Log($"[AudioManager] PlayOneShot: {eventPath}");
+            ErrorLogger.Audio($"[AudioManager] PlayOneShot: {eventPath}");
         }
 
         /// <summary>
@@ -466,7 +466,7 @@ namespace VeilBreakers.Audio
             // FMOD Integration:
             // FMODUnity.RuntimeManager.PlayOneShot(eventPath, position);
 
-            Debug.Log($"[AudioManager] PlayOneShotAtPosition: {eventPath} at {position}");
+            ErrorLogger.Audio($"[AudioManager] PlayOneShotAtPosition: {eventPath} at {position}");
         }
 
         /// <summary>
@@ -570,7 +570,7 @@ namespace VeilBreakers.Audio
             OnBankLoaded?.Invoke(bankName);
             OnMemoryUsageChanged?.Invoke(_currentMemoryUsage);
 
-            Debug.Log($"[AudioManager] Bank loaded: {bankName} (Est. {estimatedSize / 1024}KB)");
+            ErrorLogger.Audio($"[AudioManager] Bank loaded: {bankName} (Est. {estimatedSize / 1024}KB)");
         }
 
         private void UnloadBank(string bankName)
@@ -595,7 +595,7 @@ namespace VeilBreakers.Audio
             OnBankUnloaded?.Invoke(bankName);
             OnMemoryUsageChanged?.Invoke(_currentMemoryUsage);
 
-            Debug.Log($"[AudioManager] Bank unloaded: {bankName}");
+            ErrorLogger.Audio($"[AudioManager] Bank unloaded: {bankName}");
         }
 
         private IEnumerator DelayedUnloadCoroutine(string bankName, float delay)
