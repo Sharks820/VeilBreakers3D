@@ -224,11 +224,16 @@ EventBus.BattleStarted(); // Should be EventBus.BattleResumed()
 | HIGH-45 | `VeilTransitionController.cs:203` | OnTransitionComplete fires every frame below threshold |
 | HIGH-46 | `HeroStatsPanelController.cs` | Stat cascade sequence not stopped on disable |
 
+### UI Combat (1 additional)
+| ID | File | Issue |
+|----|------|-------|
+| HIGH-47 | `SkillSlotController.cs:124` | Ultimate keybind label shows "7" instead of "R" |
+
 ### Utils/Test/Editor (2)
 | ID | File | Issue |
 |----|------|-------|
-| HIGH-47 | `ObjectPool.cs:150` | Pool growth unbounded; no max size limit |
-| HIGH-48 | `CombatTestSetup.cs:242` | Test arena creates combatants with null MonsterData references |
+| HIGH-48 | `ObjectPool.cs:150` | Pool growth unbounded; no max size limit |
+| HIGH-49 | `CombatTestSetup.cs:242` | Test arena creates combatants with null MonsterData references |
 
 ---
 
