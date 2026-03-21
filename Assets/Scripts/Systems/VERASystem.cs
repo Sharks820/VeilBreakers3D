@@ -463,6 +463,8 @@ namespace VeilBreakers.Systems
             };
         }
 
+        private static readonly char[] kGlitchChars = { '\u0337', '\u0336', '\u0334', '\u0335', '\u0338' };
+
         private string ApplyGlitchText(string text)
         {
             // Apply Zalgo-style glitch effects based on corruption level
@@ -470,8 +472,6 @@ namespace VeilBreakers.Systems
 
             if (UnityEngine.Random.value > glitchIntensity)
                 return text;
-
-            char[] glitchChars = { '̷', '̶', '̴', '̵', '̸' };
             var result = new System.Text.StringBuilder();
 
             foreach (char c in text)
@@ -479,7 +479,7 @@ namespace VeilBreakers.Systems
                 result.Append(c);
                 if (char.IsLetter(c) && UnityEngine.Random.value < glitchIntensity * 0.3f)
                 {
-                    result.Append(glitchChars[UnityEngine.Random.Range(0, glitchChars.Length)]);
+                    result.Append(kGlitchChars[UnityEngine.Random.Range(0, kGlitchChars.Length)]);
                 }
             }
 

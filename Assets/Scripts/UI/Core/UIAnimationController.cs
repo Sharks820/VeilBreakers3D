@@ -473,6 +473,7 @@ namespace VeilBreakers.UI.Core
         public void StopAllAnimations()
         {
             StopAllCoroutines();
+            _activeAnimations.Clear();
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using VeilBreakers.Core;
 using VeilBreakers.Data;
 
 namespace VeilBreakers.Managers
@@ -57,11 +58,11 @@ namespace VeilBreakers.Managers
 
             if (_migrations.ContainsKey(migration.FromVersion))
             {
-                Debug.LogWarning($"[MigrationRunner] Overwriting migration from v{migration.FromVersion}");
+                ErrorLogger.Warn($"[MigrationRunner] Overwriting migration from v{migration.FromVersion}");
             }
 
             _migrations[migration.FromVersion] = migration;
-            Debug.Log($"[MigrationRunner] Registered migration: v{migration.FromVersion} → v{migration.ToVersion} ({migration.Description})");
+            ErrorLogger.Log($"[MigrationRunner] Registered migration: v{migration.FromVersion} → v{migration.ToVersion} ({migration.Description})");
         }
 
         /// <summary>
@@ -83,7 +84,7 @@ namespace VeilBreakers.Managers
             // Already at current version
             if (data.version == _currentVersion)
             {
-                Debug.Log($"[MigrationRunner] Save already at current version v{_currentVersion}");
+                ErrorLogger.Log($"[MigrationRunner] Save already at current version v{_currentVersion}");
                 return data;
             }
 
@@ -95,7 +96,7 @@ namespace VeilBreakers.Managers
             }
 
             // Run sequential migrations
-            Debug.Log($"[MigrationRunner] Migrating from v{data.version} to v{_currentVersion}...");
+            ErrorLogger.Log($"[MigrationRunner] Migrating from v{data.version} to v{_currentVersion}...");
 
             int maxIterations = _currentVersion - data.version + 1;
             int iterations = 0;
@@ -112,7 +113,7 @@ namespace VeilBreakers.Managers
                     return null;
                 }
 
-                Debug.Log($"[MigrationRunner] Running: {migration.Description}");
+                ErrorLogger.Log($"[MigrationRunner] Running: {migration.Description}");
 
                 try
                 {
@@ -131,7 +132,7 @@ namespace VeilBreakers.Managers
                 }
             }
 
-            Debug.Log($"[MigrationRunner] Migration complete: v{startVersion} → v{_currentVersion}");
+            ErrorLogger.Log($"[MigrationRunner] Migration complete: v{startVersion} → v{_currentVersion}");
             return data;
         }
 

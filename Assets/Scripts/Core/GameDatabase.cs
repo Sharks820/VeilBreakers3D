@@ -65,7 +65,7 @@ namespace VeilBreakers.Core
         public async Task LoadAllDataAsync()
         {
             if (IsLoaded || _isLoading) return;
-            Debug.Log("[GameDatabase] Starting asynchronous data load...");
+            ErrorLogger.Log("[GameDatabase] Starting asynchronous data load...");
             _isLoading = true;
             LoadFailed = false;
             LastLoadError = null;
@@ -86,11 +86,11 @@ namespace VeilBreakers.Core
 
                 IsLoaded = true;
 
-                Debug.Log("[GameDatabase] Data loaded successfully!");
-                Debug.Log($"  - Monsters: {_monsters.Count}");
-                Debug.Log($"  - Skills: {_skills.Count}");
-                Debug.Log($"  - Heroes: {_heroes.Count}");
-                Debug.Log($"  - Items: {_items.Count}");
+                ErrorLogger.Log("[GameDatabase] Data loaded successfully!");
+                ErrorLogger.Log($"  - Monsters: {_monsters.Count}");
+                ErrorLogger.Log($"  - Skills: {_skills.Count}");
+                ErrorLogger.Log($"  - Heroes: {_heroes.Count}");
+                ErrorLogger.Log($"  - Items: {_items.Count}");
             }
             catch (Exception ex)
             {
@@ -126,7 +126,7 @@ namespace VeilBreakers.Core
             // Validate it's an array (starts with [ and ends with ])
             if (!trimmed.StartsWith("[") || !trimmed.EndsWith("]"))
             {
-                Debug.LogWarning($"[GameDatabase] JSON text does not appear to be an array. Expected [...], got: {trimmed.Substring(0, System.Math.Min(50, trimmed.Length))}...");
+                ErrorLogger.Warn($"[GameDatabase] JSON text does not appear to be an array. Expected [...], got: {trimmed.Substring(0, System.Math.Min(50, trimmed.Length))}...");
                 // Try to parse anyway in case it's already wrapped
                 if (trimmed.StartsWith("{"))
                     return trimmed;

@@ -43,10 +43,7 @@ namespace VeilBreakers.Systems
         };
 
         /// <summary>
-        /// Calculate synergy tier for a party composition
-        /// </summary>
-        /// <summary>
-        /// Get synergy tier with explicit count (avoids allocation)
+        /// Get synergy tier with explicit brand count (avoids allocation).
         /// </summary>
         public static SynergyTier GetSynergyTier(Path championPath, Brand[] partyBrands, int count)
         {

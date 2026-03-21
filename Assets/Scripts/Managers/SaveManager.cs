@@ -244,7 +244,7 @@ namespace VeilBreakers.Managers
                 // Migrate if needed
                 if (data.version < SaveVersion.CURRENT)
                 {
-                    Debug.Log($"[SaveManager] Migrating save from v{data.version} to v{SaveVersion.CURRENT}...");
+                    ErrorLogger.Log($"[SaveManager] Migrating save from v{data.version} to v{SaveVersion.CURRENT}...");
                     data = _migrationRunner.MigrateToLatest(data);
 
                     if (data == null)
@@ -256,7 +256,7 @@ namespace VeilBreakers.Managers
                     _currentSave = data;
 
                     // Save migrated data (skip mutex since we already hold it)
-                    Debug.Log("[SaveManager] Saving migrated data...");
+                    ErrorLogger.Log("[SaveManager] Saving migrated data...");
                     await SaveInternalCoreAsync(slot, path);
                 }
                 else
@@ -266,7 +266,7 @@ namespace VeilBreakers.Managers
                 _currentSlot = slot;
                 _sessionStartTime = Time.realtimeSinceStartup;
 
-                Debug.Log($"[SaveManager] Loaded slot {slot} successfully. Hero: {data.heroName} Lv{data.heroLevel}");
+                ErrorLogger.Log($"[SaveManager] Loaded slot {slot} successfully. Hero: {data.heroName} Lv{data.heroLevel}");
                 EventBus.LoadCompleted(slot);
                 return true;
             }
@@ -320,7 +320,7 @@ namespace VeilBreakers.Managers
                     _currentSlot = kNoneSlot;
                 }
 
-                Debug.Log($"[SaveManager] Deleted slot {slot}");
+                ErrorLogger.Log($"[SaveManager] Deleted slot {slot}");
                 return true;
             }
             catch (Exception ex)
@@ -589,7 +589,7 @@ namespace VeilBreakers.Managers
 
             try
             {
-                Debug.Log($"[SaveManager] Saving to slot {slot}...");
+                ErrorLogger.Log($"[SaveManager] Saving to slot {slot}...");
 
                 // Update metadata
                 UpdatePlaytime();
@@ -606,7 +606,7 @@ namespace VeilBreakers.Managers
 
                 if (success)
                 {
-                    Debug.Log($"[SaveManager] Saved slot {slot} successfully. Size: {data.Length} bytes");
+                    ErrorLogger.Log($"[SaveManager] Saved slot {slot} successfully. Size: {data.Length} bytes");
                     EventBus.SaveCompleted(slot);
                     return true;
                 }

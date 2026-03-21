@@ -150,7 +150,7 @@ namespace VeilBreakers.Audio
             _isInitialized = true;
             OnInitialized?.Invoke();
 
-            Debug.Log("[AudioManager] Initialized with core bank loaded");
+            ErrorLogger.Audio("[AudioManager] Initialized with core bank loaded");
         }
 
         // =============================================================================

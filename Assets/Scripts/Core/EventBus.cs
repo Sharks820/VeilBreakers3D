@@ -313,6 +313,11 @@ namespace VeilBreakers.Core
             OnUnitDefeated = null;
             OnSkillUsed = null;
 
+            OnBuffApplied = null;
+            OnDebuffApplied = null;
+            OnUtilityUsed = null;
+            OnUltimateUsed = null;
+
             OnStatusEffectApplied = null;
             OnStatusEffectRemoved = null;
             OnStatusEffectTick = null;

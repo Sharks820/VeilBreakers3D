@@ -158,7 +158,7 @@ namespace VeilBreakers.UI.Menus
             InitializeUI();
             
             // Subscribe to InputManager for universal navigation
-            if (InputManager.Instance != null)
+            if (InputManager.HasInstance)
             {
                 InputManager.Instance.OnActionTriggered += OnActionTriggered;
             }
@@ -167,9 +167,9 @@ namespace VeilBreakers.UI.Menus
         private void OnDisable()
         {
             UnbindEvents();
-            
-            // Unsubscribe from InputManager
-            if (InputManager.Instance != null)
+
+            // Unsubscribe from InputManager (use HasInstance to avoid auto-create during quit)
+            if (InputManager.HasInstance)
             {
                 InputManager.Instance.OnActionTriggered -= OnActionTriggered;
             }
