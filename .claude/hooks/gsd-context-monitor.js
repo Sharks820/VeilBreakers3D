@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// gsd-hook-version: 1.26.0
+// gsd-hook-version: 1.27.0
 // Context Monitor - PostToolUse/AfterTool hook (Gemini uses AfterTool)
 // Reads context metrics from the statusline bridge file and injects
 // warnings when context usage is high. This makes the AGENT aware of
@@ -32,7 +32,7 @@ let input = '';
 // Windows/Git Bash, or slow Claude Code piping during large outputs),
 // exit silently instead of hanging until Claude Code kills the process
 // and reports "hook error". See #775, #1162.
-const stdinTimeout = setTimeout(() => process.exit(0), 3000);
+const stdinTimeout = setTimeout(() => process.exit(0), 10000);
 process.stdin.setEncoding('utf8');
 process.stdin.on('data', chunk => input += chunk);
 process.stdin.on('end', () => {

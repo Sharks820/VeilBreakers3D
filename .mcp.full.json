@@ -32,21 +32,27 @@
     },
     "gemini-cli": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "mcp-gemini-cli", "--allow-npx", "--gemini-path", "C:/nvm4w/nodejs/gemini.cmd"],
+      "command": "node",
+      "args": ["--require", "./Tools/mcp/spawn-patch.cjs", "C:/nvm4w/nodejs/node_modules/mcp-gemini-cli/dist/index.js", "--allow-npx"],
       "env": {
         "PATH": "C:\\nvm4w\\nodejs;${PATH}"
       },
       "description": "Gemini CLI - search, chat, analyze files. Use for second opinions and web research."
     },
+    "codex-cli": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["--require", "./Tools/mcp/spawn-patch.cjs", "C:/nvm4w/nodejs/node_modules/mcp-codex-cli/dist/index.js", "--allow-npx"],
+      "env": {
+        "PATH": "C:\\nvm4w\\nodejs;${PATH}"
+      },
+      "description": "Codex CLI - OpenAI code review, analysis. Use as senior reviewer alongside Gemini."
+    },
     "github": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
-      },
-      "description": "GitHub operations - PRs, issues, commits, CI status"
+      "command": "node",
+      "args": ["Tools/mcp/github-mcp-launcher.js"],
+      "description": "GitHub operations - PRs, issues, commits, CI status. Token auto-sourced from gh CLI."
     },
     "blender": {
       "type": "stdio",
@@ -55,7 +61,27 @@
       "env": {
         "BLENDER_PORT": "9876"
       },
-      "description": "3D modeling - create/edit models, scenes, materials, render from Blender"
+      "disabled": true,
+      "description": "REPLACED by vb-blender — generic blender-mcp has fewer capabilities"
+    },
+    "vb-blender": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["--directory", "C:/Users/Conner/OneDrive/Documents/veilbreakers-gamedev-toolkit/Tools/mcp-toolkit", "run", "vb-blender-mcp"],
+      "env": {
+        "BLENDER_PORT": "9876",
+        "BLENDER_HOST": "localhost"
+      },
+      "description": "VeilBreakers Blender toolkit - 15 compound tools: mesh, UV, texture, rig, animation, environment, worldbuilding, asset pipeline, concept art + AAA quality"
+    },
+    "vb-unity": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["--directory", "C:/Users/Conner/OneDrive/Documents/veilbreakers-gamedev-toolkit/Tools/mcp-toolkit", "run", "vb-unity-mcp"],
+      "env": {
+        "UNITY_PROJECT_PATH": "C:/Users/Conner/OneDrive/Documents/VeilBreakers3DCurrent"
+      },
+      "description": "VeilBreakers Unity toolkit - VFX, audio, UI, scene, gameplay, performance tools"
     },
     "image-process": {
       "type": "stdio",
@@ -75,7 +101,6 @@
   },
   "_profile": {
     "name": "full",
-    "purpose": "Include optional MCPs when actively doing Blender/image/notion tasks."
+    "purpose": "Include optional MCPs (image-process, notion) plus all core MCPs for heavy tool sessions."
   }
 }
-

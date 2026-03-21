@@ -219,9 +219,8 @@ namespace VeilBreakers.[Category]
 ### Model Roles
 - **Opus (Claude Opus 4.6):** Head Software Engineer. Signs off on ALL phases. Handles implementation when Sonnet gets stuck. Performs testing, security review, and code strength verification.
 - **Sonnet (Claude Sonnet 4.6):** Implementation engineer. Writes code phase-by-phase. Escalates to Opus when blocked.
-- **Gemini CLI:** Senior reviewer. Validates each phase output.
-- **Codex CLI:** Senior reviewer. Validates each phase output.
-- **Kimi CLI:** Senior reviewer. Validates each phase output.
+- **Gemini CLI:** Senior reviewer. Validates each phase output. (MCP: `mcp__gemini-cli__chat`)
+- **Codex CLI:** Senior reviewer. Validates each phase output. (MCP: `mcp__codex-cli__chat`)
 
 ### Phase Execution Flow
 ```
@@ -233,7 +232,7 @@ For each phase:
      - Security (no injection, no unsafe patterns)
      - Performance (no Update allocations, cached queries)
      - Architecture (event lifecycle, proper teardown)
-  4. Gemini + Codex + Kimi validate via bash CLI
+  4. Gemini + Codex validate via MCP or bash CLI
   5. Opus gives FINAL SIGN-OFF
   6. On approval:
      a. Save to episodic memory (conversation search)
@@ -292,9 +291,10 @@ If Sonnet fails on a task after 2 attempts, Opus takes over implementation immed
 ### Testing Requirements Per Phase
 - Unity compilation: MUST pass (zero errors)
 - Code review: Opus sign-off required
-- External review: At least 2/3 CLI reviewers must approve
-- Security scan: No hardcoded secrets, no unsafe deserialization, no injection vectors
+- External review: Both CLI reviewers (Gemini + Codex) should approve
+- Security scan: Semgrep plugin auto-scans on Edit/Write; no hardcoded secrets, no unsafe deserialization, no injection vectors
 - Performance check: No allocations in hot paths, cached references, proper disposal
+- C# diagnostics: csharp-lsp plugin provides real-time error detection
 
 ### Memory Protocol Per Phase
 After each phase approval:

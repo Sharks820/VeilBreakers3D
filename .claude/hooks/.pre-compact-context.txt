@@ -1,0 +1,3 @@
+Compacted: 2026-03-19T00:43:42.630Z
+Branch: master
+Modified files: .claude/agents/gsd-codebase-mapper.md, .claude/agents/gsd-debugger.md, .claude/agents/gsd-executor.md, .claude/agents/gsd-phase-researcher.md, .claude/agents/gsd-plan-checker.md, .claude/agents/gsd-planner.md, .claude/agents/gsd-project-researcher.md, .claude/agents/gsd-research-synthesizer.md, .claude/agents/gsd-roadmapper.md, .claude/agents/gsd-verifier.md...

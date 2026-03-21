@@ -11,19 +11,15 @@ The git log should read like a changelog of what shipped, not a diary of plannin
 
 <commit_points>
 
-**IMPORTANT: This project uses plan-level commits (not per-task). Do NOT commit after each task. Batch all task work into a single commit per plan.**
-
 | Event                   | Commit? | Why                                              |
 | ----------------------- | ------- | ------------------------------------------------ |
 | BRIEF + ROADMAP created | YES     | Project initialization                           |
 | PLAN.md created         | NO      | Intermediate - commit with plan completion       |
 | RESEARCH.md created     | NO      | Intermediate                                     |
 | DISCOVERY.md created    | NO      | Intermediate                                     |
-| **Task completed**      | NO      | Batched into plan commit (plan-level granularity)|
-| **Plan completed**      | YES     | Single commit: all code + metadata together      |
+| **Task completed**      | YES     | Atomic unit of work (1 commit per task)         |
+| **Plan completed**      | YES     | Metadata commit (SUMMARY + STATE + ROADMAP)     |
 | Handoff created         | YES     | WIP state preserved                              |
-
-**IMPORTANT: Do NOT push to remote automatically. Do NOT pull from remote automatically. Only push/pull when explicitly requested by the user.**
 
 </commit_points>
 
@@ -55,7 +51,7 @@ Phases:
 What to commit:
 
 ```bash
-node ./.claude/get-shit-done/bin/gsd-tools.cjs commit "docs: initialize [project-name] ([N] phases)" --files .planning/
+node "C:/Users/Conner/OneDrive/Documents/VeilBreakers3DCurrent/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs: initialize [project-name] ([N] phases)" --files .planning/
 ```
 
 </format>
@@ -63,14 +59,18 @@ node ./.claude/get-shit-done/bin/gsd-tools.cjs commit "docs: initialize [project
 <format name="task-completion">
 ## Task Completion (During Plan Execution)
 
-**Tasks do NOT get individual commits.** All task work is batched and committed once when the plan completes. This reduces commit noise while maintaining meaningful history.
+Each task gets its own commit immediately after completion.
+
+> **Parallel agents:** When running as a parallel executor (spawned by execute-phase),
+> use `--no-verify` on all commits to avoid pre-commit hook lock contention.
+> The orchestrator validates hooks once after all agents complete.
 
 ```
-{type}({phase}-{plan}): {plan-name}
+{type}({phase}-{plan}): {task-name}
 
-- [Task 1: key change]
-- [Task 2: key change]
-- [Task 3: key change]
+- [Key change 1]
+- [Key change 2]
+- [Key change 3]
 ```
 
 **Commit types:**
@@ -133,7 +133,7 @@ SUMMARY: .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md
 What to commit:
 
 ```bash
-node ./.claude/get-shit-done/bin/gsd-tools.cjs commit "docs({phase}-{plan}): complete [plan-name] plan" --files .planning/phases/XX-name/{phase}-{plan}-PLAN.md .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/STATE.md .planning/ROADMAP.md
+node "C:/Users/Conner/OneDrive/Documents/VeilBreakers3DCurrent/.claude/get-shit-done/bin/gsd-tools.cjs" commit "docs({phase}-{plan}): complete [plan-name] plan" --files .planning/phases/XX-name/{phase}-{plan}-PLAN.md .planning/phases/XX-name/{phase}-{plan}-SUMMARY.md .planning/STATE.md .planning/ROADMAP.md
 ```
 
 **Note:** Code files NOT included - already committed per-task.
@@ -153,7 +153,7 @@ Current: [task name]
 What to commit:
 
 ```bash
-node ./.claude/get-shit-done/bin/gsd-tools.cjs commit "wip: [phase-name] paused at task [X]/[Y]" --files .planning/
+node "C:/Users/Conner/OneDrive/Documents/VeilBreakers3DCurrent/.claude/get-shit-done/bin/gsd-tools.cjs" commit "wip: [phase-name] paused at task [X]/[Y]" --files .planning/
 ```
 
 </format>
@@ -170,27 +170,39 @@ a7f2d1 feat(checkout): Stripe payments with webhook verification
 2f4a8d docs: initialize ecommerce-app (5 phases)
 ```
 
-**VeilBreakers approach (per-plan commits):**
+**New approach (per-task commits):**
 ```
 # Phase 04 - Checkout
-1a2b3c feat(04-01): checkout flow with Stripe webhooks
+1a2b3c docs(04-01): complete checkout flow plan
+4d5e6f feat(04-01): add webhook signature verification
+7g8h9i feat(04-01): implement payment session creation
+0j1k2l feat(04-01): create checkout page component
 
 # Phase 03 - Products
-3m4n5o feat(03-02): product listing with search, filters, pagination
-2v3w4x feat(03-01): product catalog schema and API
+3m4n5o docs(03-02): complete product listing plan
+6p7q8r feat(03-02): add pagination controls
+9s0t1u feat(03-02): implement search and filters
+2v3w4x feat(03-01): create product catalog schema
 
 # Phase 02 - Auth
-5y6z7a feat(02-02): JWT refresh token rotation
-7k8l9m feat(02-01): JWT generation, validation, and jose setup
+5y6z7a docs(02-02): complete token refresh plan
+8b9c0d feat(02-02): implement refresh token rotation
+1e2f3g test(02-02): add failing test for token refresh
+4h5i6j docs(02-01): complete JWT setup plan
+7k8l9m feat(02-01): add JWT generation and validation
+0n1o2p chore(02-01): install jose library
 
 # Phase 01 - Foundation
-2z3a4b feat(01-01): Next.js 15 + Prisma + Tailwind scaffold
+3q4r5s docs(01-01): complete scaffold plan
+6t7u8v feat(01-01): configure Tailwind and globals
+9w0x1y feat(01-01): set up Prisma with database
+2z3a4b feat(01-01): create Next.js 15 project
 
 # Initialization
 5c6d7e docs: initialize ecommerce-app (5 phases)
 ```
 
-Each plan produces 1 commit (all tasks batched). Clean, readable, focused.
+Each plan produces 2-4 commits (tasks + metadata). Clear, granular, bisectable.
 
 </example_log>
 
@@ -204,32 +216,80 @@ Each plan produces 1 commit (all tasks batched). Clean, readable, focused.
 - "Fixed typo in roadmap"
 
 **Do commit (outcomes):**
-- Plan completion (all tasks batched into one feat/fix/refactor commit)
+- Each task completion (feat/fix/test/refactor)
+- Plan completion metadata (docs)
 - Project initialization (docs)
 
-**Key principle:** Commit working code at plan boundaries, not after every task. Never auto-push or auto-pull.
+**Key principle:** Commit working code and shipped outcomes, not planning process.
 
 </anti_patterns>
 
 <commit_strategy_rationale>
 
-## Why Per-Plan Commits? (VeilBreakers Override)
+## Why Per-Task Commits?
 
-This project uses plan-level commits instead of per-task commits to reduce git noise.
+**Context engineering for AI:**
+- Git history becomes primary context source for future Claude sessions
+- `git log --grep="{phase}-{plan}"` shows all work for a plan
+- `git diff <hash>^..<hash>` shows exact changes per task
+- Less reliance on parsing SUMMARY.md = more context for actual work
 
-**Cleaner history:**
-- Each commit represents a complete, coherent unit of work (a full plan)
-- `git log` reads like a changelog, not a diary
-- Less noise = easier manual review for solo developer
+**Failure recovery:**
+- Task 1 committed ✅, Task 2 failed ❌
+- Claude in next session: sees task 1 complete, can retry task 2
+- Can `git reset --hard` to last successful task
 
-**Still recoverable:**
-- SUMMARY.md tracks individual tasks within each plan
-- STATE.md preserves progress context
-- One commit per plan is still granular enough for `git bisect`
+**Debugging:**
+- `git bisect` finds exact failing task, not just failing plan
+- `git blame` traces line to specific task context
+- Each commit is independently revertable
 
-**No auto-push/pull:**
-- Never push to remote unless user explicitly asks
-- Never pull from remote unless user explicitly asks
-- The user controls when remote sync happens
+**Observability:**
+- Solo developer + Claude workflow benefits from granular attribution
+- Atomic commits are git best practice
+- "Commit noise" irrelevant when consumer is Claude, not humans
 
 </commit_strategy_rationale>
+
+<sub_repos_support>
+
+## Multi-Repo Workspace Support (sub_repos)
+
+For workspaces with separate git repos (e.g., `backend/`, `frontend/`, `shared/`), GSD routes commits to each repo independently.
+
+### Configuration
+
+In `.planning/config.json`, list sub-repo directories under `planning.sub_repos`:
+
+```json
+{
+  "planning": {
+    "commit_docs": false,
+    "sub_repos": ["backend", "frontend", "shared"]
+  }
+}
+```
+
+Set `commit_docs: false` so planning docs stay local and are not committed to any sub-repo.
+
+### How It Works
+
+1. **Auto-detection:** During `/gsd:new-project`, directories with their own `.git` folder are detected and offered for selection as sub-repos. On subsequent runs, `loadConfig` auto-syncs the `sub_repos` list with the filesystem — adding newly created repos and removing deleted ones. This means `config.json` may be rewritten automatically when repos change on disk.
+2. **File grouping:** Code files are grouped by their sub-repo prefix (e.g., `backend/src/api/users.ts` belongs to the `backend/` repo).
+3. **Independent commits:** Each sub-repo receives its own atomic commit via `gsd-tools.cjs commit-to-subrepo`. File paths are made relative to the sub-repo root before staging.
+4. **Planning stays local:** The `.planning/` directory is not committed; it acts as cross-repo coordination.
+
+### Commit Routing
+
+Instead of the standard `commit` command, use `commit-to-subrepo` when `sub_repos` is configured:
+
+```bash
+node C:/Users/Conner/OneDrive/Documents/VeilBreakers3DCurrent/.claude/get-shit-done/bin/gsd-tools.cjs commit-to-subrepo "feat(02-01): add user API" \
+  --files backend/src/api/users.ts backend/src/types/user.ts frontend/src/components/UserForm.tsx
+```
+
+This stages `src/api/users.ts` and `src/types/user.ts` in the `backend/` repo, and `src/components/UserForm.tsx` in the `frontend/` repo, then commits each independently with the same message.
+
+Files that don't match any configured sub-repo are reported as unmatched.
+
+</sub_repos_support>

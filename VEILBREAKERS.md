@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **SINGLE SOURCE OF TRUTH** | Version: **v4.65** | Last updated: 2026-02-06
+> **SINGLE SOURCE OF TRUTH** | Version: **v5.0** | Last updated: 2026-03-21
 
 ---
 
@@ -230,10 +230,10 @@ To ensure maximum efficiency and prevent technical debt, development is divided 
 ## Current Status (AAA UI + Infrastructure)
 
 - **Main Menu:** AAA-quality with video background, lightning overlay, music, molten button VFX, ember/ash particles
-- **Character Select:** BG3-inspired cinematic redesign with 5-component architecture (4 heroes + mystery slot)
-- **Core Systems:** Modernized (Input System, URP-ready, ThemeManager v6 APIs)
+- **Character Select:** BG3-inspired cinematic redesign with 5-component architecture (4 heroes + mystery slot). Full bug scan complete — all critical/high issues fixed (2026-03-20)
+- **Core Systems:** Modernized (Input System, URP-ready, ThemeManager v6 APIs, PrimeTween 1.3.8)
 - **CI/CD:** Unity PR CI via GitHub Actions (`.github/workflows/unity-ci.yml`)
-- **Git Workflow:** Formalized branch model (master/develop/feature/fix/release/hotfix) - see `Docs/plans/GIT_WORKFLOW_AAA.md`
+- **Git Workflow:** Formalized branch model (master/develop/feature) - see `Docs/plans/GIT_WORKFLOW_AAA.md`
 - **GitHub Templates:** PR template, bug report, feature request issue templates
 - **Monster Redesign:** v2 specs complete, v1 data archived
 - **AAA Features:**
@@ -242,6 +242,75 @@ To ensure maximum efficiency and prevent technical debt, development is divided 
   - AnimatedBar, ScreenTransition, ParallaxBackground
   - VfxTextureImportPostprocessor (auto-import settings for VFX textures)
 - **Next:** 3D model integration, combat system with 3D, monster redesign implementation
+
+---
+
+## AI Development Toolkit (v5.0 — 2026-03-21)
+
+### MCP Servers (10 active)
+
+| Server | Purpose | Best For |
+|--------|---------|----------|
+| **vb-unity** | VeilBreakers Unity toolkit — VFX, audio, UI, scene, gameplay scripts | Scene setup, lighting, terrain, animator creation, NavMesh baking |
+| **vb-blender** | VeilBreakers Blender toolkit — mesh, UV, texture, rig, animation | 3D modeling, asset pipeline, concept art, environment building |
+| **gemini-cli** | Google Gemini chat/search/file analysis | Second opinions, web research, adversarial code review |
+| **codex-cli** | OpenAI Codex chat/analysis | Senior code review, alternative perspectives on architecture |
+| **github** | GitHub API — PRs, issues, commits | CI status, PR creation, issue tracking |
+| **serena** | Symbol-aware C# code navigation | Find references, rename symbols, understand unfamiliar code |
+| **sequential-thinking** | Structured multi-step reasoning | Balance calculations, complex debugging, architecture decisions |
+| **memory-graph** | Knowledge graph with episodic memory | Cross-session project knowledge, persistent context |
+| **desktop-commander** | Terminal process management | Long-running builds, background tasks, process monitoring |
+| **claude-in-chrome** | Browser automation via Chrome DevTools | Visual testing, web research, UI screenshot capture |
+
+### Enabled Plugins (16)
+
+| Plugin | Purpose | When to Use |
+|--------|---------|-------------|
+| **csharp-lsp** | C# language server diagnostics (csharp-ls v0.22.0) | Real-time error detection, symbol navigation in .cs files |
+| **frontend-design** | Production-grade UI design skill | UI Toolkit layouts, character select screens, menus |
+| **superpowers** | Core skills: brainstorming, debugging, plans, TDD, verification | Every major feature — brainstorm first, then plan, then implement |
+| **code-review** | Structured code review | After major implementations, before merging |
+| **code-simplifier** | Code cleanup and simplification | After completing features, reduce complexity |
+| **semgrep** | Static analysis (auto-scans on Edit/Write) | Always active — catches security issues, anti-patterns |
+| **context7** | Up-to-date library documentation | Unity API questions, package docs |
+| **episodic-memory** | Cross-session conversation history | Remembering past decisions, debugging approaches |
+| **commit-commands** | Git commit/push/PR workflows | Structured commits, PR creation |
+| **security-guidance** | Secure-by-default coding | When implementing any system boundary code |
+| **superpowers-lab** | Semantic duplicate detection | Finding redundant code across the codebase |
+| **double-shot-latte** | Episodic memory + git integration | Enhanced memory with git context |
+| **claude-code-setup** | Automation recommendations | Optimizing Claude Code workflow |
+| **claude-md-management** | CLAUDE.md maintenance | Keeping project instructions current |
+| **dx** | GitHub Actions analysis | CI failure diagnosis |
+
+### CLI Tools
+
+| Tool | Version | Purpose |
+|------|---------|---------|
+| **Claude Code** | 2.1.x (auto-updates) | Primary AI coding agent |
+| **Gemini CLI** | 0.34.0 | Google AI — web search, second opinions |
+| **Codex CLI** | 0.116.0 | OpenAI AI — code review, alternative perspectives |
+| **GSD** | 1.27.0 | Get Shit Done — project management framework |
+| **.NET SDK** | 10.0.104 | C# compilation and tooling |
+| **csharp-ls** | 0.22.0 | C# language server for IDE diagnostics |
+| **uv** | 0.10.12 | Fast Python package manager (runs vb-blender/vb-unity MCPs) |
+| **Node.js** | 25.8.0 | JavaScript runtime (MCP servers, hooks) |
+
+### Tool Selection Guide
+
+| Task | Primary Tool | Backup |
+|------|-------------|--------|
+| Understand unfamiliar C# code | Serena `find_symbol` + `get_symbols_overview` | Read tool |
+| Find where method is called | Serena `find_referencing_symbols` | Grep tool |
+| Quick code search | Grep tool directly | Serena `search_for_pattern` |
+| Unity API question | Context7 `query-docs` | Gemini web search |
+| Balance/math verification | Sequential-thinking | Gemini review |
+| Code review | Semgrep (auto) + code-review skill | Gemini + Codex CLIs |
+| UI layout design | frontend-design skill + mockup-ui | ASCII mockup first |
+| New feature design | brainstorming skill → writing-plans | Gemini collaboration |
+| Complex debugging | systematic-debugging skill | Gemini second opinion |
+| Scene/lighting setup | vb-unity `unity_scene` | Manual C# scripts |
+| 3D model work | vb-blender tools | Blender direct |
+| Git operations | commit-commands skill | gh CLI |
 
 ---
 
