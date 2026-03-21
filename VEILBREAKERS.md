@@ -1,6 +1,6 @@
 # VEILBREAKERS - Project Memory
 
-> **SINGLE SOURCE OF TRUTH** | Version: **v5.0** | Last updated: 2026-03-21
+> **SINGLE SOURCE OF TRUTH** | Version: **v5.1** | Last updated: 2026-03-22
 
 ---
 
@@ -227,11 +227,14 @@ To ensure maximum efficiency and prevent technical debt, development is divided 
 
 ---
 
-## Current Status (AAA UI + Infrastructure)
+## Current Status (v5.1 — AAA Quality Pass, 2026-03-21)
 
-- **Main Menu:** AAA-quality with video background, lightning overlay, music, molten button VFX, ember/ash particles
-- **Character Select:** BG3-inspired cinematic redesign with 5-component architecture (4 heroes + mystery slot). Full bug scan complete — all critical/high issues fixed (2026-03-20)
-- **Core Systems:** Modernized (Input System, URP-ready, ThemeManager v6 APIs, PrimeTween 1.3.8)
+- **Main Menu:** AAA-quality with video background, lightning overlay, music, molten button VFX, ember/ash particles. Orange bar transition glitch fixed.
+- **Character Select:** BG3-inspired cinematic redesign with 5-component architecture. Comprehensive 42-bug scan complete — 28+ fixes applied across Tier 0 (security), Tier 1 (gameplay), and Tier 2-3 (polish). `_isEmbarking` finally block, dual NavigationMove removed, VolumeProfile leak fixed, OnTransitionComplete multi-fire fixed, gamepad zone gating added.
+- **Core Systems:** Modernized (Input System, URP-ready, ThemeManager v6 APIs, PrimeTween 1.3.8). EventBus fully cleaned (4 missing events added to ClearAllListeners). BattleResumed event added for berserk flow.
+- **Combat:** DamageCalculator corruption modifier fixed (defender double-dip removed). Combatant.RemoveFromBattle() added for clean capture removal. ApplyDamageBuff now stacks multiplicatively. BattleManager uses HashSet for O(1) party lookups.
+- **Save System:** Encryption key file backup (survives PlayerPrefs clear). Non-blocking pause save (no more deadlock risk).
+- **Performance:** Debug.Log migrated to ErrorLogger (stripped in release builds). Hot-path allocations fixed (StatusEffectManager buffers, BattleManager HashSet). Camera.main cached. VERASystem glitch chars static.
 - **CI/CD:** Unity PR CI via GitHub Actions (`.github/workflows/unity-ci.yml`)
 - **Git Workflow:** Formalized branch model (master/develop/feature) - see `Docs/plans/GIT_WORKFLOW_AAA.md`
 - **GitHub Templates:** PR template, bug report, feature request issue templates
