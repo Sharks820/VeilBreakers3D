@@ -59,6 +59,16 @@
             "command": "echo disabled-for-claude"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/gsd-prompt-guard.js",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -85,7 +95,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/gsd-context-monitor.js"
+            "command": "node .claude/hooks/gsd-context-monitor.js",
+            "timeout": 10
           }
         ]
       }
