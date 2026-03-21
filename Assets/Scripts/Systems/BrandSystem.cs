@@ -117,19 +117,19 @@ namespace VeilBreakers.Systems
             return GetEffectiveness(attacker, defender) <= NOT_EFFECTIVE;
         }
 
-        // Pre-computed brand colors (decoupled from UI layer)
+        // Pre-computed brand colors — must match ThemeManager.InitializeColors() primary values
         private static readonly Dictionary<Brand, Color> _brandColors = new Dictionary<Brand, Color>
         {
-            { Brand.IRON,    new Color(0.65f, 0.65f, 0.70f) },   // Steel gray
-            { Brand.SAVAGE,  new Color(0.85f, 0.25f, 0.15f) },   // Blood red
-            { Brand.SURGE,   new Color(0.30f, 0.65f, 1.00f) },   // Electric blue
-            { Brand.VENOM,   new Color(0.40f, 0.80f, 0.20f) },   // Toxic green
-            { Brand.DREAD,   new Color(0.55f, 0.20f, 0.70f) },   // Deep purple
-            { Brand.LEECH,   new Color(0.50f, 0.10f, 0.25f) },   // Dark crimson
-            { Brand.GRACE,   new Color(1.00f, 0.90f, 0.50f) },   // Holy gold
-            { Brand.MEND,    new Color(0.40f, 0.90f, 0.70f) },   // Healing teal
-            { Brand.RUIN,    new Color(1.00f, 0.50f, 0.10f) },   // Flame orange
-            { Brand.VOID,    new Color(0.20f, 0.10f, 0.30f) },   // Void dark
+            { Brand.IRON,    new Color(0.55f, 0.59f, 0.65f) },   // Steel gray
+            { Brand.SAVAGE,  new Color(0.71f, 0.18f, 0.18f) },   // Blood red
+            { Brand.SURGE,   new Color(0.24f, 0.55f, 0.86f) },   // Electric blue
+            { Brand.VENOM,   new Color(0.31f, 0.71f, 0.24f) },   // Toxic green
+            { Brand.DREAD,   new Color(0.47f, 0.24f, 0.63f) },   // Deep purple
+            { Brand.LEECH,   new Color(0.55f, 0.16f, 0.31f) },   // Dark crimson
+            { Brand.GRACE,   new Color(0.86f, 0.86f, 0.94f) },   // Holy silver
+            { Brand.MEND,    new Color(0.78f, 0.67f, 0.31f) },   // Healing gold
+            { Brand.RUIN,    new Color(0.86f, 0.47f, 0.16f) },   // Flame orange
+            { Brand.VOID,    new Color(0.16f, 0.08f, 0.24f) },   // Void dark
         };
 
         /// <summary>
