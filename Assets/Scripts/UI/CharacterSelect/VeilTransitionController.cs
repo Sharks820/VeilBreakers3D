@@ -35,6 +35,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private Renderer _fullScreenQuadRenderer;
         private MaterialPropertyBlock _mpb;
         private Sequence _activeSequence;
+        private bool _hasInvokedComplete;
 
         /// <summary>Fired when the active transition completes.</summary>
         public event System.Action OnTransitionComplete;
@@ -191,6 +192,8 @@ namespace VeilBreakers.UI.CharacterSelect
             _mpb.SetFloat(kBackgroundAlpha, 1f);
             _fullScreenQuadRenderer.SetPropertyBlock(_mpb);
 
+            _hasInvokedComplete = false;
+
             return Tween.Custom(this, 1f, 0f, duration,
                 onValueChange: (ctrl, val) =>
                 {
@@ -200,8 +203,9 @@ namespace VeilBreakers.UI.CharacterSelect
                     ctrl._mpb.SetFloat(kCrackProgress, val);
                     ctrl._fullScreenQuadRenderer.SetPropertyBlock(ctrl._mpb);
 
-                    if (val <= 0.01f)
+                    if (val <= 0.01f && !ctrl._hasInvokedComplete)
                     {
+                        ctrl._hasInvokedComplete = true;
                         ctrl.HideQuad();
                         ctrl.OnTransitionComplete?.Invoke();
                     }

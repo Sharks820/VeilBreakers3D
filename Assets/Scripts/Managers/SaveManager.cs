@@ -87,18 +87,16 @@ namespace VeilBreakers.Managers
         {
             if (pauseStatus && HasActiveSave)
             {
-                // Guard: skip auto-save if a save is already in progress to prevent deadlock.
-                // GetAwaiter().GetResult() on an async method that acquires _saveMutex will
-                // deadlock the main thread if the mutex is already held.
                 if (_isSaving || _isLoading) return;
 
-                try
+                // Non-blocking: check mutex availability before attempting save
+                if (_saveMutex.CurrentCount > 0)
                 {
-                    AutoSaveAsync("app_pause").GetAwaiter().GetResult();
+                    _ = AutoSaveAsync("app_pause"); // Fire and forget; method has internal try/catch
                 }
-                catch (Exception ex)
+                else
                 {
-                    Debug.LogError($"[SaveManager] Auto-save on pause failed: {ex.Message}");
+                    Debug.LogWarning("[SaveManager] Save mutex contended during pause, skipping auto-save.");
                 }
             }
         }

@@ -42,6 +42,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void OnDisable()
         {
+            if (_statCascadeSequence.isAlive) _statCascadeSequence.Stop();
             CharSelectEvents.OnHeroChanged -= HandleHeroChanged;
         }
 

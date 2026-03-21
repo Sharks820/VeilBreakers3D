@@ -33,11 +33,13 @@ namespace VeilBreakers.Core
         // =============================================================================
 
         public static event Action OnBattleStarted;
+        public static event Action OnBattleResumed;      // Resume after capture phase (berserk)
         public static event Action<bool> OnBattleEnded;  // bool = victory
         public static event Action<int> OnTurnStarted;   // turn number
         public static event Action<int> OnTurnEnded;
 
         public static void BattleStarted() => OnBattleStarted?.Invoke();
+        public static void BattleResumed() => OnBattleResumed?.Invoke();
         public static void BattleEnded(bool victory) => OnBattleEnded?.Invoke(victory);
         public static void TurnStarted(int turn) => OnTurnStarted?.Invoke(turn);
         public static void TurnEnded(int turn) => OnTurnEnded?.Invoke(turn);
@@ -302,6 +304,7 @@ namespace VeilBreakers.Core
             OnGameOver = null;
 
             OnBattleStarted = null;
+            OnBattleResumed = null;
             OnBattleEnded = null;
             OnTurnStarted = null;
             OnTurnEnded = null;

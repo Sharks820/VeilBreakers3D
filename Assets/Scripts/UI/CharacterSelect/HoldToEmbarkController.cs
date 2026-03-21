@@ -149,8 +149,13 @@ namespace VeilBreakers.UI.CharacterSelect
             }
 
             // Register pointer events on btn-embark for mouse hold detection
+            // Defensive unregister to prevent stacking on repeated OnScreenReady
             if (_btnEmbark != null)
             {
+                _btnEmbark.UnregisterCallback<PointerDownEvent>(OnPointerDown);
+                _btnEmbark.UnregisterCallback<PointerUpEvent>(OnPointerUp);
+                _btnEmbark.UnregisterCallback<PointerLeaveEvent>(OnPointerLeave);
+
                 _btnEmbark.RegisterCallback<PointerDownEvent>(OnPointerDown);
                 _btnEmbark.RegisterCallback<PointerUpEvent>(OnPointerUp);
                 _btnEmbark.RegisterCallback<PointerLeaveEvent>(OnPointerLeave);
@@ -194,7 +199,9 @@ namespace VeilBreakers.UI.CharacterSelect
 
             // Check both mouse hold AND gamepad hold
             bool mouseHold = _isMouseHolding;
-            bool gamepadHold = InputManager.HasInstance && InputManager.Instance.GetAction(InputManager.GameAction.Confirm);
+            bool gamepadHold = InputManager.HasInstance
+                && InputManager.Instance.GetAction(InputManager.GameAction.Confirm)
+                && _focusManager != null && _focusManager.CurrentZoneIndex == 2; // FocusZone.Embark
             bool wantsHold = mouseHold || gamepadHold;
 
             if (wantsHold)

@@ -519,7 +519,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _tabBtnLore?.RegisterCallback<ClickEvent>(OnTabLoreClicked);
             _btnToastRetry?.RegisterCallback<ClickEvent>(OnToastRetryClicked);
             _btnToastBack?.RegisterCallback<ClickEvent>(OnToastBackClicked);
-            _root?.RegisterCallback<NavigationMoveEvent>(OnNavigationMove);
+            // NavigationMoveEvent handled by CharSelectFocusManager (no duplicate handler)
             _root?.RegisterCallback<NavigationSubmitEvent>(OnNavigationSubmit);
             _root?.RegisterCallback<NavigationCancelEvent>(OnNavigationCancel);
         }
@@ -535,7 +535,6 @@ namespace VeilBreakers.UI.CharacterSelect
             _tabBtnLore?.UnregisterCallback<ClickEvent>(OnTabLoreClicked);
             _btnToastRetry?.UnregisterCallback<ClickEvent>(OnToastRetryClicked);
             _btnToastBack?.UnregisterCallback<ClickEvent>(OnToastBackClicked);
-            _root?.UnregisterCallback<NavigationMoveEvent>(OnNavigationMove);
             _root?.UnregisterCallback<NavigationSubmitEvent>(OnNavigationSubmit);
             _root?.UnregisterCallback<NavigationCancelEvent>(OnNavigationCancel);
         }
@@ -699,6 +698,9 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 Debug.LogError($"[CharSelectManager] Embark failed: {ex.Message}");
                 ShowErrorToast($"Embark failed: {ex.Message}");
+            }
+            finally
+            {
                 _isEmbarking = false;
             }
         }
@@ -741,7 +743,6 @@ namespace VeilBreakers.UI.CharacterSelect
             if (!SaveManager.HasInstance)
             {
                 ShowErrorToast("Save system unavailable. Please restart.");
-                _isEmbarking = false;
                 return;
             }
             var saveManager = SaveManager.Instance;
@@ -753,7 +754,6 @@ namespace VeilBreakers.UI.CharacterSelect
             if (!created)
             {
                 ShowErrorToast("Failed to create save file. Please try again.");
-                _isEmbarking = false;
                 return;
             }
             saveManager.SetCurrentLocation(kStarterTownLocation);
@@ -810,22 +810,6 @@ namespace VeilBreakers.UI.CharacterSelect
         // =============================================================================
         // NAVIGATION EVENTS (KEYBOARD / GAMEPAD)
         // =============================================================================
-
-        private void OnNavigationMove(NavigationMoveEvent evt)
-        {
-            switch (evt.direction)
-            {
-                case NavigationMoveEvent.Direction.Left:
-                    NavigatePrev();
-                    evt.StopPropagation();
-                    break;
-                case NavigationMoveEvent.Direction.Right:
-                    NavigateNext();
-                    evt.StopPropagation();
-                    break;
-                // Up/Down reserved for Plan 03 CharSelectFocusManager zone navigation
-            }
-        }
 
         private void OnNavigationSubmit(NavigationSubmitEvent evt) { TriggerEmbark(); evt.StopPropagation(); }
         private void OnNavigationCancel(NavigationCancelEvent evt) { NavigateBack(); evt.StopPropagation(); }

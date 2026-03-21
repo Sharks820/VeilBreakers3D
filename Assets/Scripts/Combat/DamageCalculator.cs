@@ -68,11 +68,9 @@ namespace VeilBreakers.Combat
             float defenderSynergyDefense = SynergySystem.GetDefenseBonus(defenderSynergyTier);
             damage /= defenderSynergyDefense;
 
-            // Corruption modifiers (affects both attacker output and defender resistance)
+            // Corruption modifier (affects attacker output only per design spec)
             float attackerCorruptionMod = GetCorruptionModifier(attacker.Corruption);
-            float defenderCorruptionMod = GetCorruptionModifier(defender.Corruption);
             damage *= (1f + attackerCorruptionMod);
-            damage *= (1f - defenderCorruptionMod);
 
             // Variance
             result.variance = Random.Range(kVarianceMin, kVarianceMax);

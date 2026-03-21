@@ -130,9 +130,13 @@ namespace VeilBreakers.Data
             
             // Validate stat ranges
             if (base_hp <= 0) base_hp = 1;
-            if (base_stats.strength < 1) base_stats.strength = 1;
-            if (base_stats.strength > 20) base_stats.strength = 20;
-            
+            base_stats.strength = Mathf.Clamp(base_stats.strength, 1, 20);
+            base_stats.dexterity = Mathf.Clamp(base_stats.dexterity, 1, 20);
+            base_stats.constitution = Mathf.Clamp(base_stats.constitution, 1, 20);
+            base_stats.intelligence = Mathf.Clamp(base_stats.intelligence, 1, 20);
+            base_stats.wisdom = Mathf.Clamp(base_stats.wisdom, 1, 20);
+            base_stats.charisma = Mathf.Clamp(base_stats.charisma, 1, 20);
+
             return true;
         }
 

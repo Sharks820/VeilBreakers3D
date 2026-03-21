@@ -668,8 +668,8 @@ namespace VeilBreakers.Capture
                 // Resume combat - monster stays in battle as berserk enemy
                 EndCapturePhase();
 
-                // Signal battle to resume via EventBus
-                EventBus.BattleStarted(); // Re-signal to resume combat flow
+                // Signal battle to resume via EventBus (distinct from BattleStarted to avoid re-init)
+                EventBus.BattleResumed();
             }
 
             // Check for more bound monsters
@@ -719,13 +719,12 @@ namespace VeilBreakers.Capture
             _iterationBuffer.Clear();
 
             // Disable the game object (monster is removed from battle)
-            // BattleManager checks IsAlive, so deactivating + killing handles enemy tracking
             if (monster.gameObject != null)
             {
-                // Mark as dead to trigger any death-related cleanup
+                // Remove without triggering death events (no XP, no kill credit)
                 if (monster.IsAlive)
                 {
-                    monster.TakeDamage(monster.MaxHP + 1);
+                    monster.RemoveFromBattle();
                 }
 
                 // Disable instead of destroy for object pooling later

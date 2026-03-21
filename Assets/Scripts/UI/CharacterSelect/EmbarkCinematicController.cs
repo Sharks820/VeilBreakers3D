@@ -81,6 +81,7 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             _cinematicSequence.Stop();
             CleanupCinematicLabel();
+            OnCinematicComplete = null; // Prevent stale delegate leaks
             // Clean up any orphaned flash elements created by BuildAccentFlash
             if (_root != null)
             {

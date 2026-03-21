@@ -588,15 +588,34 @@ namespace VeilBreakers.Managers
             }
         }
 
+        private static readonly string kKeyFilePath = IOPath.Combine(Application.persistentDataPath, ".vb_device_key");
+
         private static byte[] GetOrCreateDeviceKey()
         {
             const string prefsKey = "vb_device_key";
+
+            // Try PlayerPrefs first
             if (PlayerPrefs.HasKey(prefsKey))
             {
-                return Convert.FromBase64String(PlayerPrefs.GetString(prefsKey));
+                var key = Convert.FromBase64String(PlayerPrefs.GetString(prefsKey));
+                PersistKeyToFile(key); // Ensure file backup exists
+                return key;
             }
 
-            // Use device unique ID if available, otherwise generate and persist a GUID
+            // Try file fallback (survives PlayerPrefs clear)
+            if (File.Exists(kKeyFilePath))
+            {
+                try
+                {
+                    var key = Convert.FromBase64String(File.ReadAllText(kKeyFilePath));
+                    PlayerPrefs.SetString(prefsKey, Convert.ToBase64String(key));
+                    PlayerPrefs.Save();
+                    return key;
+                }
+                catch { /* Fall through to generate new */ }
+            }
+
+            // Generate new key
             string id = SystemInfo.deviceUniqueIdentifier;
             if (string.IsNullOrEmpty(id) || id == SystemInfo.unsupportedIdentifier)
             {
@@ -606,7 +625,14 @@ namespace VeilBreakers.Managers
             var raw = Encoding.UTF8.GetBytes(id);
             PlayerPrefs.SetString(prefsKey, Convert.ToBase64String(raw));
             PlayerPrefs.Save();
+            PersistKeyToFile(raw);
             return raw;
+        }
+
+        private static void PersistKeyToFile(byte[] key)
+        {
+            try { File.WriteAllText(kKeyFilePath, Convert.ToBase64String(key)); }
+            catch (Exception ex) { Debug.LogWarning($"[SaveFileHandler] Could not persist key file: {ex.Message}"); }
         }
 
         private static byte[] CombineSalt(byte[] a, byte[] b)

@@ -17,6 +17,7 @@ namespace VeilBreakers.UI.CharacterSelect
         // =============================================================================
 
         [SerializeField] private Volume _volume;
+        private VolumeProfile _runtimeSharedProfile;
 
         /// <summary>
         /// Finds a Volume component in the scene if none is assigned.
@@ -43,6 +44,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             // Create a minimal VolumeProfile at runtime
             var profile = ScriptableObject.CreateInstance<VolumeProfile>();
+            _runtimeSharedProfile = profile; // Track for cleanup
 
             var bloom = profile.Add<Bloom>();
             bloom.intensity.overrideState = true;
@@ -142,6 +144,11 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_volume != null && _volume.profile != null)
             {
                 Destroy(_volume.profile);
+            }
+            // Destroy runtime-created shared profile from AutoWireVolume
+            if (_runtimeSharedProfile != null)
+            {
+                Destroy(_runtimeSharedProfile);
             }
         }
 

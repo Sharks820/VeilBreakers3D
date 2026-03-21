@@ -24,7 +24,7 @@ namespace VeilBreakers.Managers
 
         [SerializeField]
         [Tooltip("Enable debug logging")]
-        private bool _debugLogging = true;
+        private bool _debugLogging = false;
 
         // =============================================================================
         // STATE

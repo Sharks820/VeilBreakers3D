@@ -366,11 +366,24 @@ namespace VeilBreakers.Combat
         }
 
         /// <summary>
-        /// Apply a damage buff multiplier.
+        /// Remove combatant from battle without triggering death events or XP rewards.
+        /// Used by CaptureManager for captured/fled monsters.
+        /// </summary>
+        public void RemoveFromBattle()
+        {
+            _currentHp = 0;
+            _isAlive = false;
+            _isDefending = false;
+            _guardTarget = null;
+            // Intentionally does NOT fire OnDeath — no XP, no death VFX, no kill credit
+        }
+
+        /// <summary>
+        /// Apply a damage buff multiplier (stacks multiplicatively).
         /// </summary>
         public void ApplyDamageBuff(float multiplier)
         {
-            _damageBuffMultiplier = 1f + multiplier;
+            _damageBuffMultiplier *= (1f + multiplier);
         }
 
         /// <summary>

@@ -71,6 +71,7 @@ namespace VeilBreakers.UI.CharacterSelect
         // =============================================================================
 
         private FocusZone _currentZone = FocusZone.Carousel;
+        public int CurrentZoneIndex => (int)_currentZone;
         private VisualElement _root;
         private VisualElement _btnBack;
         private VisualElement _infoPanel;
@@ -232,7 +233,7 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_isHoldingEmbark)
             {
                 evt.StopPropagation();
-                evt.PreventDefault();
+                evt.StopImmediatePropagation();
                 return;
             }
 
@@ -261,7 +262,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
                 PlayNavTick();
                 evt.StopPropagation();
-                evt.PreventDefault();
+                evt.StopImmediatePropagation();
                 return;
             }
 
@@ -273,7 +274,7 @@ namespace VeilBreakers.UI.CharacterSelect
             }
 
             evt.StopPropagation();
-            evt.PreventDefault();
+            evt.StopImmediatePropagation();
         }
 
         // =============================================================================
