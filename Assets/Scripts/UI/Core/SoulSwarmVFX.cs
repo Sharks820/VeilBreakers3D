@@ -109,11 +109,12 @@ namespace VeilBreakers.UI.Core
         {
             StopVFX();
 
-            // Unregister mouse callbacks to prevent leak if MonoBehaviour is destroyed while UIDocument persists
+            // Unregister all callbacks to prevent leak if MonoBehaviour is destroyed while UIDocument persists
             if (_uiDocument != null && _uiDocument.rootVisualElement != null)
             {
                 _uiDocument.rootVisualElement.UnregisterCallback<MouseMoveEvent>(OnMouseMove);
                 _uiDocument.rootVisualElement.UnregisterCallback<MouseLeaveEvent>(OnMouseLeave);
+                _uiDocument.rootVisualElement.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
             }
         }
 
@@ -155,9 +156,7 @@ namespace VeilBreakers.UI.Core
                 _particlePool.Enqueue(particle);
             }
 
-            // Register mouse tracking
-            root.RegisterCallback<MouseMoveEvent>(OnMouseMove);
-            root.RegisterCallback<MouseLeaveEvent>(OnMouseLeave);
+            // Mouse tracking is registered in OnEnable to avoid double registration
 
             StartVFX();
             Debug.Log($"[SoulSwarmVFX] Initialized with {_maxParticles} pooled particles");

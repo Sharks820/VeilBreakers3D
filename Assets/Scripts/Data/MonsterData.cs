@@ -107,22 +107,22 @@ namespace VeilBreakers.Data
 
         public Brand GetPrimaryBrand()
         {
-            return (Brand)brand;
+            return Enum.IsDefined(typeof(Brand), brand) ? (Brand)brand : Brand.NONE;
         }
 
         public Brand GetSecondaryBrand()
         {
-            return (Brand)secondary_brand;
+            return Enum.IsDefined(typeof(Brand), secondary_brand) ? (Brand)secondary_brand : Brand.NONE;
         }
 
         public BrandTier GetBrandTier()
         {
-            return (BrandTier)brand_tier;
+            return Enum.IsDefined(typeof(BrandTier), brand_tier) ? (BrandTier)brand_tier : BrandTier.MINOR;
         }
 
         public Rarity GetRarity()
         {
-            return (Rarity)rarity;
+            return Enum.IsDefined(typeof(Rarity), rarity) ? (Rarity)rarity : Rarity.COMMON;
         }
 
         public AIPattern GetAIPattern()

@@ -754,6 +754,7 @@ namespace VeilBreakers.AI
             // Fallback to basic attack on lowest HP enemy
             // Uses cached rule to avoid allocation
             var target = context.GetLowestHpEnemy();
+            if (target == null) return default;
             return new ScoredAction(_fallbackRule, target, MIN_SCORE);
         }
 

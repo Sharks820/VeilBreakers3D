@@ -413,7 +413,7 @@ namespace VeilBreakers.AI
         /// </summary>
         public bool HasMomentum()
         {
-            if (!_personality.tracksMomentum) return false;
+            if (_personality == null || !_personality.tracksMomentum) return false;
             return _killCount > 0 && (Time.time - _lastKillTime) < MOMENTUM_WINDOW;
         }
 
@@ -422,7 +422,7 @@ namespace VeilBreakers.AI
         /// </summary>
         public float GetMomentumBonus()
         {
-            if (!HasMomentum()) return 1f;
+            if (_personality == null || !HasMomentum()) return 1f;
             return 1f + (Mathf.Min(_killCount, 5) * 0.1f); // 10% per kill, max 50%
         }
 

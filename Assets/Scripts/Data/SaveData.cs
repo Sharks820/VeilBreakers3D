@@ -169,25 +169,32 @@ namespace VeilBreakers.Data
             heroLearnedSkills ??= new List<string>();
             inventory ??= new List<SavedItem>();
 
-            // Clamp corruption values for all monsters
-            if (party != null)
-            {
-                foreach (var monster in party)
-                {
-                    if (monster != null)
-                        monster.corruption = Mathf.Clamp(monster.corruption, 0f, 100f);
-                }
-            }
-            if (storage != null)
-            {
-                foreach (var monster in storage)
-                {
-                    if (monster != null)
-                        monster.corruption = Mathf.Clamp(monster.corruption, 0f, 100f);
-                }
-            }
+            // Validate all monsters in party and storage
+            ValidateMonsterList(party);
+            ValidateMonsterList(storage);
 
             return true;
+        }
+
+        private static void ValidateMonsterList(List<SavedMonster> monsters)
+        {
+            if (monsters == null) return;
+            for (int i = monsters.Count - 1; i >= 0; i--)
+            {
+                var monster = monsters[i];
+                if (monster == null) { monsters.RemoveAt(i); continue; }
+                if (string.IsNullOrEmpty(monster.monsterId))
+                {
+                    Debug.LogError("[SaveData] Monster with null ID found, removing");
+                    monsters.RemoveAt(i);
+                    continue;
+                }
+                monster.corruption = Mathf.Clamp(monster.corruption, 0f, 100f);
+                if (monster.level < 1) monster.level = 1;
+                if (monster.level > 100) monster.level = 100;
+                if (monster.currentHp < 0) monster.currentHp = 0;
+                monster.learnedSkills ??= new List<string>();
+            }
         }
 
         /// <summary>

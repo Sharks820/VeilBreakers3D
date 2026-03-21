@@ -177,7 +177,7 @@ namespace VeilBreakers.Data
         /// </summary>
         public int GetStatAtLevel(Stat stat, int level)
         {
-            if (level < 1) level = 1;
+            level = Mathf.Clamp(level, 1, 100);
             
             int baseStat = stat switch
             {

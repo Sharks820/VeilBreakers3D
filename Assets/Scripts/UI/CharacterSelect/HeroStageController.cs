@@ -76,6 +76,9 @@ namespace VeilBreakers.UI.CharacterSelect
         private Material _placeholderMaterial;
         private Material _currentPlaceholderMat;
 
+        // Cached ambient light to restore on cleanup
+        private Color _originalAmbientLight;
+
         // =============================================================================
         // LIFECYCLE
         // =============================================================================
@@ -85,6 +88,7 @@ namespace VeilBreakers.UI.CharacterSelect
             CharSelectEvents.OnHeroChanged += HandleHeroChanged;
             CharSelectEvents.OnScreenExiting += HandleScreenExiting;
 
+            _originalAmbientLight = RenderSettings.ambientLight;
             InitializeStage();
         }
 
@@ -549,6 +553,10 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void CleanupStage()
         {
+            // Stop tweens before cleanup to prevent rim flicker orphans
+            StopRimFlicker();
+            if (_lightLerpTween.isAlive) _lightLerpTween.Stop();
+
             StopAllCoroutines();
             _swapCoroutine = null;
 
@@ -582,6 +590,9 @@ namespace VeilBreakers.UI.CharacterSelect
             }
 
             if (_stageRoot != null) Destroy(_stageRoot.gameObject);
+
+            // Restore original ambient light
+            RenderSettings.ambientLight = _originalAmbientLight;
         }
 
         // =============================================================================

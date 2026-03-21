@@ -77,6 +77,9 @@ namespace VeilBreakers.UI.Core
         private void OnDisable()
         {
             StopVFX();
+
+            if (_uiDocument != null && _uiDocument.rootVisualElement != null)
+                _uiDocument.rootVisualElement.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
         }
 
         // =============================================================================

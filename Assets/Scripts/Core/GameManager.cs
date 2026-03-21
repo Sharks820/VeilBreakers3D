@@ -85,7 +85,8 @@ namespace VeilBreakers.Core
 
         // The active party: 1 Hero + up to 3 Monsters (max 4 total)
         public ActiveHero CurrentHero { get; private set; }
-        public List<PartyMember> Party { get; private set; } = new List<PartyMember>();
+        private readonly List<PartyMember> _party = new List<PartyMember>();
+        public IReadOnlyList<PartyMember> Party => _party;
         // Use Constants.MAX_PARTY_SIZE instead of duplicating the value here
 
         // Currency and inventory
@@ -145,9 +146,7 @@ namespace VeilBreakers.Core
         {
             if (CurrentState == GameState.Paused)
             {
-                Time.timeScale = 1f;
-                CurrentState = _stateBeforePause;
-                EventBus.GameResumed();
+                ChangeState(_stateBeforePause);
             }
         }
 
@@ -158,7 +157,7 @@ namespace VeilBreakers.Core
         {
             CurrentState = GameState.MainMenu;
             CurrentHero = null;
-            Party.Clear();
+            _party.Clear();
             Currency = 0;
             Debug.Log("[GameManager] Game state reset");
         }
@@ -248,7 +247,7 @@ namespace VeilBreakers.Core
         /// </summary>
         public bool AddToParty(string monsterId, int level = 1, float corruption = 50f)
         {
-            if (Party.Count >= Constants.MAX_PARTY_SIZE)
+            if (_party.Count >= Constants.MAX_PARTY_SIZE)
             {
                 Debug.LogWarning("[GameManager] Party is full!");
                 return false;
@@ -287,7 +286,7 @@ namespace VeilBreakers.Core
                 member.learnedSkills.AddRange(monsterData.innate_skills);
             }
 
-            Party.Add(member);
+            _party.Add(member);
             EventBus.MonsterCaptured(monsterId);
 
             Debug.Log($"[GameManager] Monster added to party: {monsterData.display_name}");
@@ -299,12 +298,12 @@ namespace VeilBreakers.Core
         /// </summary>
         public bool RemoveFromParty(int index)
         {
-            if (index < 0 || index >= Party.Count)
+            if (index < 0 || index >= _party.Count)
             {
                 return false;
             }
 
-            Party.RemoveAt(index);
+            _party.RemoveAt(index);
             return true;
         }
 
@@ -347,7 +346,7 @@ namespace VeilBreakers.Core
                 CurrentHero.currentMp = CurrentHero.maxMp;
             }
 
-            foreach (var member in Party)
+            foreach (var member in _party)
             {
                 member.currentHp = member.maxHp;
                 member.currentMp = member.maxMp;
@@ -362,7 +361,8 @@ namespace VeilBreakers.Core
 
         public void AddCurrency(int amount)
         {
-            Currency += amount;
+            if (amount <= 0) return;
+            Currency = (int)Math.Min((long)Currency + amount, int.MaxValue);
             EventBus.CurrencyChanged(Currency);
         }
 
@@ -387,7 +387,7 @@ namespace VeilBreakers.Core
         public void StartNewGame(string heroId, string starterMonsterId)
         {
             // Clear any existing data
-            Party.Clear();
+            _party.Clear();
             Currency = 100;  // Starting currency
 
             // Select hero

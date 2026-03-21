@@ -119,6 +119,9 @@ namespace VeilBreakers.UI.Core
                     layer.Element.style.translate = new Translate(0, 0);
                 }
             }
+
+            if (_uiDocument != null && _uiDocument.rootVisualElement != null)
+                _uiDocument.rootVisualElement.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
         }
 
         // =============================================================================

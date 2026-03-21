@@ -109,6 +109,14 @@ namespace VeilBreakers.Combat
             {
                 Managers.StatusEffectManager.Instance.UnregisterTarget(gameObject);
             }
+
+            // Clear all event delegates to prevent leaked references
+            OnHpChanged = null;
+            OnMpChanged = null;
+            OnDamageReceived = null;
+            OnHealed = null;
+            OnDeath = null;
+            OnRevive = null;
         }
 
         /// <summary>

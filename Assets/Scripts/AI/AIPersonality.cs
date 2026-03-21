@@ -292,6 +292,16 @@ namespace VeilBreakers.AI
         private static readonly System.Collections.Generic.Dictionary<Brand, AIPersonality> _cachedDefaults =
             new System.Collections.Generic.Dictionary<Brand, AIPersonality>();
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ClearCache()
+        {
+            foreach (var kvp in _cachedDefaults)
+            {
+                if (kvp.Value != null) DestroyImmediate(kvp.Value);
+            }
+            _cachedDefaults.Clear();
+        }
+
         /// <summary>
         /// Creates default personality settings for a brand.
         /// Caches instances to prevent memory leaks from runtime ScriptableObject creation.
