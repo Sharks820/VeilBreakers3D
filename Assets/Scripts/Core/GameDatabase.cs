@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using UnityEngine;
 using VeilBreakers.Data;
@@ -168,7 +167,7 @@ namespace VeilBreakers.Core
 
                 if (monsters == null)
                 {
-                    throw new InvalidDataException("[GameDatabase] monsters.json invalid format");
+                    throw new FormatException("[GameDatabase] monsters.json invalid format");
                 }
 
                 foreach (var monster in monsters)
@@ -211,7 +210,7 @@ namespace VeilBreakers.Core
 
                 if (skills == null)
                 {
-                    throw new InvalidDataException("[GameDatabase] skills.json invalid format");
+                    throw new FormatException("[GameDatabase] skills.json invalid format");
                 }
 
                 foreach (var skill in skills)
@@ -254,7 +253,7 @@ namespace VeilBreakers.Core
 
                 if (heroes == null)
                 {
-                    throw new InvalidDataException("[GameDatabase] heroes.json invalid format");
+                    throw new FormatException("[GameDatabase] heroes.json invalid format");
                 }
 
                 foreach (var hero in heroes)
@@ -297,7 +296,7 @@ namespace VeilBreakers.Core
 
                 if (items == null)
                 {
-                    throw new InvalidDataException("[GameDatabase] items.json invalid format");
+                    throw new FormatException("[GameDatabase] items.json invalid format");
                 }
 
                 foreach (var item in items)

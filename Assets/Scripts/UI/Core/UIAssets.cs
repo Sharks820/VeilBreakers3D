@@ -12,6 +12,7 @@ namespace VeilBreakers.UI.Core
     public class UIAssets : ScriptableObject
     {
         private static UIAssets _instance;
+        private static bool _triedResourcesLoad;
 
         /// <summary>
         /// Singleton instance. Must be initialized via Initialize() before use.
@@ -21,9 +22,10 @@ namespace VeilBreakers.UI.Core
         {
             get
             {
-                if (_instance == null)
+                if (_instance == null && !_triedResourcesLoad)
                 {
-                    // Fallback to Resources.Load for backwards compatibility
+                    _triedResourcesLoad = true;
+                    // Fallback to Resources.Load for backwards compatibility (one attempt only)
                     _instance = Resources.Load<UIAssets>("UI/UIAssets");
                     if (_instance == null)
                     {
@@ -41,6 +43,7 @@ namespace VeilBreakers.UI.Core
         public static void Initialize(UIAssets instance)
         {
             _instance = instance;
+            _triedResourcesLoad = instance != null;
         }
 
         // =============================================================================

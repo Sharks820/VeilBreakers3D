@@ -165,7 +165,7 @@ namespace VeilBreakers.UI.Core
                 if (_veinSprite != null)
                 {
                     vein.style.backgroundImage = new StyleBackground(_veinSprite);
-                    vein.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                    vein.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
                 }
                 else
                 {

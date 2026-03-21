@@ -887,7 +887,7 @@ namespace VeilBreakers.UI.Core
             if (_overrideBackgroundWithPortal && _backgroundPortalTexture != null)
             {
                 _backgroundElement.style.backgroundImage = new StyleBackground(_backgroundPortalTexture);
-                _backgroundElement.style.unityBackgroundScaleMode = ScaleMode.ScaleAndCrop;
+                _backgroundElement.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
                 _backgroundElement.style.unityBackgroundImageTintColor = Color.white;
             }
 
@@ -952,7 +952,7 @@ namespace VeilBreakers.UI.Core
             shadow.style.translate = new Translate(new Length(-796, LengthUnit.Pixel), new Length(6, LengthUnit.Pixel));
             shadow.style.top = 0;
             shadow.style.backgroundImage = new StyleBackground(logoTexture);
-            shadow.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+            shadow.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
             shadow.style.unityBackgroundImageTintColor = new Color(0f, 0f, 0f, 0.7f); // Dark shadow
             shadow.pickingMode = PickingMode.Ignore;
 
@@ -1085,7 +1085,7 @@ namespace VeilBreakers.UI.Core
 
             // Apply forward RenderTexture to background
             _backgroundElement.style.backgroundImage = new StyleBackground(Background.FromRenderTexture(_videoRenderTextureForward));
-            _backgroundElement.style.unityBackgroundScaleMode = ScaleMode.StretchToFill;
+            _backgroundElement.style.backgroundSize = new BackgroundSize(Length.Percent(100), Length.Percent(100));
             _backgroundElement.style.unityBackgroundImageTintColor = Color.white;
             _backgroundElement.style.backgroundColor = new Color(0f, 0f, 0f, 0f);
 
@@ -1526,13 +1526,13 @@ namespace VeilBreakers.UI.Core
             var glow = new VisualElement();
             glow.style.position = Position.Absolute;
             glow.pickingMode = PickingMode.Ignore;
-            glow.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+            glow.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
             glow.style.opacity = 0;
 
             var bolt = new VisualElement();
             bolt.style.position = Position.Absolute;
             bolt.pickingMode = PickingMode.Ignore;
-            bolt.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+            bolt.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
             bolt.style.opacity = 0;
 
             _lightningLayer.Add(glow);
@@ -1688,7 +1688,7 @@ namespace VeilBreakers.UI.Core
             grungeLayer.style.right = 0;
             grungeLayer.style.bottom = 0;
             grungeLayer.style.backgroundImage = new StyleBackground(_grungeTexture);
-            grungeLayer.style.unityBackgroundScaleMode = ScaleMode.ScaleAndCrop;
+            grungeLayer.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
             grungeLayer.style.unityBackgroundImageTintColor = new Color(1f, 1f, 1f, 1f);
             grungeLayer.style.opacity = _grungeOpacity;
             grungeLayer.pickingMode = PickingMode.Ignore;
@@ -1845,7 +1845,7 @@ namespace VeilBreakers.UI.Core
             if (_ashTexture != null)
             {
                 element.style.backgroundImage = new StyleBackground(_ashTexture);
-                element.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                element.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
                 // Tint with ash color
                 Color ashTint = Color.Lerp(_ashColorDark, _ashColorLight, UnityEngine.Random.Range(0f, 1f));
                 element.style.unityBackgroundImageTintColor = ashTint;
@@ -1936,7 +1936,7 @@ namespace VeilBreakers.UI.Core
             if (_emberTexture != null)
             {
                 element.style.backgroundImage = new StyleBackground(_emberTexture);
-                element.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                element.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
                 element.style.unityBackgroundImageTintColor = new Color(1f, 0.85f, 0.4f, 0.9f);
             }
             else
@@ -1982,7 +1982,7 @@ namespace VeilBreakers.UI.Core
             if (_smokeTexture != null)
             {
                 element.style.backgroundImage = new StyleBackground(_smokeTexture);
-                element.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                element.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
                 element.style.unityBackgroundImageTintColor = _smokeColor;
             }
             else
@@ -2383,11 +2383,11 @@ namespace VeilBreakers.UI.Core
                 if (_emberTexture != null)
                 {
                     glow.style.backgroundImage = new StyleBackground(_emberTexture);
-                    glow.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                    glow.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
                     glow.style.unityBackgroundImageTintColor = new Color(1f, 0.25f, 0.08f, 0.30f);
 
                     core.style.backgroundImage = new StyleBackground(_emberTexture);
-                    core.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                    core.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
                     core.style.unityBackgroundImageTintColor = new Color(1f, 0.70f, 0.28f, 0.92f);
                 }
                 else
@@ -2600,7 +2600,7 @@ namespace VeilBreakers.UI.Core
                 element.style.width = size;
                 element.style.height = size;
                 element.style.backgroundImage = new StyleBackground(_smokeTexture);
-                element.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                element.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
                 element.style.unityBackgroundImageTintColor = tint;
                 element.style.opacity = 0f;
 
@@ -2773,7 +2773,7 @@ namespace VeilBreakers.UI.Core
             float rotation = UnityEngine.Random.Range(-12f, 12f);
 
             strike.Bolt.style.backgroundImage = new StyleBackground(tex);
-            strike.Bolt.style.unityBackgroundScaleMode = ScaleMode.StretchToFill; // Stretch to make bolt THICKER
+            strike.Bolt.style.backgroundSize = new BackgroundSize(Length.Percent(100), Length.Percent(100)); // Stretch to make bolt THICKER
             strike.Bolt.style.unityBackgroundImageTintColor = _lightningTint;
             strike.Bolt.style.width = width;
             strike.Bolt.style.height = height;
@@ -2782,7 +2782,7 @@ namespace VeilBreakers.UI.Core
             strike.Bolt.style.rotate = new Rotate(rotation);
 
             strike.Glow.style.backgroundImage = new StyleBackground(tex);
-            strike.Glow.style.unityBackgroundScaleMode = ScaleMode.StretchToFill; // Stretch glow too
+            strike.Glow.style.backgroundSize = new BackgroundSize(Length.Percent(100), Length.Percent(100)); // Stretch glow too
             strike.Glow.style.unityBackgroundImageTintColor = new Color(1f, 0.35f, 0.12f, 1f);
             strike.Glow.style.width = width * 1.6f;  // Bigger glow for thick appearance
             strike.Glow.style.height = height * 1.3f;

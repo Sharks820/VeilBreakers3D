@@ -275,7 +275,7 @@ namespace VeilBreakers.UI.Core
                     sheen.style.width = 640;
                     sheen.style.height = 260;
                     sheen.style.backgroundImage = new StyleBackground(_moltenNoiseTexture);
-                    sheen.style.unityBackgroundScaleMode = ScaleMode.ScaleAndCrop;
+                    sheen.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
                     sheen.style.unityBackgroundImageTintColor = new Color(_lavaFillTint.r, _lavaFillTint.g, _lavaFillTint.b, 0.95f);
                     sheen.style.opacity = 0;
                     sheen.style.rotate = new Rotate(_moltenHighlightAngle);
@@ -294,7 +294,7 @@ namespace VeilBreakers.UI.Core
                     cracks.style.right = -40;
                     cracks.style.bottom = -40;
                     cracks.style.backgroundImage = new StyleBackground(_moltenCrackTexture);
-                    cracks.style.unityBackgroundScaleMode = ScaleMode.ScaleAndCrop;
+                    cracks.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
                     cracks.style.unityBackgroundImageTintColor = new Color(1f, 0.45f, 0.15f, 0.85f);
                     cracks.style.opacity = 0;
                     cracks.pickingMode = PickingMode.Ignore;
@@ -359,7 +359,7 @@ namespace VeilBreakers.UI.Core
                     if (_lavaBubbleTexture != null)
                     {
                         bubbleEl.style.backgroundImage = new StyleBackground(_lavaBubbleTexture);
-                        bubbleEl.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+                        bubbleEl.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
                         bubbleEl.style.unityBackgroundImageTintColor = new Color(_lavaFillTint.r, _lavaFillTint.g, _lavaFillTint.b, 0.95f);
                     }
                     else
@@ -588,7 +588,7 @@ namespace VeilBreakers.UI.Core
             button.AddToClassList("vb-btn-sheet");
 
             button.style.backgroundImage = new StyleBackground(skin);
-            button.style.unityBackgroundScaleMode = ScaleMode.ScaleToFit;
+            button.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
             button.style.unityBackgroundImageTintColor = Color.white;
             button.style.backgroundColor = Color.clear;
             button.style.borderLeftWidth = 0;

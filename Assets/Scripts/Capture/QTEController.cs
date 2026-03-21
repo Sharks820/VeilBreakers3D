@@ -81,6 +81,7 @@ namespace VeilBreakers.Capture
         // Coroutine tracking
         private Coroutine _resetCoroutine;
         private int _lastCountdownTick = -1;
+        private static readonly WaitForSecondsRealtime kResetWait = new WaitForSecondsRealtime(0.5f);
 
         // =============================================================================
         // EVENTS
@@ -325,7 +326,7 @@ namespace VeilBreakers.Capture
 
         private IEnumerator ResetToIdleCoroutine()
         {
-            yield return new WaitForSecondsRealtime(0.5f);
+            yield return kResetWait;
             _state = QTEState.IDLE;
             _resetCoroutine = null; // Clear reference after coroutine completes
         }

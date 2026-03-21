@@ -80,7 +80,6 @@ namespace VeilBreakers.UI.Menus
         private Coroutine _failsafeCoroutine;
         private UIAnimationController _animator;
         private Camera _cachedCamera;
-        private readonly List<(VisualElement element, EventCallback<MouseEnterEvent> hover, EventCallback<ClickEvent> click)> _soundCallbacks = new();
 
         // =============================================================================
         // UNITY LIFECYCLE
@@ -119,13 +118,6 @@ namespace VeilBreakers.UI.Menus
         {
             if (_entranceCoroutine != null) StopCoroutine(_entranceCoroutine);
             if (_failsafeCoroutine != null) StopCoroutine(_failsafeCoroutine);
-
-            foreach (var (element, hover, click) in _soundCallbacks)
-            {
-                element?.UnregisterCallback(hover);
-                element?.UnregisterCallback(click);
-            }
-            _soundCallbacks.Clear();
 
             CleanupEventHandlers();
         }
