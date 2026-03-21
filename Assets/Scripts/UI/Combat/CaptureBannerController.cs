@@ -362,7 +362,8 @@ namespace VeilBreakers.UI.Combat
             {
                 case CaptureBannerState.HIDDEN:
                     // Mark current target
-                    var target = BattleManager.Instance?.CurrentTarget;
+                    if (!BattleManager.HasInstance) break;
+                    var target = BattleManager.Instance.CurrentTarget;
                     if (target != null && CaptureManager.Instance.IsValidCaptureTarget(target))
                     {
                         CaptureManager.Instance.MarkForCapture(target);
@@ -372,7 +373,8 @@ namespace VeilBreakers.UI.Combat
 
                 case CaptureBannerState.MARKED:
                     // Toggle mark off
-                    var markedTarget = BattleManager.Instance?.CurrentTarget;
+                    if (!BattleManager.HasInstance) break;
+                    var markedTarget = BattleManager.Instance.CurrentTarget;
                     if (markedTarget != null)
                     {
                         CaptureManager.Instance.ToggleMark(markedTarget);

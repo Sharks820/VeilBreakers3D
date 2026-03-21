@@ -150,7 +150,7 @@ namespace VeilBreakers.UI.CharacterSelect
                     ? _heroThemes[0]
                     : null;
 
-                var entrySequence = _entryAnimator.BuildScreenEntrySequence(
+                _activeSequence = _entryAnimator.BuildScreenEntrySequence(
                     _heroStage,
                     _heroStage,
                     _infoPanel,

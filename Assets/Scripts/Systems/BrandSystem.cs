@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using VeilBreakers.Data;
-using VeilBreakers.UI.Core;
 
 namespace VeilBreakers.Systems
 {
@@ -118,14 +117,28 @@ namespace VeilBreakers.Systems
             return GetEffectiveness(attacker, defender) <= NOT_EFFECTIVE;
         }
 
+        // Pre-computed brand colors (decoupled from UI layer)
+        private static readonly Dictionary<Brand, Color> _brandColors = new Dictionary<Brand, Color>
+        {
+            { Brand.IRON,    new Color(0.65f, 0.65f, 0.70f) },   // Steel gray
+            { Brand.SAVAGE,  new Color(0.85f, 0.25f, 0.15f) },   // Blood red
+            { Brand.SURGE,   new Color(0.30f, 0.65f, 1.00f) },   // Electric blue
+            { Brand.VENOM,   new Color(0.40f, 0.80f, 0.20f) },   // Toxic green
+            { Brand.DREAD,   new Color(0.55f, 0.20f, 0.70f) },   // Deep purple
+            { Brand.LEECH,   new Color(0.50f, 0.10f, 0.25f) },   // Dark crimson
+            { Brand.GRACE,   new Color(1.00f, 0.90f, 0.50f) },   // Holy gold
+            { Brand.MEND,    new Color(0.40f, 0.90f, 0.70f) },   // Healing teal
+            { Brand.RUIN,    new Color(1.00f, 0.50f, 0.10f) },   // Flame orange
+            { Brand.VOID,    new Color(0.20f, 0.10f, 0.30f) },   // Void dark
+        };
+
         /// <summary>
-        /// Get brand color for UI
+        /// Get brand color for UI. Self-contained lookup (no UI layer dependency).
         /// </summary>
         public static Color GetBrandColor(Brand brand)
         {
-            // Delegate to ThemeManager for a single source of truth
-            if (ThemeManager.Instance == null) return Color.white;
-            return ThemeManager.Instance.GetBrandColor(brand);
+            var coreBrand = GetCoreBrand(brand);
+            return _brandColors.TryGetValue(coreBrand, out var color) ? color : Color.white;
         }
 
         /// <summary>

@@ -64,9 +64,10 @@ namespace VeilBreakers.Combat
             result.synergyMultiplier = SynergySystem.GetDamageBonus(synergyTier);
             damage *= result.synergyMultiplier;
 
-            // Defender synergy defense bonus (reduces incoming damage)
+            // Defender synergy defense bonus (reduces incoming damage symmetrically with attack bonus)
+            // FULL: *0.92 (-8%), PARTIAL: *0.95 (-5%), NEUTRAL: *1.0
             float defenderSynergyDefense = SynergySystem.GetDefenseBonus(defenderSynergyTier);
-            damage /= defenderSynergyDefense;
+            damage *= (2f - defenderSynergyDefense);
 
             // Corruption modifier (affects attacker output only per design spec)
             float attackerCorruptionMod = GetCorruptionModifier(attacker.Corruption);

@@ -24,6 +24,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private readonly List<VisualElement> _heroCards = new List<VisualElement>();
         private int _selectedIndex = -1;
         private int _heroCount;
+        private IVisualElementScheduledItem _activeBreathingItem;
 
         private void OnEnable()
         {
@@ -187,7 +188,8 @@ namespace VeilBreakers.UI.CharacterSelect
                     val => c.style.translate = new Translate(0, val),
                     Ease.OutCubic);
                 Tween.VisualElementOpacity(card, 1f, 0.3f);
-                ButtonVFXHelper.AddBreathing(card, 0.008f, 3000f);
+                _activeBreathingItem?.Pause();
+                _activeBreathingItem = ButtonVFXHelper.AddBreathing(card, 0.008f, 3000f);
             }
         }
 

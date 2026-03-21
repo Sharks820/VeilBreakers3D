@@ -416,13 +416,13 @@ namespace VeilBreakers.UI.Controls
         /// Add a gentle idle breathing (scale oscillation) to a visual element.
         /// Creates organic, alive feel for static UI containers.
         /// </summary>
-        public static void AddBreathing(VisualElement element, float amplitude = 0.008f, float periodMs = 3000f)
+        public static IVisualElementScheduledItem AddBreathing(VisualElement element, float amplitude = 0.008f, float periodMs = 3000f)
         {
-            if (element == null) return;
+            if (element == null) return null;
 
             float startTime = Time.time;
 
-            element.schedule.Execute(() =>
+            return element.schedule.Execute(() =>
             {
                 float elapsed = Time.time - startTime;
                 float t = Mathf.Sin(elapsed * (2f * Mathf.PI) / (periodMs / 1000f));
