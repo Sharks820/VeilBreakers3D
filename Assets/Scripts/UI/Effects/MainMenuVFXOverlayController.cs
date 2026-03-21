@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,6 +19,7 @@ namespace VeilBreakers.UI.Effects
         [SerializeField] private Color _bottomLayerColor = new Color(1.00f, 0.70f, 0.30f, 0.04f);
 
         private Canvas _overlayCanvas;
+        private CanvasGroup _canvasGroup;
 
         private void Awake()
         {
@@ -32,6 +34,39 @@ namespace VeilBreakers.UI.Effects
         private void OnDestroy()
         {
             _overlayCanvas = null;
+        }
+
+        /// <summary>
+        /// Fades out the VFX overlay during scene transitions to prevent
+        /// orange bar artifacts being visible against the black transition.
+        /// </summary>
+        public void FadeOut(float duration = 0.3f)
+        {
+            if (_canvasGroup != null)
+            {
+                StartCoroutine(FadeOutCoroutine(duration));
+            }
+        }
+
+        /// <summary>
+        /// Immediately hides the VFX overlay.
+        /// </summary>
+        public void Hide()
+        {
+            if (_canvasGroup != null) _canvasGroup.alpha = 0f;
+        }
+
+        private IEnumerator FadeOutCoroutine(float duration)
+        {
+            float elapsed = 0f;
+            float startAlpha = _canvasGroup.alpha;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                _canvasGroup.alpha = Mathf.Lerp(startAlpha, 0f, elapsed / duration);
+                yield return null;
+            }
+            _canvasGroup.alpha = 0f;
         }
 
         private void EnsureOverlayCanvas()
@@ -53,6 +88,13 @@ namespace VeilBreakers.UI.Effects
 
             _overlayCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
             _overlayCanvas.sortingOrder = _sortingOrder;
+
+            // Add CanvasGroup for fade-out during transitions
+            _canvasGroup = _overlayCanvas.GetComponent<CanvasGroup>();
+            if (_canvasGroup == null)
+                _canvasGroup = _overlayCanvas.gameObject.AddComponent<CanvasGroup>();
+            _canvasGroup.interactable = false;
+            _canvasGroup.blocksRaycasts = false;
 
             // Explicitly avoid input interception.
             var raycaster = _overlayCanvas.GetComponent<GraphicRaycaster>();

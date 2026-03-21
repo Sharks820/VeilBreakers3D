@@ -436,6 +436,10 @@ namespace VeilBreakers.UI.Menus
                 yield break;
             }
 
+            // Phase 0: Fade out VFX overlay to prevent orange bar artifact
+            var vfxOverlay = FindAnyObjectByType<VeilBreakers.UI.Effects.MainMenuVFXOverlayController>();
+            if (vfxOverlay != null) vfxOverlay.FadeOut(0.25f);
+
             // Phase 1: Buttons scatter outward (0.25s)
             if (_buttonContainer != null)
             {
