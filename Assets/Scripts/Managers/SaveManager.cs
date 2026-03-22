@@ -270,7 +270,7 @@ namespace VeilBreakers.Managers
                 EventBus.LoadCompleted(slot);
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException)
             {
                 Debug.LogError($"[SaveManager] Load failed: {ex.Message}");
                 EventBus.LoadFailed(slot, ex.Message);
@@ -323,7 +323,7 @@ namespace VeilBreakers.Managers
                 ErrorLogger.Log($"[SaveManager] Deleted slot {slot}");
                 return true;
             }
-            catch (Exception ex)
+            catch (IOException ex)
             {
                 Debug.LogError($"[SaveManager] Delete failed: {ex.Message}");
                 return false;
@@ -363,7 +363,7 @@ namespace VeilBreakers.Managers
                 byte[] fileData = await SaveFileHandler.ReadFileAsync(path);
                 return SaveFileHandler.ExtractMetadata(fileData, slot);
             }
-            catch (Exception ex)
+            catch (IOException ex)
             {
                 return SaveSlotMetadata.Corrupted(slot, ex.Message);
             }
@@ -615,7 +615,7 @@ namespace VeilBreakers.Managers
                     throw new IOException("Atomic write failed");
                 }
             }
-            catch (Exception ex)
+            catch (IOException ex)
             {
                 Debug.LogError($"[SaveManager] Save failed: {ex.Message}");
                 EventBus.SaveFailed(slot, ex.Message);

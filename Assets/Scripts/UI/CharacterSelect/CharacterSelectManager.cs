@@ -239,6 +239,8 @@ namespace VeilBreakers.UI.CharacterSelect
 
             // --- HeroStageController (should already exist in scene) ---
             var stageCtrl = GetComponent<HeroStageController>();
+            if (stageCtrl == null)
+                Debug.LogWarning("[CharacterSelectManager] HeroStageController not found on this GameObject.", this);
 
             // --- HeroThemeTransitioner (needs HeroThemeConfig[], VolumeProfileTransitioner, VeilDissolveController, HeroStageController) ---
             if (_themeTransitioner == null) _themeTransitioner = GetComponent<HeroThemeTransitioner>();

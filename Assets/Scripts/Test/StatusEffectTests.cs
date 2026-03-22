@@ -55,7 +55,14 @@ namespace VeilBreakers.Test
         [ContextMenu("Run All Tests")]
         public async void RunAllTests()
         {
-            await RunAllTestsAsync();
+            try
+            {
+                await RunAllTestsAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+            }
         }
 
         public async Task RunAllTestsAsync()

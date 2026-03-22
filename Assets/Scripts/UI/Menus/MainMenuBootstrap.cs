@@ -294,7 +294,7 @@ namespace VeilBreakers.UI.Menus
             yield return new WaitForSecondsRealtime(0.1f);
 
             // Fade in the main container
-            _animator?.FadeIn(mainContainer, _fadeInDuration);
+            if (_animator != null) _animator.FadeIn(mainContainer, _fadeInDuration);
 
             yield return new WaitForSecondsRealtime(_titleAnimDelay);
 
@@ -307,7 +307,7 @@ namespace VeilBreakers.UI.Menus
             {
                 title.style.opacity = 0;
                 title.style.scale = new Scale(new Vector2(0.9f, 0.9f));
-                _animator?.FadeScaleIn(title, 0.9f, 0.6f);
+                if (_animator != null) _animator.FadeScaleIn(title, 0.9f, 0.6f);
             }
 
             yield return new WaitForSecondsRealtime(0.3f);
@@ -332,7 +332,7 @@ namespace VeilBreakers.UI.Menus
         private IEnumerator AnimateButtonDelayed(Button button, float delay)
         {
             yield return new WaitForSecondsRealtime(delay);
-            _animator?.FadeSlideIn(button,
+            if (_animator != null) _animator.FadeSlideIn(button,
                 UIAnimationController.SlideDirection.Up, 20, 0.4f);
         }
 
@@ -468,7 +468,7 @@ namespace VeilBreakers.UI.Menus
             {
                 _animator.FadeScaleOut(settingsPanel, 1.02f, 0.2f, () =>
                 {
-                    _animator?.FadeOut(_settingsOverlay, 0.2f, () =>
+                    if (_animator != null) _animator.FadeOut(_settingsOverlay, 0.2f, () =>
                     {
                         _settingsOverlay.style.display = DisplayStyle.None;
                     });

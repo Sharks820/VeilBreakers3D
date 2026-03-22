@@ -162,7 +162,7 @@ namespace VeilBreakers.Managers
 
                 return data;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is IOException or System.Security.Cryptography.CryptographicException or ArgumentException or InvalidOperationException)
             {
                 Debug.LogError($"[SaveFileHandler] Deserialization failed: {ex.Message}");
                 return null;
@@ -253,7 +253,7 @@ namespace VeilBreakers.Managers
                     ErrorLogger.Log($"[SaveFileHandler] File written successfully: {filePath}");
                     return true;
                 }
-                catch (Exception ex)
+                catch (IOException ex)
                 {
                     ErrorLogger.Warn($"[SaveFileHandler] Write attempt {attempt}/{MAX_RETRIES} failed: {ex.Message}");
 
@@ -298,7 +298,7 @@ namespace VeilBreakers.Managers
                     return data;
                 }
             }
-            catch (Exception ex)
+            catch (IOException ex)
             {
                 Debug.LogError($"[SaveFileHandler] Read failed: {ex.Message}");
                 return null;
@@ -335,7 +335,7 @@ namespace VeilBreakers.Managers
 
                 ErrorLogger.Log($"[SaveFileHandler] Backups rotated for: {filePath}");
             }
-            catch (Exception ex)
+            catch (IOException ex)
             {
                 ErrorLogger.Warn($"[SaveFileHandler] Backup rotation failed: {ex.Message}");
             }
@@ -400,7 +400,7 @@ namespace VeilBreakers.Managers
                     catch { }
                 }
             }
-            catch (Exception ex)
+            catch (IOException ex)
             {
                 ErrorLogger.Warn($"[SaveFileHandler] Cleanup failed: {ex.Message}");
             }
@@ -441,7 +441,7 @@ namespace VeilBreakers.Managers
                 }
                 return SaveSlotMetadata.Corrupted(slotIndex, "Failed to deserialize");
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is IOException or System.Security.Cryptography.CryptographicException or ArgumentException or InvalidOperationException)
             {
                 return SaveSlotMetadata.Corrupted(slotIndex, ex.Message);
             }
@@ -633,7 +633,7 @@ namespace VeilBreakers.Managers
         private static void PersistKeyToFile(byte[] key)
         {
             try { File.WriteAllText(kKeyFilePath, Convert.ToBase64String(key)); }
-            catch (Exception ex) { ErrorLogger.Warn($"[SaveFileHandler] Could not persist key file: {ex.Message}"); }
+            catch (IOException ex) { ErrorLogger.Warn($"[SaveFileHandler] Could not persist key file: {ex.Message}"); }
         }
 
         private static byte[] CombineSalt(byte[] a, byte[] b)

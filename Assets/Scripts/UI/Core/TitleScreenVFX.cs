@@ -1568,7 +1568,7 @@ namespace VeilBreakers.UI.Core
                     _lightningMaskedB = CreateWhitenessMaskedTexture(_lightningBoltTextureB, 0.28f, 0.72f, 1.6f);
                 }
             }
-            catch (Exception ex)
+            catch (UnityException ex)
             {
                 Debug.LogWarning($"[TitleScreenVFX] Lightning textures could not be processed (make sure they are Read/Write enabled). Disabling lightning. {ex.GetType().Name}: {ex.Message}");
                 _lightningMaskedA = null;

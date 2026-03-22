@@ -178,7 +178,7 @@ namespace VeilBreakers.Core
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception e) when (e is InvalidOperationException or FormatException or ArgumentException)
             {
                 Debug.LogError($"[GameDatabase] Failed to load monsters: {e.Message}");
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -221,7 +221,7 @@ namespace VeilBreakers.Core
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception e) when (e is InvalidOperationException or FormatException or ArgumentException)
             {
                 Debug.LogError($"[GameDatabase] Failed to load skills: {e.Message}");
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -264,7 +264,7 @@ namespace VeilBreakers.Core
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception e) when (e is InvalidOperationException or FormatException or ArgumentException)
             {
                 Debug.LogError($"[GameDatabase] Failed to load heroes: {e.Message}");
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -307,7 +307,7 @@ namespace VeilBreakers.Core
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception e) when (e is InvalidOperationException or FormatException or ArgumentException)
             {
                 Debug.LogError($"[GameDatabase] Failed to load items: {e.Message}");
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
