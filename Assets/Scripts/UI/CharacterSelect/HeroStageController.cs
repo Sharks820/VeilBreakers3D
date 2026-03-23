@@ -237,7 +237,8 @@ namespace VeilBreakers.UI.CharacterSelect
             }
 
             // Load new model
-            GameObject prefab = config?.modelPrefab;
+            // Use explicit null check (not ?.) so Unity's overloaded == operator detects destroyed objects.
+            GameObject prefab = (config != null) ? config.modelPrefab : null;
             if (prefab != null)
             {
                 _currentModel = Instantiate(prefab, _stageRoot);

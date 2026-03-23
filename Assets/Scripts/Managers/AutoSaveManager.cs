@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using VeilBreakers.Core;
@@ -46,6 +47,7 @@ namespace VeilBreakers.Managers
 
         private float _lastAutoSaveTime;
         private bool _isEnabled = true;
+        private CancellationTokenSource _cts;
 
         // =============================================================================
         // PROPERTIES
@@ -67,6 +69,7 @@ namespace VeilBreakers.Managers
 
         private void OnEnable()
         {
+            _cts ??= new CancellationTokenSource();
             SubscribeToEvents();
         }
 
@@ -77,6 +80,9 @@ namespace VeilBreakers.Managers
 
         protected override void OnDestroy()
         {
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = null;
             UnsubscribeFromEvents();
             base.OnDestroy();
         }
@@ -169,13 +175,14 @@ namespace VeilBreakers.Managers
             }
 
             // Perform auto-save (fire-and-forget with explicit discard)
-            _ = PerformAutoSaveAsync(reason);
+            _ = PerformAutoSaveAsync(reason, _cts?.Token ?? CancellationToken.None);
         }
 
-        private async Task PerformAutoSaveAsync(string reason)
+        private async Task PerformAutoSaveAsync(string reason, CancellationToken token = default)
         {
             try
             {
+                token.ThrowIfCancellationRequested();
                 _lastAutoSaveTime = Time.realtimeSinceStartup;
 
                 if (_logAutoSaves)
@@ -190,6 +197,7 @@ namespace VeilBreakers.Managers
                 }
 
                 bool success = await saveManager.AutoSaveAsync(reason);
+                token.ThrowIfCancellationRequested();
 
                 if (_logAutoSaves)
                 {
@@ -215,7 +223,7 @@ namespace VeilBreakers.Managers
         public void ForceAutoSave(string reason)
         {
             if (!_isEnabled || SaveManager.Instance == null) return;
-            _ = PerformAutoSaveAsync($"forced:{reason}");
+            _ = PerformAutoSaveAsync($"forced:{reason}", _cts?.Token ?? CancellationToken.None);
         }
 
         /// <summary>

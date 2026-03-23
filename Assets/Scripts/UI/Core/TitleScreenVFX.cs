@@ -1232,6 +1232,10 @@ namespace VeilBreakers.UI.Core
                 Destroy(_videoRenderTextureReversed);
             }
 
+            // Cleanup masked lightning textures
+            if (_lightningMaskedA != null) { Destroy(_lightningMaskedA); _lightningMaskedA = null; }
+            if (_lightningMaskedB != null) { Destroy(_lightningMaskedB); _lightningMaskedB = null; }
+
             // Stop menu music
             if (_audioSource != null)
             {

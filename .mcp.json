@@ -6,12 +6,6 @@
       "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
       "description": "Complex problem breakdown, multi-step reasoning, game balance calculations"
     },
-    "memory-graph": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "mcp-knowledge-graph", "--memory-path", "C:/Users/Conner/.claude/memory"],
-      "description": "Episodic memory / knowledge graph"
-    },
     "serena": {
       "type": "stdio",
       "command": "uvx",
@@ -22,15 +16,6 @@
         "start-mcp-server"
       ],
       "description": "Symbol-aware code navigation and scoped edits"
-    },
-    "mcp-unity": {
-      "type": "stdio",
-      "command": "node",
-      "args": [
-        "Tools/mcp/launch-unity-mcp.js"
-      ],
-      "disabled": true,
-      "description": "Unity Editor control - screenshots, scenes, GameObjects, builds, console output, prefabs, components. DISABLED: com.gamelovers.mcp-unity package not in PackageCache. Re-enable after installing the Unity package."
     },
     "gemini-cli": {
       "type": "stdio",
@@ -56,16 +41,6 @@
       "args": ["Tools/mcp/github-mcp-launcher.js"],
       "description": "GitHub operations - PRs, issues, commits, CI status. Token auto-sourced from gh CLI."
     },
-    "blender": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": ["blender-mcp"],
-      "env": {
-        "BLENDER_PORT": "9876"
-      },
-      "disabled": true,
-      "description": "REPLACED by vb-blender below — generic blender-mcp has fewer capabilities"
-    },
     "vb-blender": {
       "type": "stdio",
       "command": "uv",
@@ -78,7 +53,7 @@
         "TRIPO_API_KEY": "${TRIPO_API_KEY}",
         "FAL_KEY": "${FAL_KEY}"
       },
-      "description": "VeilBreakers Blender toolkit - 15 compound tools: mesh, UV, texture, rig, animation, environment, worldbuilding, asset pipeline, concept art + AAA quality"
+      "description": "VeilBreakers Blender toolkit - 15 compound tools"
     },
     "vb-unity": {
       "type": "stdio",
@@ -94,11 +69,6 @@
   },
   "_profile": {
     "name": "core",
-    "purpose": "Lean default for maximum reasoning signal-to-noise and low token/tool overhead.",
-    "full_profile_file": ".mcp.full.json"
-  },
-  "_removed_duplicates": {
-    "_comment": "Removed greptile (paid API path not used). Kept context7 and serena in plugins; serena is also declared here for project-level consistency. Removed figma, figma-local, atlassian. Optional heavy tools moved to .mcp.full.json."
+    "purpose": "Lean daily-driver profile. For memory-graph, image-process, notion: use .mcp.full.json"
   }
 }
-

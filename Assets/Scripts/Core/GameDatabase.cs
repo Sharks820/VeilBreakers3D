@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using VeilBreakers.Data;
@@ -22,6 +23,7 @@ namespace VeilBreakers.Core
         private readonly Dictionary<string, HeroData> _heroes = new Dictionary<string, HeroData>();
         private readonly Dictionary<string, ItemData> _items = new Dictionary<string, ItemData>();
         private bool _isLoading;
+        private CancellationTokenSource _cts;
 
         public bool IsLoaded { get; private set; } = false;
         public bool LoadFailed { get; private set; } = false;
@@ -54,14 +56,23 @@ namespace VeilBreakers.Core
 
         protected override void OnSingletonAwake()
         {
+            _cts = new CancellationTokenSource();
             // Do not block the main thread here
-            InitializationTask = LoadAllDataAsync();
+            InitializationTask = LoadAllDataAsync(_cts.Token);
+        }
+
+        protected override void OnDestroy()
+        {
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = null;
+            base.OnDestroy();
         }
 
         /// <summary>
         /// Load all game data from JSON files asynchronously.
         /// </summary>
-        public async Task LoadAllDataAsync()
+        public async Task LoadAllDataAsync(CancellationToken token = default)
         {
             if (IsLoaded || _isLoading) return;
             ErrorLogger.Log("[GameDatabase] Starting asynchronous data load...");
@@ -71,6 +82,8 @@ namespace VeilBreakers.Core
 
             try
             {
+                token.ThrowIfCancellationRequested();
+
                 // Each loader writes exclusively to its own dictionary (_monsters, _skills, etc.),
                 // so parallel execution is safe with no shared mutable state between tasks.
                 var tasks = new List<Task>
@@ -82,6 +95,8 @@ namespace VeilBreakers.Core
                 };
 
                 await Task.WhenAll(tasks);
+
+                token.ThrowIfCancellationRequested();
 
                 IsLoaded = true;
 
