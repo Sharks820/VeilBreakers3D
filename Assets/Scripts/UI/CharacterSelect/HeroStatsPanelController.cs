@@ -18,11 +18,11 @@ namespace VeilBreakers.UI.CharacterSelect
         [SerializeField] private UIDocument _uiDocument;
 
         private VisualElement _panel;
-        private readonly VisualElement[] _barFills = new VisualElement[6];
-        private readonly Label[] _barValues = new Label[6];
+        private readonly VisualElement[] _barFills = new VisualElement[7];
+        private readonly Label[] _barValues = new Label[7];
         private readonly Label[] _abilitySlots = new Label[5];
 
-        private static readonly string[] kStatNames = { "str", "dex", "con", "int", "wis", "cha" };
+        private static readonly string[] kStatNames = { "str", "dex", "con", "int", "wis", "cha", "spd" };
         private static readonly Color[] kStatColors =
         {
             new Color(0.85f, 0.25f, 0.20f),  // STR - Crimson red
@@ -31,6 +31,7 @@ namespace VeilBreakers.UI.CharacterSelect
             new Color(0.55f, 0.30f, 0.85f),  // INT - Royal purple
             new Color(0.25f, 0.55f, 0.90f),  // WIS - Deep blue
             new Color(0.90f, 0.75f, 0.20f),  // CHA - Gold
+            new Color(0.40f, 0.75f, 0.90f),  // SPD - Sky blue
         };
         private Sequence _statCascadeSequence;
 
@@ -86,7 +87,8 @@ namespace VeilBreakers.UI.CharacterSelect
 
             int[] values = {
                 stats.strength, stats.dexterity, stats.constitution,
-                stats.intelligence, stats.wisdom, stats.charisma
+                stats.intelligence, stats.wisdom, stats.charisma,
+                data.base_speed
             };
 
             for (int i = 0; i < values.Length && i < _barFills.Length; i++)
@@ -124,7 +126,8 @@ namespace VeilBreakers.UI.CharacterSelect
 
             int[] values = {
                 stats.strength, stats.dexterity, stats.constitution,
-                stats.intelligence, stats.wisdom, stats.charisma
+                stats.intelligence, stats.wisdom, stats.charisma,
+                heroData.base_speed
             };
 
             var seq = Sequence.Create();

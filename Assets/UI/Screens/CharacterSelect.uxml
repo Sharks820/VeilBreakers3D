@@ -154,6 +154,10 @@
                                 <ui:Label class="attr-chip-label" text="CHA" />
                                 <ui:Label name="bar-cha-value" class="attr-chip-value" text="10" />
                             </ui:VisualElement>
+                            <ui:VisualElement class="attr-chip">
+                                <ui:Label class="attr-chip-label" text="SPD" />
+                                <ui:Label name="bar-spd-value" class="attr-chip-value" text="5" />
+                            </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
                 </ui:VisualElement>
