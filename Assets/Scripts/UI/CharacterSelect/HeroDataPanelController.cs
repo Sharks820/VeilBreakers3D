@@ -41,6 +41,10 @@ namespace VeilBreakers.UI.CharacterSelect
         private Label _statAtk;
         private Label _statDef;
         private Label _statStamina;
+        private VisualElement _statHpFill;
+        private VisualElement _statAtkFill;
+        private VisualElement _statDefFill;
+        private VisualElement _statStaminaFill;
         private Label _championName;
         private Label _championBrandLabel;
         private Label _championBrand;
@@ -92,6 +96,10 @@ namespace VeilBreakers.UI.CharacterSelect
             _statAtk = root.Q<Label>("stat-atk");
             _statDef = root.Q<Label>("stat-def");
             _statStamina = root.Q<Label>("stat-stamina");
+            _statHpFill = root.Q<VisualElement>("stat-hp-fill");
+            _statAtkFill = root.Q<VisualElement>("stat-atk-fill");
+            _statDefFill = root.Q<VisualElement>("stat-def-fill");
+            _statStaminaFill = root.Q<VisualElement>("stat-stamina-fill");
             _championName = root.Q<Label>("champion-name");
             _championBrandLabel = root.Q<Label>("champion-brand-label");
             _championBrand = root.Q<Label>("champion-brand");
@@ -144,6 +152,14 @@ namespace VeilBreakers.UI.CharacterSelect
             _prevDef = data.base_defense;
             _prevStamina = data.base_speed;
 
+            // Bar fill widths (percentage of max expected value)
+            const float kMaxHp = 100f;
+            const float kMaxStat = 40f;
+            SetBarFillWidth(_statHpFill, data.base_hp / kMaxHp);
+            SetBarFillWidth(_statAtkFill, data.base_attack / kMaxStat);
+            SetBarFillWidth(_statDefFill, data.base_defense / kMaxStat);
+            SetBarFillWidth(_statStaminaFill, data.base_speed / kMaxStat);
+
             // Dynamic resource label: MANA for caster/hybrid paths, STAMINA for physical paths
             UpdateResourceStatLabel(data);
 
@@ -163,6 +179,13 @@ namespace VeilBreakers.UI.CharacterSelect
 
             // Panel slide-in animation on the info-panel-container
             CharSelectUIUtils.AnimatePanel(_infoPanelContainer);
+        }
+
+        private static void SetBarFillWidth(VisualElement fill, float normalizedValue)
+        {
+            if (fill == null) return;
+            float pct = Mathf.Clamp01(normalizedValue) * 100f;
+            fill.style.width = new Length(pct, LengthUnit.Percent);
         }
 
         private void PopulateBackstory(HeroData data)

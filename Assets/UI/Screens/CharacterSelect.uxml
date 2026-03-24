@@ -83,20 +83,40 @@
                     <!-- Starter Stats Grid -->
                     <ui:VisualElement name="starter-stats-grid" class="starter-stats-grid">
                         <ui:VisualElement class="stat-chip stat-chip-hp">
-                            <ui:Label class="stat-chip-label" text="HP" />
-                            <ui:Label name="stat-hp" class="stat-chip-value" text="68" />
+                            <ui:VisualElement class="stat-chip-header">
+                                <ui:Label class="stat-chip-label" text="HP" />
+                                <ui:Label name="stat-hp" class="stat-chip-value" text="68" />
+                            </ui:VisualElement>
+                            <ui:VisualElement class="stat-bar-track">
+                                <ui:VisualElement name="stat-hp-fill" class="stat-bar-fill" style="width: 85%;" />
+                            </ui:VisualElement>
                         </ui:VisualElement>
                         <ui:VisualElement class="stat-chip stat-chip-stamina">
-                            <ui:Label class="stat-chip-label" text="STAMINA" />
-                            <ui:Label name="stat-stamina" class="stat-chip-value" text="45" />
+                            <ui:VisualElement class="stat-chip-header">
+                                <ui:Label class="stat-chip-label" text="STAMINA" />
+                                <ui:Label name="stat-stamina" class="stat-chip-value" text="45" />
+                            </ui:VisualElement>
+                            <ui:VisualElement class="stat-bar-track">
+                                <ui:VisualElement name="stat-stamina-fill" class="stat-bar-fill" style="width: 56%;" />
+                            </ui:VisualElement>
                         </ui:VisualElement>
                         <ui:VisualElement class="stat-chip stat-chip-atk">
-                            <ui:Label class="stat-chip-label" text="ATK" />
-                            <ui:Label name="stat-atk" class="stat-chip-value" text="10" />
+                            <ui:VisualElement class="stat-chip-header">
+                                <ui:Label class="stat-chip-label" text="ATK" />
+                                <ui:Label name="stat-atk" class="stat-chip-value" text="10" />
+                            </ui:VisualElement>
+                            <ui:VisualElement class="stat-bar-track">
+                                <ui:VisualElement name="stat-atk-fill" class="stat-bar-fill" style="width: 25%;" />
+                            </ui:VisualElement>
                         </ui:VisualElement>
                         <ui:VisualElement class="stat-chip stat-chip-def">
-                            <ui:Label class="stat-chip-label" text="DEF" />
-                            <ui:Label name="stat-def" class="stat-chip-value" text="20" />
+                            <ui:VisualElement class="stat-chip-header">
+                                <ui:Label class="stat-chip-label" text="DEF" />
+                                <ui:Label name="stat-def" class="stat-chip-value" text="20" />
+                            </ui:VisualElement>
+                            <ui:VisualElement class="stat-bar-track">
+                                <ui:VisualElement name="stat-def-fill" class="stat-bar-fill" style="width: 50%;" />
+                            </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
 
