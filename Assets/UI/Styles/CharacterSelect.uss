@@ -1265,3 +1265,15 @@ TemplateContainer {
     transition-duration: 0.3s;
     transition-timing-function: ease-in-out;
 }
+
+/* =============================================================================
+   DYNAMIC RESOURCE STAT CHIP - MANA (VOIDTOUCHED / UNCHAINED paths)
+   ============================================================================= */
+
+.stat-chip-mana {
+    border-left-color: rgb(130, 80, 200);
+}
+
+.stat-chip-mana .stat-chip-value {
+    color: rgb(180, 130, 255);
+}

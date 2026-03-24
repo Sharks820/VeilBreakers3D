@@ -144,6 +144,9 @@ namespace VeilBreakers.UI.CharacterSelect
             _prevDef = data.base_defense;
             _prevStamina = data.base_speed;
 
+            // Dynamic resource label: MANA for caster/hybrid paths, STAMINA for physical paths
+            UpdateResourceStatLabel(data);
+
             // Champion monster
             PopulateChampion(data);
 
@@ -219,6 +222,28 @@ namespace VeilBreakers.UI.CharacterSelect
             CharSelectUIUtils.SetLabel(_championBrand, brandName);
             CharSelectUIUtils.SetLabel(_championRole, roleName);
             CharSelectUIUtils.SetLabel(_championDesc, $"Your starting {brandName.ToLower()} companion. A {roleName.ToLower()} fighter bound to your path.");
+        }
+
+        /// <summary>
+        /// Updates the resource stat chip label and CSS class based on the hero's path.
+        /// VOIDTOUCHED and UNCHAINED paths use MANA; all others use STAMINA.
+        /// </summary>
+        private void UpdateResourceStatLabel(HeroData data)
+        {
+            bool isManaUser = data.GetPrimaryPath() == Path.VOIDTOUCHED
+                           || data.GetPrimaryPath() == Path.UNCHAINED;
+
+            // The stat chip container is the parent of the stat value label
+            var resourceChip = _statStamina?.parent;
+            if (resourceChip == null) return;
+
+            var resourceLabel = resourceChip.Q<Label>(className: "stat-chip-label");
+            if (resourceLabel != null)
+                resourceLabel.text = isManaUser ? "MANA" : "STAMINA";
+
+            resourceChip.RemoveFromClassList("stat-chip-stamina");
+            resourceChip.RemoveFromClassList("stat-chip-mana");
+            resourceChip.AddToClassList(isManaUser ? "stat-chip-mana" : "stat-chip-stamina");
         }
     }
 }
