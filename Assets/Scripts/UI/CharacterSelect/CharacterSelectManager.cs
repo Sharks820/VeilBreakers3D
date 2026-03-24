@@ -549,6 +549,7 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             _currentIndex = 0;
             _isTransitioning = false;
+            _currentTab = -1; // Force initial tab apply
             SwitchTab(kTabOverview);
             DismissToast();
             if (_heroList != null && _heroList.Count > 0)
@@ -617,7 +618,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void SwitchTab(int tabIndex)
         {
-            if (tabIndex == _currentTab && tabIndex != kTabOverview) return;
+            if (tabIndex == _currentTab) return;
             _currentTab = tabIndex;
             SetTabButtonActive(_tabBtnOverview, tabIndex == kTabOverview);
             SetTabButtonActive(_tabBtnAbilities, tabIndex == kTabAbilities);
@@ -685,6 +686,16 @@ namespace VeilBreakers.UI.CharacterSelect
             var hero = CurrentHero;
             if (hero == null) return;
             _isEmbarking = true;
+
+            // Play hero embark voice line (if configured) at the start of the sequence
+            var config = CurrentConfig;
+            if (config != null && config.embarkVoiceLine != null)
+            {
+                var cam = Camera.main;
+                if (cam != null)
+                    AudioSource.PlayClipAtPoint(config.embarkVoiceLine, cam.transform.position, 0.8f);
+            }
+
             // NOTE: Do NOT call RaiseEmbarkTriggered() here — TriggerEmbark IS the handler
             // for OnEmbarkTriggered (subscribed in OnEnable). Raising it would re-invoke this method.
             CharSelectEvents.RaiseScreenExiting();
@@ -792,7 +803,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private void OnPrevClicked(ClickEvent evt) => NavigatePrev();
         private void OnNextClicked(ClickEvent evt) => NavigateNext();
         private void OnBackClicked(ClickEvent evt) => NavigateBack();
-        private void OnEmbarkClicked(ClickEvent evt) => TriggerEmbark();
+        private void OnEmbarkClicked(ClickEvent evt) => CharSelectEvents.RaiseEmbarkTriggered();
 
         private void NavigateBack()
         {
@@ -813,7 +824,25 @@ namespace VeilBreakers.UI.CharacterSelect
         // NAVIGATION EVENTS (KEYBOARD / GAMEPAD)
         // =============================================================================
 
-        private void OnNavigationSubmit(NavigationSubmitEvent evt) { TriggerEmbark(); evt.StopPropagation(); }
+        private void OnNavigationSubmit(NavigationSubmitEvent evt)
+        {
+            // Only trigger embark when the Embark zone is focused (zone index 2)
+            var focusManager = GetComponent<CharSelectFocusManager>();
+            if (focusManager != null && focusManager.CurrentZoneIndex == 2)
+            {
+                TriggerEmbark();
+            }
+            else if (focusManager != null && focusManager.CurrentZoneIndex == 0)
+            {
+                NavigateBack();
+            }
+            // InfoTabs and Carousel zones: let the event propagate to tab/card handlers
+            else
+            {
+                return; // Don't stop propagation for other zones
+            }
+            evt.StopPropagation();
+        }
         private void OnNavigationCancel(NavigationCancelEvent evt) { NavigateBack(); evt.StopPropagation(); }
 
         // =============================================================================
