@@ -6,33 +6,40 @@
     <!-- ROOT: Full-screen container -->
     <ui:VisualElement name="character-select-root" class="character-select-root theme-vex">
 
-        <!-- PARALLAX BACKGROUND SYSTEM -->
-        <ui:VisualElement name="parallax-bg" class="parallax-bg">
+        <!-- PARALLAX BACKGROUND SYSTEM (all layers non-interactive) -->
+        <ui:VisualElement name="parallax-bg" class="parallax-bg" picking-mode="Ignore">
             <!-- Layer 1: Deepest Void -->
-            <ui:VisualElement name="parallax-deep" class="parallax-bg parallax-deep">
-                <ui:VisualElement name="void-stars" class="void-stars" />
+            <ui:VisualElement name="parallax-deep" class="parallax-bg parallax-deep" picking-mode="Ignore">
+                <ui:VisualElement name="void-stars" class="void-stars" picking-mode="Ignore" />
             </ui:VisualElement>
 
             <!-- Layer 2: Atmospheric Fog -->
-            <ui:VisualElement name="parallax-fog" class="parallax-bg parallax-fog">
-                <ui:VisualElement name="fog-particles" class="fog-particles" />
+            <ui:VisualElement name="parallax-fog" class="parallax-bg parallax-fog" picking-mode="Ignore">
+                <ui:VisualElement name="fog-particles" class="fog-particles" picking-mode="Ignore" />
             </ui:VisualElement>
 
             <!-- Layer 5: Vignette & Lighting -->
-            <ui:VisualElement name="background-vignette" class="background-vignette" />
+            <ui:VisualElement name="background-vignette" class="background-vignette" picking-mode="Ignore" />
         </ui:VisualElement>
 
-        <!-- LEFT HALF: 3D HERO STAGE (50% width, full height) -->
+        <!-- LEFT HALF: 3D HERO STAGE (55% width, full height) -->
         <ui:VisualElement name="hero-stage" class="hero-stage">
-            <!-- Hero Aura Glow -->
-            <ui:VisualElement name="hero-aura-container" class="hero-aura-container">
-                <ui:VisualElement name="aura-base" class="aura-base" />
+            <!-- Hero Aura Glow (non-interactive) -->
+            <ui:VisualElement name="hero-aura-container" class="hero-aura-container" picking-mode="Ignore">
+                <ui:VisualElement name="aura-base" class="aura-base" picking-mode="Ignore" />
+                <ui:VisualElement name="aura-ring" class="aura-ring" picking-mode="Ignore" />
             </ui:VisualElement>
 
             <!-- The Render Texture Surface -->
             <ui:VisualElement name="hero-render-target" class="hero-render-target" />
 
-            <ui:Label name="drag-hint" class="drag-hint" text="DRAG TO ROTATE" />
+            <!-- Hero Name Plate (bottom of stage) -->
+            <ui:VisualElement name="hero-name-plate" class="hero-name-plate" picking-mode="Ignore">
+                <ui:Label name="stage-hero-name" class="stage-hero-name" text="NYX" />
+                <ui:Label name="stage-hero-title" class="stage-hero-title" text="THE SHADOW THAT SPEAKS" />
+            </ui:VisualElement>
+
+            <ui:Label name="drag-hint" class="drag-hint" text="DRAG TO ROTATE" picking-mode="Ignore" />
         </ui:VisualElement>
 
         <!-- RIGHT HALF: TABBED INFO PANEL -->
@@ -70,21 +77,21 @@
 
                     <!-- Starter Stats Grid -->
                     <ui:VisualElement name="starter-stats-grid" class="starter-stats-grid">
-                        <ui:VisualElement class="stat-chip">
+                        <ui:VisualElement class="stat-chip stat-chip-hp">
                             <ui:Label class="stat-chip-label" text="HP" />
                             <ui:Label name="stat-hp" class="stat-chip-value" text="68" />
                         </ui:VisualElement>
-                        <ui:VisualElement class="stat-chip">
+                        <ui:VisualElement class="stat-chip stat-chip-stamina">
+                            <ui:Label class="stat-chip-label" text="STAMINA" />
+                            <ui:Label name="stat-stamina" class="stat-chip-value" text="45" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="stat-chip stat-chip-atk">
                             <ui:Label class="stat-chip-label" text="ATK" />
                             <ui:Label name="stat-atk" class="stat-chip-value" text="10" />
                         </ui:VisualElement>
-                        <ui:VisualElement class="stat-chip">
+                        <ui:VisualElement class="stat-chip stat-chip-def">
                             <ui:Label class="stat-chip-label" text="DEF" />
                             <ui:Label name="stat-def" class="stat-chip-value" text="20" />
-                        </ui:VisualElement>
-                        <ui:VisualElement class="stat-chip">
-                            <ui:Label class="stat-chip-label" text="SPD" />
-                            <ui:Label name="stat-spd" class="stat-chip-value" text="5" />
                         </ui:VisualElement>
                     </ui:VisualElement>
 
@@ -203,14 +210,14 @@
             </ui:VisualElement>
             <ui:Button name="btn-next" class="nav-arrow nav-arrow-right" text="&#x25B6;" />
 
-            <ui:Label name="hero-index" class="hero-index" text="1 / 4" />
+            <ui:Label name="hero-index" class="hero-index" text="HERO 1 / 4" picking-mode="Ignore" />
         </ui:VisualElement>
 
-        <!-- CINEMATIC OVERLAY SYSTEM (Highest Z-Index) -->
-        <ui:VisualElement name="cinematic-overlays" class="cinematic-overlays">
-            <ui:VisualElement name="scanlines" class="overlay-scanlines" />
-            <ui:VisualElement name="vignette-outer" class="overlay-vignette" />
-            <ui:VisualElement name="veil-glow" class="overlay-veil-glow" />
+        <!-- CINEMATIC OVERLAY SYSTEM (Highest Z-Index, all non-interactive) -->
+        <ui:VisualElement name="cinematic-overlays" class="cinematic-overlays" picking-mode="Ignore">
+            <ui:VisualElement name="scanlines" class="overlay-scanlines" picking-mode="Ignore" />
+            <ui:VisualElement name="vignette-outer" class="overlay-vignette" picking-mode="Ignore" />
+            <ui:VisualElement name="veil-glow" class="overlay-veil-glow" picking-mode="Ignore" />
         </ui:VisualElement>
 
         <!-- TOAST NOTIFICATION (hidden by default) -->

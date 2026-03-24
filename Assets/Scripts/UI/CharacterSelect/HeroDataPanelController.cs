@@ -40,7 +40,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private Label _statHp;
         private Label _statAtk;
         private Label _statDef;
-        private Label _statSpd;
+        private Label _statStamina;
         private Label _championName;
         private Label _championBrand;
         private Label _championRole;
@@ -49,6 +49,10 @@ namespace VeilBreakers.UI.CharacterSelect
         private Label _heroBackstory;
         private Label _heroSynergyDetail;
         private Label _heroBrandsDetail;
+
+        // Stage name plate (floating text on hero stage)
+        private Label _stageHeroName;
+        private Label _stageHeroTitle;
 
         private void OnEnable()
         {
@@ -79,7 +83,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _statHp = root.Q<Label>("stat-hp");
             _statAtk = root.Q<Label>("stat-atk");
             _statDef = root.Q<Label>("stat-def");
-            _statSpd = root.Q<Label>("stat-spd");
+            _statStamina = root.Q<Label>("stat-stamina");
             _championName = root.Q<Label>("champion-name");
             _championBrand = root.Q<Label>("champion-brand");
             _championRole = root.Q<Label>("champion-role");
@@ -88,6 +92,10 @@ namespace VeilBreakers.UI.CharacterSelect
             _heroBackstory = root.Q<Label>(kHeroBackstory);
             _heroSynergyDetail = root.Q<Label>("hero-synergy-detail");
             _heroBrandsDetail = root.Q<Label>("hero-brands-detail");
+
+            // Stage name plate (optional - only present in v3.0+ UXML)
+            _stageHeroName = root.Q<Label>("stage-hero-name");
+            _stageHeroTitle = root.Q<Label>("stage-hero-title");
 
             Debug.Assert(_heroBackstory != null, $"[HeroDataPanel] Missing element: {kHeroBackstory}");
             Debug.Assert(_heroLoreSection != null, $"[HeroDataPanel] Missing element: {kHeroLoreSection}");
@@ -118,7 +126,7 @@ namespace VeilBreakers.UI.CharacterSelect
             CharSelectUIUtils.SetLabel(_statHp, data.base_hp.ToString());
             CharSelectUIUtils.SetLabel(_statAtk, data.base_attack.ToString());
             CharSelectUIUtils.SetLabel(_statDef, data.base_defense.ToString());
-            CharSelectUIUtils.SetLabel(_statSpd, data.base_speed.ToString());
+            CharSelectUIUtils.SetLabel(_statStamina, data.base_speed.ToString());
 
             // Champion monster
             PopulateChampion(data);
@@ -128,6 +136,11 @@ namespace VeilBreakers.UI.CharacterSelect
 
             // Lore tab -- synergy detail and brands
             PopulateLoreDetails(data);
+
+            // Stage name plate (hero name watermark on 3D stage)
+            string displayName = (data.display_name ?? data.hero_id ?? "UNKNOWN").ToUpper();
+            CharSelectUIUtils.SetLabel(_stageHeroName, displayName);
+            CharSelectUIUtils.SetLabel(_stageHeroTitle, data.title?.ToUpper() ?? "");
 
             // Panel slide-in animation on the info-panel-container
             CharSelectUIUtils.AnimatePanel(_infoPanelContainer);
