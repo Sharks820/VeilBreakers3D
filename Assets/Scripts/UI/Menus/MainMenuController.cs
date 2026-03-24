@@ -1047,24 +1047,22 @@ namespace VeilBreakers.UI.Menus
             // Apply base gradient
             UIGradientHelper.ApplyGradient(button, _btnBaseGradient);
 
-            // --- GLOW HALO: child of button, extends beyond bounds ---
-            // overflow:visible (default) lets the glow bleed outside
+            // Clip children to button bounds (prevents sweep/glow bleed)
+            button.style.overflow = Overflow.Hidden;
+
+            // --- INNER GLOW: full-size overlay that brightens button from inside ---
             var glowHalo = new VisualElement();
             glowHalo.name = "btn-glow-halo";
             glowHalo.pickingMode = PickingMode.Ignore;
             glowHalo.style.position = Position.Absolute;
-            glowHalo.style.left = -14;
-            glowHalo.style.top = -10;
-            glowHalo.style.right = -14;
-            glowHalo.style.bottom = -10;
-            glowHalo.style.borderTopLeftRadius = 8;
-            glowHalo.style.borderTopRightRadius = 8;
-            glowHalo.style.borderBottomLeftRadius = 8;
-            glowHalo.style.borderBottomRightRadius = 8;
-            glowHalo.style.backgroundColor = new Color(1f, 0.55f, 0.2f, 0.2f);
+            glowHalo.style.left = 0;
+            glowHalo.style.top = 0;
+            glowHalo.style.right = 0;
+            glowHalo.style.bottom = 0;
+            glowHalo.style.backgroundColor = new Color(1f, 0.6f, 0.2f, 0.15f);
             glowHalo.style.opacity = 0;
             glowHalo.style.transitionProperty = new List<StylePropertyName> { new("opacity") };
-            glowHalo.style.transitionDuration = new List<TimeValue> { new(0.25f, TimeUnit.Second) };
+            glowHalo.style.transitionDuration = new List<TimeValue> { new(0.2f, TimeUnit.Second) };
             button.Insert(0, glowHalo);
 
             // --- INNER TOP HIGHLIGHT: bright line simulating light from above ---
