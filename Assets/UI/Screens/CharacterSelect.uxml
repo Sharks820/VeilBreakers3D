@@ -60,6 +60,11 @@
                     <ui:Label name="hero-title" class="hero-title" text="THE WARDEN" />
                     <ui:Label name="hero-quote" class="hero-quote" text="&quot;I hold the line.&quot;" />
 
+                    <ui:VisualElement class="ornamental-divider">
+                        <ui:VisualElement class="divider-line" />
+                        <ui:Label class="divider-diamond" text="&#x25C6;" />
+                    </ui:VisualElement>
+
                     <ui:VisualElement name="hero-class-info" class="hero-class-info">
                         <ui:VisualElement name="path-row" class="info-row">
                             <ui:Label class="info-label" text="PATH" />
@@ -95,14 +100,30 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
 
-                    <!-- Champion Monster Info -->
-                    <ui:VisualElement name="champion-section" class="champion-section">
-                        <ui:Label class="section-header" text="CHAMPION" />
-                        <ui:Label name="champion-name" class="champion-name" text="Skitter-Teeth" />
-                        <ui:VisualElement class="champion-tags">
-                            <ui:Label name="champion-brand" class="tag" text="IRON" />
-                            <ui:Label name="champion-role" class="tag" text="TANK" />
+                    <ui:VisualElement class="ornamental-divider">
+                        <ui:VisualElement class="divider-line" />
+                        <ui:Label class="divider-diamond" text="&#x25C6;" />
+                    </ui:VisualElement>
+
+                    <!-- Champion Monster Info — 50/50 split -->
+                    <ui:VisualElement name="champion-section" class="champion-section-v2">
+                        <!-- Left: 3D Model Render Target -->
+                        <ui:VisualElement name="champion-model-viewer" class="champion-model-viewer" />
+                        <!-- Right: Info -->
+                        <ui:VisualElement name="champion-info-panel" class="champion-info-panel">
+                            <ui:Label name="champion-name" class="champion-name-v2" text="SKITTER-TEETH" />
+                            <ui:Label name="champion-brand-label" class="champion-brand-label" text="&#x2B25; IRON BRAND" />
+                            <ui:VisualElement class="champion-tags">
+                                <ui:Label name="champion-brand" class="tag tag-brand" text="IRON" />
+                                <ui:Label name="champion-role" class="tag" text="TANK" />
+                            </ui:VisualElement>
+                            <ui:Label name="champion-desc" class="champion-desc" text="Your starting companion." />
                         </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="ornamental-divider">
+                        <ui:VisualElement class="divider-line" />
+                        <ui:Label class="divider-diamond" text="&#x25C6;" />
                     </ui:VisualElement>
 
                     <!-- D&D Attribute Bars -->

@@ -42,8 +42,10 @@ namespace VeilBreakers.UI.CharacterSelect
         private Label _statDef;
         private Label _statStamina;
         private Label _championName;
+        private Label _championBrandLabel;
         private Label _championBrand;
         private Label _championRole;
+        private Label _championDesc;
         private VisualElement _championSection;
         private VisualElement _heroLoreSection;
         private Label _heroBackstory;
@@ -85,8 +87,10 @@ namespace VeilBreakers.UI.CharacterSelect
             _statDef = root.Q<Label>("stat-def");
             _statStamina = root.Q<Label>("stat-stamina");
             _championName = root.Q<Label>("champion-name");
+            _championBrandLabel = root.Q<Label>("champion-brand-label");
             _championBrand = root.Q<Label>("champion-brand");
             _championRole = root.Q<Label>("champion-role");
+            _championDesc = root.Q<Label>("champion-desc");
             _championSection = root.Q<VisualElement>("champion-section");
             _heroLoreSection = root.Q<VisualElement>(kHeroLoreSection);
             _heroBackstory = root.Q<Label>(kHeroBackstory);
@@ -186,15 +190,23 @@ namespace VeilBreakers.UI.CharacterSelect
             var monster = GameDatabase.Instance.GetMonster(data.starter_monster_id);
             if (monster == null)
             {
-                CharSelectUIUtils.SetLabel(_championName, data.starter_monster_id);
-                CharSelectUIUtils.SetLabel(_championBrand, "");
-                CharSelectUIUtils.SetLabel(_championRole, "");
+                // Fallback: show monster ID with generic labels
+                CharSelectUIUtils.SetLabel(_championName, data.starter_monster_id.ToUpper());
+                CharSelectUIUtils.SetLabel(_championBrandLabel, "\u2B25 UNKNOWN BRAND");
+                CharSelectUIUtils.SetLabel(_championBrand, "?");
+                CharSelectUIUtils.SetLabel(_championRole, "?");
+                CharSelectUIUtils.SetLabel(_championDesc, "A creature yet to be discovered.");
                 return;
             }
 
-            CharSelectUIUtils.SetLabel(_championName, monster.display_name ?? data.starter_monster_id);
-            CharSelectUIUtils.SetLabel(_championBrand, monster.GetPrimaryBrand().ToString());
-            CharSelectUIUtils.SetLabel(_championRole, monster.GetAIPattern().ToString());
+            string brandName = monster.GetPrimaryBrand().ToString().ToUpper();
+            string roleName = monster.GetAIPattern().ToString().ToUpper();
+
+            CharSelectUIUtils.SetLabel(_championName, (monster.display_name ?? data.starter_monster_id).ToUpper());
+            CharSelectUIUtils.SetLabel(_championBrandLabel, $"\u2B25 {brandName} BRAND");
+            CharSelectUIUtils.SetLabel(_championBrand, brandName);
+            CharSelectUIUtils.SetLabel(_championRole, roleName);
+            CharSelectUIUtils.SetLabel(_championDesc, $"Your starting {brandName.ToLower()} companion. A {roleName.ToLower()} fighter bound to your path.");
         }
     }
 }
