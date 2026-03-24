@@ -1,0 +1,70 @@
+{
+  "version": "1.0",
+  "timestamp": "2026-03-24T00:33:36Z",
+  "phase": "aaa-ui-overhaul",
+  "phase_name": "AAA UI Overhaul — Main Menu + Character Select",
+  "phase_dir": "feature/aaa-ui-overhaul",
+  "plan": 1,
+  "task": 0,
+  "total_tasks": 17,
+  "status": "paused",
+  "completed_tasks": [
+    {"id": 1, "name": "UXML vertical button layout", "status": "done", "commit": "fc4deed"},
+    {"id": 2, "name": "USS unified button styles", "status": "done", "commit": "9d6d458"},
+    {"id": 3, "name": "ButtonVFXHelper top highlight", "status": "done", "commit": "534ea6e"},
+    {"id": 4, "name": "Logo dark backing", "status": "done", "commit": "02e3bbe"},
+    {"id": 5, "name": "Rename SPD to STAMINA", "status": "done", "commit": "2f4af6d"},
+    {"id": 6, "name": "Per-stat colors in USS", "status": "done", "commit": "531bf01"},
+    {"id": 7, "name": "D&D attributes as numbers", "status": "done", "commit": "803ff99"},
+    {"id": 8, "name": "Panel depth upgrade USS", "status": "done", "commit": "7f6092f"},
+    {"id": 9, "name": "Champion 50/50 split", "status": "done", "commit": "03cb3de"},
+    {"id": 10, "name": "Embark button restyle", "status": "done", "commit": "dc39dfa"},
+    {"id": 11, "name": "Bottom bar realignment", "status": "done", "commit": "406cb38"},
+    {"id": 12, "name": "Hero card size 80x100", "status": "done", "commit": "dc39dfa"},
+    {"id": 13, "name": "Stat number lerp animation", "status": "done", "commit": "8f8fd2e"},
+    {"id": 14, "name": "Embark voice line support", "status": "done", "commit": "6e69b75"},
+    {"id": 15, "name": "Remove champion from stage", "status": "done", "commit": "f6eabe9"},
+    {"id": 16, "name": "Dynamic STAMINA/MANA", "status": "done", "commit": "74ef5d9"},
+    {"id": 17, "name": "SPD attribute added", "status": "done", "commit": "46bd511"}
+  ],
+  "remaining_tasks": [
+    {"id": "V2-1", "name": "C# gradient texture generation for buttons", "status": "not_started"},
+    {"id": "V2-2", "name": "C# glow overlay VisualElements for panels", "status": "not_started"},
+    {"id": "V2-3", "name": "C# depth layering system for AAA panel look", "status": "not_started"},
+    {"id": "V2-4", "name": "Demon interactive hover + animation (C#)", "status": "not_started"},
+    {"id": "V2-5", "name": "Seamless video loop fix", "status": "not_started"},
+    {"id": "V2-6", "name": "Audio assets (demon laughs, girl crying, music)", "status": "not_started"},
+    {"id": "V2-7", "name": "Champion model RenderTexture in panel", "status": "not_started"},
+    {"id": "V2-8", "name": "Nav arrow icons (replace unicode)", "status": "not_started"}
+  ],
+  "blockers": [
+    {
+      "description": "USS alone cannot achieve AAA visuals — no gradients, box-shadow, blur filters. Must use C# runtime texture generation + layered VisualElements for premium look.",
+      "type": "technical",
+      "workaround": "Generate Texture2D gradients at runtime, apply as background-image. Create overlay VisualElements for glow/depth."
+    },
+    {
+      "description": "HTML mockup used CSS features impossible in UI Toolkit — created expectation gap",
+      "type": "technical",
+      "workaround": "Next session: build visual effects through C# code, not USS. Reference mockup for DESIGN targets, implement via Unity-native techniques."
+    }
+  ],
+  "human_actions_pending": [],
+  "decisions": [
+    {"decision": "Buttons vertical right-aligned stack", "rationale": "AAA RPG standard (Diablo/Elden Ring style), doesn't compete with demon figure", "phase": "aaa-ui-overhaul"},
+    {"decision": "All buttons same size, orange on hover only", "rationale": "User preference — no primary/secondary distinction at rest", "phase": "aaa-ui-overhaul"},
+    {"decision": "SPD renamed to STAMINA, dynamic swap to MANA for casters", "rationale": "Physical heroes use STAMINA (green), VOIDTOUCHED/UNCHAINED use MANA (purple)", "phase": "aaa-ui-overhaul"},
+    {"decision": "D&D attributes as numbers not bars", "rationale": "User preferred bold numbers over same-color bars that were hard to differentiate", "phase": "aaa-ui-overhaul"},
+    {"decision": "SPD added back as 7th attribute", "rationale": "Speed affects casting/melee/ranged attack speed — universal stat, displayed as number", "phase": "aaa-ui-overhaul"},
+    {"decision": "Champion 50/50 split in panel, removed from 3D stage", "rationale": "Hero gets full spotlight on stage, champion gets prominent info+model area in panel", "phase": "aaa-ui-overhaul"},
+    {"decision": "Visual effects MUST use C# route, not USS-only", "rationale": "USS lacks gradients, box-shadow, blur — proven by terrible visual result from USS-only approach", "phase": "aaa-ui-overhaul"}
+  ],
+  "uncommitted_files": [
+    "Assets/Scripts/UI/CharacterSelect/CharSelectFocusManager.cs",
+    "Assets/Scripts/UI/Effects/MainMenuVFXOverlayController.cs",
+    "Assets/Scripts/UI/Menus/MainMenuBootstrap.cs",
+    "CLAUDE.md"
+  ],
+  "next_action": "Build C# UIGradientHelper that generates Texture2D gradients at runtime and applies them as background-image to buttons and panels. Then create UIGlowOverlay system that adds layered glow VisualElements. Match the V5 mockup (.superpowers/brainstorm/stable/aaa-v5.html) pixel-for-pixel using Unity-native techniques.",
+  "context_notes": "The USS-only approach failed spectacularly. All 17 USS/UXML tasks are committed and compile clean (0 errors) but look nothing like the approved mockup because UI Toolkit lacks CSS gradients, box-shadow, and filter effects. The STRUCTURAL changes are correct (vertical buttons, stat colors, champion layout, bottom bar alignment) but the VISUAL QUALITY needs a complete C# implementation pass. The mockup is at .superpowers/brainstorm/stable/aaa-v5.html. Bug scan found 4 pre-existing HIGH issues (ButtonVFXHelper callback leak, async void TriggerEmbark, FindAnyObjectByType in hot path, gamepad stick misread) — none introduced by our changes."
+}
