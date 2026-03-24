@@ -8,7 +8,7 @@
    ============================================================================= */
 
 * {
-    -unity-font-definition: url('project://database/Assets/UI/Fonts/Arial.ttf?fileID=12800000&guid=a1b82bd02ca673443b4c4c64ac746061&type=3');
+    -unity-font-definition: url('project://database/Assets/UI/Fonts/Cinzel-Variable.ttf?fileID=12800000&guid=c7b3e9f2a4d816543e8c1a0b5f927d4e&type=3');
 }
 
 /* UIDocument wraps UXML content in a TemplateContainer — it must grow to
