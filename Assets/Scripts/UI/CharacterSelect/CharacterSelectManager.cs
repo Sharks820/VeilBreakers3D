@@ -508,6 +508,36 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 ButtonVFXHelper.AddBreathing(_btnEmbark, 0.012f, 2500f);
             }
+
+            // AAA: Apply gradient to info panel background
+            if (_infoPanelContainer != null)
+            {
+                var panelGradient = VeilBreakers.UI.Core.UIGradientHelper.CreateVerticalGradient3(
+                    new Color(0.08f, 0.06f, 0.12f, 0.96f),  // Top: slightly lighter
+                    new Color(0.04f, 0.03f, 0.07f, 0.97f),  // Mid: dark
+                    new Color(0.02f, 0.015f, 0.05f, 0.98f)   // Bottom: near-black
+                );
+                VeilBreakers.UI.Core.UIGradientHelper.ApplyGradient(_infoPanelContainer, panelGradient);
+
+                // Inner top highlight for panel depth
+                VeilBreakers.UI.Core.UIGradientHelper.CreateTopHighlight(
+                    _infoPanelContainer,
+                    new Color(0.78f, 0.63f, 0.24f, 0.25f), // Gold highlight matching hero primary
+                    1f
+                );
+            }
+
+            // AAA: Apply gradient to embark button
+            if (_btnEmbark != null)
+            {
+                var embarkGradient = VeilBreakers.UI.Core.UIGradientHelper.CreateVerticalGradient3(
+                    new Color(0.86f, 0.69f, 0.27f, 0.95f),  // Top: bright gold
+                    new Color(0.71f, 0.53f, 0.16f, 0.98f),  // Mid: gold
+                    new Color(0.59f, 0.43f, 0.10f, 0.99f)   // Bottom: dark gold
+                );
+                VeilBreakers.UI.Core.UIGradientHelper.ApplyGradient(_btnEmbark, embarkGradient);
+                _btnEmbark.style.overflow = Overflow.Hidden;
+            }
         }
 
         private void BindUI()

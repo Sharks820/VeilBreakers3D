@@ -1009,8 +1009,9 @@ namespace VeilBreakers.UI.Menus
             var backing = _root?.Q<VisualElement>("logo-backing");
             if (backing == null) return;
 
+            // Very subtle — just enough to slightly darken behind the logo text
             _logoBacking = UIGradientHelper.CreateRadialGradient(
-                new Color(0f, 0f, 0f, 0.5f),    // Center: semi-transparent black
+                new Color(0f, 0f, 0f, 0.18f),   // Center: very light darkening
                 new Color(0f, 0f, 0f, 0f),       // Edges: fully transparent
                 128
             );
