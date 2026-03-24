@@ -189,31 +189,32 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- EMBARK AREA (bottom-right of info area) -->
-        <ui:VisualElement name="embark-area" class="embark-area">
-            <ui:Button name="btn-embark" class="btn-embark">
-                <ui:VisualElement name="embark-hex-bg" class="embark-hex-bg" />
-                <ui:VisualElement name="embark-glow" class="embark-glow" />
-                <ui:Label name="embark-text" class="embark-text" text="EMBARK AS VEX" />
-                <ui:Label name="embark-subtitle" class="embark-subtitle" text="HOLD TO EMBARK" />
-            </ui:Button>
-            <ui:VisualElement name="embark-progress-ring" class="embark-progress-ring" />
-        </ui:VisualElement>
-
         <!-- TOP BAR: Navigation -->
         <ui:Button name="btn-back" class="btn-back" text="&#x25C0; BACK" />
 
-        <!-- BOTTOM LAYER: Carousel Navigation -->
+        <!-- HERO INDEX: Absolute-positioned at top-center -->
+        <ui:Label name="hero-index" class="hero-index" text="HERO 1 / 4" picking-mode="Ignore" />
+
+        <!-- BOTTOM LAYER: Unified bar — Carousel + Embark in same row -->
         <ui:VisualElement name="bottom-layer" class="bottom-layer">
             <ui:Button name="btn-prev" class="nav-arrow nav-arrow-left" text="&#x25C0;" />
-            <ui:VisualElement name="carousel-container" class="carousel-container">
+            <ui:VisualElement name="carousel-container" class="carousel-container" style="flex-grow: 1;">
                 <ui:VisualElement name="carousel-strip" class="carousel-strip">
                     <!-- Carousel cards generated dynamically -->
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:Button name="btn-next" class="nav-arrow nav-arrow-right" text="&#x25B6;" />
 
-            <ui:Label name="hero-index" class="hero-index" text="HERO 1 / 4" picking-mode="Ignore" />
+            <!-- EMBARK AREA: Sits to the right of carousel in same row -->
+            <ui:VisualElement name="embark-area" class="embark-area">
+                <ui:Button name="btn-embark" class="btn-embark">
+                    <ui:VisualElement name="embark-hex-bg" class="embark-hex-bg" />
+                    <ui:VisualElement name="embark-glow" class="embark-glow" />
+                    <ui:Label name="embark-text" class="embark-text" text="EMBARK AS VEX" />
+                    <ui:Label name="embark-subtitle" class="embark-subtitle" text="HOLD TO EMBARK" />
+                </ui:Button>
+                <ui:VisualElement name="embark-progress-ring" class="embark-progress-ring" />
+            </ui:VisualElement>
         </ui:VisualElement>
 
         <!-- CINEMATIC OVERLAY SYSTEM (Highest Z-Index, all non-interactive) -->
