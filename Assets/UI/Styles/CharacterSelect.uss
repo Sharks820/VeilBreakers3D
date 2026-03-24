@@ -514,6 +514,7 @@ TemplateContainer {
 .stat-chip:hover {
     background-color: rgba(0, 0, 0, 0.5);
     border-color: var(--border-subtle);
+    translate: 0 -1px;
 }
 
 .stat-chip-label {
@@ -527,6 +528,38 @@ TemplateContainer {
     font-size: 16px;
     color: var(--text-primary);
     -unity-font-style: bold;
+}
+
+/* =============================================================================
+   PER-STAT COLORS (AAA RPG standard)
+   ============================================================================= */
+
+.stat-chip-hp {
+    border-left-color: rgb(204, 56, 56);
+}
+.stat-chip-hp .stat-chip-value {
+    color: rgb(255, 85, 85);
+}
+
+.stat-chip-stamina {
+    border-left-color: rgb(56, 168, 85);
+}
+.stat-chip-stamina .stat-chip-value {
+    color: rgb(85, 221, 112);
+}
+
+.stat-chip-atk {
+    border-left-color: rgb(204, 136, 32);
+}
+.stat-chip-atk .stat-chip-value {
+    color: rgb(255, 170, 51);
+}
+
+.stat-chip-def {
+    border-left-color: rgb(56, 120, 204);
+}
+.stat-chip-def .stat-chip-value {
+    color: rgb(85, 170, 255);
 }
 
 /* =============================================================================
