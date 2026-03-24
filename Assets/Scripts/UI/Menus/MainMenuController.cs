@@ -245,9 +245,6 @@ namespace VeilBreakers.UI.Menus
             // Bind button events
             BindEvents();
 
-            // Replace flat logo backing with radial gradient
-            ApplyLogoBacking();
-
             // Initialize audio system
             InitAudio();
 
