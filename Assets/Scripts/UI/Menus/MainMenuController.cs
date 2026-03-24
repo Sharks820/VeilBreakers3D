@@ -117,6 +117,11 @@ namespace VeilBreakers.UI.Menus
         private bool _eventsBound;
         private int _continueSlot = SaveManager.kNoneSlot;
 
+        // AAA gradient textures (generated at runtime, destroyed on cleanup)
+        private Texture2D _btnBaseGradient;
+        private Texture2D _btnHoverGradient;
+        private Texture2D _logoBacking;
+
         // Hover callback storage for proper unregistration (prevents memory leaks)
         private Dictionary<Button, EventCallback<MouseEnterEvent>> _hoverEnterCallbacks;
         private Dictionary<Button, EventCallback<MouseLeaveEvent>> _hoverLeaveCallbacks;
@@ -176,6 +181,11 @@ namespace VeilBreakers.UI.Menus
 
             // Stop all coroutines (entrance animations, RefreshContinueButton, etc.)
             StopAllCoroutines();
+
+            // Cleanup generated gradient textures
+            if (_btnBaseGradient != null) { Destroy(_btnBaseGradient); _btnBaseGradient = null; }
+            if (_btnHoverGradient != null) { Destroy(_btnHoverGradient); _btnHoverGradient = null; }
+            if (_logoBacking != null) { Destroy(_logoBacking); _logoBacking = null; }
         }
 
         private void OnActionTriggered(InputManager.GameAction action)
@@ -234,6 +244,9 @@ namespace VeilBreakers.UI.Menus
 
             // Bind button events
             BindEvents();
+
+            // Replace flat logo backing with radial gradient
+            ApplyLogoBacking();
 
             // Initialize audio system
             InitAudio();
@@ -847,6 +860,9 @@ namespace VeilBreakers.UI.Menus
 
                     // Gamepad/keyboard focus choreography
                     ButtonVFXHelper.AddFocusEffect(button);
+
+                    // AAA gradient background (C# generated — USS can't do gradients)
+                    ApplyButtonGradients(button);
                 }
             }
 
@@ -982,6 +998,64 @@ namespace VeilBreakers.UI.Menus
             float c1 = 1.70158f;
             float c3 = c1 + 1;
             return 1 + c3 * Mathf.Pow(t - 1, 3) + c1 * Mathf.Pow(t - 1, 2);
+        }
+
+        /// <summary>
+        /// Replaces the flat black logo-backing rectangle with a radial gradient
+        /// that fades from semi-transparent black center to fully transparent edges.
+        /// </summary>
+        private void ApplyLogoBacking()
+        {
+            var backing = _root?.Q<VisualElement>("logo-backing");
+            if (backing == null) return;
+
+            _logoBacking = UIGradientHelper.CreateRadialGradient(
+                new Color(0f, 0f, 0f, 0.5f),    // Center: semi-transparent black
+                new Color(0f, 0f, 0f, 0f),       // Edges: fully transparent
+                128
+            );
+            UIGradientHelper.ApplyGradient(backing, _logoBacking);
+        }
+
+        /// <summary>
+        /// Applies C#-generated gradient textures to a button.
+        /// USS cannot render gradients — this is the only way to achieve AAA visual quality.
+        /// Swaps between dark base gradient and orange hover gradient on mouse enter/leave.
+        /// </summary>
+        private void ApplyButtonGradients(Button button)
+        {
+            if (button == null) return;
+
+            // Generate shared gradient textures (once, reused across all buttons)
+            if (_btnBaseGradient == null)
+            {
+                _btnBaseGradient = UIGradientHelper.CreateVerticalGradient3(
+                    new Color(0.20f, 0.15f, 0.11f, 0.97f),  // Top: slightly lighter brown
+                    new Color(0.12f, 0.09f, 0.06f, 0.98f),  // Mid: dark brown
+                    new Color(0.07f, 0.05f, 0.03f, 0.99f)   // Bottom: near-black
+                );
+            }
+            if (_btnHoverGradient == null)
+            {
+                _btnHoverGradient = UIGradientHelper.CreateVerticalGradient3(
+                    new Color(0.90f, 0.47f, 0.14f, 1f),  // Top: bright orange
+                    new Color(0.71f, 0.27f, 0.06f, 1f),  // Mid: medium orange
+                    new Color(0.57f, 0.22f, 0.04f, 1f)   // Bottom: dark orange
+                );
+            }
+
+            // Apply base gradient
+            UIGradientHelper.ApplyGradient(button, _btnBaseGradient);
+
+            // Swap to hover gradient on mouse enter, back on leave
+            button.RegisterCallback<MouseEnterEvent>(evt =>
+            {
+                UIGradientHelper.ApplyGradient(button, _btnHoverGradient);
+            });
+            button.RegisterCallback<MouseLeaveEvent>(evt =>
+            {
+                UIGradientHelper.ApplyGradient(button, _btnBaseGradient);
+            });
         }
 
         private void AddButtonHoverEffects(Button button)
