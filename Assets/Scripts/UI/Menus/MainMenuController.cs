@@ -1018,9 +1018,9 @@ namespace VeilBreakers.UI.Menus
         }
 
         /// <summary>
-        /// Applies C#-generated gradient textures to a button.
-        /// USS cannot render gradients — this is the only way to achieve AAA visual quality.
-        /// Swaps between dark base gradient and orange hover gradient on mouse enter/leave.
+        /// Full AAA visual treatment for a button: gradient textures, glow halo,
+        /// shine sweep animation, and breathing pulse. This is the C# equivalent
+        /// of the HTML mockup's box-shadow, linear-gradient, and ::after shine.
         /// </summary>
         private void ApplyButtonGradients(Button button)
         {
@@ -1030,32 +1030,116 @@ namespace VeilBreakers.UI.Menus
             if (_btnBaseGradient == null)
             {
                 _btnBaseGradient = UIGradientHelper.CreateVerticalGradient3(
-                    new Color(0.20f, 0.15f, 0.11f, 0.97f),  // Top: slightly lighter brown
-                    new Color(0.12f, 0.09f, 0.06f, 0.98f),  // Mid: dark brown
-                    new Color(0.07f, 0.05f, 0.03f, 0.99f)   // Bottom: near-black
+                    new Color(0.20f, 0.15f, 0.11f, 0.97f),
+                    new Color(0.12f, 0.09f, 0.06f, 0.98f),
+                    new Color(0.07f, 0.05f, 0.03f, 0.99f)
                 );
             }
             if (_btnHoverGradient == null)
             {
                 _btnHoverGradient = UIGradientHelper.CreateVerticalGradient3(
-                    new Color(0.90f, 0.47f, 0.14f, 1f),  // Top: bright orange
-                    new Color(0.71f, 0.27f, 0.06f, 1f),  // Mid: medium orange
-                    new Color(0.57f, 0.22f, 0.04f, 1f)   // Bottom: dark orange
+                    new Color(0.90f, 0.47f, 0.14f, 1f),
+                    new Color(0.71f, 0.27f, 0.06f, 1f),
+                    new Color(0.57f, 0.22f, 0.04f, 1f)
                 );
             }
 
             // Apply base gradient
             UIGradientHelper.ApplyGradient(button, _btnBaseGradient);
 
-            // Swap to hover gradient on mouse enter, back on leave
+            // --- GLOW HALO: child of button, extends beyond bounds ---
+            // overflow:visible (default) lets the glow bleed outside
+            var glowHalo = new VisualElement();
+            glowHalo.name = "btn-glow-halo";
+            glowHalo.pickingMode = PickingMode.Ignore;
+            glowHalo.style.position = Position.Absolute;
+            glowHalo.style.left = -14;
+            glowHalo.style.top = -10;
+            glowHalo.style.right = -14;
+            glowHalo.style.bottom = -10;
+            glowHalo.style.borderTopLeftRadius = 8;
+            glowHalo.style.borderTopRightRadius = 8;
+            glowHalo.style.borderBottomLeftRadius = 8;
+            glowHalo.style.borderBottomRightRadius = 8;
+            glowHalo.style.backgroundColor = new Color(1f, 0.55f, 0.2f, 0.2f);
+            glowHalo.style.opacity = 0;
+            glowHalo.style.transitionProperty = new List<StylePropertyName> { new("opacity") };
+            glowHalo.style.transitionDuration = new List<TimeValue> { new(0.25f, TimeUnit.Second) };
+            button.Insert(0, glowHalo);
+
+            // --- INNER TOP HIGHLIGHT: bright line simulating light from above ---
+            var innerHighlight = new VisualElement();
+            innerHighlight.name = "btn-inner-highlight";
+            innerHighlight.pickingMode = PickingMode.Ignore;
+            innerHighlight.style.position = Position.Absolute;
+            innerHighlight.style.top = 0;
+            innerHighlight.style.left = 0;
+            innerHighlight.style.right = 0;
+            innerHighlight.style.height = 1;
+            innerHighlight.style.backgroundColor = new Color(1f, 1f, 1f, 0.12f);
+            button.Add(innerHighlight);
+
+            // --- INNER BOTTOM SHADOW: dark line for depth ---
+            var innerShadow = new VisualElement();
+            innerShadow.name = "btn-inner-shadow";
+            innerShadow.pickingMode = PickingMode.Ignore;
+            innerShadow.style.position = Position.Absolute;
+            innerShadow.style.bottom = 0;
+            innerShadow.style.left = 0;
+            innerShadow.style.right = 0;
+            innerShadow.style.height = 2;
+            innerShadow.style.backgroundColor = new Color(0f, 0f, 0f, 0.3f);
+            button.Add(innerShadow);
+
+            // --- SHINE SWEEP: animated highlight that slides across on hover ---
+            var shineSweep = new VisualElement();
+            shineSweep.name = "btn-shine-sweep";
+            shineSweep.pickingMode = PickingMode.Ignore;
+            shineSweep.style.position = Position.Absolute;
+            shineSweep.style.top = 0;
+            shineSweep.style.bottom = 0;
+            shineSweep.style.width = Length.Percent(30);
+            shineSweep.style.left = Length.Percent(-35); // Start offscreen left
+            shineSweep.style.backgroundColor = new Color(1f, 1f, 1f, 0.06f);
+            shineSweep.style.transitionProperty = new List<StylePropertyName> { new("left") };
+            shineSweep.style.transitionDuration = new List<TimeValue> { new(0.5f, TimeUnit.Second) };
+            shineSweep.style.transitionTimingFunction = new List<EasingFunction> { new(EasingMode.EaseInOut) };
+            button.Add(shineSweep);
+
+            // --- HOVER CALLBACKS: gradient swap + glow + sweep ---
             button.RegisterCallback<MouseEnterEvent>(evt =>
             {
                 UIGradientHelper.ApplyGradient(button, _btnHoverGradient);
+                glowHalo.style.opacity = 1;
+                // Trigger shine sweep across button
+                shineSweep.style.left = Length.Percent(-35);
+                shineSweep.schedule.Execute(() =>
+                {
+                    shineSweep.style.left = Length.Percent(105);
+                }).ExecuteLater(10);
             });
+
             button.RegisterCallback<MouseLeaveEvent>(evt =>
             {
                 UIGradientHelper.ApplyGradient(button, _btnBaseGradient);
+                glowHalo.style.opacity = 0;
+                // Reset sweep position instantly (no transition)
+                shineSweep.style.transitionDuration = new List<TimeValue> { new(0f, TimeUnit.Second) };
+                shineSweep.style.left = Length.Percent(-35);
+                shineSweep.schedule.Execute(() =>
+                {
+                    shineSweep.style.transitionDuration = new List<TimeValue> { new(0.5f, TimeUnit.Second) };
+                }).ExecuteLater(10);
             });
+
+            // --- BREATHING GLOW: subtle idle pulse on all buttons ---
+            float breathStart = UnityEngine.Random.Range(0f, 6.28f); // Random phase offset
+            button.schedule.Execute(() =>
+            {
+                float t = Time.time + breathStart;
+                float pulse = (Mathf.Sin(t * 1.2f) * 0.5f + 0.5f) * 0.08f; // 0 to 0.08 opacity
+                glowHalo.style.opacity = Mathf.Max(glowHalo.resolvedStyle.opacity > 0.5f ? glowHalo.resolvedStyle.opacity : 0f, pulse);
+            }).Every(50);
         }
 
         private void AddButtonHoverEffects(Button button)
