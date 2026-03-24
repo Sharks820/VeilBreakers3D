@@ -489,6 +489,36 @@ namespace VeilBreakers.UI.Controls
         // FOCUS EFFECT (GAMEPAD/KEYBOARD)
         // =============================================================================
 
+        // =============================================================================
+        // TOP HIGHLIGHT EFFECT
+        // =============================================================================
+
+        /// <summary>
+        /// Adds a decorative gradient highlight line at the top of a button.
+        /// Creates the ornate look for main menu buttons.
+        /// </summary>
+        public static void AddTopHighlight(VisualElement button)
+        {
+            if (button == null) return;
+            // Avoid duplicates on re-init
+            if (button.Q("btn-top-highlight") != null) return;
+
+            var highlight = new VisualElement();
+            highlight.name = "btn-top-highlight";
+            highlight.pickingMode = PickingMode.Ignore;
+            highlight.style.position = Position.Absolute;
+            highlight.style.top = 0;
+            highlight.style.left = Length.Percent(15);
+            highlight.style.right = Length.Percent(15);
+            highlight.style.height = 1;
+            highlight.style.backgroundColor = new Color(0.78f, 0.59f, 0.27f, 0.3f);
+            button.Add(highlight);
+        }
+
+        // =============================================================================
+        // FOCUS EFFECT (GAMEPAD/KEYBOARD)
+        // =============================================================================
+
         /// <summary>
         /// Add premium focus effects for gamepad/keyboard navigation.
         /// Applies glow border, scale bump, and shimmer on FocusIn.

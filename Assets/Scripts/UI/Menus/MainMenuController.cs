@@ -152,7 +152,7 @@ namespace VeilBreakers.UI.Menus
 
             if (_initialized)
             {
-                BindEvents();
+                // BindEvents already called inside InitializeUI; only refresh save state
                 StartCoroutine(RefreshContinueButton());
             }
 
@@ -719,8 +719,8 @@ namespace VeilBreakers.UI.Menus
             // Bind button events
             BindEvents();
 
-            // Cache TitleScreenVFX for logo hover response
-            _titleVfx = FindAnyObjectByType<TitleScreenVFX>();
+            // Cache TitleScreenVFX for logo hover response (use GetComponent first, fallback to scene search)
+            _titleVfx = GetComponent<TitleScreenVFX>() ?? GetComponentInChildren<TitleScreenVFX>() ?? FindAnyObjectByType<TitleScreenVFX>();
 
             // Initialize audio system
             InitAudio();
@@ -842,6 +842,9 @@ namespace VeilBreakers.UI.Menus
                     // Click burst for impact feedback on all buttons
                     ButtonVFXHelper.AddClickBurst(button);
 
+                    // Decorative top-line highlight (ornate AAA look)
+                    ButtonVFXHelper.AddTopHighlight(button);
+
                     // Gamepad/keyboard focus choreography
                     ButtonVFXHelper.AddFocusEffect(button);
                 }
@@ -853,9 +856,8 @@ namespace VeilBreakers.UI.Menus
             if (_buttonContainer != null)
                 ButtonVFXHelper.AddBreathing(_buttonContainer, 0.004f, 3500f);
 
-            var logoContainer = _root?.Q<VisualElement>("logo-container");
-            if (logoContainer != null)
-                ButtonVFXHelper.AddBreathing(logoContainer, 0.008f, 3000f);
+            // Logo breathing removed — TitleScreenVFX owns logo-container scale
+            // (AddBreathing fought with TriggerLogoPulse causing click glitch)
         }
 
         private IEnumerator FadeInElement(VisualElement element, float duration, float delay)
