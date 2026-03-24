@@ -1,6 +1,7 @@
 /* =============================================================================
-   VEILBREAKERS 3D - VEIL-TORN DARK FANTASY CHARACTER SELECT STYLESHEET
+   VEILBREAKERS 3D - AAA DARK FANTASY CHARACTER SELECT STYLESHEET
    Rule-of-thirds composition, tabbed info, hold-to-embark, gamepad focus ring
+   v3.0 - Complete AAA Visual Overhaul
    ============================================================================= */
 
 /* =============================================================================
@@ -17,7 +18,7 @@
     /* Easing Functions */
     --ease-out-expo: ease-out-back;
     --ease-out-back: ease-out-back;
-    --ease-in-out-quint: ease-in-out-cubic;
+    --ease-in-out-quint: ease-in-out;
 
     /* Spacing */
     --panel-margin: 40px;
@@ -26,6 +27,16 @@
     /* Veil-Torn Panel Material */
     --veil-bg: rgba(12, 10, 18, 0.92);
     --veil-border: rgba(60, 50, 70, 0.8);
+
+    /* AAA Color Palette */
+    --surface-dark: rgba(8, 6, 14, 0.95);
+    --surface-mid: rgba(18, 14, 28, 0.90);
+    --surface-light: rgba(30, 24, 44, 0.85);
+    --text-primary: rgba(240, 235, 250, 1);
+    --text-secondary: rgba(190, 180, 210, 0.8);
+    --text-muted: rgba(140, 130, 160, 0.55);
+    --border-subtle: rgba(80, 65, 100, 0.35);
+    --border-accent: rgba(120, 100, 150, 0.5);
 }
 
 /* =============================================================================
@@ -35,29 +46,33 @@
 .theme-vex {
     --hero-primary: rgb(200, 160, 60);
     --hero-secondary: rgb(180, 140, 40);
-    --hero-accent: rgb(255, 200, 100);
-    --hero-glow: rgba(200, 160, 60, 0.25);
+    --hero-accent: rgb(255, 210, 110);
+    --hero-glow: rgba(200, 160, 60, 0.20);
+    --hero-dim: rgba(200, 160, 60, 0.08);
 }
 
 .theme-seraphina {
-    --hero-primary: rgb(140, 80, 200);
-    --hero-secondary: rgb(120, 60, 180);
-    --hero-accent: rgb(200, 160, 255);
-    --hero-glow: rgba(140, 80, 200, 0.25);
+    --hero-primary: rgb(150, 90, 210);
+    --hero-secondary: rgb(130, 70, 190);
+    --hero-accent: rgb(210, 170, 255);
+    --hero-glow: rgba(150, 90, 210, 0.20);
+    --hero-dim: rgba(150, 90, 210, 0.08);
 }
 
 .theme-orion {
-    --hero-primary: rgb(180, 50, 50);
-    --hero-secondary: rgb(160, 40, 40);
-    --hero-accent: rgb(255, 120, 100);
-    --hero-glow: rgba(180, 50, 50, 0.25);
+    --hero-primary: rgb(200, 60, 60);
+    --hero-secondary: rgb(180, 45, 45);
+    --hero-accent: rgb(255, 130, 110);
+    --hero-glow: rgba(200, 60, 60, 0.20);
+    --hero-dim: rgba(200, 60, 60, 0.08);
 }
 
 .theme-nyx {
-    --hero-primary: rgb(60, 180, 200);
-    --hero-secondary: rgb(40, 160, 180);
-    --hero-accent: rgb(120, 220, 240);
-    --hero-glow: rgba(60, 180, 200, 0.25);
+    --hero-primary: rgb(70, 190, 210);
+    --hero-secondary: rgb(50, 170, 190);
+    --hero-accent: rgb(130, 230, 250);
+    --hero-glow: rgba(70, 190, 210, 0.20);
+    --hero-dim: rgba(70, 190, 210, 0.08);
 }
 
 /* =============================================================================
@@ -89,7 +104,7 @@ TemplateContainer {
     bottom: 0;
     flex-direction: column;
     overflow: hidden;
-    background-color: rgb(8, 6, 12);
+    background-color: rgb(6, 4, 10);
 }
 
 /* =============================================================================
@@ -102,12 +117,11 @@ TemplateContainer {
     top: 0;
     right: 0;
     bottom: 0;
-    pointer-events: none;
 }
 
 /* Layer 1: Deepest Void */
 .parallax-deep {
-    background-color: rgb(4, 4, 8);
+    background-color: rgb(4, 3, 8);
     z-index: 0;
 }
 
@@ -116,21 +130,20 @@ TemplateContainer {
     width: 100%;
     height: 100%;
     background-color: transparent;
-    opacity: 0.6;
+    opacity: 0.5;
 }
 
 /* Layer 2: Fog Particles */
 .parallax-fog {
     z-index: 1;
-    pointer-events: none;
 }
 
 .fog-particles {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: var(--hero-glow, rgba(40, 20, 60, 0.08));
-    opacity: 0.4;
+    background-color: var(--hero-dim, rgba(40, 20, 60, 0.05));
+    opacity: 0.5;
     transition-property: background-color;
     transition-duration: var(--transition-slow);
     transition-timing-function: var(--ease-out-expo);
@@ -142,53 +155,56 @@ TemplateContainer {
     width: 100%;
     height: 100%;
     z-index: 4;
-    pointer-events: none;
-    background-color: rgba(0, 0, 0, 0.15);
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
 /* =============================================================================
    VEIL-TORN PANEL MATERIAL (.veil-panel)
-   Obsidian/iron textured borders with per-hero accent glow
+   Frosted glass with hero accent edge lighting
    ============================================================================= */
 
 .veil-panel {
-    background-color: rgba(12, 10, 18, 0.92);
-    border-width: 2px;
-    border-color: rgba(60, 50, 70, 0.8);
-    border-radius: 6px;
-    padding: 16px;
+    background-color: rgba(10, 8, 16, 0.88);
+    border-width: 1px;
+    border-color: var(--border-subtle);
+    border-radius: 8px;
+    padding: 20px;
     overflow: hidden;
-    transition-property: border-color;
-    transition-duration: 0.4s;
-    transition-timing-function: ease-in-out;
+    transition-property: border-color, background-color;
+    transition-duration: 0.6s, 0.6s;
+    transition-timing-function: ease-in-out, ease-in-out;
 }
 
 /* Per-hero accent glow on veil-panel borders */
 .theme-vex .veil-panel {
-    border-color: rgba(200, 160, 60, 0.6);
+    border-color: rgba(200, 160, 60, 0.35);
+    border-top-color: rgba(200, 160, 60, 0.6);
 }
 
 .theme-seraphina .veil-panel {
-    border-color: rgba(140, 80, 200, 0.6);
+    border-color: rgba(150, 90, 210, 0.35);
+    border-top-color: rgba(150, 90, 210, 0.6);
 }
 
 .theme-orion .veil-panel {
-    border-color: rgba(180, 50, 50, 0.6);
+    border-color: rgba(200, 60, 60, 0.35);
+    border-top-color: rgba(200, 60, 60, 0.6);
 }
 
 .theme-nyx .veil-panel {
-    border-color: rgba(60, 180, 200, 0.6);
+    border-color: rgba(70, 190, 210, 0.35);
+    border-top-color: rgba(70, 190, 210, 0.6);
 }
 
 /* =============================================================================
-   HERO STAGE (Left half, 50% width)
+   HERO STAGE (Left 55%, full height, hero centered-right)
    ============================================================================= */
 
 .hero-stage {
     position: absolute;
     left: 0;
     top: 0;
-    right: 50%;
+    right: 45%;
     bottom: 0;
     z-index: 10;
     align-items: center;
@@ -201,11 +217,40 @@ TemplateContainer {
     -unity-background-scale-mode: scale-to-fit;
 }
 
+/* Hero Name Plate - floating title at bottom of stage */
+.hero-name-plate {
+    position: absolute;
+    bottom: 18%;
+    left: 0;
+    right: 0;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.stage-hero-name {
+    font-size: 48px;
+    -unity-font-style: bold;
+    color: var(--text-primary);
+    letter-spacing: 12px;
+    opacity: 0.15;
+    -unity-text-align: middle-center;
+}
+
+.stage-hero-title {
+    font-size: 13px;
+    color: var(--hero-primary);
+    letter-spacing: 6px;
+    opacity: 0.4;
+    -unity-text-align: middle-center;
+    margin-top: 4px;
+}
+
 .drag-hint {
     position: absolute;
-    bottom: 12%;
-    font-size: 12px;
-    color: rgba(200, 200, 215, 0.25);
+    bottom: 8%;
+    font-size: 11px;
+    color: rgba(200, 200, 215, 0.18);
     letter-spacing: 6px;
     -unity-text-align: middle-center;
     align-self: center;
@@ -219,19 +264,37 @@ TemplateContainer {
 
 .hero-aura-container {
     position: absolute;
-    width: 60%;
-    height: 60%;
-    bottom: 10%;
+    width: 70%;
+    height: 50%;
+    bottom: 5%;
     z-index: 1;
-    pointer-events: none;
+    align-items: center;
+    justify-content: flex-end;
 }
 
 .aura-base {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: var(--hero-glow, rgba(40, 20, 60, 0.08));
+    background-color: var(--hero-dim, rgba(40, 20, 60, 0.04));
+    border-radius: 50%;
+    opacity: 0.4;
+    transition-property: background-color;
+    transition-duration: 1.2s;
+}
+
+/* Outer ring glow effect */
+.aura-ring {
+    position: absolute;
+    width: 80%;
+    height: 80%;
+    bottom: 0;
+    border-radius: 50%;
+    border-width: 1px;
+    border-color: var(--hero-glow, rgba(60, 40, 80, 0.1));
     opacity: 0.3;
+    transition-property: border-color;
+    transition-duration: 1.2s;
 }
 
 /* =============================================================================
@@ -241,13 +304,22 @@ TemplateContainer {
 .info-panel-container {
     position: absolute;
     right: 0;
-    top: 60px;
-    width: 46%;
-    height: 70%;
+    top: 40px;
+    bottom: 20%;
+    width: 42%;
+    background-color: rgba(14, 11, 22, 0.97);
+    border-top-width: 2px;
+    border-top-color: var(--hero-primary, rgba(200, 160, 60, 0.5));
+    border-radius: 6px 6px 4px 4px;
     z-index: 20;
-    padding: 20px;
+    padding: 24px 28px;
     overflow: hidden;
     flex-direction: column;
+    opacity: 1;
+    translate: 0 0;
+    transition-property: opacity, translate, border-color, background-color;
+    transition-duration: 0.3s, 0.3s, 0.6s, 0.6s;
+    transition-timing-function: ease-out, ease-out, ease-in-out, ease-in-out;
 }
 
 /* =============================================================================
@@ -257,34 +329,45 @@ TemplateContainer {
 .tab-header-strip {
     flex-direction: row;
     justify-content: flex-start;
-    padding-bottom: 8px;
+    padding-bottom: 12px;
     border-bottom-width: 1px;
-    border-bottom-color: rgba(60, 50, 70, 0.5);
+    border-bottom-color: var(--border-subtle);
     flex-shrink: 0;
+    margin-bottom: 4px;
 }
 
 .tab-btn {
     background-color: transparent;
-    color: rgba(180, 170, 190, 0.5);
+    color: var(--text-muted);
     border-width: 0;
     border-bottom-width: 2px;
     border-bottom-color: transparent;
-    padding: 8px 16px;
+    padding: 10px 20px;
     font-size: 13px;
     -unity-font-style: bold;
-    letter-spacing: 2px;
-    transition-property: color, border-bottom-color, opacity;
-    transition-duration: 0.2s, 0.2s, 0.2s;
+    letter-spacing: 3px;
+    transition-property: color, border-bottom-color, background-color;
+    transition-duration: 0.25s, 0.25s, 0.25s;
+    border-radius: 4px 4px 0 0;
+    margin-right: 4px;
 }
 
 .tab-btn-active {
-    color: rgba(240, 230, 250, 1);
-    border-bottom-color: rgba(200, 160, 60, 0.9);
+    color: var(--text-primary);
+    border-bottom-color: var(--hero-primary, rgba(200, 160, 60, 0.9));
+    background-color: rgba(255, 255, 255, 0.03);
 }
 
 .tab-btn:hover {
-    color: rgba(220, 210, 230, 0.8);
+    color: var(--text-secondary);
+    background-color: rgba(255, 255, 255, 0.02);
 }
+
+/* Per-hero active tab underline */
+.theme-vex .tab-btn-active { border-bottom-color: rgba(200, 160, 60, 0.9); }
+.theme-seraphina .tab-btn-active { border-bottom-color: rgba(150, 90, 210, 0.9); }
+.theme-orion .tab-btn-active { border-bottom-color: rgba(200, 60, 60, 0.9); }
+.theme-nyx .tab-btn-active { border-bottom-color: rgba(70, 190, 210, 0.9); }
 
 .tab-content {
     flex-grow: 1;
@@ -294,7 +377,7 @@ TemplateContainer {
 .tab-content-section {
     display: none;
     flex-grow: 1;
-    padding: 12px 0;
+    padding: 16px 0;
 }
 
 .tab-content-section.tab-active {
@@ -302,14 +385,42 @@ TemplateContainer {
 }
 
 /* =============================================================================
+   ORNAMENTAL DIVIDERS
+   ============================================================================= */
+
+.ornamental-divider {
+    height: 16px;
+    margin: 6px 0;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.divider-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: rgba(80, 65, 100, 0.3);
+}
+
+.divider-diamond {
+    font-size: 6px;
+    color: var(--hero-primary, rgba(200, 160, 60, 0.35));
+    background-color: rgba(14, 11, 22, 0.98);
+    padding: 0 8px;
+    -unity-text-align: middle-center;
+}
+
+/* =============================================================================
    HERO IDENTITY (Inside tab-overview-content)
    ============================================================================= */
 
 .hero-name {
-    font-size: 32px;
+    font-size: 36px;
     -unity-font-style: bold;
-    color: rgba(240, 230, 250, 1);
-    letter-spacing: 3px;
+    color: var(--text-primary);
+    letter-spacing: 4px;
     margin-bottom: 2px;
     transition-property: color;
     transition-duration: var(--transition-slow);
@@ -317,25 +428,27 @@ TemplateContainer {
 }
 
 .hero-title {
-    font-size: 16px;
-    color: rgba(180, 170, 190, 0.7);
-    letter-spacing: 2px;
-    margin-bottom: 12px;
-    opacity: 0.8;
-    border-left-width: 2px;
+    font-size: 14px;
+    color: var(--hero-primary);
+    letter-spacing: 3px;
+    margin-bottom: 14px;
+    opacity: 0.9;
+    border-left-width: 3px;
     border-left-color: var(--hero-primary);
-    padding-left: 12px;
+    padding-left: 14px;
+    transition-property: color, border-left-color;
+    transition-duration: var(--transition-slow), var(--transition-slow);
 }
 
 .hero-quote {
     font-size: 13px;
-    color: rgba(160, 150, 170, 0.6);
+    color: rgba(180, 170, 200, 0.5);
     -unity-font-style: italic;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
     white-space: normal;
-    padding-bottom: 12px;
+    padding-bottom: 14px;
     border-bottom-width: 1px;
-    border-bottom-color: rgba(255, 255, 255, 0.1);
+    border-bottom-color: var(--border-subtle);
 }
 
 /* =============================================================================
@@ -343,29 +456,31 @@ TemplateContainer {
    ============================================================================= */
 
 .hero-class-info {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .info-row {
     flex-direction: row;
-    margin: 2px 0;
-    align-items: flex-start;
+    margin: 4px 0;
+    align-items: center;
 }
 
 .info-label {
     width: 80px;
-    font-size: 13px;
-    color: rgba(140, 130, 150, 0.6);
-    letter-spacing: 2px;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 3px;
+    -unity-font-style: bold;
 }
 
 .info-value {
     flex-grow: 1;
-    font-size: 13px;
-    color: rgba(220, 210, 230, 0.9);
+    font-size: 14px;
+    color: var(--text-secondary);
     white-space: normal;
     overflow: hidden;
     flex-shrink: 1;
+    letter-spacing: 1px;
 }
 
 /* =============================================================================
@@ -375,50 +490,107 @@ TemplateContainer {
 .starter-stats-grid {
     flex-direction: row;
     flex-wrap: wrap;
-    margin-top: 12px;
+    margin-top: 14px;
     justify-content: space-between;
 }
 
 .stat-chip {
     width: 48%;
-    background-color: rgba(0, 0, 0, 0.3);
-    padding: 6px 10px;
-    margin-bottom: 6px;
-    border-radius: 4px;
-    border-left-width: 2px;
+    background-color: rgba(0, 0, 0, 0.35);
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    border-left-width: 3px;
     border-left-color: var(--hero-primary);
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.03);
+    transition-property: background-color, border-color;
+    transition-duration: var(--transition-fast), var(--transition-fast);
+}
+
+.stat-chip:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-color: var(--border-subtle);
 }
 
 .stat-chip-label {
-    font-size: 12px;
-    color: rgba(160, 150, 170, 0.6);
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    -unity-font-style: bold;
 }
 
 .stat-chip-value {
-    font-size: 14px;
-    color: rgba(240, 230, 250, 0.95);
+    font-size: 16px;
+    color: var(--text-primary);
     -unity-font-style: bold;
 }
 
 /* =============================================================================
-   CHAMPION SECTION
+   CHAMPION MONSTER — 50/50 Split (model left, info right)
    ============================================================================= */
 
-.champion-section {
-    margin-top: 12px;
-    padding-top: 10px;
-    border-top-width: 1px;
-    border-top-color: rgba(60, 50, 70, 0.4);
+.champion-section-v2 {
+    flex: 1;
+    min-height: 100px;
+    flex-direction: row;
+    background-color: rgba(0, 0, 0, 0.25);
+    border-width: 1px;
+    border-color: var(--hero-primary, rgba(200, 160, 60, 0.15));
+    border-radius: 6px;
+    padding: 10px;
+    margin-top: 8px;
+    overflow: hidden;
 }
 
-.champion-name {
-    font-size: 15px;
+.champion-model-viewer {
+    width: 48%;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-width: 1px;
+    border-color: var(--hero-primary, rgba(200, 160, 60, 0.10));
+    border-radius: 5px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.champion-info-panel {
+    flex: 1;
+    padding-left: 12px;
+    justify-content: center;
+}
+
+.champion-name-v2 {
+    font-size: 16px;
     -unity-font-style: bold;
-    color: var(--hero-accent);
+    color: var(--hero-accent, rgb(255, 210, 112));
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+.champion-brand-label {
+    font-size: 12px;
+    -unity-font-style: bold;
+    letter-spacing: 3px;
+    color: var(--hero-primary, rgba(200, 160, 60, 0.8));
     margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--hero-primary, rgba(200, 160, 60, 0.15));
+}
+
+.tag-brand {
+    border-color: var(--hero-primary, rgba(200, 160, 60, 0.35));
+    color: var(--hero-primary, rgba(200, 160, 60, 0.75));
+    background-color: rgba(200, 160, 60, 0.06);
+}
+
+.champion-desc {
+    font-size: 10px;
+    color: rgba(180, 170, 200, 0.4);
+    white-space: normal;
+    margin-top: 8px;
 }
 
 .champion-tags {
@@ -426,15 +598,23 @@ TemplateContainer {
 }
 
 .tag {
-    font-size: 12px;
-    color: rgba(200, 200, 215, 0.9);
-    letter-spacing: 2px;
-    background-color: rgba(255, 255, 255, 0.06);
-    padding: 4px 10px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    letter-spacing: 3px;
+    background-color: rgba(255, 255, 255, 0.04);
+    padding: 5px 12px;
     margin-right: 8px;
-    border-radius: 3px;
+    border-radius: 4px;
     border-width: 1px;
-    border-color: rgba(60, 50, 70, 0.5);
+    border-color: var(--border-subtle);
+    -unity-font-style: bold;
+    transition-property: background-color, border-color;
+    transition-duration: var(--transition-fast), var(--transition-fast);
+}
+
+.tag:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--border-accent);
 }
 
 /* =============================================================================
@@ -442,17 +622,17 @@ TemplateContainer {
    ============================================================================= */
 
 .attribute-bars-section {
-    margin-top: 12px;
-    padding-top: 10px;
+    margin-top: 14px;
+    padding-top: 12px;
     border-top-width: 1px;
-    border-top-color: rgba(60, 50, 70, 0.4);
+    border-top-color: var(--border-subtle);
 }
 
 .section-header {
-    font-size: 12px;
-    color: rgba(180, 170, 190, 0.7);
+    font-size: 11px;
+    color: var(--text-muted);
     letter-spacing: 5px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     -unity-font-style: bold;
 }
 
@@ -463,37 +643,41 @@ TemplateContainer {
 .stat-bar-row {
     flex-direction: row;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .stat-bar-label {
     width: 40px;
-    font-size: 12px;
-    color: rgba(140, 130, 150, 0.7);
+    font-size: 11px;
+    color: var(--text-muted);
     letter-spacing: 3px;
+    -unity-font-style: bold;
 }
 
 .stat-bar-track {
     flex-grow: 1;
-    height: 12px;
-    background-color: rgba(5, 5, 10, 0.7);
-    border-radius: 6px;
+    height: 10px;
+    background-color: rgba(5, 5, 12, 0.8);
+    border-radius: 5px;
     margin: 0 10px;
     overflow: hidden;
     border-width: 1px;
-    border-color: rgba(60, 50, 70, 0.4);
+    border-color: rgba(60, 50, 70, 0.25);
 }
 
 .stat-bar-fill {
     height: 100%;
     background-color: var(--hero-primary, rgb(200, 160, 60));
-    border-radius: 6px;
+    border-radius: 5px;
+    transition-property: width, background-color;
+    transition-duration: 0.4s, 0.6s;
+    transition-timing-function: ease-out, ease-in-out;
 }
 
 .stat-bar-value {
-    width: 30px;
+    width: 28px;
     font-size: 13px;
-    color: rgba(240, 230, 250, 0.9);
+    color: var(--text-primary);
     -unity-text-align: middle-right;
     -unity-font-style: bold;
 }
@@ -507,23 +691,29 @@ TemplateContainer {
 }
 
 .ability-slot {
-    font-size: 13px;
-    color: rgba(230, 220, 240, 0.9);
-    padding: 10px 16px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    padding: 12px 18px;
     margin-bottom: 6px;
-    background-color: rgba(255, 255, 255, 0.04);
-    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
     border-left-width: 3px;
     border-left-color: var(--hero-primary);
-    transition-property: translate, background-color, border-left-color;
-    transition-duration: var(--transition-fast), var(--transition-fast), var(--transition-fast);
-    transition-timing-function: var(--ease-out-expo), var(--ease-out-expo), var(--ease-out-expo);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.02);
+    translate: 0 0;
+    transition-property: translate, background-color, border-left-color, border-color, color;
+    transition-duration: var(--transition-fast), var(--transition-fast), var(--transition-fast), var(--transition-fast), var(--transition-fast);
+    transition-timing-function: var(--ease-out-expo), var(--ease-out-expo), var(--ease-out-expo), var(--ease-out-expo), var(--ease-out-expo);
+    letter-spacing: 1px;
 }
 
 .ability-slot:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    translate: 6px 0;
-    border-left-color: rgba(240, 230, 250, 0.9);
+    background-color: rgba(255, 255, 255, 0.08);
+    translate: 8px 0;
+    border-left-color: var(--hero-accent);
+    border-color: var(--border-subtle);
+    color: var(--text-primary);
 }
 
 /* =============================================================================
@@ -531,39 +721,40 @@ TemplateContainer {
    ============================================================================= */
 
 .hero-lore-section {
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
 
 .hero-backstory {
-    font-size: 12px;
-    color: rgba(180, 170, 190, 0.7);
+    font-size: 13px;
+    color: rgba(180, 170, 200, 0.65);
     white-space: normal;
     -unity-font-style: italic;
+    line-height: 18px;
 }
 
 .synergy-detail-section {
-    margin-top: 8px;
-    padding-top: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
     border-top-width: 1px;
-    border-top-color: rgba(60, 50, 70, 0.3);
+    border-top-color: var(--border-subtle);
 }
 
 .hero-synergy-detail {
-    font-size: 12px;
-    color: rgba(180, 170, 190, 0.7);
+    font-size: 13px;
+    color: rgba(180, 170, 200, 0.65);
     white-space: normal;
 }
 
 .brands-section {
-    margin-top: 8px;
-    padding-top: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
     border-top-width: 1px;
-    border-top-color: rgba(60, 50, 70, 0.3);
+    border-top-color: var(--border-subtle);
 }
 
 .hero-brands-detail {
-    font-size: 12px;
-    color: rgba(180, 170, 190, 0.7);
+    font-size: 13px;
+    color: rgba(180, 170, 200, 0.65);
     white-space: normal;
 }
 
@@ -574,47 +765,36 @@ TemplateContainer {
 .focusable-zone {
     border-width: 2px;
     border-color: rgba(0, 0, 0, 0);
-    border-radius: 4px;
+    border-radius: 6px;
     transition-property: border-color, scale;
     transition-duration: 0.15s, 0.15s;
     transition-timing-function: ease-out, ease-out;
 }
 
 .focusable-zone:focus {
-    border-color: rgba(255, 180, 60, 0.9);
+    border-color: rgba(255, 200, 80, 0.9);
     scale: 1.02 1.02;
 }
 
 /* C#-driven focus class for zone-level highlighting */
 .focus-ring-active {
-    border-color: rgba(255, 180, 60, 0.9);
+    border-color: rgba(255, 200, 80, 0.9);
     scale: 1.02 1.02;
 }
 
 /* Per-hero focus ring colors */
-.theme-vex .focus-ring-active {
-    border-color: rgba(200, 160, 60, 0.9);
-}
-
-.theme-seraphina .focus-ring-active {
-    border-color: rgba(140, 80, 200, 0.9);
-}
-
-.theme-orion .focus-ring-active {
-    border-color: rgba(180, 50, 50, 0.9);
-}
-
-.theme-nyx .focus-ring-active {
-    border-color: rgba(60, 180, 200, 0.9);
-}
+.theme-vex .focus-ring-active { border-color: rgba(200, 160, 60, 0.9); }
+.theme-seraphina .focus-ring-active { border-color: rgba(150, 90, 210, 0.9); }
+.theme-orion .focus-ring-active { border-color: rgba(200, 60, 60, 0.9); }
+.theme-nyx .focus-ring-active { border-color: rgba(70, 190, 210, 0.9); }
 
 /* =============================================================================
-   EMBARK AREA (Bottom-right of info area)
+   EMBARK AREA (Bottom-right, prominent CTA)
    ============================================================================= */
 
 .embark-area {
     position: absolute;
-    bottom: 20px;
+    bottom: 24px;
     right: 2%;
     width: 42%;
     align-items: flex-end;
@@ -622,8 +802,8 @@ TemplateContainer {
 }
 
 .btn-embark {
-    width: 340px;
-    height: 72px;
+    width: 360px;
+    height: 76px;
     background-color: transparent;
     border-width: 0;
     overflow: visible;
@@ -633,25 +813,25 @@ TemplateContainer {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: rgba(20, 16, 28, 0.98);
+    background-color: rgba(16, 12, 24, 0.95);
     border-width: 2px;
     border-color: var(--hero-primary);
-    border-radius: 6px;
+    border-radius: 8px;
     transition-property: border-color, background-color, scale;
     transition-duration: var(--transition-normal), var(--transition-normal), var(--transition-normal);
     transition-timing-function: var(--ease-out-expo), var(--ease-out-expo), var(--ease-out-expo);
 }
 
 .btn-embark:hover .embark-hex-bg {
-    border-color: rgba(240, 230, 250, 0.9);
-    background-color: rgba(35, 30, 45, 0.98);
-    scale: 1.05;
+    border-color: var(--hero-accent);
+    background-color: rgba(30, 24, 42, 0.98);
+    scale: 1.04;
 }
 
 .embark-text {
     font-size: 22px;
     -unity-font-style: bold;
-    color: rgba(240, 230, 250, 1);
+    color: var(--text-primary);
     letter-spacing: 8px;
     transition-property: color, scale;
     transition-duration: var(--transition-normal), var(--transition-normal);
@@ -659,12 +839,12 @@ TemplateContainer {
 
 .btn-embark:hover .embark-text {
     color: rgba(255, 255, 255, 1);
-    scale: 1.08;
+    scale: 1.06;
 }
 
 .embark-subtitle {
-    font-size: 12px;
-    color: rgba(180, 170, 190, 0.5);
+    font-size: 11px;
+    color: var(--text-muted);
     letter-spacing: 4px;
     margin-top: 4px;
 }
@@ -675,12 +855,13 @@ TemplateContainer {
     height: 100%;
     background-color: var(--hero-primary);
     opacity: 0;
+    border-radius: 8px;
     transition-property: opacity;
     transition-duration: var(--transition-slow);
 }
 
 .embark-glow.breathing {
-    opacity: 0.08;
+    opacity: 0.06;
 }
 
 /* Embark Progress Ring (hold-to-confirm visual) */
@@ -690,25 +871,26 @@ TemplateContainer {
     height: 64px;
     border-radius: 32px;
     border-width: 3px;
-    border-color: rgba(255, 180, 60, 0);
+    border-color: rgba(255, 200, 80, 0);
     transition-property: border-color, opacity;
     transition-duration: 0.2s, 0.2s;
 }
 
 .embark-progress-ring.hold-active {
-    border-color: rgba(255, 180, 60, 0.9);
+    border-color: rgba(255, 200, 80, 0.9);
     opacity: 1;
 }
 
 /* =============================================================================
-   BOTTOM LAYER: CAROUSEL
+   BOTTOM LAYER: CAROUSEL (AAA Card Design)
    ============================================================================= */
 
 .bottom-layer {
     position: absolute;
-    bottom: 20px;
-    width: 100%;
-    height: 140px;
+    bottom: 24px;
+    left: 0;
+    width: 55%;
+    height: 160px;
     z-index: 30;
     flex-direction: row;
     align-items: center;
@@ -716,28 +898,29 @@ TemplateContainer {
 }
 
 .nav-arrow {
-    width: 50px;
-    height: 50px;
-    font-size: 24px;
-    color: rgba(255, 255, 255, 0.4);
-    background-color: rgba(12, 10, 18, 0.8);
-    border-radius: 25px;
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.35);
+    background-color: rgba(12, 10, 18, 0.85);
+    border-radius: 24px;
     border-width: 1px;
-    border-color: rgba(60, 50, 70, 0.5);
+    border-color: var(--border-subtle);
     -unity-text-align: middle-center;
-    transition-property: color, border-color, scale;
-    transition-duration: var(--transition-fast), var(--transition-fast), var(--transition-fast);
-    transition-timing-function: var(--ease-out-expo), var(--ease-out-expo), var(--ease-out-expo);
+    transition-property: color, border-color, scale, background-color;
+    transition-duration: var(--transition-fast), var(--transition-fast), var(--transition-fast), var(--transition-fast);
+    transition-timing-function: var(--ease-out-expo), var(--ease-out-expo), var(--ease-out-expo), var(--ease-out-expo);
 }
 
 .nav-arrow:hover {
-    color: rgba(240, 230, 250, 1);
-    border-color: var(--hero-accent);
-    scale: 1.1;
+    color: var(--text-primary);
+    border-color: var(--hero-primary);
+    scale: 1.12;
+    background-color: rgba(20, 16, 30, 0.95);
 }
 
 .carousel-container {
-    margin: 0 40px;
+    margin: 0 24px;
 }
 
 .carousel-strip {
@@ -746,68 +929,73 @@ TemplateContainer {
 }
 
 .hero-card {
-    width: 120px;
-    height: 150px;
-    margin: 0 12px;
-    background-color: rgba(12, 10, 18, 0.95);
+    width: 130px;
+    height: 160px;
+    margin: 0 10px;
+    background-color: rgba(10, 8, 16, 0.92);
     border-width: 1px;
-    border-color: rgba(60, 50, 70, 0.4);
-    border-radius: 8px;
+    border-color: var(--border-subtle);
+    border-radius: 10px;
     align-items: center;
     justify-content: center;
-    transition-property: scale, opacity, border-color;
-    transition-duration: var(--transition-normal), var(--transition-normal), var(--transition-normal);
-    transition-timing-function: var(--ease-out-back), var(--ease-out-back), var(--ease-out-back);
-    opacity: 0.7;
+    transition-property: scale, opacity, border-color, background-color;
+    transition-duration: var(--transition-normal), var(--transition-normal), var(--transition-normal), var(--transition-normal);
+    transition-timing-function: var(--ease-out-back), var(--ease-out-back), var(--ease-out-back), var(--ease-out-back);
+    opacity: 0.55;
+    overflow: hidden;
 }
 
 .hero-card:hover {
-    scale: 1.15;
-    opacity: 1;
-    border-color: rgba(180, 170, 190, 0.5);
+    scale: 1.1;
+    opacity: 0.85;
+    border-color: var(--border-accent);
+    background-color: rgba(16, 12, 24, 0.95);
 }
 
 .hero-card.selected {
-    scale: 1.25;
+    scale: 1.2;
     opacity: 1;
     border-color: var(--hero-primary);
+    border-width: 2px;
+    background-color: rgba(16, 12, 26, 0.98);
 }
 
 .hero-card-initial {
-    font-size: 42px;
+    font-size: 48px;
     -unity-font-style: bold;
     color: var(--hero-primary);
-    opacity: 0.4;
+    opacity: 0.3;
     margin-bottom: 4px;
-    transition-property: opacity;
-    transition-duration: var(--transition-normal);
+    transition-property: opacity, color;
+    transition-duration: var(--transition-normal), var(--transition-normal);
 }
 
 .hero-card.selected .hero-card-initial {
-    opacity: 1;
+    opacity: 0.9;
 }
 
 .hero-card-name {
-    font-size: 13px;
-    color: rgba(240, 230, 250, 0.8);
-    letter-spacing: 2px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    letter-spacing: 3px;
+    -unity-font-style: bold;
 }
 
 .hero-card-role {
-    font-size: 12px;
-    color: rgba(180, 170, 190, 0.5);
+    font-size: 10px;
+    color: var(--text-muted);
     letter-spacing: 3px;
-    margin-top: 4px;
+    margin-top: 6px;
 }
 
 .hero-card.teaser {
-    border-color: rgba(60, 50, 70, 0.2);
-    opacity: 0.3;
+    border-color: rgba(60, 50, 70, 0.15);
+    opacity: 0.2;
 }
 
 .hero-card.teaser:hover {
-    opacity: 0.5;
-    scale: 1.05;
+    opacity: 0.35;
+    scale: 1.03;
 }
 
 /* =============================================================================
@@ -816,33 +1004,37 @@ TemplateContainer {
 
 .btn-back {
     position: absolute;
-    top: 12px;
-    left: 12px;
-    padding: 10px 20px;
-    background-color: rgba(12, 10, 18, 0.7);
+    top: 16px;
+    left: 16px;
+    padding: 10px 24px;
+    background-color: rgba(10, 8, 16, 0.75);
     border-width: 1px;
-    border-color: rgba(60, 50, 70, 0.5);
-    border-radius: 4px;
-    color: rgba(180, 170, 190, 0.5);
+    border-color: var(--border-subtle);
+    border-radius: 6px;
+    color: var(--text-muted);
     font-size: 12px;
     letter-spacing: 4px;
     z-index: 50;
-    transition-property: color, border-color;
-    transition-duration: var(--transition-fast), var(--transition-fast);
+    transition-property: color, border-color, background-color;
+    transition-duration: var(--transition-fast), var(--transition-fast), var(--transition-fast);
 }
 
 .btn-back:hover {
-    color: rgba(240, 230, 250, 1);
-    border-color: rgba(240, 230, 250, 0.6);
+    color: var(--text-primary);
+    border-color: var(--border-accent);
+    background-color: rgba(16, 12, 24, 0.9);
 }
 
 .hero-index {
     position: absolute;
-    bottom: 20px;
-    right: 40px;
-    font-size: 12px;
-    color: rgba(180, 170, 190, 0.2);
-    letter-spacing: 4px;
+    top: -4px;
+    left: 0;
+    right: 0;
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 5px;
+    -unity-text-align: middle-center;
+    -unity-font-style: bold;
 }
 
 /* =============================================================================
@@ -854,7 +1046,7 @@ TemplateContainer {
     bottom: -100px;
     left: 50%;
     translate: -50% 0;
-    width: 400px;
+    width: 420px;
     z-index: 200;
     transition-property: translate;
     transition-duration: 0.4s;
@@ -871,19 +1063,19 @@ TemplateContainer {
 
 .toast-content {
     flex-direction: row;
-    background-color: rgba(40, 15, 15, 0.95);
+    background-color: rgba(40, 12, 12, 0.95);
     border-width: 1px;
-    border-color: rgba(200, 60, 60, 0.6);
-    border-radius: 6px;
-    padding: 12px 16px;
+    border-color: rgba(200, 60, 60, 0.5);
+    border-radius: 8px;
+    padding: 14px 18px;
     align-items: center;
 }
 
 .toast-icon {
     width: 20px;
     height: 20px;
-    margin-right: 10px;
-    background-color: rgba(200, 60, 60, 0.8);
+    margin-right: 12px;
+    background-color: rgba(200, 60, 60, 0.7);
     border-radius: 10px;
     flex-shrink: 0;
 }
@@ -897,24 +1089,27 @@ TemplateContainer {
 
 .toast-actions {
     flex-direction: row;
-    padding-top: 8px;
+    padding-top: 10px;
     justify-content: flex-end;
 }
 
 .toast-btn {
-    background-color: rgba(60, 20, 20, 0.8);
+    background-color: rgba(60, 16, 16, 0.85);
     color: rgba(240, 200, 200, 0.9);
     border-width: 1px;
-    border-color: rgba(200, 60, 60, 0.4);
-    border-radius: 4px;
-    padding: 6px 14px;
+    border-color: rgba(200, 60, 60, 0.35);
+    border-radius: 6px;
+    padding: 8px 16px;
     margin-left: 8px;
     font-size: 12px;
+    letter-spacing: 1px;
+    transition-property: background-color, border-color;
+    transition-duration: var(--transition-fast), var(--transition-fast);
 }
 
 .toast-btn:hover {
-    background-color: rgba(80, 30, 30, 0.9);
-    border-color: rgba(200, 60, 60, 0.7);
+    background-color: rgba(80, 24, 24, 0.95);
+    border-color: rgba(200, 60, 60, 0.6);
 }
 
 /* =============================================================================
@@ -927,20 +1122,18 @@ TemplateContainer {
     top: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(12, 10, 18, 0.7);
+    background-color: rgba(8, 6, 14, 0.85);
     z-index: 150;
-    pointer-events: all;
 }
 
-/* When hidden, ensure it doesn't block input (display:none handles this,
-   but pointer-events:none is belt-and-suspenders for the .hidden class) */
+/* When hidden, ensure it doesn't block input */
 .skeleton-overlay.hidden {
-    pointer-events: none;
+    display: none;
 }
 
 .skeleton-shimmer {
-    background-color: rgba(40, 40, 50, 0.6);
-    border-radius: 4px;
+    background-color: rgba(40, 35, 55, 0.5);
+    border-radius: 6px;
     min-height: 16px;
     margin: 4px 0;
     overflow: hidden;
@@ -950,7 +1143,7 @@ TemplateContainer {
     position: absolute;
     width: 60px;
     height: 100%;
-    background-color: rgba(255, 255, 255, 0.06);
+    background-color: rgba(255, 255, 255, 0.04);
     rotate: 15deg;
     translate: -60px 0;
     transition-property: translate;
@@ -971,15 +1164,6 @@ TemplateContainer {
     translate: -20px 0;
 }
 
-/* Default panel state (no .panel-hidden) with transitions */
-.info-panel-container {
-    opacity: 1;
-    translate: 0 0;
-    transition-property: opacity, translate, border-color;
-    transition-duration: 0.3s, 0.3s, 0.4s;
-    transition-timing-function: ease-out, ease-out, ease-in-out;
-}
-
 /* =============================================================================
    CINEMATIC OVERLAY SYSTEM
    Subtle post-process layers for atmospheric depth
@@ -992,7 +1176,6 @@ TemplateContainer {
     right: 0;
     bottom: 0;
     z-index: 90;
-    pointer-events: none;
 }
 
 /* Scanline overlay: subtle horizontal stripe pattern */
@@ -1000,7 +1183,7 @@ TemplateContainer {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.02);
+    background-color: rgba(0, 0, 0, 0.015);
     opacity: 0.3;
 }
 
@@ -1009,8 +1192,8 @@ TemplateContainer {
     position: absolute;
     width: 100%;
     height: 100%;
-    border-width: 80px;
-    border-color: rgba(0, 0, 0, 0.25);
+    border-width: 100px;
+    border-color: rgba(0, 0, 0, 0.3);
 }
 
 /* Veil glow: hero-tinted ambient haze */
@@ -1018,19 +1201,18 @@ TemplateContainer {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: var(--hero-glow, rgba(40, 20, 60, 0.03));
-    opacity: 0.15;
+    background-color: var(--hero-dim, rgba(40, 20, 60, 0.02));
+    opacity: 0.12;
     transition-property: background-color;
     transition-duration: 1.2s;
     transition-timing-function: ease-in-out;
 }
 
 /* =============================================================================
-   VISUAL DEPTH HIERARCHY (VISUAL-07)
-   Inactive panels are dimmed for visual depth, drawing focus to active content
+   VISUAL DEPTH HIERARCHY
+   Inactive panels are dimmed for visual depth
    ============================================================================= */
 
-/* Panel dim/desaturate for inactive state (applied via OverlayController) */
 .panel-inactive-dim {
     opacity: 0.6;
     transition-property: opacity;
