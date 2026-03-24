@@ -651,9 +651,17 @@ TemplateContainer {
 }
 
 /* =============================================================================
-   ATTRIBUTE BARS SECTION
+   ATTRIBUTE GRID — Numbers only, no bars (D&D style)
    ============================================================================= */
 
+.attribute-section {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top-width: 1px;
+    border-top-color: var(--border-subtle);
+}
+
+/* Keep .attribute-bars-section as alias for backward compat */
 .attribute-bars-section {
     margin-top: 14px;
     padding-top: 12px;
@@ -669,51 +677,53 @@ TemplateContainer {
     -unity-font-style: bold;
 }
 
-.attribute-bars {
-    flex-direction: column;
-}
-
-.stat-bar-row {
+.attribute-grid {
     flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.attr-chip {
+    width: 15%;
     align-items: center;
-    margin-bottom: 6px;
-}
-
-.stat-bar-label {
-    width: 40px;
-    font-size: 11px;
-    color: var(--text-muted);
-    letter-spacing: 3px;
-    -unity-font-style: bold;
-}
-
-.stat-bar-track {
-    flex-grow: 1;
-    height: 10px;
-    background-color: rgba(5, 5, 12, 0.8);
-    border-radius: 5px;
-    margin: 0 10px;
-    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.25);
     border-width: 1px;
-    border-color: rgba(60, 50, 70, 0.25);
+    border-color: rgba(80, 65, 100, 0.15);
+    border-radius: 4px;
+    padding: 6px 2px;
+    margin-bottom: 4px;
+    transition-property: background-color, border-color;
+    transition-duration: 0.2s, 0.2s;
 }
 
-.stat-bar-fill {
-    height: 100%;
-    background-color: var(--hero-primary, rgb(200, 160, 60));
-    border-radius: 5px;
-    transition-property: width, background-color;
-    transition-duration: 0.4s, 0.6s;
-    transition-timing-function: ease-out, ease-in-out;
+.attr-chip:hover {
+    background-color: rgba(0, 0, 0, 0.4);
+    border-color: rgba(80, 65, 100, 0.3);
 }
 
-.stat-bar-value {
-    width: 28px;
-    font-size: 13px;
-    color: var(--text-primary);
-    -unity-text-align: middle-right;
+.attr-chip-label {
+    font-size: 8px;
+    letter-spacing: 2px;
     -unity-font-style: bold;
+    color: rgba(140, 130, 160, 0.5);
+    margin-bottom: 2px;
+    -unity-text-align: middle-center;
 }
+
+.attr-chip-value {
+    font-size: 20px;
+    -unity-font-style: bold;
+    color: rgba(240, 235, 250, 0.85);
+    -unity-text-align: middle-center;
+}
+
+/* Legacy bar classes — kept so any stale USS references don't hard-error */
+.attribute-bars { flex-direction: column; }
+.stat-bar-row { flex-direction: row; align-items: center; margin-bottom: 6px; }
+.stat-bar-label { width: 40px; font-size: 11px; color: var(--text-muted); letter-spacing: 3px; -unity-font-style: bold; }
+.stat-bar-track { flex-grow: 1; height: 10px; background-color: rgba(5, 5, 12, 0.8); border-radius: 5px; margin: 0 10px; overflow: hidden; }
+.stat-bar-fill { height: 100%; background-color: var(--hero-primary, rgb(200, 160, 60)); border-radius: 5px; }
+.stat-bar-value { width: 28px; font-size: 13px; color: var(--text-primary); -unity-text-align: middle-right; -unity-font-style: bold; }
 
 /* =============================================================================
    ABILITIES (Tab 2)
