@@ -56,6 +56,12 @@ namespace VeilBreakers.UI.CharacterSelect
         private Label _stageHeroName;
         private Label _stageHeroTitle;
 
+        // Previous stat values for animated lerp transitions
+        private int _prevHp;
+        private int _prevAtk;
+        private int _prevDef;
+        private int _prevStamina;
+
         private void OnEnable()
         {
             CacheReferences();
@@ -126,11 +132,17 @@ namespace VeilBreakers.UI.CharacterSelect
             }
             CharSelectUIUtils.SetLabel(_heroSynergy, synergy);
 
-            // Starter stats
-            CharSelectUIUtils.SetLabel(_statHp, data.base_hp.ToString());
-            CharSelectUIUtils.SetLabel(_statAtk, data.base_attack.ToString());
-            CharSelectUIUtils.SetLabel(_statDef, data.base_defense.ToString());
-            CharSelectUIUtils.SetLabel(_statStamina, data.base_speed.ToString());
+            // Starter stats — animated counting effect on hero switch
+            StatNumberAnimator.AnimateValue(_statHp, _prevHp, data.base_hp);
+            StatNumberAnimator.AnimateValue(_statAtk, _prevAtk, data.base_attack);
+            StatNumberAnimator.AnimateValue(_statDef, _prevDef, data.base_defense);
+            StatNumberAnimator.AnimateValue(_statStamina, _prevStamina, data.base_speed);
+
+            // Cache for next switch
+            _prevHp = data.base_hp;
+            _prevAtk = data.base_attack;
+            _prevDef = data.base_defense;
+            _prevStamina = data.base_speed;
 
             // Champion monster
             PopulateChampion(data);
