@@ -1083,9 +1083,9 @@ namespace VeilBreakers.UI.Core
 
             Debug.Log($"[TitleScreenVFX] Forward video prepared - Duration: {_videoLength:F2}s");
 
-            // Apply forward RenderTexture to background
+            // Apply forward RenderTexture to background — Cover mode fills screen without stretching
             _backgroundElement.style.backgroundImage = new StyleBackground(Background.FromRenderTexture(_videoRenderTextureForward));
-            _backgroundElement.style.backgroundSize = new BackgroundSize(Length.Percent(100), Length.Percent(100));
+            _backgroundElement.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
             _backgroundElement.style.unityBackgroundImageTintColor = Color.white;
             _backgroundElement.style.backgroundColor = new Color(0f, 0f, 0f, 0f);
 

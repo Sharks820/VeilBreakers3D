@@ -57,8 +57,8 @@ namespace VeilBreakers.UI.Menus
         [SerializeField] private float _fadeInDuration = 0.5f;
 
         [Header("Backdrop")]
-        [SerializeField, Range(0f, 1f)] private float _rootBackdropAlpha = 0.2f;
-        [SerializeField] private Color _rootBackdropColor = new Color(0.03f, 0.02f, 0.05f, 1f);
+        [SerializeField, Range(0f, 1f)] private float _rootBackdropAlpha = 0f; // Was 0.2 — removed dark overlay that obscured demon figure
+        [SerializeField] private Color _rootBackdropColor = new Color(0f, 0f, 0f, 0f);
 
         [Header("Audio (Optional)")]
         [SerializeField] private AudioClip _menuMusic;
@@ -546,34 +546,13 @@ namespace VeilBreakers.UI.Menus
 
         private void EnsureOverlayVfx()
         {
-            const string overlayTypeName = "VeilBreakers.UI.Effects.MainMenuVFXOverlayController";
-            System.Type overlayType = null;
-            var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
-            for (int i = 0; i < assemblies.Length; i++)
+            // VFX overlay disabled — the orange bar columns detract from AAA quality.
+            // The component self-disables in Awake, so adding it is a no-op.
+            // Kept for future re-enablement if VFX overlay is redesigned.
+            if (GetComponent<VeilBreakers.UI.Effects.MainMenuVFXOverlayController>() == null)
             {
-                overlayType = assemblies[i].GetType(overlayTypeName, throwOnError: false);
-                if (overlayType != null)
-                {
-                    break;
-                }
+                gameObject.AddComponent<VeilBreakers.UI.Effects.MainMenuVFXOverlayController>();
             }
-
-            if (overlayType == null || !typeof(MonoBehaviour).IsAssignableFrom(overlayType))
-            {
-                return;
-            }
-
-            var monoBehaviours = GetComponents<MonoBehaviour>();
-            for (int i = 0; i < monoBehaviours.Length; i++)
-            {
-                var behaviour = monoBehaviours[i];
-                if (behaviour != null && behaviour.GetType() == overlayType)
-                {
-                    return;
-                }
-            }
-
-            gameObject.AddComponent(overlayType);
         }
 
         /// <summary>

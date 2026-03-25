@@ -23,8 +23,8 @@
             <ui:Button text="EXIT" name="btn-exit" class="vb-menu-btn" />
         </ui:VisualElement>
 
-        <!-- Small overlay to cover AI watermark in bottom-right corner of background art -->
-        <ui:VisualElement name="corner-overlay-br" picking-mode="Ignore" style="position: absolute; right: 0; bottom: 0; width: 80px; height: 24px; background-color: rgba(0, 0, 0, 0.9);" />
+        <!-- Overlay to cover Veo AI watermark in bottom-right corner of video/background -->
+        <ui:VisualElement name="corner-overlay-br" picking-mode="Ignore" style="position: absolute; right: 0; bottom: 0; width: 120px; height: 36px; background-color: rgba(0, 0, 0, 0.98);" />
 
         <!-- Loading Overlay -->
         <ui:VisualElement name="loading-overlay" style="display: none; position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(8, 6, 12, 0.95); justify-content: center; align-items: center;">
