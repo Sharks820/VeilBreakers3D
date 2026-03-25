@@ -259,6 +259,9 @@ namespace VeilBreakers.UI.Menus
             // AAA atmospheric overlays (bottom fade, heat haze, vignette, scanlines)
             ApplyAtmosphericOverlays();
 
+            // Demon idle animation + hover glow (matches V5 mockup)
+            ApplyDemonEffects();
+
             // Start animations
             PlayEntranceAnimation();
 
@@ -749,6 +752,9 @@ namespace VeilBreakers.UI.Menus
             // AAA atmospheric overlays (bottom fade, heat haze, vignette, scanlines)
             ApplyAtmosphericOverlays();
 
+            // Demon idle animation + hover glow (matches V5 mockup)
+            ApplyDemonEffects();
+
             // Play entrance animations and apply button VFX
             PlayEntranceAnimation();
 
@@ -1145,6 +1151,50 @@ namespace VeilBreakers.UI.Menus
             scanlines.style.backgroundImage = new StyleBackground(_scanlineTexture);
             scanlines.style.backgroundSize = new BackgroundSize(new Length(4, LengthUnit.Pixel), new Length(256, LengthUnit.Pixel));
             menuRoot.Insert(insertIndex, scanlines);
+        }
+
+        /// <summary>
+        /// Adds demon idle breathing animation (subtle Y bob) and hover brightness effect.
+        /// Matches the V5 mockup's @keyframes demon-idle and :hover brightness.
+        /// </summary>
+        private void ApplyDemonEffects()
+        {
+            var demon = _root?.Q<VisualElement>("monster-image");
+            if (demon == null) return;
+
+            // Idle breathing: subtle Y translation oscillation (6s cycle, -5px amplitude)
+            float idlePhase = 0f;
+            demon.usageHints = UsageHints.DynamicTransform;
+            demon.schedule.Execute(() =>
+            {
+                idlePhase += 0.05f * 1.047f; // 6s full cycle (2π / 6 ≈ 1.047 rad/s at 50ms interval)
+                float yOffset = Mathf.Sin(idlePhase) * -5f;
+                demon.style.translate = new Translate(0, yOffset);
+            }).Every(50);
+
+            // Hover glow: slight orange drop-shadow effect using an overlay element
+            var hoverGlow = new VisualElement();
+            hoverGlow.name = "demon-hover-glow";
+            hoverGlow.pickingMode = PickingMode.Ignore;
+            hoverGlow.style.position = Position.Absolute;
+            hoverGlow.style.left = 0;
+            hoverGlow.style.top = 0;
+            hoverGlow.style.right = 0;
+            hoverGlow.style.bottom = 0;
+            hoverGlow.style.backgroundColor = new Color(1f, 0.4f, 0.12f, 0f); // Transparent by default
+            hoverGlow.style.opacity = 0;
+            hoverGlow.style.transitionProperty = new List<StylePropertyName> { new("opacity") };
+            hoverGlow.style.transitionDuration = new List<TimeValue> { new(0.5f, TimeUnit.Second) };
+            demon.Add(hoverGlow);
+
+            demon.RegisterCallback<MouseEnterEvent>(evt =>
+            {
+                hoverGlow.style.opacity = 0.08f; // Subtle brightness boost
+            });
+            demon.RegisterCallback<MouseLeaveEvent>(evt =>
+            {
+                hoverGlow.style.opacity = 0f;
+            });
         }
 
         /// <summary>
