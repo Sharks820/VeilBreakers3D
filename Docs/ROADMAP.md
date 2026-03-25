@@ -72,6 +72,8 @@
 - [ ] NPC placeholders
 - [ ] Shop system
 - [ ] Save shrine interaction
+- [ ] AAA world pipeline implementation and review
+  - See `Docs/AAA_WORLD_PIPELINE_ROADMAP.md`
 
 ### Biome: Corrupted Grove
 - [ ] Area design

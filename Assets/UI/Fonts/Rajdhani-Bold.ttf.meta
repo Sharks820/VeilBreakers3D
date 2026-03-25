@@ -1,21 +1,21 @@
 fileFormatVersion: 2
-guid: c7b3e9f2a4d816543e8c1a0b5f927d4e
+guid: 37f350c4f85619e42b1d179bfb8e57b7
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
-  fontSize: 64
+  fontSize: 48
   forceTextureCase: -2
   characterSpacing: 0
   characterPadding: 3
   includeFontData: 1
   fontNames:
-  - Cinzel
+  - Rajdhani
   fallbackFontReferences: []
-  customCharacters:
+  customCharacters: 
   fontRenderingMode: 1
   ascentCalculationMode: 1
   useLegacyBoundsCalculation: 0
   shouldRoundAdvanceValue: 1
-  userData:
-  assetBundleName:
-  assetBundleVariant:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

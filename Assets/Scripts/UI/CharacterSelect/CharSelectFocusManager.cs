@@ -214,8 +214,9 @@ namespace VeilBreakers.UI.CharacterSelect
             }
             else
             {
-                // Switch hero globally
+                // Switch hero globally (clamp to valid range)
                 int newIndex = _currentHeroIndex + direction;
+                if (_heroCount > 0) newIndex = Mathf.Clamp(newIndex, 0, _heroCount - 1);
                 CharSelectEvents.RaiseNavigationRequested(newIndex);
             }
         }

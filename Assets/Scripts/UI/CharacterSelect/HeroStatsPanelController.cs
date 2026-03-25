@@ -164,7 +164,7 @@ namespace VeilBreakers.UI.CharacterSelect
         // =============================================================================
 
         /// <summary>
-        /// Updates ability slot labels with skill display names from GameDatabase.
+        /// Updates ability slot labels with skill display names and descriptions from GameDatabase.
         /// </summary>
         private void UpdateAbilities(HeroData data)
         {
@@ -179,8 +179,13 @@ namespace VeilBreakers.UI.CharacterSelect
                     string skillId = skills[i];
                     var skillData = GameDatabase.HasInstance ? GameDatabase.Instance.GetSkill(skillId) : null;
                     string displayName = skillData?.display_name ?? FormatSkillId(skillId);
+                    string description = skillData?.description;
 
-                    _abilitySlots[i].text = displayName;
+                    if (!string.IsNullOrEmpty(description))
+                        _abilitySlots[i].text = $"{displayName}\n{description}";
+                    else
+                        _abilitySlots[i].text = displayName;
+
                     _abilitySlots[i].style.display = DisplayStyle.Flex;
                 }
                 else

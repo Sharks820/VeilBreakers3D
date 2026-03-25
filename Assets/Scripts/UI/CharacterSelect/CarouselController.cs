@@ -117,6 +117,12 @@ namespace VeilBreakers.UI.CharacterSelect
                 card.Add(roleLabel);
             }
 
+            // Selection dot (visible only when card has .selected class)
+            var selectionDot = new VisualElement();
+            selectionDot.AddToClassList("hero-card-dot");
+            selectionDot.pickingMode = PickingMode.Ignore;
+            card.Add(selectionDot);
+
             // Use PointerDownEvent for instant response (ClickEvent waits for pointer up)
             int capturedIndex = index;
             card.RegisterCallback<PointerDownEvent>(_ => OnCardClicked(capturedIndex));
