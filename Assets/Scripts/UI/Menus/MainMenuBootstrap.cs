@@ -164,7 +164,9 @@ namespace VeilBreakers.UI.Menus
             // Clear and setup main menu
             _root.Clear();
 
-            // DEFENSIVE: Add full-screen black background at root level to prevent any color bleed
+            // Root background: FULLY TRANSPARENT — the demon/video/bg layers handle all visuals.
+            // Previously had a 20% alpha dark overlay that obscured the demon figure.
+            // Force transparent regardless of Inspector serialized values.
             var rootBackground = new VisualElement();
             rootBackground.name = "root-background";
             rootBackground.style.position = Position.Absolute;
@@ -172,9 +174,7 @@ namespace VeilBreakers.UI.Menus
             rootBackground.style.top = 0;
             rootBackground.style.right = 0;
             rootBackground.style.bottom = 0;
-            Color backdrop = _rootBackdropColor;
-            backdrop.a = Mathf.Clamp01(_rootBackdropAlpha);
-            rootBackground.style.backgroundColor = new StyleColor(backdrop); // Allow VFX to show through
+            rootBackground.style.backgroundColor = new StyleColor(new Color(0f, 0f, 0f, 0f)); // FORCED transparent
             rootBackground.pickingMode = PickingMode.Ignore;
             _root.Add(rootBackground);
 
@@ -522,9 +522,8 @@ namespace VeilBreakers.UI.Menus
 
                 if (rootBg != null)
                 {
-                    Color backdrop = _rootBackdropColor;
-                    backdrop.a = Mathf.Clamp01(_rootBackdropAlpha);
-                    rootBg.style.backgroundColor = new StyleColor(backdrop);
+                    // Force transparent — no dark overlay on demon/video
+                    rootBg.style.backgroundColor = new StyleColor(new Color(0f, 0f, 0f, 0f));
                 }
             }
         }
