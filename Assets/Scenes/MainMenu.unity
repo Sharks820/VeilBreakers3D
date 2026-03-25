@@ -404,13 +404,13 @@ MonoBehaviour:
   m_EditorClassIdentifier:
   _mainMenuTemplate: {fileID: 9197481963319205126, guid: bb34880249db995488587eeb085046b9, type: 3}
   _settingsPanelTemplate: {fileID: 9197481963319205126, guid: 50da632812b00104b90a35c2c946b833, type: 3}
-  _themeStylesheet: {fileID: 7433441132597879392, guid: 0c75776285827f74db8942ace412c502, type: 3}
+  _themeStylesheet: {fileID: 7433441132597879392, guid: f14e48b4bc52a9f4586f9c621c434598, type: 3}
   _componentStylesheet: {fileID: 7433441132597879392, guid: f14e48b4bc52a9f4586f9c621c434598, type: 3}
   _titleAnimDelay: 0.1
   _buttonStaggerDelay: 0.1
   _fadeInDuration: 0.5
-  _rootBackdropAlpha: 0.2
-  _rootBackdropColor: {r: 0.03, g: 0.02, b: 0.05, a: 1}
+  _rootBackdropAlpha: 0
+  _rootBackdropColor: {r: 0, g: 0, b: 0, a: 0}
   _menuMusic: {fileID: 0}
   _buttonHoverSound: {fileID: 0}
   _buttonClickSound: {fileID: 0}
