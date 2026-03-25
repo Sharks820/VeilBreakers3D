@@ -99,6 +99,8 @@ namespace VeilBreakers.Data
         public AudioClip embarkSFX;
         [Tooltip("Background atmosphere loop per hero")]
         public AudioClip ambientLoop;
+        [Tooltip("Hero voice line played at the start of the embark sequence")]
+        public AudioClip embarkVoiceLine;
 
         // =============================================================================
         // CHAMPION MONSTER

@@ -136,6 +136,10 @@ namespace VeilBreakers.UI.CharacterSelect
             CharSelectEvents.OnNavigationRequested += NavigateToHero;
             CharSelectEvents.OnEmbarkTriggered += TriggerEmbark;
             StartCoroutine(InitializeWhenReady());
+
+            // Ensure AAA visual enhancer is attached (gradients, glows, depth)
+            if (GetComponent<CharSelectVisualEnhancer>() == null)
+                gameObject.AddComponent<CharSelectVisualEnhancer>();
         }
 
         /// <summary>
@@ -508,6 +512,36 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 ButtonVFXHelper.AddBreathing(_btnEmbark, 0.012f, 2500f);
             }
+
+            // AAA: Apply gradient to info panel background
+            if (_infoPanelContainer != null)
+            {
+                var panelGradient = VeilBreakers.UI.Core.UIGradientHelper.CreateVerticalGradient3(
+                    new Color(0.08f, 0.06f, 0.12f, 0.96f),  // Top: slightly lighter
+                    new Color(0.04f, 0.03f, 0.07f, 0.97f),  // Mid: dark
+                    new Color(0.02f, 0.015f, 0.05f, 0.98f)   // Bottom: near-black
+                );
+                VeilBreakers.UI.Core.UIGradientHelper.ApplyGradient(_infoPanelContainer, panelGradient);
+
+                // Inner top highlight for panel depth
+                VeilBreakers.UI.Core.UIGradientHelper.CreateTopHighlight(
+                    _infoPanelContainer,
+                    new Color(0.78f, 0.63f, 0.24f, 0.25f), // Gold highlight matching hero primary
+                    1f
+                );
+            }
+
+            // AAA: Apply gradient to embark button
+            if (_btnEmbark != null)
+            {
+                var embarkGradient = VeilBreakers.UI.Core.UIGradientHelper.CreateVerticalGradient3(
+                    new Color(0.86f, 0.69f, 0.27f, 0.95f),  // Top: bright gold
+                    new Color(0.71f, 0.53f, 0.16f, 0.98f),  // Mid: gold
+                    new Color(0.59f, 0.43f, 0.10f, 0.99f)   // Bottom: dark gold
+                );
+                VeilBreakers.UI.Core.UIGradientHelper.ApplyGradient(_btnEmbark, embarkGradient);
+                _btnEmbark.style.overflow = Overflow.Hidden;
+            }
         }
 
         private void BindUI()
@@ -549,6 +583,7 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             _currentIndex = 0;
             _isTransitioning = false;
+            _currentTab = -1; // Force initial tab apply
             SwitchTab(kTabOverview);
             DismissToast();
             if (_heroList != null && _heroList.Count > 0)
@@ -617,7 +652,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void SwitchTab(int tabIndex)
         {
-            if (tabIndex == _currentTab && tabIndex != kTabOverview) return;
+            if (tabIndex == _currentTab) return;
             _currentTab = tabIndex;
             SetTabButtonActive(_tabBtnOverview, tabIndex == kTabOverview);
             SetTabButtonActive(_tabBtnAbilities, tabIndex == kTabAbilities);
@@ -685,6 +720,16 @@ namespace VeilBreakers.UI.CharacterSelect
             var hero = CurrentHero;
             if (hero == null) return;
             _isEmbarking = true;
+
+            // Play hero embark voice line (if configured) at the start of the sequence
+            var config = CurrentConfig;
+            if (config != null && config.embarkVoiceLine != null)
+            {
+                var cam = Camera.main;
+                if (cam != null)
+                    AudioSource.PlayClipAtPoint(config.embarkVoiceLine, cam.transform.position, 0.8f);
+            }
+
             // NOTE: Do NOT call RaiseEmbarkTriggered() here — TriggerEmbark IS the handler
             // for OnEmbarkTriggered (subscribed in OnEnable). Raising it would re-invoke this method.
             CharSelectEvents.RaiseScreenExiting();
@@ -792,7 +837,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private void OnPrevClicked(ClickEvent evt) => NavigatePrev();
         private void OnNextClicked(ClickEvent evt) => NavigateNext();
         private void OnBackClicked(ClickEvent evt) => NavigateBack();
-        private void OnEmbarkClicked(ClickEvent evt) => TriggerEmbark();
+        private void OnEmbarkClicked(ClickEvent evt) => CharSelectEvents.RaiseEmbarkTriggered();
 
         private void NavigateBack()
         {
@@ -813,7 +858,25 @@ namespace VeilBreakers.UI.CharacterSelect
         // NAVIGATION EVENTS (KEYBOARD / GAMEPAD)
         // =============================================================================
 
-        private void OnNavigationSubmit(NavigationSubmitEvent evt) { TriggerEmbark(); evt.StopPropagation(); }
+        private void OnNavigationSubmit(NavigationSubmitEvent evt)
+        {
+            // Only trigger embark when the Embark zone is focused (zone index 2)
+            var focusManager = GetComponent<CharSelectFocusManager>();
+            if (focusManager != null && focusManager.CurrentZoneIndex == 2)
+            {
+                TriggerEmbark();
+            }
+            else if (focusManager != null && focusManager.CurrentZoneIndex == 0)
+            {
+                NavigateBack();
+            }
+            // InfoTabs and Carousel zones: let the event propagate to tab/card handlers
+            else
+            {
+                return; // Don't stop propagation for other zones
+            }
+            evt.StopPropagation();
+        }
         private void OnNavigationCancel(NavigationCancelEvent evt) { NavigateBack(); evt.StopPropagation(); }
 
         // =============================================================================

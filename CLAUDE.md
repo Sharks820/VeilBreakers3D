@@ -17,13 +17,24 @@ Build an AAA-quality 3D monster RPG using Unity. Quality over speed, but don't o
 - Complex tasks benefit from structured approaches
 - You decide what's appropriate for each situation
 
-## 2. Context Efficiency
-- Don't read entire files when you only need a symbol
-- Use Serena for semantic code navigation (it saves tokens)
+## 2. Context Efficiency (Lean BUT Safe)
+- Prefer symbol-level reads and file slices over full-file dumps
+- Use Serena for semantic code navigation (saves tokens)
 - Ask Gemini for second opinions on complex decisions
 - Keep responses focused and concise
+- **CRITICAL: "Token optimization" = concise chat, NOT skipping file reads.**
+  Reading a file before editing costs ~500 tokens. Blind-editing then fixing regressions costs ~50,000. Always read first.
 
-## 3. Reasoning Budget (Power Without Bloat)
+## 3. Anti-Regression Protocol (MANDATORY)
+These rules exist because a session lost hours to regressions from skipped verification:
+
+- **ALWAYS read a file before editing it.** No exceptions. Even if you "know" the contents.
+- **Test after every 3-5 changes.** Run compile check or relevant tests. Catch breaks immediately.
+- **Never loop on the same failing approach more than twice.** If fix attempt #2 fails, stop, re-read context, try a fundamentally different approach.
+- **Never guess at API signatures.** Look them up (Context7, Serena, or read the source). PrimeTween, Unity UI Toolkit, and Cinemachine APIs are frequently hallucinated.
+- **If you break something while fixing something else, revert the regression immediately** — don't stack more fixes on top of a broken base.
+
+## 4. Reasoning Budget (Power Without Bloat)
 - **Default mode:** 2-pass reasoning
   - Pass 1: quick hypothesis from local code/context
   - Pass 2: targeted verification (tests/logs/docs) before final claims
@@ -31,11 +42,8 @@ Build an AAA-quality 3D monster RPG using Unity. Quality over speed, but don't o
   - High-risk change (data loss, save format, core combat/math)
   - 3+ interacting systems
   - Repro is unclear after one focused debug pass
-- **Token guardrails:**
-  - Prefer symbol-level/file-slice reads over full-file dumps
-  - Use at most one external "second-opinion" round (Gemini) per decision
-  - Summarize findings before continuing broad exploration
 - **Stop conditions:** when confidence is high and tests/validation pass, ship instead of over-analyzing
+- **Loop detection:** If you've made 3+ attempts at the same fix without progress, STOP. Summarize what you've tried, what failed, and ask the user or try a completely different approach.
 
 ## 4. Commit When It Makes Sense
 - Commit after completing logical units of work
@@ -82,14 +90,17 @@ Build an AAA-quality 3D monster RPG using Unity. Quality over speed, but don't o
 | Second opinion | `gemini-cli` or `codex-cli` MCP | Different AI perspectives |
 | C# code intelligence | csharp-lsp plugin | Real-time diagnostics |
 
-## Model Routing (Token Optimization)
+## Model Routing (Quality-First Token Optimization)
 
 | Task Type | Model | Why |
 |-----------|-------|-----|
-| Read files, find patterns, verify claims | **Haiku** | Cheapest, fast, accurate for factual checks |
-| Write code, fix bugs, implement features | **Sonnet** | Good quality-to-cost ratio |
-| Architecture decisions, code review, sign-off | **Opus** | Only when judgment matters |
-| Simple git ops, file creation | **Haiku** | Don't waste Sonnet on routine work |
+| Simple file reads, grep, git status | **Haiku** | Cheap factual lookups |
+| Write code, fix bugs, implement features | **Sonnet** | Quality-to-cost sweet spot |
+| Architecture, multi-system changes, debugging | **Opus** | When judgment prevents regressions |
+| Research subagents (parallel exploration) | **Haiku** | Cheap parallel scouts |
+| Edits touching 3+ files or core systems | **Sonnet+** | Don't cut corners on risky changes |
+
+**Rule:** Never downgrade model to save tokens on changes that touch core systems (combat, save, UI controllers). The cost of a regression is 10-50x the cost of using a better model.
 
 ---
 
@@ -162,12 +173,19 @@ namespace VeilBreakers.[Category]
 - Allocations in Update
 - Missing font references (UI disappears)
 - Disabled components = silent failures
+- Editing files without reading them first (causes regressions)
+- Guessing PrimeTween/Cinemachine/UI Toolkit API names (always hallucinated wrong)
+- Retrying the same broken approach 5+ times hoping it works (loop detection!)
+- Stacking fixes on a broken base instead of reverting the regression first
 
 ## What Works
 - ScriptableObjects for game data
 - Event-driven architecture
 - Serena for semantic code ops
 - Visual verification via Unity screenshots
+- Reading files before editing (prevents 90% of regressions)
+- Testing after every 3-5 changes (catches breaks before they compound)
+- Parallel agents for research, sequential for edits
 
 ---
 
@@ -183,4 +201,4 @@ namespace VeilBreakers.[Category]
 
 ---
 
-*Configuration v6.0 - Token-Optimized*
+*Configuration v7.0 - Quality-Guarded Token Optimization*

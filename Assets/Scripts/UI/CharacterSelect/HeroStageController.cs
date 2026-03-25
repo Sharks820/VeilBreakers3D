@@ -258,14 +258,8 @@ namespace VeilBreakers.UI.CharacterSelect
             _currentModelHasAnimator = _currentModel.GetComponent<Animator>() != null;
             _currentModelBaseScale = _currentModel.transform.localScale;
 
-            // Load champion monster
-            if (config?.championModelPrefab != null)
-            {
-                _currentChampion = Instantiate(config.championModelPrefab, _stageRoot);
-                SetLayerRecursive(_currentChampion, kPreviewLayer);
-                _currentChampion.transform.localPosition = config.championOffset;
-                _currentChampion.transform.localScale = Vector3.one * config.championScale;
-            }
+            // Champion model is now displayed in the panel's model viewer, not on the hero stage.
+            // _currentChampion field is kept for cleanup compatibility but not instantiated here.
 
             // Apply camera config
             ApplyCameraConfig(config);
@@ -467,7 +461,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private void StopRimFlicker()
         {
             _isRimFlickering = false;
-            _rimFlickerTween.Stop();
+            if (_rimFlickerTween.isAlive) _rimFlickerTween.Stop();
 
             if (_rimLight != null)
             {

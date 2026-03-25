@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -483,6 +482,36 @@ namespace VeilBreakers.UI.Controls
                 chargeLine.style.width = Length.Percent(0);
                 chargeLine.style.opacity = 0;
             });
+        }
+
+        // =============================================================================
+        // FOCUS EFFECT (GAMEPAD/KEYBOARD)
+        // =============================================================================
+
+        // =============================================================================
+        // TOP HIGHLIGHT EFFECT
+        // =============================================================================
+
+        /// <summary>
+        /// Adds a decorative gradient highlight line at the top of a button.
+        /// Creates the ornate look for main menu buttons.
+        /// </summary>
+        public static void AddTopHighlight(VisualElement button)
+        {
+            if (button == null) return;
+            // Avoid duplicates on re-init
+            if (button.Q("btn-top-highlight") != null) return;
+
+            var highlight = new VisualElement();
+            highlight.name = "btn-top-highlight";
+            highlight.pickingMode = PickingMode.Ignore;
+            highlight.style.position = Position.Absolute;
+            highlight.style.top = 0;
+            highlight.style.left = Length.Percent(15);
+            highlight.style.right = Length.Percent(15);
+            highlight.style.height = 1;
+            highlight.style.backgroundColor = new Color(0.78f, 0.59f, 0.27f, 0.3f);
+            button.Add(highlight);
         }
 
         // =============================================================================

@@ -1,6 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/UI/Styles/VeilBreakers.uss?fileID=7433441132597879392&amp;guid=f14e48b4bc52a9f4586f9c621c434598&amp;type=3" />
-    <Style src="project://database/Assets/UI/Styles/VeilBreakers.uss?fileID=7433441132597879392&amp;guid=f14e48b4bc52a9f4586f9c621c434598&amp;type=3" />
 
     <ui:VisualElement name="menu-root" class="vb-root" style="flex-grow: 1;">
 
@@ -15,14 +14,17 @@
             <ui:VisualElement name="logo-image" style="width: 1600px; height: 400px; background-image: url('project://database/Assets/Art/UI/MainMenu/logo_veilbreakers.png?fileID=2800000&amp;guid=068214e22c8853d4c8fe90c83ab65bbc&amp;type=3'); -unity-background-scale-mode: scale-to-fit; background-color: rgba(0, 0, 0, 0); background-position-x: center; background-position-y: center;" />
         </ui:VisualElement>
 
-        <!-- Menu Buttons - Horizontal with large gaps -->
-        <ui:VisualElement name="button-container" style="position: absolute; left: 0; right: 0; bottom: 50px; flex-direction: row; justify-content: center; align-items: center; padding: 16px 40px; background-color: transparent;">
-            <ui:Button text="NEW GAME" name="btn-new-game" class="vb-button vb-menu-btn-primary" style="min-width: 160px; height: 50px; font-size: 18px; margin-right: 50px;" />
-            <ui:Button text="CONTINUE" name="btn-continue" class="vb-button vb-menu-btn-primary" style="display: none; min-width: 160px; height: 50px; font-size: 18px; margin-right: 50px;" />
-            <ui:Button text="SETTINGS" name="btn-settings" class="vb-button" style="min-width: 160px; height: 50px; font-size: 18px; margin-right: 50px;" />
-            <ui:Button text="CREDITS" name="btn-credits" class="vb-button" style="min-width: 160px; height: 50px; font-size: 18px; margin-right: 50px;" />
-            <ui:Button text="EXIT" name="btn-exit" class="vb-button" style="min-width: 160px; height: 50px; font-size: 18px;" />
+        <!-- Menu Buttons - Vertical right-aligned (AAA V5) -->
+        <ui:VisualElement name="button-container" style="position: absolute; right: 5%; bottom: 14%; flex-direction: column; align-items: flex-end; padding: 0; background-color: transparent;">
+            <ui:Button text="NEW GAME" name="btn-new-game" class="vb-menu-btn" style="margin-bottom: 9px;" />
+            <ui:Button text="CONTINUE" name="btn-continue" class="vb-menu-btn" style="display: none; margin-bottom: 9px;" />
+            <ui:Button text="SETTINGS" name="btn-settings" class="vb-menu-btn" style="margin-bottom: 9px;" />
+            <ui:Button text="CREDITS" name="btn-credits" class="vb-menu-btn" style="margin-bottom: 9px;" />
+            <ui:Button text="EXIT" name="btn-exit" class="vb-menu-btn" />
         </ui:VisualElement>
+
+        <!-- Overlay to cover Veo AI watermark in bottom-right corner of video/background -->
+        <ui:VisualElement name="corner-overlay-br" picking-mode="Ignore" style="position: absolute; right: 0; bottom: 0; width: 120px; height: 36px; background-color: rgba(0, 0, 0, 0.98);" />
 
         <!-- Loading Overlay -->
         <ui:VisualElement name="loading-overlay" style="display: none; position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(8, 6, 12, 0.95); justify-content: center; align-items: center;">

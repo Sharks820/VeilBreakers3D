@@ -51,21 +51,40 @@ public static class VBBridgeServer
 
     static void ListenerLoop()
     {
-        _listener = new TcpListener(IPAddress.Loopback, _port);
-        _listener.Start();
-        while (_running)
+        try
         {
-            try
+            _listener = new TcpListener(IPAddress.Loopback, _port);
+            _listener.Start();
+
+            while (_running)
             {
-                if (!_listener.Pending()) { Thread.Sleep(50); continue; }
-                TcpClient client = _listener.AcceptTcpClient();
-                ThreadPool.QueueUserWorkItem(_ => HandleClient(client));
+                try
+                {
+                    if (!_listener.Pending()) { Thread.Sleep(50); continue; }
+                    TcpClient client = _listener.AcceptTcpClient();
+                    ThreadPool.QueueUserWorkItem(_ => HandleClient(client));
+                }
+                catch (Exception ex) when (ex is SocketException || ex is ObjectDisposedException)
+                {
+                    if (ex is ObjectDisposedException || !_running)
+                    {
+                        break;
+                    }
+
+                    Debug.LogError("[VBBridge] Socket error while accepting clients: " + ex.Message);
+                    break;
+                }
             }
-            catch (Exception ex) when (ex is SocketException || ex is ObjectDisposedException)
-            {
-                if (ex is ObjectDisposedException) break;
-                if (_running) throw;
-            }
+        }
+        catch (SocketException ex)
+        {
+            _running = false;
+            Debug.LogError("[VBBridge] Failed to bind localhost:" + _port + " - " + ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _running = false;
+            Debug.LogError("[VBBridge] Bridge server failed to start: " + ex.Message);
         }
     }
 

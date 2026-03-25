@@ -77,6 +77,8 @@
 
 **Level Building:** `blender_environment generate_terrain` → `blender_environment paint_terrain` → `blender_worldbuilding generate_dungeon` → `blender_environment export_heightmap` → `unity_scene setup_terrain` → `unity_scene scatter_objects` → `unity_scene setup_lighting` → `unity_scene bake_navmesh`
 
+**AAA World Pipeline:** `blender_environment generate_terrain` → `blender_environment terrain_spline_deform` → `blender_environment terrain_stamp` → `blender_worldbuilding generate_town` / `generate_castle` / `generate_location` → `blender_worldbuilding generate_linked_interior` → `blender_worldbuilding generate_boss_arena` → `blender_worldbuilding generate_multi_floor_dungeon` → `blender_environment export_heightmap` → `unity_scene setup_terrain` → `unity_scene scatter_objects` → `unity_scene setup_lighting` → `unity_scene bake_navmesh` → `mcp-unity` validation and screenshot critique loop
+
 **Combat System:** `unity_game create_damage_types` → `unity_game create_player_combat` → `unity_game create_ability_system` → `unity_game create_synergy_engine` → `unity_game create_corruption_gameplay` → `unity_content create_loot_table` → `unity_content create_skill_tree`
 
 **Note:** 2 stubs exist: `blender_texture inpaint` and `blender_animation generate_ai_motion`. ElevenLabs/Gemini/Tripo/fal.ai gracefully degrade to stubs when API keys are missing.

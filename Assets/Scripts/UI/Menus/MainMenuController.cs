@@ -117,6 +117,15 @@ namespace VeilBreakers.UI.Menus
         private bool _eventsBound;
         private int _continueSlot = SaveManager.kNoneSlot;
 
+        // AAA gradient textures (generated at runtime, destroyed on cleanup)
+        private Texture2D _btnBaseGradient;
+        private Texture2D _btnHoverGradient;
+        private Texture2D _logoBacking;
+        private Texture2D _bottomFadeGradient;
+        private Texture2D _heatHazeGradient;
+        private Texture2D _vignetteGradient;
+        private Texture2D _scanlineTexture;
+
         // Hover callback storage for proper unregistration (prevents memory leaks)
         private Dictionary<Button, EventCallback<MouseEnterEvent>> _hoverEnterCallbacks;
         private Dictionary<Button, EventCallback<MouseLeaveEvent>> _hoverLeaveCallbacks;
@@ -152,7 +161,7 @@ namespace VeilBreakers.UI.Menus
 
             if (_initialized)
             {
-                BindEvents();
+                // BindEvents already called inside InitializeUI; only refresh save state
                 StartCoroutine(RefreshContinueButton());
             }
 
@@ -176,6 +185,15 @@ namespace VeilBreakers.UI.Menus
 
             // Stop all coroutines (entrance animations, RefreshContinueButton, etc.)
             StopAllCoroutines();
+
+            // Cleanup generated gradient textures
+            if (_btnBaseGradient != null) { Destroy(_btnBaseGradient); _btnBaseGradient = null; }
+            if (_btnHoverGradient != null) { Destroy(_btnHoverGradient); _btnHoverGradient = null; }
+            if (_logoBacking != null) { Destroy(_logoBacking); _logoBacking = null; }
+            if (_bottomFadeGradient != null) { Destroy(_bottomFadeGradient); _bottomFadeGradient = null; }
+            if (_heatHazeGradient != null) { Destroy(_heatHazeGradient); _heatHazeGradient = null; }
+            if (_vignetteGradient != null) { Destroy(_vignetteGradient); _vignetteGradient = null; }
+            if (_scanlineTexture != null) { Destroy(_scanlineTexture); _scanlineTexture = null; }
         }
 
         private void OnActionTriggered(InputManager.GameAction action)
@@ -237,6 +255,12 @@ namespace VeilBreakers.UI.Menus
 
             // Initialize audio system
             InitAudio();
+
+            // AAA atmospheric overlays (bottom fade, heat haze, vignette, scanlines)
+            ApplyAtmosphericOverlays();
+
+            // Demon idle animation + hover glow (matches V5 mockup)
+            ApplyDemonEffects();
 
             // Start animations
             PlayEntranceAnimation();
@@ -719,11 +743,17 @@ namespace VeilBreakers.UI.Menus
             // Bind button events
             BindEvents();
 
-            // Cache TitleScreenVFX for logo hover response
-            _titleVfx = FindAnyObjectByType<TitleScreenVFX>();
+            // Cache TitleScreenVFX for logo hover response (use GetComponent first, fallback to scene search)
+            _titleVfx = GetComponent<TitleScreenVFX>() ?? GetComponentInChildren<TitleScreenVFX>() ?? FindAnyObjectByType<TitleScreenVFX>();
 
             // Initialize audio system
             InitAudio();
+
+            // AAA atmospheric overlays (bottom fade, heat haze, vignette, scanlines)
+            ApplyAtmosphericOverlays();
+
+            // Demon idle animation + hover glow (matches V5 mockup)
+            ApplyDemonEffects();
 
             // Play entrance animations and apply button VFX
             PlayEntranceAnimation();
@@ -824,6 +854,7 @@ namespace VeilBreakers.UI.Menus
                 for (int i = 0; i < buttons.Count; i++)
                 {
                     var button = buttons[i];
+                    button.usageHints = UsageHints.DynamicTransform;
                     button.style.opacity = 0;
                     button.style.translate = new Translate(-50, 0);
                     button.style.scale = new Scale(Vector2.one * 0.8f);
@@ -842,20 +873,22 @@ namespace VeilBreakers.UI.Menus
                     // Click burst for impact feedback on all buttons
                     ButtonVFXHelper.AddClickBurst(button);
 
+                    // Decorative top-line highlight (ornate AAA look)
+                    ButtonVFXHelper.AddTopHighlight(button);
+
                     // Gamepad/keyboard focus choreography
                     ButtonVFXHelper.AddFocusEffect(button);
+
+                    // AAA gradient background (C# generated — USS can't do gradients)
+                    ApplyButtonGradients(button);
                 }
             }
 
-            // Idle breathing on containers for organic feel
-            if (_titleSection != null)
-                ButtonVFXHelper.AddBreathing(_titleSection, 0.006f, 4000f);
-            if (_buttonContainer != null)
-                ButtonVFXHelper.AddBreathing(_buttonContainer, 0.004f, 3500f);
+            // Container breathing removed — scale transforms blur SDF text
+            // Individual button glow breathing handles the idle animation instead
 
-            var logoContainer = _root?.Q<VisualElement>("logo-container");
-            if (logoContainer != null)
-                ButtonVFXHelper.AddBreathing(logoContainer, 0.008f, 3000f);
+            // Logo breathing removed — TitleScreenVFX owns logo-container scale
+            // (AddBreathing fought with TriggerLogoPulse causing click glitch)
         }
 
         private IEnumerator FadeInElement(VisualElement element, float duration, float delay)
@@ -982,6 +1015,311 @@ namespace VeilBreakers.UI.Menus
             return 1 + c3 * Mathf.Pow(t - 1, 3) + c1 * Mathf.Pow(t - 1, 2);
         }
 
+        /// <summary>
+        /// Replaces the flat black logo-backing rectangle with a radial gradient
+        /// that fades from semi-transparent black center to fully transparent edges.
+        /// </summary>
+        /// <summary>
+        /// Loads the SDF FontAsset from Resources and applies it to all text in the UI tree.
+        /// SDF rendering is resolution-independent — no bitmap blur.
+        /// </summary>
+        private static void ApplySDFFont(VisualElement root)
+        {
+            if (root == null) return;
+            var sdfFont = Resources.Load<UnityEngine.TextCore.Text.FontAsset>("CinzelSDF");
+            if (sdfFont == null)
+            {
+                Debug.LogWarning("[MainMenu] CinzelSDF.asset not found in Resources — using TTF fallback");
+                return;
+            }
+            root.style.unityFontDefinition = new StyleFontDefinition(sdfFont);
+        }
+
+        private void ApplyLogoBacking()
+        {
+            var backing = _root?.Q<VisualElement>("logo-backing");
+            if (backing == null) return;
+
+            // Very subtle — just enough to slightly darken behind the logo text
+            _logoBacking = UIGradientHelper.CreateRadialGradient(
+                new Color(0f, 0f, 0f, 0.18f),   // Center: very light darkening
+                new Color(0f, 0f, 0f, 0f),       // Edges: fully transparent
+                128
+            );
+            UIGradientHelper.ApplyGradient(backing, _logoBacking);
+        }
+
+        /// <summary>
+        /// Creates atmospheric overlay layers that match the V5 HTML mockup:
+        /// bottom fade gradient, heat haze, vignette, and scanlines.
+        /// These are inserted as VisualElements on the menu-root.
+        /// </summary>
+        private void ApplyAtmosphericOverlays()
+        {
+            var menuRoot = _root?.Q<VisualElement>("menu-root");
+            if (menuRoot == null) return;
+
+            // Find button container to insert overlays BEFORE it (so buttons stay on top)
+            var buttonContainer = menuRoot.Q<VisualElement>("button-container");
+            int insertIndex = buttonContainer != null ? menuRoot.IndexOf(buttonContainer) : menuRoot.childCount;
+
+            // --- BOTTOM FADE: Black at bottom, transparent at top (45% height) ---
+            _bottomFadeGradient = UIGradientHelper.CreateVerticalGradient(
+                new Color(0f, 0f, 0f, 0f),       // Top: transparent
+                new Color(0f, 0f, 0f, 0.85f)      // Bottom: near-black
+            );
+            var bottomFade = new VisualElement();
+            bottomFade.name = "bottom-fade-overlay";
+            bottomFade.pickingMode = PickingMode.Ignore;
+            bottomFade.style.position = Position.Absolute;
+            bottomFade.style.left = 0;
+            bottomFade.style.right = 0;
+            bottomFade.style.bottom = 0;
+            bottomFade.style.height = Length.Percent(45);
+            UIGradientHelper.ApplyGradient(bottomFade, _bottomFadeGradient);
+            menuRoot.Insert(insertIndex, bottomFade);
+
+            // --- HEAT HAZE: Orange radial glow at demon feet level, pulsing ---
+            _heatHazeGradient = UIGradientHelper.CreateRadialGradient(
+                new Color(1f, 0.31f, 0.04f, 0.06f),  // Center: subtle orange
+                new Color(0f, 0f, 0f, 0f),             // Edges: transparent
+                128
+            );
+            var heatHaze = new VisualElement();
+            heatHaze.name = "heat-haze-overlay";
+            heatHaze.pickingMode = PickingMode.Ignore;
+            heatHaze.style.position = Position.Absolute;
+            heatHaze.style.left = Length.Percent(20);
+            heatHaze.style.right = Length.Percent(20);
+            heatHaze.style.bottom = Length.Percent(10);
+            heatHaze.style.height = Length.Percent(40);
+            heatHaze.style.opacity = 0.4f;
+            UIGradientHelper.ApplyGradient(heatHaze, _heatHazeGradient);
+            menuRoot.Insert(insertIndex, heatHaze);
+
+            // Animate heat haze opacity (pulsing 0.4 → 1.0 over 3s)
+            float heatPhase = 0f;
+            heatHaze.schedule.Execute(() =>
+            {
+                heatPhase += 0.05f * 2.1f; // ~3s full cycle
+                float pulse = Mathf.Sin(heatPhase) * 0.5f + 0.5f; // 0 → 1
+                heatHaze.style.opacity = Mathf.Lerp(0.4f, 1f, pulse);
+            }).Every(50);
+
+            // --- VIGNETTE: Dark edges for cinematic focus ---
+            _vignetteGradient = UIGradientHelper.CreateRadialGradient(
+                new Color(0f, 0f, 0f, 0f),       // Center: transparent
+                new Color(0f, 0f, 0f, 0.8f),      // Edges: dark
+                256
+            );
+            var vignette = new VisualElement();
+            vignette.name = "vignette-overlay";
+            vignette.pickingMode = PickingMode.Ignore;
+            vignette.style.position = Position.Absolute;
+            vignette.style.left = 0;
+            vignette.style.top = 0;
+            vignette.style.right = 0;
+            vignette.style.bottom = 0;
+            UIGradientHelper.ApplyGradient(vignette, _vignetteGradient);
+            menuRoot.Insert(insertIndex, vignette);
+
+            // --- SCANLINES: Very subtle horizontal stripes ---
+            int scanW = 4, scanH = 256;
+            _scanlineTexture = new Texture2D(scanW, scanH, TextureFormat.RGBA32, false);
+            _scanlineTexture.wrapMode = TextureWrapMode.Repeat;
+            _scanlineTexture.filterMode = FilterMode.Point;
+            var scanPixels = new Color[scanW * scanH];
+            for (int y = 0; y < scanH; y++)
+            {
+                // Every other 3px band gets a very faint dark line
+                bool isDark = (y % 6) >= 3;
+                Color c = isDark ? new Color(0f, 0f, 0f, 0.03f) : new Color(0f, 0f, 0f, 0f);
+                for (int x = 0; x < scanW; x++)
+                    scanPixels[y * scanW + x] = c;
+            }
+            _scanlineTexture.SetPixels(scanPixels);
+            _scanlineTexture.Apply(false, false);
+
+            var scanlines = new VisualElement();
+            scanlines.name = "scanline-overlay";
+            scanlines.pickingMode = PickingMode.Ignore;
+            scanlines.style.position = Position.Absolute;
+            scanlines.style.left = 0;
+            scanlines.style.top = 0;
+            scanlines.style.right = 0;
+            scanlines.style.bottom = 0;
+            scanlines.style.backgroundImage = new StyleBackground(_scanlineTexture);
+            scanlines.style.backgroundSize = new BackgroundSize(new Length(4, LengthUnit.Pixel), new Length(256, LengthUnit.Pixel));
+            menuRoot.Insert(insertIndex, scanlines);
+        }
+
+        /// <summary>
+        /// Adds demon idle breathing animation (subtle Y bob) and hover brightness effect.
+        /// Matches the V5 mockup's @keyframes demon-idle and :hover brightness.
+        /// </summary>
+        private void ApplyDemonEffects()
+        {
+            var demon = _root?.Q<VisualElement>("monster-image");
+            if (demon == null) return;
+
+            // Idle breathing: subtle Y translation oscillation (6s cycle, -5px amplitude)
+            float idlePhase = 0f;
+            demon.usageHints = UsageHints.DynamicTransform;
+            demon.schedule.Execute(() =>
+            {
+                idlePhase += 0.05f * 1.047f; // 6s full cycle (2π / 6 ≈ 1.047 rad/s at 50ms interval)
+                float yOffset = Mathf.Sin(idlePhase) * -5f;
+                demon.style.translate = new Translate(0, yOffset);
+            }).Every(50);
+
+            // Hover glow: slight orange drop-shadow effect using an overlay element
+            var hoverGlow = new VisualElement();
+            hoverGlow.name = "demon-hover-glow";
+            hoverGlow.pickingMode = PickingMode.Ignore;
+            hoverGlow.style.position = Position.Absolute;
+            hoverGlow.style.left = 0;
+            hoverGlow.style.top = 0;
+            hoverGlow.style.right = 0;
+            hoverGlow.style.bottom = 0;
+            hoverGlow.style.backgroundColor = new Color(1f, 0.4f, 0.12f, 0f); // Transparent by default
+            hoverGlow.style.opacity = 0;
+            hoverGlow.style.transitionProperty = new List<StylePropertyName> { new("opacity") };
+            hoverGlow.style.transitionDuration = new List<TimeValue> { new(0.5f, TimeUnit.Second) };
+            demon.Add(hoverGlow);
+
+            demon.RegisterCallback<MouseEnterEvent>(evt =>
+            {
+                hoverGlow.style.opacity = 0.08f; // Subtle brightness boost
+            });
+            demon.RegisterCallback<MouseLeaveEvent>(evt =>
+            {
+                hoverGlow.style.opacity = 0f;
+            });
+        }
+
+        /// <summary>
+        /// Full AAA visual treatment for a button: gradient textures, glow halo,
+        /// shine sweep animation, and breathing pulse. This is the C# equivalent
+        /// of the HTML mockup's box-shadow, linear-gradient, and ::after shine.
+        /// </summary>
+        private void ApplyButtonGradients(Button button)
+        {
+            if (button == null) return;
+
+            // Generate shared gradient textures (once, reused across all buttons)
+            if (_btnBaseGradient == null)
+            {
+                _btnBaseGradient = UIGradientHelper.CreateVerticalGradient3(
+                    new Color(0.20f, 0.15f, 0.11f, 0.97f),
+                    new Color(0.12f, 0.09f, 0.06f, 0.98f),
+                    new Color(0.07f, 0.05f, 0.03f, 0.99f)
+                );
+            }
+            if (_btnHoverGradient == null)
+            {
+                _btnHoverGradient = UIGradientHelper.CreateVerticalGradient3(
+                    new Color(0.90f, 0.47f, 0.14f, 1f),
+                    new Color(0.71f, 0.27f, 0.06f, 1f),
+                    new Color(0.57f, 0.22f, 0.04f, 1f)
+                );
+            }
+
+            // Apply base gradient
+            UIGradientHelper.ApplyGradient(button, _btnBaseGradient);
+
+            // Clip children to button bounds (prevents sweep/glow bleed)
+            button.style.overflow = Overflow.Hidden;
+
+            // --- INNER GLOW: full-size overlay that brightens button from inside ---
+            var glowHalo = new VisualElement();
+            glowHalo.name = "btn-glow-halo";
+            glowHalo.pickingMode = PickingMode.Ignore;
+            glowHalo.style.position = Position.Absolute;
+            glowHalo.style.left = 0;
+            glowHalo.style.top = 0;
+            glowHalo.style.right = 0;
+            glowHalo.style.bottom = 0;
+            glowHalo.style.backgroundColor = new Color(1f, 0.6f, 0.2f, 0.15f);
+            glowHalo.style.opacity = 0;
+            glowHalo.style.transitionProperty = new List<StylePropertyName> { new("opacity") };
+            glowHalo.style.transitionDuration = new List<TimeValue> { new(0.2f, TimeUnit.Second) };
+            button.Insert(0, glowHalo);
+
+            // --- INNER TOP HIGHLIGHT: bright line simulating light from above ---
+            var innerHighlight = new VisualElement();
+            innerHighlight.name = "btn-inner-highlight";
+            innerHighlight.pickingMode = PickingMode.Ignore;
+            innerHighlight.style.position = Position.Absolute;
+            innerHighlight.style.top = 0;
+            innerHighlight.style.left = 0;
+            innerHighlight.style.right = 0;
+            innerHighlight.style.height = 1;
+            innerHighlight.style.backgroundColor = new Color(1f, 1f, 1f, 0.12f);
+            button.Add(innerHighlight);
+
+            // --- INNER BOTTOM SHADOW: dark line for depth ---
+            var innerShadow = new VisualElement();
+            innerShadow.name = "btn-inner-shadow";
+            innerShadow.pickingMode = PickingMode.Ignore;
+            innerShadow.style.position = Position.Absolute;
+            innerShadow.style.bottom = 0;
+            innerShadow.style.left = 0;
+            innerShadow.style.right = 0;
+            innerShadow.style.height = 2;
+            innerShadow.style.backgroundColor = new Color(0f, 0f, 0f, 0.3f);
+            button.Add(innerShadow);
+
+            // --- SHINE SWEEP: animated highlight that slides across on hover ---
+            var shineSweep = new VisualElement();
+            shineSweep.name = "btn-shine-sweep";
+            shineSweep.pickingMode = PickingMode.Ignore;
+            shineSweep.style.position = Position.Absolute;
+            shineSweep.style.top = 0;
+            shineSweep.style.bottom = 0;
+            shineSweep.style.width = Length.Percent(30);
+            shineSweep.style.left = Length.Percent(-35); // Start offscreen left
+            shineSweep.style.backgroundColor = new Color(1f, 1f, 1f, 0.06f);
+            shineSweep.style.transitionProperty = new List<StylePropertyName> { new("left") };
+            shineSweep.style.transitionDuration = new List<TimeValue> { new(0.5f, TimeUnit.Second) };
+            shineSweep.style.transitionTimingFunction = new List<EasingFunction> { new(EasingMode.EaseInOut) };
+            button.Add(shineSweep);
+
+            // --- HOVER CALLBACKS: gradient swap + glow + sweep ---
+            button.RegisterCallback<MouseEnterEvent>(evt =>
+            {
+                UIGradientHelper.ApplyGradient(button, _btnHoverGradient);
+                glowHalo.style.opacity = 1;
+                // Trigger shine sweep across button
+                shineSweep.style.left = Length.Percent(-35);
+                shineSweep.schedule.Execute(() =>
+                {
+                    shineSweep.style.left = Length.Percent(105);
+                }).ExecuteLater(10);
+            });
+
+            button.RegisterCallback<MouseLeaveEvent>(evt =>
+            {
+                UIGradientHelper.ApplyGradient(button, _btnBaseGradient);
+                glowHalo.style.opacity = 0;
+                // Reset sweep position instantly (no transition)
+                shineSweep.style.transitionDuration = new List<TimeValue> { new(0f, TimeUnit.Second) };
+                shineSweep.style.left = Length.Percent(-35);
+                shineSweep.schedule.Execute(() =>
+                {
+                    shineSweep.style.transitionDuration = new List<TimeValue> { new(0.5f, TimeUnit.Second) };
+                }).ExecuteLater(10);
+            });
+
+            // --- BREATHING GLOW: subtle idle pulse on all buttons ---
+            float breathStart = UnityEngine.Random.Range(0f, 6.28f); // Random phase offset
+            button.schedule.Execute(() =>
+            {
+                float t = Time.time + breathStart;
+                float pulse = (Mathf.Sin(t * 1.2f) * 0.5f + 0.5f) * 0.08f; // 0 to 0.08 opacity
+                glowHalo.style.opacity = Mathf.Max(glowHalo.resolvedStyle.opacity > 0.5f ? glowHalo.resolvedStyle.opacity : 0f, pulse);
+            }).Every(50);
+        }
+
         private void AddButtonHoverEffects(Button button)
         {
             if (button == null) return;
@@ -1010,6 +1348,7 @@ namespace VeilBreakers.UI.Menus
             // We delay the initial color setting since the class isn't present yet at startup
 
             // Create and store hover enter callback (for proper unregistration)
+            // NOTE: Background color/gradient is handled by ApplyButtonGradients — do NOT set backgroundColor here
             EventCallback<MouseEnterEvent> enterCallback = evt =>
             {
                 // Skip entirely for art skin buttons - MoltenButtonVFX handles hover
@@ -1018,10 +1357,6 @@ namespace VeilBreakers.UI.Menus
                     return;
                 }
 
-                Color hoverColor = isPrimary ? primaryHoverColor : secondaryHoverColor;
-                Color hoverBorder = isPrimary ? primaryBorderHover : secondaryBorderHover;
-                SetButtonColors(button, hoverColor, hoverBorder);
-                button.style.scale = new Scale(new Vector2(1.05f, 1.05f));
                 button.AddToClassList("vb-button-hover-glow");
 
                 // Hover light propagation to adjacent buttons
@@ -1046,10 +1381,6 @@ namespace VeilBreakers.UI.Menus
                     return;
                 }
 
-                Color restoreColor = isPrimary ? primaryBaseColor : secondaryBaseColor;
-                Color restoreBorder = isPrimary ? primaryBorderBase : secondaryBorderBase;
-                SetButtonColors(button, restoreColor, restoreBorder);
-                button.style.scale = new Scale(Vector2.one);
                 button.RemoveFromClassList("vb-button-hover-glow");
 
                 // Clear neighbor hover light

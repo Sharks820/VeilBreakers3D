@@ -216,6 +216,7 @@ namespace VeilBreakers.UI.Core
         private readonly List<TransientSmokeParticle> _transientSmokes = new();
         private readonly List<GlowPulse> _glowPulses = new();
         private VisualElement _backgroundElement;
+        private VisualElement _videoOverlayElement; // Sits on top of static bg — keeps bg visible at loop points
         private bool _isDestroyed;
         private bool _initializeQueued;
         private bool _videoSetupQueued;
@@ -1057,7 +1058,7 @@ namespace VeilBreakers.UI.Core
             player.targetTexture = targetTexture;
             player.isLooping = false;
             player.skipOnDrop = false;
-            player.playbackSpeed = 1.15f; // Slightly faster for more dynamic feel
+            player.playbackSpeed = 1.0f; // Normal speed — 1.15x caused visible acceleration
             player.audioOutputMode = VideoAudioOutputMode.None;
             player.aspectRatio = VideoAspectRatio.Stretch; // Stretch to fill RenderTexture exactly - no zoom
 
@@ -1083,11 +1084,45 @@ namespace VeilBreakers.UI.Core
 
             Debug.Log($"[TitleScreenVFX] Forward video prepared - Duration: {_videoLength:F2}s");
 
-            // Apply forward RenderTexture to background
-            _backgroundElement.style.backgroundImage = new StyleBackground(Background.FromRenderTexture(_videoRenderTextureForward));
-            _backgroundElement.style.backgroundSize = new BackgroundSize(Length.Percent(100), Length.Percent(100));
-            _backgroundElement.style.unityBackgroundImageTintColor = Color.white;
-            _backgroundElement.style.backgroundColor = new Color(0f, 0f, 0f, 0f);
+            // COMPOSITING APPROACH: Keep the static bg.png on _backgroundElement (always crisp).
+            // Create a video overlay element on top that shows the video.
+            // This way loop-point glitches are masked by the static bg underneath.
+            // Ensure static portal bg is loaded on the background element first.
+            if (_overrideBackgroundWithPortal)
+            {
+                if (_backgroundPortalTexture == null)
+                    _backgroundPortalTexture = Resources.Load<Texture2D>("Art/UI/MainMenu/mainmenu_background_portal");
+                if (_backgroundPortalTexture != null)
+                {
+                    _backgroundElement.style.backgroundImage = new StyleBackground(_backgroundPortalTexture);
+                    _backgroundElement.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
+                    _backgroundElement.style.unityBackgroundImageTintColor = Color.white;
+                    _backgroundElement.style.backgroundColor = new Color(0f, 0f, 0f, 0f);
+                }
+            }
+
+            if (_videoOverlayElement == null)
+            {
+                _videoOverlayElement = new VisualElement();
+                _videoOverlayElement.name = "video-overlay";
+                _videoOverlayElement.pickingMode = PickingMode.Ignore;
+                _videoOverlayElement.style.position = Position.Absolute;
+                _videoOverlayElement.style.left = 0;
+                _videoOverlayElement.style.top = 0;
+                _videoOverlayElement.style.right = 0;
+                _videoOverlayElement.style.bottom = 0;
+
+                // Insert video overlay right after the background element
+                var parent = _backgroundElement.parent;
+                if (parent != null)
+                {
+                    int bgIndex = parent.IndexOf(_backgroundElement);
+                    parent.Insert(bgIndex + 1, _videoOverlayElement);
+                }
+            }
+
+            _videoOverlayElement.style.backgroundImage = new StyleBackground(Background.FromRenderTexture(_videoRenderTextureForward));
+            _videoOverlayElement.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
 
             // Start playing forward video
             vp.Play();
@@ -1138,7 +1173,8 @@ namespace VeilBreakers.UI.Core
             }
 
             // INSTANT swap - reversed is already paused at time=0
-            _backgroundElement.style.backgroundImage = new StyleBackground(Background.FromRenderTexture(_videoRenderTextureReversed));
+            var targetEl = _videoOverlayElement ?? _backgroundElement;
+            targetEl.style.backgroundImage = new StyleBackground(Background.FromRenderTexture(_videoRenderTextureReversed));
             _playingForward = false;
 
             // Play reversed (already at 0), pause forward and reset for next cycle
@@ -1156,7 +1192,8 @@ namespace VeilBreakers.UI.Core
             }
 
             // INSTANT swap - forward is already paused at time=0
-            _backgroundElement.style.backgroundImage = new StyleBackground(Background.FromRenderTexture(_videoRenderTextureForward));
+            var targetEl = _videoOverlayElement ?? _backgroundElement;
+            targetEl.style.backgroundImage = new StyleBackground(Background.FromRenderTexture(_videoRenderTextureForward));
             _playingForward = true;
 
             // Play forward (already at 0), pause reversed and reset for next cycle

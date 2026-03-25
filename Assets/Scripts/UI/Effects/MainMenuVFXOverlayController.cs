@@ -23,7 +23,9 @@ namespace VeilBreakers.UI.Effects
 
         private void Awake()
         {
-            EnsureOverlayCanvas();
+            // VFX overlay disabled — the orange bar columns detract from AAA quality.
+            // Don't create the canvas; just disable this component.
+            enabled = false;
         }
 
         private void OnEnable()
