@@ -136,6 +136,10 @@ namespace VeilBreakers.UI.CharacterSelect
             CharSelectEvents.OnNavigationRequested += NavigateToHero;
             CharSelectEvents.OnEmbarkTriggered += TriggerEmbark;
             StartCoroutine(InitializeWhenReady());
+
+            // Ensure AAA visual enhancer is attached (gradients, glows, depth)
+            if (GetComponent<CharSelectVisualEnhancer>() == null)
+                gameObject.AddComponent<CharSelectVisualEnhancer>();
         }
 
         /// <summary>

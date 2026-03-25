@@ -121,6 +121,10 @@ namespace VeilBreakers.UI.Menus
         private Texture2D _btnBaseGradient;
         private Texture2D _btnHoverGradient;
         private Texture2D _logoBacking;
+        private Texture2D _bottomFadeGradient;
+        private Texture2D _heatHazeGradient;
+        private Texture2D _vignetteGradient;
+        private Texture2D _scanlineTexture;
 
         // Hover callback storage for proper unregistration (prevents memory leaks)
         private Dictionary<Button, EventCallback<MouseEnterEvent>> _hoverEnterCallbacks;
@@ -186,6 +190,10 @@ namespace VeilBreakers.UI.Menus
             if (_btnBaseGradient != null) { Destroy(_btnBaseGradient); _btnBaseGradient = null; }
             if (_btnHoverGradient != null) { Destroy(_btnHoverGradient); _btnHoverGradient = null; }
             if (_logoBacking != null) { Destroy(_logoBacking); _logoBacking = null; }
+            if (_bottomFadeGradient != null) { Destroy(_bottomFadeGradient); _bottomFadeGradient = null; }
+            if (_heatHazeGradient != null) { Destroy(_heatHazeGradient); _heatHazeGradient = null; }
+            if (_vignetteGradient != null) { Destroy(_vignetteGradient); _vignetteGradient = null; }
+            if (_scanlineTexture != null) { Destroy(_scanlineTexture); _scanlineTexture = null; }
         }
 
         private void OnActionTriggered(InputManager.GameAction action)
@@ -247,6 +255,9 @@ namespace VeilBreakers.UI.Menus
 
             // Initialize audio system
             InitAudio();
+
+            // AAA atmospheric overlays (bottom fade, heat haze, vignette, scanlines)
+            ApplyAtmosphericOverlays();
 
             // Start animations
             PlayEntranceAnimation();
@@ -735,6 +746,9 @@ namespace VeilBreakers.UI.Menus
             // Initialize audio system
             InitAudio();
 
+            // AAA atmospheric overlays (bottom fade, heat haze, vignette, scanlines)
+            ApplyAtmosphericOverlays();
+
             // Play entrance animations and apply button VFX
             PlayEntranceAnimation();
 
@@ -834,6 +848,7 @@ namespace VeilBreakers.UI.Menus
                 for (int i = 0; i < buttons.Count; i++)
                 {
                     var button = buttons[i];
+                    button.usageHints = UsageHints.DynamicTransform;
                     button.style.opacity = 0;
                     button.style.translate = new Translate(-50, 0);
                     button.style.scale = new Scale(Vector2.one * 0.8f);
@@ -863,11 +878,8 @@ namespace VeilBreakers.UI.Menus
                 }
             }
 
-            // Idle breathing on containers for organic feel
-            if (_titleSection != null)
-                ButtonVFXHelper.AddBreathing(_titleSection, 0.006f, 4000f);
-            if (_buttonContainer != null)
-                ButtonVFXHelper.AddBreathing(_buttonContainer, 0.004f, 3500f);
+            // Container breathing removed — scale transforms blur SDF text
+            // Individual button glow breathing handles the idle animation instead
 
             // Logo breathing removed — TitleScreenVFX owns logo-container scale
             // (AddBreathing fought with TriggerLogoPulse causing click glitch)
@@ -1001,6 +1013,22 @@ namespace VeilBreakers.UI.Menus
         /// Replaces the flat black logo-backing rectangle with a radial gradient
         /// that fades from semi-transparent black center to fully transparent edges.
         /// </summary>
+        /// <summary>
+        /// Loads the SDF FontAsset from Resources and applies it to all text in the UI tree.
+        /// SDF rendering is resolution-independent — no bitmap blur.
+        /// </summary>
+        private static void ApplySDFFont(VisualElement root)
+        {
+            if (root == null) return;
+            var sdfFont = Resources.Load<UnityEngine.TextCore.Text.FontAsset>("CinzelSDF");
+            if (sdfFont == null)
+            {
+                Debug.LogWarning("[MainMenu] CinzelSDF.asset not found in Resources — using TTF fallback");
+                return;
+            }
+            root.style.unityFontDefinition = new StyleFontDefinition(sdfFont);
+        }
+
         private void ApplyLogoBacking()
         {
             var backing = _root?.Q<VisualElement>("logo-backing");
@@ -1013,6 +1041,110 @@ namespace VeilBreakers.UI.Menus
                 128
             );
             UIGradientHelper.ApplyGradient(backing, _logoBacking);
+        }
+
+        /// <summary>
+        /// Creates atmospheric overlay layers that match the V5 HTML mockup:
+        /// bottom fade gradient, heat haze, vignette, and scanlines.
+        /// These are inserted as VisualElements on the menu-root.
+        /// </summary>
+        private void ApplyAtmosphericOverlays()
+        {
+            var menuRoot = _root?.Q<VisualElement>("menu-root");
+            if (menuRoot == null) return;
+
+            // Find button container to insert overlays BEFORE it (so buttons stay on top)
+            var buttonContainer = menuRoot.Q<VisualElement>("button-container");
+            int insertIndex = buttonContainer != null ? menuRoot.IndexOf(buttonContainer) : menuRoot.childCount;
+
+            // --- BOTTOM FADE: Black at bottom, transparent at top (45% height) ---
+            _bottomFadeGradient = UIGradientHelper.CreateVerticalGradient(
+                new Color(0f, 0f, 0f, 0f),       // Top: transparent
+                new Color(0f, 0f, 0f, 0.85f)      // Bottom: near-black
+            );
+            var bottomFade = new VisualElement();
+            bottomFade.name = "bottom-fade-overlay";
+            bottomFade.pickingMode = PickingMode.Ignore;
+            bottomFade.style.position = Position.Absolute;
+            bottomFade.style.left = 0;
+            bottomFade.style.right = 0;
+            bottomFade.style.bottom = 0;
+            bottomFade.style.height = Length.Percent(45);
+            UIGradientHelper.ApplyGradient(bottomFade, _bottomFadeGradient);
+            menuRoot.Insert(insertIndex, bottomFade);
+
+            // --- HEAT HAZE: Orange radial glow at demon feet level, pulsing ---
+            _heatHazeGradient = UIGradientHelper.CreateRadialGradient(
+                new Color(1f, 0.31f, 0.04f, 0.06f),  // Center: subtle orange
+                new Color(0f, 0f, 0f, 0f),             // Edges: transparent
+                128
+            );
+            var heatHaze = new VisualElement();
+            heatHaze.name = "heat-haze-overlay";
+            heatHaze.pickingMode = PickingMode.Ignore;
+            heatHaze.style.position = Position.Absolute;
+            heatHaze.style.left = Length.Percent(20);
+            heatHaze.style.right = Length.Percent(20);
+            heatHaze.style.bottom = Length.Percent(10);
+            heatHaze.style.height = Length.Percent(40);
+            heatHaze.style.opacity = 0.4f;
+            UIGradientHelper.ApplyGradient(heatHaze, _heatHazeGradient);
+            menuRoot.Insert(insertIndex, heatHaze);
+
+            // Animate heat haze opacity (pulsing 0.4 → 1.0 over 3s)
+            float heatPhase = 0f;
+            heatHaze.schedule.Execute(() =>
+            {
+                heatPhase += 0.05f * 2.1f; // ~3s full cycle
+                float pulse = Mathf.Sin(heatPhase) * 0.5f + 0.5f; // 0 → 1
+                heatHaze.style.opacity = Mathf.Lerp(0.4f, 1f, pulse);
+            }).Every(50);
+
+            // --- VIGNETTE: Dark edges for cinematic focus ---
+            _vignetteGradient = UIGradientHelper.CreateRadialGradient(
+                new Color(0f, 0f, 0f, 0f),       // Center: transparent
+                new Color(0f, 0f, 0f, 0.8f),      // Edges: dark
+                256
+            );
+            var vignette = new VisualElement();
+            vignette.name = "vignette-overlay";
+            vignette.pickingMode = PickingMode.Ignore;
+            vignette.style.position = Position.Absolute;
+            vignette.style.left = 0;
+            vignette.style.top = 0;
+            vignette.style.right = 0;
+            vignette.style.bottom = 0;
+            UIGradientHelper.ApplyGradient(vignette, _vignetteGradient);
+            menuRoot.Insert(insertIndex, vignette);
+
+            // --- SCANLINES: Very subtle horizontal stripes ---
+            int scanW = 4, scanH = 256;
+            _scanlineTexture = new Texture2D(scanW, scanH, TextureFormat.RGBA32, false);
+            _scanlineTexture.wrapMode = TextureWrapMode.Repeat;
+            _scanlineTexture.filterMode = FilterMode.Point;
+            var scanPixels = new Color[scanW * scanH];
+            for (int y = 0; y < scanH; y++)
+            {
+                // Every other 3px band gets a very faint dark line
+                bool isDark = (y % 6) >= 3;
+                Color c = isDark ? new Color(0f, 0f, 0f, 0.03f) : new Color(0f, 0f, 0f, 0f);
+                for (int x = 0; x < scanW; x++)
+                    scanPixels[y * scanW + x] = c;
+            }
+            _scanlineTexture.SetPixels(scanPixels);
+            _scanlineTexture.Apply(false, false);
+
+            var scanlines = new VisualElement();
+            scanlines.name = "scanline-overlay";
+            scanlines.pickingMode = PickingMode.Ignore;
+            scanlines.style.position = Position.Absolute;
+            scanlines.style.left = 0;
+            scanlines.style.top = 0;
+            scanlines.style.right = 0;
+            scanlines.style.bottom = 0;
+            scanlines.style.backgroundImage = new StyleBackground(_scanlineTexture);
+            scanlines.style.backgroundSize = new BackgroundSize(new Length(4, LengthUnit.Pixel), new Length(256, LengthUnit.Pixel));
+            menuRoot.Insert(insertIndex, scanlines);
         }
 
         /// <summary>
@@ -1166,6 +1298,7 @@ namespace VeilBreakers.UI.Menus
             // We delay the initial color setting since the class isn't present yet at startup
 
             // Create and store hover enter callback (for proper unregistration)
+            // NOTE: Background color/gradient is handled by ApplyButtonGradients — do NOT set backgroundColor here
             EventCallback<MouseEnterEvent> enterCallback = evt =>
             {
                 // Skip entirely for art skin buttons - MoltenButtonVFX handles hover
@@ -1174,10 +1307,6 @@ namespace VeilBreakers.UI.Menus
                     return;
                 }
 
-                Color hoverColor = isPrimary ? primaryHoverColor : secondaryHoverColor;
-                Color hoverBorder = isPrimary ? primaryBorderHover : secondaryBorderHover;
-                SetButtonColors(button, hoverColor, hoverBorder);
-                button.style.scale = new Scale(new Vector2(1.05f, 1.05f));
                 button.AddToClassList("vb-button-hover-glow");
 
                 // Hover light propagation to adjacent buttons
@@ -1202,10 +1331,6 @@ namespace VeilBreakers.UI.Menus
                     return;
                 }
 
-                Color restoreColor = isPrimary ? primaryBaseColor : secondaryBaseColor;
-                Color restoreBorder = isPrimary ? primaryBorderBase : secondaryBorderBase;
-                SetButtonColors(button, restoreColor, restoreBorder);
-                button.style.scale = new Scale(Vector2.one);
                 button.RemoveFromClassList("vb-button-hover-glow");
 
                 // Clear neighbor hover light
