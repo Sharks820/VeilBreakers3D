@@ -220,7 +220,7 @@ TemplateContainer {
 /* Hero Name Plate - floating title at bottom of stage */
 .hero-name-plate {
     position: absolute;
-    bottom: 18%;
+    bottom: 22%;
     left: 0;
     right: 0;
     align-items: center;
@@ -264,36 +264,35 @@ TemplateContainer {
 
 .hero-aura-container {
     position: absolute;
-    width: 70%;
-    height: 50%;
-    bottom: 5%;
+    width: 50%;
+    height: 45%;
+    bottom: 20%;
     z-index: 1;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
 }
 
 .aura-base {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: var(--hero-dim, rgba(40, 20, 60, 0.04));
+    background-color: var(--hero-glow, rgba(200, 160, 60, 0.08));
     border-radius: 50%;
-    opacity: 0.4;
+    opacity: 0.15;
     transition-property: background-color;
     transition-duration: 1.2s;
 }
 
-/* Outer ring glow effect */
+/* Outer ring glow — very subtle, no visible border */
 .aura-ring {
     position: absolute;
-    width: 80%;
-    height: 80%;
-    bottom: 0;
+    width: 70%;
+    height: 70%;
     border-radius: 50%;
-    border-width: 1px;
-    border-color: var(--hero-glow, rgba(60, 40, 80, 0.1));
-    opacity: 0.3;
-    transition-property: border-color;
+    border-width: 0;
+    background-color: var(--hero-glow, rgba(200, 160, 60, 0.04));
+    opacity: 0.1;
+    transition-property: background-color;
     transition-duration: 1.2s;
 }
 
@@ -443,8 +442,8 @@ TemplateContainer {
 }
 
 .hero-quote {
-    font-size: 10px;
-    color: rgba(180, 170, 200, 0.3);
+    font-size: 11px;
+    color: rgba(180, 170, 200, 0.55);
     -unity-font-style: italic;
     margin-bottom: 8px;
     white-space: normal;
@@ -462,7 +461,7 @@ TemplateContainer {
 
 .info-row {
     flex-direction: row;
-    margin-right: 12px;
+    margin-right: 16px;
     align-items: baseline;
 }
 
@@ -471,11 +470,11 @@ TemplateContainer {
     color: var(--text-muted);
     letter-spacing: 3px;
     -unity-font-style: bold;
-    margin-right: 4px;
+    margin-right: 6px;
 }
 
 .info-value {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-secondary);
     letter-spacing: 1px;
 }
@@ -1040,7 +1039,7 @@ TemplateContainer {
     height: 100px;
     margin: 0 5px;
     background-color: rgba(22, 18, 34, 0.9);
-    border-width: 1px;
+    border-width: 1.5px;
     border-color: rgba(80, 65, 100, 0.2);
     border-radius: 6px;
     align-items: center;
@@ -1048,7 +1047,7 @@ TemplateContainer {
     transition-property: scale, opacity, border-color, background-color, translate;
     transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;
     transition-timing-function: ease, ease, ease, ease, ease;
-    opacity: 0.55;
+    opacity: 0.7;
     overflow: hidden;
 }
 

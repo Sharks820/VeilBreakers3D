@@ -132,7 +132,7 @@
                         <!-- Right: Info -->
                         <ui:VisualElement name="champion-info-panel" class="champion-info-panel">
                             <ui:Label name="champion-name" class="champion-name-v2" text="SKITTER-TEETH" />
-                            <ui:Label name="champion-brand-label" class="champion-brand-label" text="&#x2B25; IRON BRAND" />
+                            <ui:Label name="champion-brand-label" class="champion-brand-label" text="IRON BRAND" />
                             <ui:VisualElement class="champion-tags">
                                 <ui:Label name="champion-brand" class="tag tag-brand" text="IRON" />
                                 <ui:Label name="champion-role" class="tag" text="TANK" />

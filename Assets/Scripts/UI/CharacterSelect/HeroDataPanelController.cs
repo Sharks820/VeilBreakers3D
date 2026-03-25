@@ -133,11 +133,8 @@ namespace VeilBreakers.UI.CharacterSelect
             // Class info
             CharSelectUIUtils.SetLabel(_heroPath, data.GetPrimaryPath().ToString());
             CharSelectUIUtils.SetLabel(_heroRole, data.role?.ToUpper() ?? "");
+            // Show short brand name (e.g. "IRON / DREAD") — full explanation goes in Lore tab
             string synergy = data.GetPrimaryBrand().ToString().ToUpper();
-            if (!string.IsNullOrEmpty(data.synergy_explanation))
-            {
-                synergy = data.synergy_explanation;
-            }
             CharSelectUIUtils.SetLabel(_heroSynergy, synergy);
 
             // Starter stats — animated counting effect on hero switch
