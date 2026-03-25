@@ -1057,7 +1057,7 @@ namespace VeilBreakers.UI.Core
             player.targetTexture = targetTexture;
             player.isLooping = false;
             player.skipOnDrop = false;
-            player.playbackSpeed = 1.15f; // Slightly faster for more dynamic feel
+            player.playbackSpeed = 1.0f; // Normal speed — 1.15x caused visible acceleration
             player.audioOutputMode = VideoAudioOutputMode.None;
             player.aspectRatio = VideoAspectRatio.Stretch; // Stretch to fill RenderTexture exactly - no zoom
 
