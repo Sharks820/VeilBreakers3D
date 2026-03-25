@@ -517,6 +517,8 @@ TemplateContainer {
 .stat-chip-atk:hover .stat-chip-label { opacity: 1; }
 .stat-chip-def:hover { border-color: rgba(56, 120, 204, 0.6); }
 .stat-chip-def:hover .stat-chip-label { opacity: 1; }
+.stat-chip-mana:hover { border-color: rgba(130, 80, 200, 0.6); }
+.stat-chip-mana:hover .stat-chip-label { opacity: 1; }
 
 .stat-chip-label {
     font-size: 9px;
@@ -563,6 +565,7 @@ TemplateContainer {
 
 /* Per-stat colors — top accent, value text, label color, and bar fill */
 .stat-chip-hp {
+    border-top-width: 1px;
     border-top-color: rgba(204, 56, 56, 0.5);
 }
 .stat-chip-hp .stat-chip-label {
@@ -576,6 +579,7 @@ TemplateContainer {
 }
 
 .stat-chip-stamina {
+    border-top-width: 1px;
     border-top-color: rgba(56, 168, 85, 0.5);
 }
 .stat-chip-stamina .stat-chip-label {
@@ -589,6 +593,7 @@ TemplateContainer {
 }
 
 .stat-chip-atk {
+    border-top-width: 1px;
     border-top-color: rgba(204, 136, 32, 0.5);
 }
 .stat-chip-atk .stat-chip-label {
@@ -602,6 +607,7 @@ TemplateContainer {
 }
 
 .stat-chip-def {
+    border-top-width: 1px;
     border-top-color: rgba(56, 120, 204, 0.5);
 }
 .stat-chip-def .stat-chip-label {
@@ -615,7 +621,11 @@ TemplateContainer {
 }
 
 .stat-chip-mana {
-    border-left-color: rgb(130, 80, 200);
+    border-top-width: 1px;
+    border-top-color: rgba(130, 80, 200, 0.5);
+}
+.stat-chip-mana .stat-chip-label {
+    color: rgb(130, 80, 200);
 }
 .stat-chip-mana .stat-chip-value {
     color: rgb(180, 130, 255);
@@ -632,9 +642,9 @@ TemplateContainer {
     flex: 1;
     min-height: 100px;
     flex-direction: row;
-    background-color: rgba(0, 0, 0, 0.25);
+    background-color: rgba(0, 0, 0, 0.3);
     border-width: 1px;
-    border-color: var(--hero-primary, rgba(200, 160, 60, 0.15));
+    border-color: rgba(200, 160, 60, 0.15);
     border-radius: 6px;
     padding: 10px;
     margin-top: 2px;
@@ -643,9 +653,10 @@ TemplateContainer {
 
 .champion-model-viewer {
     width: 48%;
+    min-height: 80px;
     background-color: rgba(0, 0, 0, 0.2);
     border-width: 1px;
-    border-color: var(--hero-primary, rgba(200, 160, 60, 0.10));
+    border-color: rgba(200, 160, 60, 0.1);
     border-radius: 5px;
     -unity-background-scale-mode: scale-to-fit;
 }
@@ -1064,7 +1075,8 @@ TemplateContainer {
     opacity: 1;
     border-color: var(--hero-primary);
     border-width: 1px;
-    background-color: rgba(16, 12, 26, 0.95);
+    /* background-color cleared -- per-hero gradient applied by CharSelectVisualEnhancer */
+    background-color: rgba(0, 0, 0, 0);
 }
 
 .hero-card-initial {
@@ -1356,14 +1368,4 @@ TemplateContainer {
     transition-timing-function: ease-in-out;
 }
 
-/* =============================================================================
-   DYNAMIC RESOURCE STAT CHIP - MANA (VOIDTOUCHED / UNCHAINED paths)
-   ============================================================================= */
-
-.stat-chip-mana {
-    border-left-color: rgb(130, 80, 200);
-}
-
-.stat-chip-mana .stat-chip-value {
-    color: rgb(180, 130, 255);
-}
+/* (Mana stat chip styles consolidated above with other per-stat colors) */

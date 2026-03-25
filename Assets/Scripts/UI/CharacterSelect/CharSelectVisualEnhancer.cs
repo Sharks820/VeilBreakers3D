@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using VeilBreakers.Data;
 using VeilBreakers.UI.Core;
 
 namespace VeilBreakers.UI.CharacterSelect
@@ -29,6 +31,11 @@ namespace VeilBreakers.UI.CharacterSelect
         private Texture2D _champModelGradient;
         private Texture2D _panelTopHighlight;
 
+        // Hero card gradient textures
+        private Texture2D _heroCardBaseGradient;
+        private readonly Dictionary<string, Texture2D> _heroCardSelectedGradients = new Dictionary<string, Texture2D>();
+        private readonly Dictionary<string, Texture2D> _heroCardGlowTextures = new Dictionary<string, Texture2D>();
+
         private VisualElement _root;
         private bool _applied;
 
@@ -39,10 +46,17 @@ namespace VeilBreakers.UI.CharacterSelect
 
             // Defer to let UXML instantiate first
             _uiDocument.rootVisualElement?.schedule.Execute(ApplyVisualPass).ExecuteLater(50);
+
+            // Subscribe to hero changes for dynamic card gradient updates
+            CharSelectEvents.OnHeroChanged += HandleHeroChangedForCards;
+            // Subscribe to screen ready in case carousel builds after our initial visual pass
+            CharSelectEvents.OnScreenReady += HandleScreenReadyForCards;
         }
 
         private void OnDisable()
         {
+            CharSelectEvents.OnHeroChanged -= HandleHeroChangedForCards;
+            CharSelectEvents.OnScreenReady -= HandleScreenReadyForCards;
             CleanupTextures();
             _applied = false;
         }
@@ -62,6 +76,7 @@ namespace VeilBreakers.UI.CharacterSelect
             ApplyVignette();
             ApplyEmbarkBreathing();
             ApplyEmbarkShineSweep();
+            ApplyHeroCardGradients();
 
             _applied = true;
         }
@@ -448,6 +463,251 @@ namespace VeilBreakers.UI.CharacterSelect
                 float opacity = Mathf.Lerp(0.08f, 0.25f, pulse);
                 embarkGlow.style.opacity = opacity;
             }).Every(50);
+
+            // "HOLD TO CONFIRM" subtitle text pulse (spec: opacity 0.7→1.0, 2s cycle)
+            var embarkSubtitle = _root.Q<Label>("embark-subtitle");
+            if (embarkSubtitle != null)
+            {
+                float subtitlePhase = 0f;
+                embarkSubtitle.schedule.Execute(() =>
+                {
+                    subtitlePhase += 0.05f * 3.14f; // ~2s full cycle
+                    float sp = Mathf.Sin(subtitlePhase) * 0.5f + 0.5f;
+                    embarkSubtitle.style.opacity = Mathf.Lerp(0.7f, 1f, sp);
+                }).Every(50);
+            }
+        }
+
+        // =====================================================================
+        // HERO CARDS — per-hero gradient backgrounds (V5 mockup spec)
+        // USS cannot do linear-gradient, so we generate textures at runtime.
+        // =====================================================================
+
+        /// <summary>
+        /// Per-hero color palette from the V5 HTML mockup.
+        /// --cc = border-color, --ct = gradient top, --cb = gradient bottom, --cx = accent text, --cg = glow
+        /// </summary>
+        private struct HeroCardColors
+        {
+            public Color BorderColor;   // --cc
+            public Color GradTop;       // --ct
+            public Color GradBottom;    // --cb
+            public Color AccentText;    // --cx
+            public Color GlowColor;    // --cg (same as border for box-shadow)
+        }
+
+        private static readonly Dictionary<string, HeroCardColors> kHeroCardPalette = new Dictionary<string, HeroCardColors>
+        {
+            ["vex"] = new HeroCardColors
+            {
+                BorderColor = new Color(200f/255f, 160f/255f, 60f/255f, 0.65f),
+                GradTop     = new Color(60f/255f, 50f/255f, 30f/255f, 0.85f),
+                GradBottom  = new Color(30f/255f, 25f/255f, 15f/255f, 0.95f),
+                AccentText  = new Color(255f/255f, 210f/255f, 112f/255f, 1f),   // #ffd270
+                GlowColor   = new Color(200f/255f, 160f/255f, 60f/255f, 0.45f),
+            },
+            ["seraphina"] = new HeroCardColors
+            {
+                BorderColor = new Color(150f/255f, 90f/255f, 210f/255f, 0.65f),
+                GradTop     = new Color(45f/255f, 30f/255f, 65f/255f, 0.85f),
+                GradBottom  = new Color(22f/255f, 15f/255f, 32f/255f, 0.95f),
+                AccentText  = new Color(210f/255f, 170f/255f, 255f/255f, 1f),   // #d2aaff
+                GlowColor   = new Color(150f/255f, 90f/255f, 210f/255f, 0.45f),
+            },
+            ["orion"] = new HeroCardColors
+            {
+                BorderColor = new Color(200f/255f, 60f/255f, 60f/255f, 0.65f),
+                GradTop     = new Color(60f/255f, 25f/255f, 25f/255f, 0.85f),
+                GradBottom  = new Color(30f/255f, 12f/255f, 12f/255f, 0.95f),
+                AccentText  = new Color(255f/255f, 136f/255f, 102f/255f, 1f),   // #ff8866
+                GlowColor   = new Color(200f/255f, 60f/255f, 60f/255f, 0.45f),
+            },
+            ["nyx"] = new HeroCardColors
+            {
+                BorderColor = new Color(70f/255f, 190f/255f, 210f/255f, 0.65f),
+                GradTop     = new Color(25f/255f, 55f/255f, 60f/255f, 0.85f),
+                GradBottom  = new Color(12f/255f, 27f/255f, 30f/255f, 0.95f),
+                AccentText  = new Color(130f/255f, 230f/255f, 250f/255f, 1f),   // #82e6fa
+                GlowColor   = new Color(70f/255f, 190f/255f, 210f/255f, 0.45f),
+            },
+        };
+
+        private void ApplyHeroCardGradients()
+        {
+            // Base gradient for unselected cards
+            // Mockup: linear-gradient(180deg, rgba(30,24,44,0.85), rgba(15,12,22,0.95))
+            _heroCardBaseGradient = UIGradientHelper.CreateVerticalGradient(
+                new Color(30f/255f, 24f/255f, 44f/255f, 0.85f),
+                new Color(15f/255f, 12f/255f, 22f/255f, 0.95f)
+            );
+
+            // Pre-generate per-hero selected gradients and glow textures
+            foreach (var kvp in kHeroCardPalette)
+            {
+                var colors = kvp.Value;
+                _heroCardSelectedGradients[kvp.Key] = UIGradientHelper.CreateVerticalGradient(
+                    colors.GradTop,
+                    colors.GradBottom
+                );
+                _heroCardGlowTextures[kvp.Key] = UIGradientHelper.CreateRadialGradient(
+                    new Color(colors.GlowColor.r, colors.GlowColor.g, colors.GlowColor.b, 0.5f),
+                    new Color(colors.GlowColor.r, colors.GlowColor.g, colors.GlowColor.b, 0f),
+                    64
+                );
+            }
+
+            // Apply base gradient to all hero cards
+            var allCards = _root.Query<VisualElement>(className: "hero-card").ToList();
+            foreach (var card in allCards)
+            {
+                if (card.ClassListContains("teaser")) continue;
+
+                // Apply base gradient to all cards initially
+                UIGradientHelper.ApplyGradient(card, _heroCardBaseGradient);
+
+                // Clear USS background-color so the gradient texture shows through
+                card.style.backgroundColor = Color.clear;
+
+                // If card is already selected, apply its hero-specific gradient
+                if (card.ClassListContains("selected"))
+                {
+                    ApplySelectedCardVisuals(card);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Called when screen is ready (carousel cards are built).
+        /// Re-applies card gradients if the visual pass already ran before cards existed.
+        /// </summary>
+        private void HandleScreenReadyForCards()
+        {
+            if (_root == null || !_applied) return;
+            // Defer slightly so the carousel has finished building its cards
+            _root.schedule.Execute(UpdateHeroCardGradients).ExecuteLater(60);
+        }
+
+        /// <summary>
+        /// Called on hero change events to update card gradient backgrounds dynamically.
+        /// </summary>
+        private void HandleHeroChangedForCards(int index, HeroData data, HeroDisplayConfig config)
+        {
+            if (_root == null || !_applied) return;
+            UpdateHeroCardGradients();
+        }
+
+        /// <summary>
+        /// Re-applies gradients to all hero cards based on current selection state.
+        /// Selected card gets per-hero gradient + glow; unselected cards get base gradient.
+        /// </summary>
+        private void UpdateHeroCardGradients()
+        {
+            var allCards = _root.Query<VisualElement>(className: "hero-card").ToList();
+            foreach (var card in allCards)
+            {
+                if (card.ClassListContains("teaser")) continue;
+
+                // Remove any existing glow overlay from previous selection
+                var existingGlow = card.Q<VisualElement>("card-glow-overlay");
+                if (existingGlow != null)
+                    card.Remove(existingGlow);
+
+                if (card.ClassListContains("selected"))
+                {
+                    ApplySelectedCardVisuals(card);
+                }
+                else
+                {
+                    // Unselected: base gradient, clear any hero-specific overrides
+                    UIGradientHelper.ApplyGradient(card, _heroCardBaseGradient);
+                    card.style.backgroundColor = Color.clear;
+                    // Reset border color to USS default
+                    card.style.borderTopColor = StyleKeyword.Null;
+                    card.style.borderBottomColor = StyleKeyword.Null;
+                    card.style.borderLeftColor = StyleKeyword.Null;
+                    card.style.borderRightColor = StyleKeyword.Null;
+                    // Reset text colors to USS defaults
+                    var initial = card.Q<VisualElement>(className: "hero-card-initial");
+                    if (initial != null) initial.style.color = StyleKeyword.Null;
+                    var nameLabel = card.Q<VisualElement>(className: "hero-card-name");
+                    if (nameLabel != null) nameLabel.style.color = StyleKeyword.Null;
+                    var dot = card.Q<VisualElement>(className: "hero-card-dot");
+                    if (dot != null) dot.style.backgroundColor = StyleKeyword.Null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Applies the per-hero selected visuals: gradient background, border color, glow overlay.
+        /// </summary>
+        private void ApplySelectedCardVisuals(VisualElement card)
+        {
+            string heroId = DetectHeroIdFromCard(card);
+            if (heroId == null || !kHeroCardPalette.ContainsKey(heroId)) return;
+
+            var colors = kHeroCardPalette[heroId];
+
+            // Apply per-hero selected gradient
+            if (_heroCardSelectedGradients.TryGetValue(heroId, out var selectedGrad))
+            {
+                UIGradientHelper.ApplyGradient(card, selectedGrad);
+            }
+            card.style.backgroundColor = Color.clear;
+
+            // Apply per-hero border color
+            card.style.borderTopColor = colors.BorderColor;
+            card.style.borderBottomColor = colors.BorderColor;
+            card.style.borderLeftColor = colors.BorderColor;
+            card.style.borderRightColor = colors.BorderColor;
+
+            // Add glow overlay behind card content (simulates box-shadow: 0 0 18px)
+            if (_heroCardGlowTextures.TryGetValue(heroId, out var glowTex))
+            {
+                var glowOverlay = new VisualElement();
+                glowOverlay.name = "card-glow-overlay";
+                glowOverlay.pickingMode = PickingMode.Ignore;
+                glowOverlay.style.position = Position.Absolute;
+                glowOverlay.style.left = -10;
+                glowOverlay.style.top = -8;
+                glowOverlay.style.right = -10;
+                glowOverlay.style.bottom = -8;
+                glowOverlay.style.backgroundImage = new StyleBackground(glowTex);
+                glowOverlay.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
+                card.Insert(0, glowOverlay);
+            }
+
+            // Tint the initial letter and name with hero accent color
+            var initial = card.Q<VisualElement>(className: "hero-card-initial");
+            if (initial != null)
+            {
+                initial.style.color = colors.AccentText;
+            }
+
+            var nameLabel = card.Q<VisualElement>(className: "hero-card-name");
+            if (nameLabel != null)
+            {
+                nameLabel.style.color = colors.AccentText;
+            }
+
+            // Tint the selection dot with hero accent color
+            var dot = card.Q<VisualElement>(className: "hero-card-dot");
+            if (dot != null)
+            {
+                dot.style.backgroundColor = colors.AccentText;
+            }
+        }
+
+        /// <summary>
+        /// Detects the hero_id from a card's class list (e.g. "hero-card-vex" -> "vex").
+        /// </summary>
+        private static string DetectHeroIdFromCard(VisualElement card)
+        {
+            foreach (var kvp in kHeroCardPalette)
+            {
+                if (card.ClassListContains($"hero-card-{kvp.Key}"))
+                    return kvp.Key;
+            }
+            return null;
         }
 
         // =====================================================================
@@ -468,6 +728,19 @@ namespace VeilBreakers.UI.CharacterSelect
             DestroyTex(ref _champAreaGradient);
             DestroyTex(ref _champModelGradient);
             DestroyTex(ref _panelTopHighlight);
+            DestroyTex(ref _heroCardBaseGradient);
+
+            foreach (var tex in _heroCardSelectedGradients.Values)
+            {
+                if (tex != null) Destroy(tex);
+            }
+            _heroCardSelectedGradients.Clear();
+
+            foreach (var tex in _heroCardGlowTextures.Values)
+            {
+                if (tex != null) Destroy(tex);
+            }
+            _heroCardGlowTextures.Clear();
         }
 
         private void DestroyTex(ref Texture2D tex)
