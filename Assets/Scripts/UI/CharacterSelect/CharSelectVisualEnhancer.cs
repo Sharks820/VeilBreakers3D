@@ -61,6 +61,7 @@ namespace VeilBreakers.UI.CharacterSelect
             ApplyPanelDepth();
             ApplyVignette();
             ApplyEmbarkBreathing();
+            ApplyEmbarkShineSweep();
 
             _applied = true;
         }
@@ -275,7 +276,46 @@ namespace VeilBreakers.UI.CharacterSelect
             var panel = _root.Q<VisualElement>("info-panel-container");
             if (panel == null) return;
 
-            // Inner glow line at very top (inside the panel, above content)
+            // --- OUTER SHADOW: Large dark glow behind panel (simulates box-shadow: 0 0 60px) ---
+            var outerShadow = new VisualElement();
+            outerShadow.name = "panel-outer-shadow";
+            outerShadow.pickingMode = PickingMode.Ignore;
+            outerShadow.style.position = Position.Absolute;
+            outerShadow.style.left = -30;
+            outerShadow.style.top = -20;
+            outerShadow.style.right = -30;
+            outerShadow.style.bottom = -30;
+            var shadowTex = UIGradientHelper.CreateRadialGradient(
+                new Color(0f, 0f, 0f, 0.4f),
+                new Color(0f, 0f, 0f, 0f),
+                128
+            );
+            UIGradientHelper.ApplyGradient(outerShadow, shadowTex);
+            // Insert shadow BEFORE the panel in the parent
+            var panelParent = panel.parent;
+            if (panelParent != null)
+            {
+                int panelIndex = panelParent.IndexOf(panel);
+                panelParent.Insert(panelIndex, outerShadow);
+            }
+
+            // --- HERO COLOR TOP GLOW: Subtle gold/hero-color radiance at panel top ---
+            var topGlow = new VisualElement();
+            topGlow.name = "panel-top-glow";
+            topGlow.pickingMode = PickingMode.Ignore;
+            topGlow.style.position = Position.Absolute;
+            topGlow.style.top = -2;
+            topGlow.style.left = Length.Percent(10);
+            topGlow.style.right = Length.Percent(10);
+            topGlow.style.height = 40;
+            var topGlowTex = UIGradientHelper.CreateVerticalGradient(
+                new Color(200f/255f, 160f/255f, 60f/255f, 0.05f),
+                new Color(0f, 0f, 0f, 0f)
+            );
+            UIGradientHelper.ApplyGradient(topGlow, topGlowTex);
+            panel.Insert(0, topGlow);
+
+            // --- INNER GLOW: Faint white at top (simulates inset 0 1px 0 rgba(255,255,255,0.04)) ---
             var innerGlow = new VisualElement();
             innerGlow.name = "panel-inner-glow";
             innerGlow.pickingMode = PickingMode.Ignore;
@@ -283,9 +323,88 @@ namespace VeilBreakers.UI.CharacterSelect
             innerGlow.style.top = 0;
             innerGlow.style.left = 0;
             innerGlow.style.right = 0;
-            innerGlow.style.height = 30;
-            innerGlow.style.backgroundColor = new Color(255f/255f, 255f/255f, 255f/255f, 0.02f);
+            innerGlow.style.height = 1;
+            innerGlow.style.backgroundColor = new Color(1f, 1f, 1f, 0.04f);
             panel.Insert(0, innerGlow);
+
+            // --- INNER EDGE DARKENING: Simulates inset 0 0 30px rgba(0,0,0,0.2) ---
+            var innerDark = new VisualElement();
+            innerDark.name = "panel-inner-dark";
+            innerDark.pickingMode = PickingMode.Ignore;
+            innerDark.style.position = Position.Absolute;
+            innerDark.style.left = 0;
+            innerDark.style.top = 0;
+            innerDark.style.right = 0;
+            innerDark.style.bottom = 0;
+            innerDark.style.borderTopWidth = 20;
+            innerDark.style.borderBottomWidth = 20;
+            innerDark.style.borderLeftWidth = 15;
+            innerDark.style.borderRightWidth = 15;
+            innerDark.style.borderTopColor = new Color(0f, 0f, 0f, 0.12f);
+            innerDark.style.borderBottomColor = new Color(0f, 0f, 0f, 0.15f);
+            innerDark.style.borderLeftColor = new Color(0f, 0f, 0f, 0.08f);
+            innerDark.style.borderRightColor = new Color(0f, 0f, 0f, 0.08f);
+            panel.Insert(0, innerDark);
+        }
+
+        // =====================================================================
+        // EMBARK SHINE SWEEP — animated white line sweeping across (mockup ::after)
+        // =====================================================================
+
+        private void ApplyEmbarkShineSweep()
+        {
+            var embark = _root.Q<Button>("btn-embark");
+            if (embark == null) return;
+            embark.style.overflow = Overflow.Hidden;
+
+            var sweep = new VisualElement();
+            sweep.name = "embark-shine-sweep";
+            sweep.pickingMode = PickingMode.Ignore;
+            sweep.style.position = Position.Absolute;
+            sweep.style.top = 0;
+            sweep.style.bottom = 0;
+            sweep.style.width = Length.Percent(25);
+            sweep.style.left = Length.Percent(-30);
+            sweep.style.backgroundColor = new Color(1f, 1f, 1f, 0.1f);
+            sweep.style.transitionProperty = new System.Collections.Generic.List<StylePropertyName>
+            {
+                new StylePropertyName("left")
+            };
+            sweep.style.transitionDuration = new System.Collections.Generic.List<TimeValue>
+            {
+                new TimeValue(1.2f, TimeUnit.Second)
+            };
+            sweep.style.transitionTimingFunction = new System.Collections.Generic.List<EasingFunction>
+            {
+                new EasingFunction(EasingMode.EaseInOut)
+            };
+            embark.Add(sweep);
+
+            // Auto-sweep every 3.5 seconds (matching mockup @keyframes esw)
+            float sweepTimer = 0f;
+            sweep.schedule.Execute(() =>
+            {
+                sweepTimer += 0.05f;
+                if (sweepTimer >= 3.5f)
+                {
+                    sweepTimer = 0f;
+                    // Reset position instantly
+                    sweep.style.transitionDuration = new System.Collections.Generic.List<TimeValue>
+                    {
+                        new TimeValue(0f, TimeUnit.Second)
+                    };
+                    sweep.style.left = Length.Percent(-30);
+                    sweep.schedule.Execute(() =>
+                    {
+                        // Animate to right
+                        sweep.style.transitionDuration = new System.Collections.Generic.List<TimeValue>
+                        {
+                            new TimeValue(1.2f, TimeUnit.Second)
+                        };
+                        sweep.style.left = Length.Percent(110);
+                    }).ExecuteLater(20);
+                }
+            }).Every(50);
         }
 
         // =====================================================================
