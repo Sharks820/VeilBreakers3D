@@ -62,7 +62,7 @@ public static class VeilBreakers_PostProcessing
             var vignette = profile.Add<Vignette>();
             vignette.intensity.Override(0.35f);
             vignette.smoothness.Override(0.35f);
-            vignette.roundness.Override(1f);
+            // roundness removed — not available in URP Vignette
             vignette.color.Override(new Color(0.05f, 0.02f, 0.08f, 1f));
 
             // === DEPTH OF FIELD (cinematic focus) ===
