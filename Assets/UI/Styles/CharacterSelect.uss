@@ -442,8 +442,8 @@ TemplateContainer {
 }
 
 .hero-quote {
-    font-size: 11px;
-    color: rgba(180, 170, 200, 0.55);
+    font-size: 10px;
+    color: rgba(180, 170, 200, 0.3);
     -unity-font-style: italic;
     margin-bottom: 8px;
     white-space: normal;
@@ -461,13 +461,13 @@ TemplateContainer {
 
 .info-row {
     flex-direction: row;
-    margin-right: 16px;
+    margin-right: 12px;
     align-items: baseline;
 }
 
 .info-label {
-    font-size: 9px;
-    color: var(--text-muted);
+    font-size: 8px;
+    color: rgba(140, 130, 160, 0.45);
     letter-spacing: 3px;
     -unity-font-style: bold;
     margin-right: 4px;
@@ -475,8 +475,9 @@ TemplateContainer {
 
 .info-value {
     font-size: 11px;
-    color: var(--text-secondary);
+    color: rgba(210, 200, 230, 0.85);
     letter-spacing: 1px;
+    margin-left: 4px;
 }
 
 /* =============================================================================
@@ -492,8 +493,8 @@ TemplateContainer {
 
 .stat-chip {
     width: 48%;
-    background-color: rgba(0, 0, 0, 0.35);
-    padding: 7px 10px;
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 6px 8px;
     margin-bottom: 5px;
     border-radius: 4px;
     border-width: 1px;
@@ -780,7 +781,7 @@ TemplateContainer {
 }
 
 .attr-chip-value {
-    font-size: 14px;
+    font-size: 18px;
     -unity-font-style: bold;
     color: rgba(240, 235, 250, 0.85);
     -unity-text-align: middle-center;
@@ -1082,39 +1083,39 @@ TemplateContainer {
 
 .hero-card-initial {
     -unity-font-definition: url('project://database/Assets/UI/Fonts/Cinzel-Variable.ttf?fileID=12800000&guid=c7b3e9f2a4d816543e8c1a0b5f927d4e&type=3');
-    font-size: 36px;
+    font-size: 30px;
     -unity-font-style: bold;
     color: var(--hero-primary);
     opacity: 0.2;
-    margin-bottom: 6px;
+    margin-bottom: 0;
     -unity-text-align: middle-center;
     transition-property: opacity, color;
     transition-duration: 0.3s, 0.3s;
 }
 
 .hero-card.selected .hero-card-initial {
-    opacity: 0.85;
+    opacity: 0.75;
 }
 
 .hero-card:hover .hero-card-initial {
-    opacity: 0.5;
+    opacity: 0.45;
 }
 
 .hero-card-name {
     -unity-font-definition: url('project://database/Assets/UI/Fonts/Cinzel-Variable.ttf?fileID=12800000&guid=c7b3e9f2a4d816543e8c1a0b5f927d4e&type=3');
-    font-size: 9px;
+    font-size: 8px;
     color: var(--text-secondary);
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     -unity-font-style: bold;
     opacity: 0.35;
+    margin-top: 6px;
     -unity-text-align: middle-center;
     transition-property: opacity, color;
     transition-duration: 0.3s, 0.3s;
 }
 
 .hero-card.selected .hero-card-name {
-    opacity: 0.9;
-    color: var(--hero-accent, rgba(255, 210, 110, 1));
+    opacity: 0.85;
 }
 
 .hero-card-role {
