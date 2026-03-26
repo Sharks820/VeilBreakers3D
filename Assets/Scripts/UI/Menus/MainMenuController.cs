@@ -1063,25 +1063,8 @@ namespace VeilBreakers.UI.Menus
             var buttonContainer = menuRoot.Q<VisualElement>("button-container");
             int insertIndex = buttonContainer != null ? menuRoot.IndexOf(buttonContainer) : menuRoot.childCount;
 
-            // TitleScreenVFX already handles embers, vignette, and atmospheric layers.
-            // We only add a subtle bottom fade here — all other overlays are DISABLED
-            // to avoid stacking multiple dark layers that create the "dark box" effect.
-
-            // --- BOTTOM FADE ONLY: Subtle darkening at bottom for button readability ---
-            _bottomFadeGradient = UIGradientHelper.CreateVerticalGradient(
-                new Color(0f, 0f, 0f, 0f),       // Top: transparent
-                new Color(0f, 0f, 0f, 0.5f)       // Bottom: moderate dark (was 0.85 — too aggressive)
-            );
-            var bottomFade = new VisualElement();
-            bottomFade.name = "bottom-fade-overlay";
-            bottomFade.pickingMode = PickingMode.Ignore;
-            bottomFade.style.position = Position.Absolute;
-            bottomFade.style.left = 0;
-            bottomFade.style.right = 0;
-            bottomFade.style.bottom = 0;
-            bottomFade.style.height = Length.Percent(35);
-            UIGradientHelper.ApplyGradient(bottomFade, _bottomFadeGradient);
-            menuRoot.Insert(insertIndex, bottomFade);
+            // ALL overlays disabled — TitleScreenVFX owns vignette, embers, and atmospheric FX.
+            // Adding ANY extra overlay elements here created visible dark boxes over the demon.
         }
 
         /// <summary>
