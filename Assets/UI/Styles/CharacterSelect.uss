@@ -233,15 +233,15 @@ TemplateContainer {
     -unity-font-style: bold;
     color: var(--text-primary);
     letter-spacing: 16px;
-    opacity: 0.06;
+    opacity: 0.08;
     -unity-text-align: middle-center;
 }
 
 .stage-hero-title {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--hero-primary);
     letter-spacing: 6px;
-    opacity: 0.35;
+    opacity: 0.45;
     -unity-text-align: middle-center;
     margin-top: 4px;
 }
@@ -318,9 +318,9 @@ TemplateContainer {
     flex-direction: column;
     opacity: 1;
     translate: 0 0;
-    transition-property: opacity, translate, border-color, background-color;
-    transition-duration: 0.3s, 0.3s, 0.6s, 0.6s;
-    transition-timing-function: ease-out, ease-out, ease-in-out, ease-in-out;
+    transition-property: opacity, border-color;
+    transition-duration: 0.3s, 0.6s;
+    transition-timing-function: ease-out, ease-in-out;
 }
 
 /* =============================================================================
@@ -466,15 +466,15 @@ TemplateContainer {
 }
 
 .info-label {
-    font-size: 8px;
+    font-size: 9px;
     color: var(--text-muted);
     letter-spacing: 3px;
     -unity-font-style: bold;
-    margin-right: 6px;
+    margin-right: 4px;
 }
 
 .info-value {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-secondary);
     letter-spacing: 1px;
 }
@@ -492,8 +492,8 @@ TemplateContainer {
 
 .stat-chip {
     width: 48%;
-    background-color: rgba(0, 0, 0, 0.3);
-    padding: 6px 8px;
+    background-color: rgba(0, 0, 0, 0.35);
+    padding: 7px 10px;
     margin-bottom: 5px;
     border-radius: 4px;
     border-width: 1px;
@@ -780,7 +780,7 @@ TemplateContainer {
 }
 
 .attr-chip-value {
-    font-size: 18px;
+    font-size: 14px;
     -unity-font-style: bold;
     color: rgba(240, 235, 250, 0.85);
     -unity-text-align: middle-center;
@@ -1037,7 +1037,7 @@ TemplateContainer {
 }
 
 .carousel-container {
-    margin: 0 24px;
+    margin: 0 8px;
 }
 
 .carousel-strip {
