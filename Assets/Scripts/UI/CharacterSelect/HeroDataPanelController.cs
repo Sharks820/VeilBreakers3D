@@ -238,7 +238,7 @@ namespace VeilBreakers.UI.CharacterSelect
             string roleName = monster.GetAIPattern().ToString().ToUpper();
 
             CharSelectUIUtils.SetLabel(_championName, (monster.display_name ?? data.starter_monster_id).ToUpper());
-            CharSelectUIUtils.SetLabel(_championBrandLabel, $"\u2B25 {brandName} BRAND");
+            CharSelectUIUtils.SetLabel(_championBrandLabel, $"{brandName} BRAND");
             CharSelectUIUtils.SetLabel(_championBrand, brandName);
             CharSelectUIUtils.SetLabel(_championRole, roleName);
             CharSelectUIUtils.SetLabel(_championDesc, $"Your starting {brandName.ToLower()} companion. A {roleName.ToLower()} fighter bound to your path.");
@@ -253,8 +253,9 @@ namespace VeilBreakers.UI.CharacterSelect
             bool isManaUser = data.GetPrimaryPath() == Path.VOIDTOUCHED
                            || data.GetPrimaryPath() == Path.UNCHAINED;
 
-            // The stat chip container is the parent of the stat value label
-            var resourceChip = _statStamina?.parent;
+            // The stat chip container is the GRANDPARENT of the stat value label
+            // (label → stat-chip-header → stat-chip)
+            var resourceChip = _statStamina?.parent?.parent;
             if (resourceChip == null) return;
 
             var resourceLabel = resourceChip.Q<Label>(className: "stat-chip-label");

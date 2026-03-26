@@ -125,7 +125,45 @@
                         <ui:Label class="divider-diamond" text="&#x25C6;" />
                     </ui:VisualElement>
 
-                    <!-- Champion Monster Info — 50/50 split -->
+                    <!-- D&D Attributes (number grid, no bars) — BEFORE champion per spec -->
+                    <ui:Label name="attribute-bars-header" class="section-header" text="ATTRIBUTES" />
+                    <ui:VisualElement name="attribute-grid" class="attribute-grid">
+                        <ui:VisualElement class="attr-chip">
+                            <ui:Label class="attr-chip-label" text="STR" />
+                            <ui:Label name="bar-str-value" class="attr-chip-value" text="14" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="attr-chip">
+                            <ui:Label class="attr-chip-label" text="DEX" />
+                            <ui:Label name="bar-dex-value" class="attr-chip-value" text="10" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="attr-chip">
+                            <ui:Label class="attr-chip-label" text="CON" />
+                            <ui:Label name="bar-con-value" class="attr-chip-value" text="14" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="attr-chip">
+                            <ui:Label class="attr-chip-label" text="INT" />
+                            <ui:Label name="bar-int-value" class="attr-chip-value" text="10" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="attr-chip">
+                            <ui:Label class="attr-chip-label" text="WIS" />
+                            <ui:Label name="bar-wis-value" class="attr-chip-value" text="12" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="attr-chip">
+                            <ui:Label class="attr-chip-label" text="CHA" />
+                            <ui:Label name="bar-cha-value" class="attr-chip-value" text="10" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="attr-chip">
+                            <ui:Label class="attr-chip-label" text="SPD" />
+                            <ui:Label name="bar-spd-value" class="attr-chip-value" text="5" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="ornamental-divider">
+                        <ui:VisualElement class="divider-line" />
+                        <ui:Label class="divider-diamond" text="&#x25C6;" />
+                    </ui:VisualElement>
+
+                    <!-- Champion Monster Info — 50/50 split (fills remaining space) -->
                     <ui:VisualElement name="champion-section" class="champion-section-v2">
                         <!-- Left: 3D Model Render Target -->
                         <ui:VisualElement name="champion-model-viewer" class="champion-model-viewer" />
@@ -138,46 +176,6 @@
                                 <ui:Label name="champion-role" class="tag" text="TANK" />
                             </ui:VisualElement>
                             <ui:Label name="champion-desc" class="champion-desc" text="Your starting companion." />
-                        </ui:VisualElement>
-                    </ui:VisualElement>
-
-                    <ui:VisualElement class="ornamental-divider">
-                        <ui:VisualElement class="divider-line" />
-                        <ui:Label class="divider-diamond" text="&#x25C6;" />
-                    </ui:VisualElement>
-
-                    <!-- D&D Attributes (number grid, no bars) -->
-                    <ui:VisualElement name="attribute-bars-section" class="attribute-section">
-                        <ui:Label name="attribute-bars-header" class="section-header" text="ATTRIBUTES" />
-                        <ui:VisualElement name="attribute-grid" class="attribute-grid">
-                            <ui:VisualElement class="attr-chip">
-                                <ui:Label class="attr-chip-label" text="STR" />
-                                <ui:Label name="bar-str-value" class="attr-chip-value" text="14" />
-                            </ui:VisualElement>
-                            <ui:VisualElement class="attr-chip">
-                                <ui:Label class="attr-chip-label" text="DEX" />
-                                <ui:Label name="bar-dex-value" class="attr-chip-value" text="10" />
-                            </ui:VisualElement>
-                            <ui:VisualElement class="attr-chip">
-                                <ui:Label class="attr-chip-label" text="CON" />
-                                <ui:Label name="bar-con-value" class="attr-chip-value" text="14" />
-                            </ui:VisualElement>
-                            <ui:VisualElement class="attr-chip">
-                                <ui:Label class="attr-chip-label" text="INT" />
-                                <ui:Label name="bar-int-value" class="attr-chip-value" text="10" />
-                            </ui:VisualElement>
-                            <ui:VisualElement class="attr-chip">
-                                <ui:Label class="attr-chip-label" text="WIS" />
-                                <ui:Label name="bar-wis-value" class="attr-chip-value" text="12" />
-                            </ui:VisualElement>
-                            <ui:VisualElement class="attr-chip">
-                                <ui:Label class="attr-chip-label" text="CHA" />
-                                <ui:Label name="bar-cha-value" class="attr-chip-value" text="10" />
-                            </ui:VisualElement>
-                            <ui:VisualElement class="attr-chip">
-                                <ui:Label class="attr-chip-label" text="SPD" />
-                                <ui:Label name="bar-spd-value" class="attr-chip-value" text="5" />
-                            </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
                 </ui:VisualElement>
@@ -222,7 +220,7 @@
         <!-- BOTTOM LAYER: Unified bar — Carousel + Embark in same row -->
         <ui:VisualElement name="bottom-layer" class="bottom-layer">
             <ui:Button name="btn-prev" class="nav-arrow nav-arrow-left" text="&#x25C0;" />
-            <ui:VisualElement name="carousel-container" class="carousel-container" style="flex-grow: 1;">
+            <ui:VisualElement name="carousel-container" class="carousel-container">
                 <ui:VisualElement name="carousel-strip" class="carousel-strip">
                     <!-- Carousel cards generated dynamically -->
                 </ui:VisualElement>
