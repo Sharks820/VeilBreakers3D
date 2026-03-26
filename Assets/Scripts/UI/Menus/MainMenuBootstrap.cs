@@ -137,6 +137,7 @@ namespace VeilBreakers.UI.Menus
             }
 
             EnsureOverlayVfx();
+            EnsureTitleScreenAudio();
             DisableExpensiveVfxInBatchMode();
         }
 
@@ -551,6 +552,15 @@ namespace VeilBreakers.UI.Menus
             if (GetComponent<VeilBreakers.UI.Effects.MainMenuVFXOverlayController>() == null)
             {
                 gameObject.AddComponent<VeilBreakers.UI.Effects.MainMenuVFXOverlayController>();
+            }
+        }
+
+        private void EnsureTitleScreenAudio()
+        {
+            // AAA audio: ambient music, random demon laughs, girl crying
+            if (GetComponent<VeilBreakers.UI.Core.TitleScreenAudio>() == null)
+            {
+                gameObject.AddComponent<VeilBreakers.UI.Core.TitleScreenAudio>();
             }
         }
 
