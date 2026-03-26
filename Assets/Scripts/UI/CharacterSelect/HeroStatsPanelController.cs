@@ -18,17 +18,17 @@ namespace VeilBreakers.UI.CharacterSelect
         [SerializeField] private UIDocument _uiDocument;
 
         private VisualElement _panel;
-        private readonly VisualElement[] _barFills = new VisualElement[7];
-        private readonly Label[] _barValues = new Label[7];
+        private readonly VisualElement[] _barFills = new VisualElement[6];
+        private readonly Label[] _barValues = new Label[6];
         private readonly Label[] _abilitySlots = new Label[5];
 
-        private static readonly string[] kStatNames = { "str", "dex", "con", "int", "wis", "cha", "spd" };
+        // INT removed — redundant with WIS. 6 attributes = clean 6-column grid matching spec.
+        private static readonly string[] kStatNames = { "str", "dex", "con", "wis", "cha", "spd" };
         private static readonly Color[] kStatColors =
         {
             new Color(0.85f, 0.25f, 0.20f),  // STR - Crimson red
             new Color(0.30f, 0.80f, 0.35f),  // DEX - Emerald green
             new Color(0.90f, 0.55f, 0.15f),  // CON - Burnt orange
-            new Color(0.55f, 0.30f, 0.85f),  // INT - Royal purple
             new Color(0.25f, 0.55f, 0.90f),  // WIS - Deep blue
             new Color(0.90f, 0.75f, 0.20f),  // CHA - Gold
             new Color(0.40f, 0.75f, 0.90f),  // SPD - Sky blue

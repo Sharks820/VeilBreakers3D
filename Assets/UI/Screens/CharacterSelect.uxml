@@ -141,10 +141,6 @@
                             <ui:Label name="bar-con-value" class="attr-chip-value" text="14" />
                         </ui:VisualElement>
                         <ui:VisualElement class="attr-chip">
-                            <ui:Label class="attr-chip-label" text="INT" />
-                            <ui:Label name="bar-int-value" class="attr-chip-value" text="10" />
-                        </ui:VisualElement>
-                        <ui:VisualElement class="attr-chip">
                             <ui:Label class="attr-chip-label" text="WIS" />
                             <ui:Label name="bar-wis-value" class="attr-chip-value" text="12" />
                         </ui:VisualElement>
