@@ -20,6 +20,15 @@
             "command": "node .claude/hooks/context-reinject.js"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"try{require('fs').unlinkSync('.claude/hooks/.files-read-this-session')}catch(e){}\"",
+            "timeout": 2
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [
@@ -52,11 +61,12 @@
         ]
       },
       {
-        "matcher": "Edit|Write",
+        "matcher": "Edit|Read",
         "hooks": [
           {
             "type": "command",
-            "command": "echo disabled-for-claude"
+            "command": "node .claude/hooks/blind-edit-guard.js",
+            "timeout": 3
           }
         ]
       },
