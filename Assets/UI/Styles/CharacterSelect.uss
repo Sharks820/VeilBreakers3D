@@ -1048,18 +1048,19 @@ TemplateContainer {
 .hero-card {
     width: 80px;
     height: 100px;
-    margin: 0 5px;
+    margin: 0 6px;
     background-color: rgba(22, 18, 34, 0.9);
     border-width: 1.5px;
-    border-color: rgba(80, 65, 100, 0.2);
+    border-color: rgba(80, 65, 100, 0.25);
     border-radius: 6px;
     align-items: center;
     justify-content: center;
-    transition-property: scale, opacity, border-color, background-color, translate;
-    transition-duration: 0.3s, 0.3s, 0.3s, 0.3s, 0.3s;
-    transition-timing-function: ease, ease, ease, ease, ease;
+    flex-direction: column;
+    transition-property: scale, opacity, border-color, translate;
+    transition-duration: 0.3s, 0.3s, 0.3s, 0.3s;
+    transition-timing-function: ease, ease, ease, ease;
     opacity: 0.7;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .hero-card:hover {
@@ -1080,35 +1081,40 @@ TemplateContainer {
 }
 
 .hero-card-initial {
-    font-size: 30px;
+    -unity-font-definition: url('project://database/Assets/UI/Fonts/Cinzel-Variable.ttf?fileID=12800000&guid=c7b3e9f2a4d816543e8c1a0b5f927d4e&type=3');
+    font-size: 36px;
     -unity-font-style: bold;
     color: var(--hero-primary);
     opacity: 0.2;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
+    -unity-text-align: middle-center;
     transition-property: opacity, color;
     transition-duration: 0.3s, 0.3s;
 }
 
 .hero-card.selected .hero-card-initial {
-    opacity: 0.75;
+    opacity: 0.85;
 }
 
 .hero-card:hover .hero-card-initial {
-    opacity: 0.45;
+    opacity: 0.5;
 }
 
 .hero-card-name {
-    font-size: 8px;
+    -unity-font-definition: url('project://database/Assets/UI/Fonts/Cinzel-Variable.ttf?fileID=12800000&guid=c7b3e9f2a4d816543e8c1a0b5f927d4e&type=3');
+    font-size: 9px;
     color: var(--text-secondary);
-    letter-spacing: 2px;
+    letter-spacing: 3px;
     -unity-font-style: bold;
     opacity: 0.35;
-    transition-property: opacity;
-    transition-duration: 0.3s;
+    -unity-text-align: middle-center;
+    transition-property: opacity, color;
+    transition-duration: 0.3s, 0.3s;
 }
 
 .hero-card.selected .hero-card-name {
-    opacity: 0.85;
+    opacity: 0.9;
+    color: var(--hero-accent, rgba(255, 210, 110, 1));
 }
 
 .hero-card-role {
