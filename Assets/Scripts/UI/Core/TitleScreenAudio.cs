@@ -21,14 +21,14 @@ namespace VeilBreakers.UI.Core
         [SerializeField, Range(0f, 1f)] private float _musicVolume = 0.4f;
 
         [Header("Demon Laughs")]
-        [SerializeField] private float _laughIntervalMin = 12f;
-        [SerializeField] private float _laughIntervalMax = 30f;
-        [SerializeField, Range(0f, 1f)] private float _laughVolume = 0.35f;
+        [SerializeField] private float _laughIntervalMin = 8f;
+        [SerializeField] private float _laughIntervalMax = 22f;
+        [SerializeField, Range(0f, 1f)] private float _laughVolume = 0.55f;
 
         [Header("Girl Crying")]
-        [SerializeField] private float _cryIntervalMin = 20f;
-        [SerializeField] private float _cryIntervalMax = 45f;
-        [SerializeField, Range(0f, 1f)] private float _cryVolume = 0.15f;
+        [SerializeField] private float _cryIntervalMin = 15f;
+        [SerializeField] private float _cryIntervalMax = 35f;
+        [SerializeField, Range(0f, 1f)] private float _cryVolume = 0.4f;
 
         private AudioSource _musicSource;
         private AudioSource _sfxSource;

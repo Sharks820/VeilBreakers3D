@@ -381,14 +381,9 @@ namespace VeilBreakers.UI.Core
 
             Debug.Log($"[TitleScreenVFX] Textures loaded - Smoke: {_smokeTexture != null}, Ash: {_ashTexture != null}, Ember: {_emberTexture != null}, Grunge: {_grungeTexture != null}");
 
-            // Load menu music from Resources if not assigned
-            if (_menuMusic == null)
-            {
-                _menuMusic = Resources.Load<AudioClip>("Audio/Music/menu_music");
-            }
-
-            // Setup and play menu music
-            SetupMenuMusic();
+            // Music DISABLED here — TitleScreenAudio component handles all audio
+            // (music, demon laughs, girl crying) with proper volume management.
+            // SetupMenuMusic();
         }
 
         private void SetupMenuMusic()
