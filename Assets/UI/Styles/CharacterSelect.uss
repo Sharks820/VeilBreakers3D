@@ -211,18 +211,23 @@ TemplateContainer {
     justify-content: center;
 }
 
+/* Model display area — constrained to 180x320 centered in stage (spec: .cs-model-area) */
 .hero-render-target {
-    width: 100%;
-    height: 100%;
+    width: 180px;
+    height: 320px;
+    border-width: 1px;
+    border-color: rgba(200, 160, 60, 0.1);
+    border-radius: 8px;
     -unity-background-scale-mode: scale-to-fit;
+    align-self: center;
 }
 
-/* Hero Name Plate - floating title at bottom of stage */
+/* Hero Name Plate - watermark text at bottom of stage (spec: left:25%, translateX(-50%)) */
 .hero-name-plate {
     position: absolute;
-    bottom: 22%;
-    left: 0;
-    right: 0;
+    bottom: 20%;
+    left: 25%;
+    translate: -50% 0;
     align-items: center;
     justify-content: center;
     flex-direction: column;
@@ -249,10 +254,10 @@ TemplateContainer {
 
 .drag-hint {
     position: absolute;
-    bottom: 8%;
-    font-size: 11px;
-    color: rgba(200, 200, 215, 0.18);
-    letter-spacing: 6px;
+    bottom: 12%;
+    font-size: 8px;
+    color: rgba(255, 255, 255, 0.12);
+    letter-spacing: 3px;
     -unity-text-align: middle-center;
     align-self: center;
     transition-property: opacity;
@@ -374,7 +379,7 @@ TemplateContainer {
 
 .tab-content {
     flex-grow: 1;
-    overflow: hidden;
+    overflow: scroll;
 }
 
 .tab-content-section {
@@ -1026,7 +1031,7 @@ TemplateContainer {
     height: 34px;
     font-size: 14px;
     color: rgba(190, 180, 210, 0.4);
-    background-color: rgba(22, 18, 32, 0.92);
+    /* background-color removed — C# applies gradient */
     border-radius: 17px;
     border-width: 1px;
     border-color: rgba(100, 80, 130, 0.3);
@@ -1040,7 +1045,6 @@ TemplateContainer {
     color: rgba(230, 220, 250, 0.8);
     border-color: rgba(150, 130, 180, 0.5);
     scale: 1.1;
-    background-color: rgba(30, 24, 40, 0.95);
 }
 
 .carousel-container {

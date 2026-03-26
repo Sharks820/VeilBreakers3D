@@ -77,6 +77,7 @@ namespace VeilBreakers.UI.CharacterSelect
             ApplyEmbarkBreathing();
             ApplyEmbarkShineSweep();
             ApplyHeroCardGradients();
+            ApplyNavArrowGradients();
 
             _applied = true;
         }
@@ -531,6 +532,26 @@ namespace VeilBreakers.UI.CharacterSelect
                 GlowColor   = new Color(70f/255f, 190f/255f, 210f/255f, 0.45f),
             },
         };
+
+        // =====================================================================
+        // NAV ARROWS — gradient background (spec: linear-gradient dark purple)
+        // =====================================================================
+
+        private void ApplyNavArrowGradients()
+        {
+            // Spec: background: linear-gradient(180deg, rgba(30,24,40,0.9), rgba(14,10,20,0.95))
+            var navGradient = UIGradientHelper.CreateVerticalGradient(
+                new Color(30f/255f, 24f/255f, 40f/255f, 0.9f),
+                new Color(14f/255f, 10f/255f, 20f/255f, 0.95f)
+            );
+
+            var arrows = _root.Query<Button>(className: "nav-arrow").ToList();
+            foreach (var arrow in arrows)
+            {
+                UIGradientHelper.ApplyGradient(arrow, navGradient);
+                arrow.style.backgroundColor = Color.clear;
+            }
+        }
 
         private void ApplyHeroCardGradients()
         {
