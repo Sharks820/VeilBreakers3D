@@ -1496,6 +1496,8 @@ namespace VeilBreakers.UI.Core
 
         private void CreateAtmosphereLayer()
         {
+            // DISABLED: The circle-shaped atmosphere element created a visible edge on screen.
+            // The background art and ember particles provide sufficient atmospheric depth.
             _atmosphereLayer = new VisualElement();
             _atmosphereLayer.name = "atmosphere-gradient";
             _atmosphereLayer.style.position = Position.Absolute;
@@ -1504,23 +1506,6 @@ namespace VeilBreakers.UI.Core
             _atmosphereLayer.style.right = 0;
             _atmosphereLayer.style.bottom = 0;
             _atmosphereLayer.pickingMode = PickingMode.Ignore;
-
-            // Create radial gradient effect using a centered element
-            var gradientCenter = new VisualElement();
-            gradientCenter.style.position = Position.Absolute;
-            gradientCenter.style.width = Length.Percent(150);
-            gradientCenter.style.height = Length.Percent(150);
-            gradientCenter.style.left = Length.Percent(-25);
-            gradientCenter.style.top = Length.Percent(-25);
-            gradientCenter.style.backgroundColor = _atmosphereColor;
-            gradientCenter.style.borderTopLeftRadius = Length.Percent(50);
-            gradientCenter.style.borderTopRightRadius = Length.Percent(50);
-            gradientCenter.style.borderBottomLeftRadius = Length.Percent(50);
-            gradientCenter.style.borderBottomRightRadius = Length.Percent(50);
-            gradientCenter.style.opacity = 0.5f;
-            gradientCenter.pickingMode = PickingMode.Ignore;
-            _atmosphereLayer.Add(gradientCenter);
-
             _vfxContainer.Add(_atmosphereLayer);
         }
 
@@ -1663,35 +1648,10 @@ namespace VeilBreakers.UI.Core
             _vignetteLayer.style.bottom = 0;
             _vignetteLayer.pickingMode = PickingMode.Ignore;
 
-            // Create corner vignettes
-            CreateVignetteCorner(_vignetteLayer, true, true);   // Top-left
-            CreateVignetteCorner(_vignetteLayer, true, false);  // Top-right
-            CreateVignetteCorner(_vignetteLayer, false, true);  // Bottom-left
-            CreateVignetteCorner(_vignetteLayer, false, false); // Bottom-right
-
-            // Top edge
-            var topEdge = new VisualElement();
-            topEdge.style.position = Position.Absolute;
-            topEdge.style.top = 0;
-            topEdge.style.left = Length.Percent(20);
-            topEdge.style.right = Length.Percent(20);
-            topEdge.style.height = Length.Percent(15);
-            topEdge.style.backgroundColor = new Color(0, 0, 0, _vignetteOpacity * 0.5f);
-            topEdge.style.opacity = 0.6f;
-            topEdge.pickingMode = PickingMode.Ignore;
-            _vignetteLayer.Add(topEdge);
-
-            // Bottom edge (stronger)
-            var bottomEdge = new VisualElement();
-            bottomEdge.style.position = Position.Absolute;
-            bottomEdge.style.bottom = 0;
-            bottomEdge.style.left = Length.Percent(20);
-            bottomEdge.style.right = Length.Percent(20);
-            bottomEdge.style.height = Length.Percent(20);
-            bottomEdge.style.backgroundColor = new Color(0, 0, 0, _vignetteOpacity * 0.6f);
-            bottomEdge.style.opacity = 0.7f;
-            bottomEdge.pickingMode = PickingMode.Ignore;
-            _vignetteLayer.Add(bottomEdge);
+            // DISABLED: Rectangle-based vignette corners and edges create visible hard-edged
+            // dark boxes on the title screen. The background art already has natural darkening
+            // at the edges and the ember/particle system provides atmospheric depth.
+            // If a vignette is needed, use a radial gradient texture instead.
 
             _vfxContainer.Add(_vignetteLayer);
         }
