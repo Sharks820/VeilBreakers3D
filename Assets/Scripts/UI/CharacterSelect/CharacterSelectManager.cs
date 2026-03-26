@@ -549,7 +549,8 @@ namespace VeilBreakers.UI.CharacterSelect
             _btnPrev?.RegisterCallback<ClickEvent>(OnPrevClicked);
             _btnNext?.RegisterCallback<ClickEvent>(OnNextClicked);
             _btnBack?.RegisterCallback<ClickEvent>(OnBackClicked);
-            _btnEmbark?.RegisterCallback<ClickEvent>(OnEmbarkClicked);
+            // Embark ClickEvent REMOVED — HoldToEmbarkController owns the hold-to-confirm flow.
+            // A single click must NOT trigger embark; only a completed 1.5s hold should.
             _tabBtnOverview?.RegisterCallback<ClickEvent>(OnTabOverviewClicked);
             _tabBtnAbilities?.RegisterCallback<ClickEvent>(OnTabAbilitiesClicked);
             _tabBtnLore?.RegisterCallback<ClickEvent>(OnTabLoreClicked);
@@ -565,7 +566,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _btnPrev?.UnregisterCallback<ClickEvent>(OnPrevClicked);
             _btnNext?.UnregisterCallback<ClickEvent>(OnNextClicked);
             _btnBack?.UnregisterCallback<ClickEvent>(OnBackClicked);
-            _btnEmbark?.UnregisterCallback<ClickEvent>(OnEmbarkClicked);
+            // Embark ClickEvent removed — HoldToEmbarkController owns hold-to-confirm
             _tabBtnOverview?.UnregisterCallback<ClickEvent>(OnTabOverviewClicked);
             _tabBtnAbilities?.UnregisterCallback<ClickEvent>(OnTabAbilitiesClicked);
             _tabBtnLore?.UnregisterCallback<ClickEvent>(OnTabLoreClicked);
