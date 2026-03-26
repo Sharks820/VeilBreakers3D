@@ -1063,10 +1063,14 @@ namespace VeilBreakers.UI.Menus
             var buttonContainer = menuRoot.Q<VisualElement>("button-container");
             int insertIndex = buttonContainer != null ? menuRoot.IndexOf(buttonContainer) : menuRoot.childCount;
 
-            // --- BOTTOM FADE: Black at bottom, transparent at top (45% height) ---
+            // TitleScreenVFX already handles embers, vignette, and atmospheric layers.
+            // We only add a subtle bottom fade here — all other overlays are DISABLED
+            // to avoid stacking multiple dark layers that create the "dark box" effect.
+
+            // --- BOTTOM FADE ONLY: Subtle darkening at bottom for button readability ---
             _bottomFadeGradient = UIGradientHelper.CreateVerticalGradient(
                 new Color(0f, 0f, 0f, 0f),       // Top: transparent
-                new Color(0f, 0f, 0f, 0.85f)      // Bottom: near-black
+                new Color(0f, 0f, 0f, 0.5f)       // Bottom: moderate dark (was 0.85 — too aggressive)
             );
             var bottomFade = new VisualElement();
             bottomFade.name = "bottom-fade-overlay";
@@ -1075,82 +1079,9 @@ namespace VeilBreakers.UI.Menus
             bottomFade.style.left = 0;
             bottomFade.style.right = 0;
             bottomFade.style.bottom = 0;
-            bottomFade.style.height = Length.Percent(45);
+            bottomFade.style.height = Length.Percent(35);
             UIGradientHelper.ApplyGradient(bottomFade, _bottomFadeGradient);
             menuRoot.Insert(insertIndex, bottomFade);
-
-            // --- HEAT HAZE: Orange radial glow at demon feet level, pulsing ---
-            _heatHazeGradient = UIGradientHelper.CreateRadialGradient(
-                new Color(1f, 0.31f, 0.04f, 0.06f),  // Center: subtle orange
-                new Color(0f, 0f, 0f, 0f),             // Edges: transparent
-                128
-            );
-            var heatHaze = new VisualElement();
-            heatHaze.name = "heat-haze-overlay";
-            heatHaze.pickingMode = PickingMode.Ignore;
-            heatHaze.style.position = Position.Absolute;
-            heatHaze.style.left = Length.Percent(20);
-            heatHaze.style.right = Length.Percent(20);
-            heatHaze.style.bottom = Length.Percent(10);
-            heatHaze.style.height = Length.Percent(40);
-            heatHaze.style.opacity = 0.4f;
-            UIGradientHelper.ApplyGradient(heatHaze, _heatHazeGradient);
-            menuRoot.Insert(insertIndex, heatHaze);
-
-            // Animate heat haze opacity (pulsing 0.4 → 1.0 over 3s)
-            float heatPhase = 0f;
-            heatHaze.schedule.Execute(() =>
-            {
-                heatPhase += 0.05f * 2.1f; // ~3s full cycle
-                float pulse = Mathf.Sin(heatPhase) * 0.5f + 0.5f; // 0 → 1
-                heatHaze.style.opacity = Mathf.Lerp(0.4f, 1f, pulse);
-            }).Every(50);
-
-            // --- VIGNETTE: Dark edges for cinematic focus ---
-            _vignetteGradient = UIGradientHelper.CreateRadialGradient(
-                new Color(0f, 0f, 0f, 0f),       // Center: transparent
-                new Color(0f, 0f, 0f, 0.8f),      // Edges: dark
-                256
-            );
-            var vignette = new VisualElement();
-            vignette.name = "vignette-overlay";
-            vignette.pickingMode = PickingMode.Ignore;
-            vignette.style.position = Position.Absolute;
-            vignette.style.left = 0;
-            vignette.style.top = 0;
-            vignette.style.right = 0;
-            vignette.style.bottom = 0;
-            UIGradientHelper.ApplyGradient(vignette, _vignetteGradient);
-            menuRoot.Insert(insertIndex, vignette);
-
-            // --- SCANLINES: Very subtle horizontal stripes ---
-            int scanW = 4, scanH = 256;
-            _scanlineTexture = new Texture2D(scanW, scanH, TextureFormat.RGBA32, false);
-            _scanlineTexture.wrapMode = TextureWrapMode.Repeat;
-            _scanlineTexture.filterMode = FilterMode.Point;
-            var scanPixels = new Color[scanW * scanH];
-            for (int y = 0; y < scanH; y++)
-            {
-                // Every other 3px band gets a very faint dark line
-                bool isDark = (y % 6) >= 3;
-                Color c = isDark ? new Color(0f, 0f, 0f, 0.03f) : new Color(0f, 0f, 0f, 0f);
-                for (int x = 0; x < scanW; x++)
-                    scanPixels[y * scanW + x] = c;
-            }
-            _scanlineTexture.SetPixels(scanPixels);
-            _scanlineTexture.Apply(false, false);
-
-            var scanlines = new VisualElement();
-            scanlines.name = "scanline-overlay";
-            scanlines.pickingMode = PickingMode.Ignore;
-            scanlines.style.position = Position.Absolute;
-            scanlines.style.left = 0;
-            scanlines.style.top = 0;
-            scanlines.style.right = 0;
-            scanlines.style.bottom = 0;
-            scanlines.style.backgroundImage = new StyleBackground(_scanlineTexture);
-            scanlines.style.backgroundSize = new BackgroundSize(new Length(4, LengthUnit.Pixel), new Length(256, LengthUnit.Pixel));
-            menuRoot.Insert(insertIndex, scanlines);
         }
 
         /// <summary>
