@@ -244,6 +244,7 @@ TemplateContainer {
     opacity: 0.35;
     -unity-text-align: middle-center;
     margin-top: 4px;
+    text-shadow: 0 0 8px rgba(200, 160, 60, 0.15);
 }
 
 .drag-hint {
@@ -354,9 +355,10 @@ TemplateContainer {
 }
 
 .tab-btn-active {
-    color: var(--text-primary);
+    color: rgba(240, 235, 250, 0.95);
     border-bottom-color: var(--hero-primary, rgba(200, 160, 60, 0.9));
     background-color: rgba(255, 255, 255, 0.03);
+    text-shadow: 0 0 8px rgba(200, 160, 60, 0.3);
 }
 
 .tab-btn:hover {
@@ -420,9 +422,10 @@ TemplateContainer {
 .hero-name {
     font-size: 28px;
     -unity-font-style: bold;
-    color: var(--text-primary);
+    color: #f0ebfa;
     letter-spacing: 4px;
     margin-bottom: 2px;
+    text-shadow: 0 0 20px rgba(200, 160, 60, 0.3);
     transition-property: color;
     transition-duration: var(--transition-slow);
     transition-timing-function: var(--ease-out-expo);
@@ -437,6 +440,7 @@ TemplateContainer {
     border-left-width: 3px;
     border-left-color: var(--hero-primary);
     padding-left: 10px;
+    text-shadow: 0 0 6px rgba(200, 160, 60, 0.2);
     transition-property: color, border-left-color;
     transition-duration: var(--transition-slow), var(--transition-slow);
 }
@@ -531,7 +535,7 @@ TemplateContainer {
 
 .stat-chip-value {
     font-size: 14px;
-    color: var(--text-primary);
+    color: rgba(240, 235, 250, 0.95);
     -unity-font-style: bold;
 }
 
@@ -674,6 +678,7 @@ TemplateContainer {
     color: var(--hero-accent, rgb(255, 210, 112));
     letter-spacing: 1px;
     margin-bottom: 4px;
+    text-shadow: 0 0 8px rgba(200, 160, 60, 0.2);
 }
 
 .champion-brand-label {
@@ -785,6 +790,7 @@ TemplateContainer {
     -unity-font-style: bold;
     color: rgba(240, 235, 250, 0.85);
     -unity-text-align: middle-center;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 /* Legacy bar classes — kept so any stale USS references don't hard-error */

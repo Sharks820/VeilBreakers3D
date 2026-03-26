@@ -2321,7 +2321,8 @@ TemplateContainer {
     border-radius: 3px;
     border-color: rgba(160, 115, 55, 0.45);
     border-top-color: rgba(200, 155, 80, 0.35);
-    color: rgb(255, 230, 180);
+    color: rgba(210, 180, 130, 0.85);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
     transition-property: scale, border-color, border-width, color, translate;
     transition-duration: 0.15s, 0.25s, 0.15s, 0.25s, 0.15s;
     transition-timing-function: ease-out;
@@ -2335,9 +2336,10 @@ TemplateContainer {
 #menu-root #btn-exit:hover {
     /* background-color removed — C# ApplyButtonGradients owns gradient swap on hover */
     border-width: 2px;
-    border-color: rgba(255, 180, 80, 0.85);
+    border-color: rgba(255, 180, 80, 0.7);
     border-top-color: rgba(255, 220, 140, 0.65);
-    color: rgb(255, 250, 235);
+    color: #fffae8;
+    text-shadow: 0 0 12px rgba(255, 200, 100, 0.5);
     scale: 1.04 1.04;
     translate: 0 -2px;
 }
