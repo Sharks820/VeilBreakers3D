@@ -326,12 +326,12 @@ TemplateContainer {
 
 .tab-btn {
     background-color: transparent;
-    color: rgba(140, 130, 160, 0.4);
+    color: rgba(170, 160, 190, 0.65);
     border-width: 0;
     border-bottom-width: 2px;
     border-bottom-color: transparent;
     padding: 5px 12px;
-    font-size: 10px;
+    font-size: 11px;
     -unity-font-style: bold;
     letter-spacing: 3px;
     transition-property: border-bottom-color, background-color;
@@ -434,7 +434,7 @@ TemplateContainer {
 
 .hero-quote {
     font-size: 10px;
-    color: rgba(180, 170, 200, 0.3);
+    color: rgba(210, 200, 230, 0.7);
     -unity-font-style: italic;
     margin-bottom: 8px;
     white-space: normal;
@@ -517,7 +517,7 @@ TemplateContainer {
     color: var(--text-muted);
     letter-spacing: 2px;
     -unity-font-style: bold;
-    opacity: 0.85;
+    opacity: 1;
 }
 
 .stat-chip-value {
@@ -544,7 +544,7 @@ TemplateContainer {
     height: 5px;
     background-color: rgba(5, 5, 12, 0.7);
     border-radius: 2px;
-    overflow: visible;
+    overflow: hidden;
     position: relative;
 }
 
@@ -555,7 +555,7 @@ TemplateContainer {
     transition-duration: 0.4s, 0.6s;
     transition-timing-function: ease-out, ease-in-out;
     position: relative;
-    overflow: visible;
+    overflow: hidden;
 }
 
 /* Per-stat colors — top accent, value text, label color, and bar fill */
@@ -691,7 +691,7 @@ TemplateContainer {
 
 .champion-desc {
     font-size: 10px;
-    color: rgba(180, 170, 200, 0.4);
+    color: rgba(195, 185, 215, 0.65);
     white-space: normal;
     margin-top: 8px;
 }
@@ -753,7 +753,7 @@ TemplateContainer {
 
 .champion-skill-name {
     font-size: 10px;
-    color: rgba(210, 200, 230, 0.75);
+    color: rgba(225, 215, 240, 0.85);
     letter-spacing: 1px;
 }
 
@@ -942,7 +942,7 @@ TemplateContainer {
 /* Skill description text */
 .ability-desc {
     font-size: 10px;
-    color: rgba(180, 170, 200, 0.5);
+    color: rgba(195, 185, 215, 0.65);
     white-space: normal;
     -unity-font-style: italic;
     margin-top: 2px;
@@ -1223,6 +1223,9 @@ TemplateContainer {
     border-width: 1px;
     border-color: rgba(100, 80, 130, 0.3);
     -unity-text-align: middle-center;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
     transition-property: color, border-color, scale, background-color;
     transition-duration: 0.25s, 0.25s, 0.25s, 0.25s;
     transition-timing-function: ease-out, ease-out, ease-out, ease-out;

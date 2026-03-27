@@ -130,22 +130,24 @@ namespace VeilBreakers.UI.CharacterSelect
             _progressRing = root.Q<VisualElement>(kEmbarkProgressRing);
             if (_progressRing == null && _btnEmbark != null)
             {
-                // Background track (full width, sits at bottom of button)
+                // Background track (full button coverage, invisible - only fill shows)
                 var progressTrack = new VisualElement();
                 progressTrack.name = "embark-progress-track";
                 progressTrack.pickingMode = PickingMode.Ignore;
                 progressTrack.style.position = Position.Absolute;
                 progressTrack.style.left = 0;
                 progressTrack.style.right = 0;
+                progressTrack.style.top = 0;
                 progressTrack.style.bottom = 0;
-                progressTrack.style.height = 4;
-                progressTrack.style.backgroundColor = new Color(0f, 0f, 0f, 0.5f);
-                progressTrack.style.borderBottomLeftRadius = 6f;
-                progressTrack.style.borderBottomRightRadius = 6f;
+                progressTrack.style.backgroundColor = new Color(0f, 0f, 0f, 0f);  // Transparent
+                progressTrack.style.borderTopLeftRadius = 4f;
+                progressTrack.style.borderTopRightRadius = 4f;
+                progressTrack.style.borderBottomLeftRadius = 4f;
+                progressTrack.style.borderBottomRightRadius = 4f;
                 progressTrack.style.overflow = Overflow.Hidden;
                 _btnEmbark.Add(progressTrack);
 
-                // Fill bar (width animates 0% → 100%)
+                // Fill bar (width animates 0% → 100%, full height overlay)
                 _progressRing = new VisualElement();
                 _progressRing.name = kEmbarkProgressRing;
                 _progressRing.pickingMode = PickingMode.Ignore;
@@ -154,9 +156,9 @@ namespace VeilBreakers.UI.CharacterSelect
                 _progressRing.style.top = 0;
                 _progressRing.style.bottom = 0;
                 _progressRing.style.width = new Length(0, LengthUnit.Percent);
-                _progressRing.style.backgroundColor = new Color(1f, 0.75f, 0.25f, 0.9f);
-                _progressRing.style.borderBottomLeftRadius = 6f;
-                _progressRing.style.borderBottomRightRadius = 6f;
+                _progressRing.style.backgroundColor = new Color(1f, 0.85f, 0.3f, 0.45f);  // Semi-transparent gold
+                _progressRing.style.borderTopLeftRadius = 4f;
+                _progressRing.style.borderBottomLeftRadius = 4f;
                 _progressRing.usageHints = UsageHints.DynamicTransform;
                 progressTrack.Add(_progressRing);
 
@@ -317,8 +319,8 @@ namespace VeilBreakers.UI.CharacterSelect
         // =============================================================================
 
         /// <summary>
-        /// Updates the progress ring visual during hold. Uses scale and opacity
-        /// to provide visual feedback of hold progress.
+        /// Updates the progress ring visual during hold. Uses width animation
+        /// and color progression to provide visual feedback of hold progress.
         /// </summary>
         private void UpdateProgressVisual(float progress)
         {
@@ -333,11 +335,13 @@ namespace VeilBreakers.UI.CharacterSelect
             float pct = Mathf.Clamp01(progress) * 100f;
             _progressRing.style.width = new Length(pct, LengthUnit.Percent);
 
-            // Brighten the fill bar as it progresses
-            float r = Mathf.Lerp(0.8f, 1f, progress);
-            float g = Mathf.Lerp(0.6f, 0.85f, progress);
-            float b = Mathf.Lerp(0.15f, 0.3f, progress);
-            _progressRing.style.backgroundColor = new Color(r, g, b, 0.9f);
+            // Brighten the fill bar color as it progresses (semi-transparent)
+            // Interpolate from rgba(255,200,60,0.35) to rgba(255,220,80,0.55)
+            float r = 1f;  // Red channel stays at max
+            float g = Mathf.Lerp(200f / 255f, 220f / 255f, progress);  // 0.784 → 0.863
+            float b = Mathf.Lerp(60f / 255f, 80f / 255f, progress);    // 0.235 → 0.314
+            float a = Mathf.Lerp(0.35f, 0.55f, progress);
+            _progressRing.style.backgroundColor = new Color(r, g, b, a);
         }
 
         /// <summary>
@@ -349,7 +353,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             _progressRing.RemoveFromClassList(kHoldActiveClass);
             _progressRing.style.width = new Length(0, LengthUnit.Percent);
-            _progressRing.style.backgroundColor = new Color(1f, 0.75f, 0.25f, 0.9f);
+            _progressRing.style.backgroundColor = new Color(1f, 200f / 255f, 60f / 255f, 0.35f);  // rgba(255,200,60,0.35)
         }
 
         // =============================================================================

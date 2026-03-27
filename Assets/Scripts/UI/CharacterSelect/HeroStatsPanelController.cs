@@ -291,12 +291,23 @@ namespace VeilBreakers.UI.CharacterSelect
             headerRow.Add(tags);
             info.Add(headerRow);
 
-            // Description
-            if (skillData != null && !string.IsNullOrEmpty(skillData.description))
+            // Description (with fallback for missing descriptions)
+            if (skillData != null)
             {
-                var desc = new Label(skillData.description);
-                desc.AddToClassList("ability-desc");
-                info.Add(desc);
+                string descriptionText = skillData.description;
+
+                // If description is empty, generate a brief fallback based on skill type/data
+                if (string.IsNullOrEmpty(descriptionText))
+                {
+                    descriptionText = GenerateFallbackDescription(skillData);
+                }
+
+                if (!string.IsNullOrEmpty(descriptionText))
+                {
+                    var desc = new Label(descriptionText);
+                    desc.AddToClassList("ability-desc");
+                    info.Add(desc);
+                }
             }
 
             card.Add(info);
@@ -315,6 +326,51 @@ namespace VeilBreakers.UI.CharacterSelect
                 }
             }
             return string.Join(" ", parts);
+        }
+
+        /// <summary>
+        /// Generate a brief fallback description for skills with missing descriptions.
+        /// Based on skill properties: power, cost, cooldown, target type.
+        /// </summary>
+        private static string GenerateFallbackDescription(SkillData skill)
+        {
+            if (skill == null) return "";
+
+            var targetType = skill.GetTargetType();
+            var skillType = skill.GetSkillType();
+
+            // Determine skill category
+            string category = "";
+            if (skillType == SkillType.ATTACK) category = "Attack";
+            else if (skillType == SkillType.DEFENSE) category = "Defense";
+            else if (skillType == SkillType.HEAL) category = "Heal";
+            else if (skillType == SkillType.ULTIMATE) category = "Ultimate";
+            else category = "Ability";
+
+            // Determine target description
+            string target = "";
+            if (targetType == TargetType.SINGLE_ENEMY) target = "single enemy";
+            else if (targetType == TargetType.ALL_ENEMIES) target = "all enemies";
+            else if (targetType == TargetType.SINGLE_ALLY) target = "single ally";
+            else if (targetType == TargetType.ALL_ALLIES) target = "all allies";
+            else if (targetType == TargetType.SELF) target = "yourself";
+
+            // Build description
+            string desc = $"{category} ability";
+            if (!string.IsNullOrEmpty(target)) desc += $" targeting {target}";
+
+            if (skill.base_power > 0)
+                desc += $". Power: {skill.base_power}";
+
+            if (skill.mp_cost > 0)
+                desc += $", MP Cost: {skill.mp_cost}";
+            else if (skill.hp_cost > 0)
+                desc += $", HP Cost: {skill.hp_cost}";
+
+            if (skill.cooldown_turns > 0)
+                desc += $", Cooldown: {skill.cooldown_turns} turns";
+
+            return desc + ".";
         }
     }
 }

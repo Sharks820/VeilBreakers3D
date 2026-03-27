@@ -1417,7 +1417,7 @@ namespace VeilBreakers.UI.Menus
             {
                 foreach (var kvp in _hoverEnterCallbacks)
                 {
-                    kvp.Key?.UnregisterCallback(kvp.Value);
+                    kvp.Key?.UnregisterCallback<MouseEnterEvent>(kvp.Value);
                 }
                 _hoverEnterCallbacks.Clear();
             }
@@ -1426,7 +1426,7 @@ namespace VeilBreakers.UI.Menus
             {
                 foreach (var kvp in _hoverLeaveCallbacks)
                 {
-                    kvp.Key?.UnregisterCallback(kvp.Value);
+                    kvp.Key?.UnregisterCallback<MouseLeaveEvent>(kvp.Value);
                 }
                 _hoverLeaveCallbacks.Clear();
             }

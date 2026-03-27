@@ -527,6 +527,21 @@ namespace VeilBreakers.Managers
             return oldestSlot;
         }
 
+        /// <summary>
+        /// Returns true if all manual save slots (0..kSlotCount-1) have valid save data.
+        /// Used to determine if the player must choose a slot to overwrite for New Game.
+        /// </summary>
+        public async Task<bool> AreAllManualSlotsFullAsync()
+        {
+            for (int i = 0; i < kSlotCount; i++)
+            {
+                var meta = await GetSlotMetadataAsync(i);
+                if (meta == null || !meta.hasData || meta.isCorrupted)
+                    return false;
+            }
+            return true;
+        }
+
         // =============================================================================
         // PUBLIC API - CURRENT SAVE OPERATIONS
         // =============================================================================

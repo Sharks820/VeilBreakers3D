@@ -252,14 +252,18 @@ namespace VeilBreakers.UI.CharacterSelect
             // In Carousel zone, Left/Right navigates heroes instead of zones
             if (_currentZone == FocusZone.Carousel && (dirIndex == 2 || dirIndex == 3))
             {
+                int newIndex;
                 if (dirIndex == 2)
                 {
-                    CharSelectEvents.RaiseNavigationRequested(Mathf.Max(0, _currentHeroIndex - 1));
+                    // Left: wrap from 0 to last hero
+                    newIndex = (_currentHeroIndex - 1 + _heroCount) % _heroCount;
                 }
                 else
                 {
-                    CharSelectEvents.RaiseNavigationRequested(_currentHeroIndex + 1);
+                    // Right: wrap from last hero to 0
+                    newIndex = (_currentHeroIndex + 1) % _heroCount;
                 }
+                CharSelectEvents.RaiseNavigationRequested(newIndex);
 
                 PlayNavTick();
                 evt.StopPropagation();

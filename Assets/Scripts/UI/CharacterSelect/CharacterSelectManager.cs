@@ -107,6 +107,11 @@ namespace VeilBreakers.UI.CharacterSelect
         private VisualElement _skeletonOverlay;
         private Label _embarkSubtitle;
 
+        // Slot replacement overlay (when all save slots full)
+        private TaskCompletionSource<int> _slotReplacementTcs;
+        private VisualElement _slotReplacementOverlay;
+        private SaveSlotMetadata[] _slotReplacementMetadata;
+
         // =============================================================================
         // PROPERTIES
         // =============================================================================
@@ -382,6 +387,16 @@ namespace VeilBreakers.UI.CharacterSelect
             ApplyInitialState();
             _isInitialized = true;
             CharSelectEvents.RaiseScreenReady();
+
+            // Re-broadcast hero data after screen ready so components initialized by
+            // RaiseScreenReady() receive the current hero state (fixes initial text jumble)
+            if (_heroList != null && _heroList.Count > 0)
+            {
+                _root?.schedule.Execute(() =>
+                {
+                    CharSelectEvents.RaiseHeroChanged(_currentIndex, _heroList[_currentIndex], CurrentConfig);
+                }).ExecuteLater(100);
+            }
 
             // Debug overlay removed — CharSelect is working
         }
@@ -794,8 +809,30 @@ namespace VeilBreakers.UI.CharacterSelect
                 return;
             }
             var saveManager = SaveManager.Instance;
-            int slot = await saveManager.GetBestNewGameSlotAsync();
+
+            // Check if all manual slots are full - if so, show replacement prompt
+            int slot;
+            bool allFull = await saveManager.AreAllManualSlotsFullAsync();
             token.ThrowIfCancellationRequested();
+
+            if (allFull)
+            {
+                // Show replacement dialog and await user choice
+                slot = await ShowSlotReplacementOverlayAsync(token);
+                if (slot < 0)
+                {
+                    // User cancelled
+                    return;
+                }
+                // Delete the chosen slot before creating new save
+                saveManager.DeleteSlot(slot);
+            }
+            else
+            {
+                slot = await saveManager.GetBestNewGameSlotAsync();
+            }
+            token.ThrowIfCancellationRequested();
+
             string heroName = string.IsNullOrEmpty(hero.display_name) ? hero.hero_id : hero.display_name;
             bool created = await saveManager.CreateNewSaveAsync(slot, hero.hero_id, heroName, hero.GetPrimaryPath());
             token.ThrowIfCancellationRequested();
@@ -829,6 +866,291 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             _toastContainer?.RemoveFromClassList("toast-visible");
             _toastContainer?.AddToClassList("toast-hidden");
+        }
+
+        // =============================================================================
+        // SLOT REPLACEMENT OVERLAY
+        // =============================================================================
+
+        /// <summary>
+        /// Shows a fullscreen overlay prompting the player to choose a save slot to replace.
+        /// Returns the slot index (0-2) if user selects a slot, or -1 if they cancel.
+        /// </summary>
+        private async Task<int> ShowSlotReplacementOverlayAsync(CancellationToken token)
+        {
+            _slotReplacementTcs = new TaskCompletionSource<int>();
+
+            // Register cancellation
+            using var reg = token.Register(() => _slotReplacementTcs.TrySetResult(-1));
+
+            // Build overlay
+            BuildSlotReplacementOverlay();
+
+            // Load slot metadata
+            if (SaveManager.HasInstance)
+            {
+                var task = SaveManager.Instance.GetAllSlotsMetadataAsync();
+                while (!task.IsCompleted) await Awaitable.NextFrameAsync();
+                if (task.IsCompletedSuccessfully)
+                {
+                    _slotReplacementMetadata = task.Result;
+                }
+            }
+
+            // Show with fade
+            if (_slotReplacementOverlay != null)
+            {
+                _slotReplacementOverlay.style.display = DisplayStyle.Flex;
+                _slotReplacementOverlay.style.opacity = 0f;
+                PopulateReplacementSlots();
+
+                // Animate fade in
+                PrimeTween.Tween.Custom(_slotReplacementOverlay, 0f, 1f, 0.3f,
+                    onValueChange: (el, val) => el.style.opacity = val);
+
+                await Awaitable.NextFrameAsync();
+            }
+
+            int result = await _slotReplacementTcs.Task;
+
+            // Hide overlay
+            if (_slotReplacementOverlay != null)
+            {
+                PrimeTween.Tween.Custom(_slotReplacementOverlay, 1f, 0f, 0.2f,
+                    onValueChange: (el, val) => el.style.opacity = val);
+                await Awaitable.WaitForSecondsAsync(0.2f);
+
+                _slotReplacementOverlay.style.display = DisplayStyle.None;
+                _slotReplacementOverlay.parent?.Remove(_slotReplacementOverlay);
+                _slotReplacementOverlay = null;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Builds the slot replacement overlay structure (fullscreen backdrop + centered panel).
+        /// </summary>
+        private void BuildSlotReplacementOverlay()
+        {
+            if (_root == null) return;
+
+            // Create backdrop overlay
+            _slotReplacementOverlay = new VisualElement();
+            _slotReplacementOverlay.name = "slot-replacement-overlay";
+            _slotReplacementOverlay.style.position = Position.Absolute;
+            _slotReplacementOverlay.style.left = 0;
+            _slotReplacementOverlay.style.top = 0;
+            _slotReplacementOverlay.style.right = 0;
+            _slotReplacementOverlay.style.bottom = 0;
+            _slotReplacementOverlay.style.backgroundColor = new StyleColor(new Color(0, 0, 0, 0.7f));
+            _slotReplacementOverlay.pickingMode = PickingMode.Position; // blocks clicks behind
+            _slotReplacementOverlay.style.display = DisplayStyle.None;
+
+            // Centered panel
+            var panel = new VisualElement();
+            panel.name = "slot-replacement-panel";
+            panel.style.position = Position.Absolute;
+            panel.style.left = Length.Percent(50);
+            panel.style.top = Length.Percent(50);
+            panel.style.translate = new Translate(Length.Percent(-50), Length.Percent(-50));
+            panel.style.width = 900;
+            panel.style.maxHeight = 600;
+            panel.style.backgroundColor = new StyleColor(new Color(0.12f, 0.08f, 0.06f, 0.95f)); // dark brown
+            panel.style.borderLeftWidth = panel.style.borderRightWidth = panel.style.borderTopWidth = panel.style.borderBottomWidth = 2;
+            panel.style.borderLeftColor = panel.style.borderRightColor = panel.style.borderTopColor = panel.style.borderBottomColor = new Color(1f, 0.65f, 0.2f, 0.8f); // warm orange
+            panel.style.borderBottomLeftRadius = panel.style.borderBottomRightRadius = panel.style.borderTopLeftRadius = panel.style.borderTopRightRadius = 8;
+            panel.style.paddingLeft = panel.style.paddingRight = 30;
+            panel.style.paddingTop = panel.style.paddingBottom = 25;
+
+            // Header
+            var header = new VisualElement();
+            header.style.marginBottom = 20;
+
+            var title = new Label("ALL SAVE SLOTS FULL");
+            title.style.fontSize = 28;
+            title.style.color = new Color(1f, 0.65f, 0.2f, 1f); // warm orange
+            title.style.unityFontStyleAndWeight = FontStyle.Bold;
+            title.style.marginBottom = 8;
+            header.Add(title);
+
+            var subtitle = new Label("Choose a save to replace");
+            subtitle.style.fontSize = 14;
+            subtitle.style.color = new Color(0.85f, 0.85f, 0.8f, 0.9f); // light beige
+            header.Add(subtitle);
+
+            panel.Add(header);
+
+            // Slots container (scrollable)
+            var slotsContainer = new VisualElement();
+            slotsContainer.name = "slot-replacement-slots";
+            slotsContainer.style.display = DisplayStyle.Flex;
+            slotsContainer.style.flexDirection = FlexDirection.Column;
+            slotsContainer.style.gap = 12;
+            slotsContainer.style.maxHeight = 400;
+            slotsContainer.style.overflow = Overflow.Hidden;
+
+            // We'll populate this in PopulateReplacementSlots
+            slotsContainer.style.flexGrow = 1;
+            panel.Add(slotsContainer);
+
+            // Footer with cancel button
+            var footer = new VisualElement();
+            footer.style.marginTop = 20;
+            footer.style.flexDirection = FlexDirection.Row;
+            footer.style.justifyContent = Justify.Center;
+
+            var cancelBtn = new Button();
+            cancelBtn.text = "CANCEL";
+            cancelBtn.style.paddingLeft = cancelBtn.style.paddingRight = 30;
+            cancelBtn.style.paddingTop = cancelBtn.style.paddingBottom = 10;
+            cancelBtn.style.fontSize = 14;
+            cancelBtn.style.backgroundColor = new StyleColor(new Color(0.4f, 0.25f, 0.15f, 0.8f));
+            cancelBtn.style.borderLeftWidth = cancelBtn.style.borderRightWidth = cancelBtn.style.borderTopWidth = cancelBtn.style.borderBottomWidth = 1;
+            cancelBtn.style.borderLeftColor = cancelBtn.style.borderRightColor = cancelBtn.style.borderTopColor = cancelBtn.style.borderBottomColor = new Color(0.7f, 0.5f, 0.3f, 0.6f);
+            cancelBtn.style.borderBottomLeftRadius = cancelBtn.style.borderBottomRightRadius = cancelBtn.style.borderTopLeftRadius = cancelBtn.style.borderTopRightRadius = 4;
+            cancelBtn.style.color = new Color(0.85f, 0.85f, 0.8f, 1f);
+            cancelBtn.RegisterCallback<ClickEvent>(evt =>
+            {
+                _slotReplacementTcs?.TrySetResult(-1);
+            });
+            footer.Add(cancelBtn);
+
+            panel.Add(footer);
+            _slotReplacementOverlay.Add(panel);
+
+            // Add to root
+            _root.Add(_slotReplacementOverlay);
+        }
+
+        /// <summary>
+        /// Populates the slot replacement panel with slot cards.
+        /// </summary>
+        private void PopulateReplacementSlots()
+        {
+            if (_slotReplacementOverlay == null) return;
+
+            var slotsContainer = _slotReplacementOverlay.Q<VisualElement>("slot-replacement-slots");
+            if (slotsContainer == null) return;
+
+            slotsContainer.Clear();
+
+            // Show all 3 manual slots
+            for (int i = 0; i < 3; i++)
+            {
+                var meta = _slotReplacementMetadata != null && i < _slotReplacementMetadata.Length
+                    ? _slotReplacementMetadata[i]
+                    : null;
+
+                var card = BuildReplacementSlotCard(i, meta);
+                slotsContainer.Add(card);
+            }
+        }
+
+        /// <summary>
+        /// Builds a single slot card for the replacement overlay.
+        /// </summary>
+        private VisualElement BuildReplacementSlotCard(int slotIndex, SaveSlotMetadata meta)
+        {
+            var card = new VisualElement();
+            card.style.display = DisplayStyle.Flex;
+            card.style.flexDirection = FlexDirection.Row;
+            card.style.backgroundColor = new StyleColor(new Color(0.18f, 0.12f, 0.08f, 0.6f));
+            card.style.borderLeftWidth = card.style.borderRightWidth = card.style.borderTopWidth = card.style.borderBottomWidth = 1;
+            card.style.borderLeftColor = card.style.borderRightColor = card.style.borderTopColor = card.style.borderBottomColor = new Color(0.8f, 0.55f, 0.25f, 0.5f);
+            card.style.borderBottomLeftRadius = card.style.borderBottomRightRadius = card.style.borderTopLeftRadius = card.style.borderTopRightRadius = 4;
+            card.style.paddingLeft = card.style.paddingRight = 20;
+            card.style.paddingTop = card.style.paddingBottom = 15;
+            card.style.justifyContent = Justify.SpaceBetween;
+            card.style.alignItems = Align.Center;
+
+            // Left section: slot info
+            var infoSection = new VisualElement();
+            infoSection.style.display = DisplayStyle.Flex;
+            infoSection.style.flexDirection = FlexDirection.Column;
+            infoSection.style.flexGrow = 1;
+
+            if (meta != null && meta.hasData && !meta.isCorrupted)
+            {
+                // Hero name
+                var heroName = new Label(!string.IsNullOrEmpty(meta.heroName) ? meta.heroName : "Unknown Hero");
+                heroName.style.fontSize = 16;
+                heroName.style.color = new Color(1f, 0.9f, 0.7f, 1f); // light tan
+                heroName.style.unityFontStyleAndWeight = FontStyle.Bold;
+                heroName.style.marginBottom = 4;
+                infoSection.Add(heroName);
+
+                // Details row
+                var detailsRow = new VisualElement();
+                detailsRow.style.display = DisplayStyle.Flex;
+                detailsRow.style.flexDirection = FlexDirection.Row;
+                detailsRow.style.gap = 15;
+
+                var levelLabel = new Label($"LVL {meta.heroLevel}");
+                levelLabel.style.fontSize = 12;
+                levelLabel.style.color = new Color(0.85f, 0.85f, 0.8f, 0.8f);
+                detailsRow.Add(levelLabel);
+
+                if (meta.heroPath != Path.NONE)
+                {
+                    var pathLabel = new Label(meta.heroPath.ToString());
+                    pathLabel.style.fontSize = 12;
+                    pathLabel.style.color = new Color(0.85f, 0.85f, 0.8f, 0.8f);
+                    detailsRow.Add(pathLabel);
+                }
+
+                infoSection.Add(detailsRow);
+
+                // Playtime and date
+                var timeRow = new VisualElement();
+                timeRow.style.display = DisplayStyle.Flex;
+                timeRow.style.flexDirection = FlexDirection.Row;
+                timeRow.style.gap = 20;
+                timeRow.style.marginTop = 6;
+
+                var playtimeLabel = new Label(meta.GetFormattedPlaytime());
+                playtimeLabel.style.fontSize = 11;
+                playtimeLabel.style.color = new Color(0.75f, 0.75f, 0.7f, 0.7f);
+                timeRow.Add(playtimeLabel);
+
+                var dateLabel = new Label(meta.GetFormattedDate());
+                dateLabel.style.fontSize = 11;
+                dateLabel.style.color = new Color(0.75f, 0.75f, 0.7f, 0.7f);
+                timeRow.Add(dateLabel);
+
+                infoSection.Add(timeRow);
+            }
+            else
+            {
+                var emptyLabel = new Label($"SLOT {slotIndex + 1} - EMPTY");
+                emptyLabel.style.fontSize = 14;
+                emptyLabel.style.color = new Color(0.75f, 0.75f, 0.7f, 0.6f);
+                infoSection.Add(emptyLabel);
+            }
+
+            card.Add(infoSection);
+
+            // Right section: replace button
+            var btn = new Button();
+            btn.text = "REPLACE";
+            btn.style.paddingLeft = btn.style.paddingRight = 25;
+            btn.style.paddingTop = btn.style.paddingBottom = 8;
+            btn.style.fontSize = 12;
+            btn.style.backgroundColor = new StyleColor(new Color(0.85f, 0.5f, 0.15f, 0.8f)); // orange-brown
+            btn.style.borderLeftWidth = btn.style.borderRightWidth = btn.style.borderTopWidth = btn.style.borderBottomWidth = 1;
+            btn.style.borderLeftColor = btn.style.borderRightColor = btn.style.borderTopColor = btn.style.borderBottomColor = new Color(1f, 0.7f, 0.3f, 0.9f);
+            btn.style.borderBottomLeftRadius = btn.style.borderBottomRightRadius = btn.style.borderTopLeftRadius = btn.style.borderTopRightRadius = 3;
+            btn.style.color = new Color(0.15f, 0.1f, 0.05f, 1f); // dark brown text
+            btn.style.flexShrink = 0;
+
+            int capturedSlot = slotIndex;
+            btn.RegisterCallback<ClickEvent>(evt =>
+            {
+                _slotReplacementTcs?.TrySetResult(capturedSlot);
+            });
+
+            card.Add(btn);
+            return card;
         }
 
         // =============================================================================

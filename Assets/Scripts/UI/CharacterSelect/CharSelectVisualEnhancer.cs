@@ -40,6 +40,14 @@ namespace VeilBreakers.UI.CharacterSelect
         private VisualElement _root;
         private bool _applied;
 
+        // Cached references for per-hero color updates
+        private VisualElement _panelTopHighlightEl;
+        private VisualElement _panelTopGlowEl;
+        private VisualElement _champSectionEl;
+        private VisualElement _champModelEl;
+        private string _currentHeroId; // Track current hero for color updates
+        private bool _isSubscribed; // Prevent event handler stacking on re-enable
+
         private void OnEnable()
         {
             if (_uiDocument == null) _uiDocument = GetComponent<UIDocument>();
@@ -48,18 +56,26 @@ namespace VeilBreakers.UI.CharacterSelect
             // Defer to let UXML instantiate first
             _uiDocument.rootVisualElement?.schedule.Execute(ApplyVisualPass).ExecuteLater(50);
 
-            // Subscribe to hero changes for dynamic card gradient + stat bar updates
-            CharSelectEvents.OnHeroChanged += HandleHeroChangedForCards;
-            CharSelectEvents.OnHeroChanged += HandleHeroChangedForStatBars;
-            // Subscribe to screen ready in case carousel builds after our initial visual pass
-            CharSelectEvents.OnScreenReady += HandleScreenReadyForCards;
+            // Subscribe to hero changes for dynamic card gradient + stat bar + panel color updates
+            // Only subscribe once to prevent handler stacking on re-enable
+            if (!_isSubscribed)
+            {
+                CharSelectEvents.OnHeroChanged += HandleHeroChangedForCards;
+                CharSelectEvents.OnHeroChanged += HandleHeroChangedForStatBars;
+                CharSelectEvents.OnHeroChanged += HandleHeroChangedForPanelColors;
+                // Subscribe to screen ready in case carousel builds after our initial visual pass
+                CharSelectEvents.OnScreenReady += HandleScreenReadyForCards;
+                _isSubscribed = true;
+            }
         }
 
         private void OnDisable()
         {
             CharSelectEvents.OnHeroChanged -= HandleHeroChangedForCards;
             CharSelectEvents.OnHeroChanged -= HandleHeroChangedForStatBars;
+            CharSelectEvents.OnHeroChanged -= HandleHeroChangedForPanelColors;
             CharSelectEvents.OnScreenReady -= HandleScreenReadyForCards;
+            _isSubscribed = false;
             CleanupTextures();
             _applied = false;
         }
@@ -84,11 +100,23 @@ namespace VeilBreakers.UI.CharacterSelect
 
             _applied = true;
 
-            // Flush any pending stat bar hero change that arrived before visual pass
+            // Flush any pending hero changes that arrived before visual pass
             if (_pendingStatBarHero != null)
             {
                 HandleHeroChangedForStatBars(0, _pendingStatBarHero, null);
                 _pendingStatBarHero = null;
+            }
+            if (!string.IsNullOrEmpty(_pendingHeroIdForColors))
+            {
+                // Create a temporary HeroData-like call — we already have the hero id stashed
+                // Re-fire the full handler by finding data from palette
+                if (kHeroCardPalette.ContainsKey(_pendingHeroIdForColors))
+                {
+                    _currentHeroId = null; // Reset so handler actually runs
+                    var tempData = new HeroData { hero_id = _pendingHeroIdForColors };
+                    HandleHeroChangedForPanelColors(0, tempData, null);
+                }
+                _pendingHeroIdForColors = null;
             }
         }
 
@@ -125,17 +153,17 @@ namespace VeilBreakers.UI.CharacterSelect
             _panelTopHighlight.SetPixels(hlPixels);
             _panelTopHighlight.Apply(false, false);
 
-            var highlight = new VisualElement();
-            highlight.name = "panel-top-highlight";
-            highlight.pickingMode = PickingMode.Ignore;
-            highlight.style.position = Position.Absolute;
-            highlight.style.top = -1;
-            highlight.style.left = 20;
-            highlight.style.right = 20;
-            highlight.style.height = 1;
-            highlight.style.backgroundImage = new StyleBackground(_panelTopHighlight);
-            highlight.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
-            panel.Insert(0, highlight);
+            _panelTopHighlightEl = new VisualElement();
+            _panelTopHighlightEl.name = "panel-top-highlight";
+            _panelTopHighlightEl.pickingMode = PickingMode.Ignore;
+            _panelTopHighlightEl.style.position = Position.Absolute;
+            _panelTopHighlightEl.style.top = -1;
+            _panelTopHighlightEl.style.left = 20;
+            _panelTopHighlightEl.style.right = 20;
+            _panelTopHighlightEl.style.height = 1;
+            _panelTopHighlightEl.style.backgroundImage = new StyleBackground(_panelTopHighlight);
+            _panelTopHighlightEl.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover);
+            panel.Insert(0, _panelTopHighlightEl);
         }
 
         // =====================================================================
@@ -336,27 +364,27 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void ApplyChampionAreaGradients()
         {
-            // Champion section: diagonal-like gradient
-            var champSection = _root.Q<VisualElement>("champion-section");
-            if (champSection == null) champSection = _root.Q<VisualElement>(className: "champion-section-v2");
-            if (champSection != null)
+            // Champion section: diagonal-like gradient (default gold, updated per-hero)
+            _champSectionEl = _root.Q<VisualElement>("champion-section");
+            if (_champSectionEl == null) _champSectionEl = _root.Q<VisualElement>(className: "champion-section-v2");
+            if (_champSectionEl != null)
             {
                 _champAreaGradient = UIGradientHelper.CreateVerticalGradient(
-                    new Color(200f/255f, 160f/255f, 60f/255f, 0.02f),  // Top: faint gold
-                    new Color(0f, 0f, 0f, 0.3f)                         // Bottom: dark
+                    new Color(200f/255f, 160f/255f, 60f/255f, 0.02f),
+                    new Color(0f, 0f, 0f, 0.3f)
                 );
-                UIGradientHelper.ApplyGradient(champSection, _champAreaGradient);
+                UIGradientHelper.ApplyGradient(_champSectionEl, _champAreaGradient);
             }
 
             // Champion model viewer: subtle gradient
-            var champModel = _root.Q<VisualElement>("champion-model-viewer");
-            if (champModel != null)
+            _champModelEl = _root.Q<VisualElement>("champion-model-viewer");
+            if (_champModelEl != null)
             {
                 _champModelGradient = UIGradientHelper.CreateVerticalGradient(
                     new Color(200f/255f, 160f/255f, 60f/255f, 0.03f),
                     new Color(0f, 0f, 0f, 0.2f)
                 );
-                UIGradientHelper.ApplyGradient(champModel, _champModelGradient);
+                UIGradientHelper.ApplyGradient(_champModelEl, _champModelGradient);
             }
         }
 
@@ -392,21 +420,21 @@ namespace VeilBreakers.UI.CharacterSelect
                 panelParent.Insert(panelIndex, outerShadow);
             }
 
-            // --- HERO COLOR TOP GLOW: Subtle gold/hero-color radiance at panel top ---
-            var topGlow = new VisualElement();
-            topGlow.name = "panel-top-glow";
-            topGlow.pickingMode = PickingMode.Ignore;
-            topGlow.style.position = Position.Absolute;
-            topGlow.style.top = -2;
-            topGlow.style.left = Length.Percent(10);
-            topGlow.style.right = Length.Percent(10);
-            topGlow.style.height = 40;
+            // --- HERO COLOR TOP GLOW: Subtle hero-color radiance at panel top (updated per-hero) ---
+            _panelTopGlowEl = new VisualElement();
+            _panelTopGlowEl.name = "panel-top-glow";
+            _panelTopGlowEl.pickingMode = PickingMode.Ignore;
+            _panelTopGlowEl.style.position = Position.Absolute;
+            _panelTopGlowEl.style.top = -2;
+            _panelTopGlowEl.style.left = Length.Percent(10);
+            _panelTopGlowEl.style.right = Length.Percent(10);
+            _panelTopGlowEl.style.height = 40;
             var topGlowTex = UIGradientHelper.CreateVerticalGradient(
                 new Color(200f/255f, 160f/255f, 60f/255f, 0.05f),
                 new Color(0f, 0f, 0f, 0f)
             );
-            UIGradientHelper.ApplyGradient(topGlow, topGlowTex);
-            panel.Insert(0, topGlow);
+            UIGradientHelper.ApplyGradient(_panelTopGlowEl, topGlowTex);
+            panel.Insert(0, _panelTopGlowEl);
 
             // --- INNER GLOW: Faint white at top (simulates inset 0 1px 0 rgba(255,255,255,0.04)) ---
             var innerGlow = new VisualElement();
@@ -806,6 +834,102 @@ namespace VeilBreakers.UI.CharacterSelect
                     return kvp.Key;
             }
             return null;
+        }
+
+        // =====================================================================
+        // PER-HERO PANEL & CHAMPION COLOR UPDATES
+        // =====================================================================
+
+        private string _pendingHeroIdForColors; // Stashed if event fires before visual pass
+
+        /// <summary>
+        /// Updates panel highlight, top glow, and champion area gradients to match current hero.
+        /// Called on every hero change to ensure all runtime-generated textures use hero colors.
+        /// </summary>
+        private void HandleHeroChangedForPanelColors(int index, HeroData data, HeroDisplayConfig config)
+        {
+            if (data == null) return;
+
+            string heroId = data.hero_id?.ToLowerInvariant();
+            if (string.IsNullOrEmpty(heroId)) return;
+
+            // Stash if visual pass hasn't run yet
+            if (_root == null || !_applied)
+            {
+                _pendingHeroIdForColors = heroId;
+                return;
+            }
+
+            if (heroId == _currentHeroId) return; // No change needed
+            _currentHeroId = heroId;
+
+            // Get hero colors from palette (fall back to Vex gold if unknown hero)
+            if (!kHeroCardPalette.TryGetValue(heroId, out var colors))
+            {
+                if (kHeroCardPalette.TryGetValue("vex", out var fallback))
+                    colors = fallback;
+                else
+                    return;
+            }
+
+            Color heroColor = new Color(colors.BorderColor.r, colors.BorderColor.g, colors.BorderColor.b, 1f);
+            Color heroColorFaint = new Color(heroColor.r, heroColor.g, heroColor.b, 0.02f);
+            Color heroColorMid = new Color(heroColor.r, heroColor.g, heroColor.b, 0.03f);
+
+            // --- Panel top highlight: horizontal line tinted with hero color ---
+            if (_panelTopHighlightEl != null)
+            {
+                DestroyTex(ref _panelTopHighlight);
+                int hlW = 256, hlH = 1;
+                _panelTopHighlight = new Texture2D(hlW, hlH, TextureFormat.RGBA32, false);
+                _panelTopHighlight.wrapMode = TextureWrapMode.Clamp;
+                _panelTopHighlight.filterMode = FilterMode.Bilinear;
+                var hlPixels = new Color[hlW];
+                for (int x = 0; x < hlW; x++)
+                {
+                    float t = (float)x / (hlW - 1);
+                    float fade = 1f - Mathf.Abs(t * 2f - 1f);
+                    fade *= fade;
+                    hlPixels[x] = new Color(heroColor.r, heroColor.g, heroColor.b, 0.5f * fade);
+                }
+                _panelTopHighlight.SetPixels(hlPixels);
+                _panelTopHighlight.Apply(false, false);
+                _panelTopHighlightEl.style.backgroundImage = new StyleBackground(_panelTopHighlight);
+            }
+
+            // --- Panel top glow: vertical gradient with hero color ---
+            if (_panelTopGlowEl != null)
+            {
+                var newGlowTex = UIGradientHelper.CreateVerticalGradient(
+                    new Color(heroColor.r, heroColor.g, heroColor.b, 0.05f),
+                    new Color(0f, 0f, 0f, 0f)
+                );
+                UIGradientHelper.ApplyGradient(_panelTopGlowEl, newGlowTex);
+                // Old texture cleaned up by UIGradientHelper or GC
+            }
+
+            // --- Champion area gradient: faint hero color ---
+            if (_champSectionEl != null)
+            {
+                DestroyTex(ref _champAreaGradient);
+                _champAreaGradient = UIGradientHelper.CreateVerticalGradient(heroColorFaint, new Color(0f, 0f, 0f, 0.3f));
+                UIGradientHelper.ApplyGradient(_champSectionEl, _champAreaGradient);
+            }
+
+            // --- Champion model gradient: faint hero color ---
+            if (_champModelEl != null)
+            {
+                DestroyTex(ref _champModelGradient);
+                _champModelGradient = UIGradientHelper.CreateVerticalGradient(heroColorMid, new Color(0f, 0f, 0f, 0.2f));
+                UIGradientHelper.ApplyGradient(_champModelEl, _champModelGradient);
+            }
+
+            // --- Panel top border color (USS border-top-color) ---
+            var panel = _root.Q<VisualElement>("info-panel-container");
+            if (panel != null)
+            {
+                panel.style.borderTopColor = new Color(heroColor.r, heroColor.g, heroColor.b, 0.5f);
+            }
         }
 
         // =====================================================================
