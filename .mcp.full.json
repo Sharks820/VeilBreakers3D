@@ -23,13 +23,6 @@
       ],
       "description": "Symbol-aware code navigation and scoped edits"
     },
-    "mcp-unity": {
-      "type": "stdio",
-      "command": "node",
-      "args": ["Tools/mcp/launch-unity-mcp.js"],
-      "disabled": true,
-      "description": "Unity Editor control - screenshots, scenes, GameObjects, builds, console output, prefabs, components. DISABLED: com.gamelovers.mcp-unity package not in PackageCache. Re-enable after installing the Unity package."
-    },
     "gemini-cli": {
       "type": "stdio",
       "command": "node",
@@ -53,16 +46,6 @@
       "command": "node",
       "args": ["Tools/mcp/github-mcp-launcher.js"],
       "description": "GitHub operations - PRs, issues, commits, CI status. Token auto-sourced from gh CLI."
-    },
-    "blender": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": ["blender-mcp"],
-      "env": {
-        "BLENDER_PORT": "9876"
-      },
-      "disabled": true,
-      "description": "REPLACED by vb-blender — generic blender-mcp has fewer capabilities"
     },
     "vb-blender": {
       "type": "stdio",

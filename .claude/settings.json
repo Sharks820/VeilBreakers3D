@@ -92,7 +92,7 @@
         ]
       },
       {
-        "matcher": "mcp__mcp-unity__recompile_scripts|Bash",
+        "matcher": "mcp__vb-unity__unity_editor|Bash",
         "hooks": [
           {
             "type": "command",

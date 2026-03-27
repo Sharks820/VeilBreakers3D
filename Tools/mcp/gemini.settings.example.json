@@ -11,9 +11,20 @@
       "command": "npx",
       "args": ["-y", "mcp-knowledge-graph", "--memory-path", "C:/Users/Conner/.claude/memory"]
     },
-    "mcp-unity": {
-      "command": "node",
-      "args": ["Tools/mcp/launch-unity-mcp.js"]
+    "vb-blender": {
+      "command": "uv",
+      "args": ["--directory", "C:/Users/Conner/OneDrive/Documents/veilbreakers-gamedev-toolkit/Tools/mcp-toolkit", "run", "vb-blender-mcp"],
+      "env": {
+        "BLENDER_PORT": "9876",
+        "BLENDER_HOST": "localhost"
+      }
+    },
+    "vb-unity": {
+      "command": "uv",
+      "args": ["--directory", "C:/Users/Conner/OneDrive/Documents/veilbreakers-gamedev-toolkit/Tools/mcp-toolkit", "run", "vb-unity-mcp"],
+      "env": {
+        "UNITY_PROJECT_PATH": "C:/Users/Conner/OneDrive/Documents/VeilBreakers3DCurrent"
+      }
     },
     "github": {
       "command": "npx",
