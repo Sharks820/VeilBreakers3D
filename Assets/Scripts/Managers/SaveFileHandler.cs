@@ -294,7 +294,17 @@ namespace VeilBreakers.Managers
 
                     int length = (int)stream.Length;
                     byte[] data = new byte[length];
-                    await stream.ReadAsync(data, 0, length);
+                    int totalRead = 0;
+                    while (totalRead < length)
+                    {
+                        int bytesRead = await stream.ReadAsync(data, totalRead, length - totalRead);
+                        if (bytesRead == 0)
+                        {
+                            Debug.LogError($"[SaveFileHandler] Unexpected EOF: read {totalRead}/{length} bytes");
+                            return null;
+                        }
+                        totalRead += bytesRead;
+                    }
                     return data;
                 }
             }

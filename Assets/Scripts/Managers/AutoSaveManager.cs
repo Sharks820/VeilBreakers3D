@@ -48,6 +48,7 @@ namespace VeilBreakers.Managers
         private float _lastAutoSaveTime;
         private bool _isEnabled = true;
         private CancellationTokenSource _cts;
+        private bool _isSubscribed;
 
         // =============================================================================
         // PROPERTIES
@@ -69,21 +70,28 @@ namespace VeilBreakers.Managers
 
         private void OnEnable()
         {
-            _cts ??= new CancellationTokenSource();
+            // Replace CTS if previously cancelled (a cancelled CTS cannot be reused)
+            if (_cts == null || _cts.IsCancellationRequested)
+            {
+                _cts?.Dispose();
+                _cts = new CancellationTokenSource();
+            }
             SubscribeToEvents();
         }
 
         private void OnDisable()
         {
             UnsubscribeFromEvents();
+            // Cancel any in-flight auto-saves when disabled
+            _cts?.Cancel();
         }
 
         protected override void OnDestroy()
         {
+            UnsubscribeFromEvents();
             _cts?.Cancel();
             _cts?.Dispose();
             _cts = null;
-            UnsubscribeFromEvents();
             base.OnDestroy();
         }
 
@@ -93,6 +101,8 @@ namespace VeilBreakers.Managers
 
         private void SubscribeToEvents()
         {
+            if (_isSubscribed) return; // Prevent stacking on repeated OnEnable
+            _isSubscribed = true;
             EventBus.OnCharacterCreated += OnCharacterCreated;
             EventBus.OnTutorialCompleted += OnTutorialCompleted;
             EventBus.OnBossDefeated += OnBossDefeated;
@@ -101,6 +111,8 @@ namespace VeilBreakers.Managers
 
         private void UnsubscribeFromEvents()
         {
+            if (!_isSubscribed) return;
+            _isSubscribed = false;
             EventBus.OnCharacterCreated -= OnCharacterCreated;
             EventBus.OnTutorialCompleted -= OnTutorialCompleted;
             EventBus.OnBossDefeated -= OnBossDefeated;
@@ -174,6 +186,9 @@ namespace VeilBreakers.Managers
                 return;
             }
 
+            // Update debounce time BEFORE fire-and-forget to prevent double-trigger window
+            _lastAutoSaveTime = Time.realtimeSinceStartup;
+
             // Perform auto-save (fire-and-forget with explicit discard)
             _ = PerformAutoSaveAsync(reason, _cts?.Token ?? CancellationToken.None);
         }
@@ -183,7 +198,6 @@ namespace VeilBreakers.Managers
             try
             {
                 token.ThrowIfCancellationRequested();
-                _lastAutoSaveTime = Time.realtimeSinceStartup;
 
                 if (_logAutoSaves)
                     Debug.Log($"[AutoSaveManager] Auto-saving: {reason}");
@@ -207,6 +221,12 @@ namespace VeilBreakers.Managers
                         Debug.LogWarning($"[AutoSaveManager] Auto-save failed: {reason}");
                 }
             }
+            catch (OperationCanceledException)
+            {
+                // Expected when component is disabled or destroyed — not an error
+                if (_logAutoSaves)
+                    Debug.Log($"[AutoSaveManager] Auto-save cancelled: {reason}");
+            }
             catch (Exception ex)
             {
                 Debug.LogError($"[AutoSaveManager] Exception during auto-save '{reason}': {ex.Message}");
@@ -222,7 +242,8 @@ namespace VeilBreakers.Managers
         /// </summary>
         public void ForceAutoSave(string reason)
         {
-            if (!_isEnabled || SaveManager.Instance == null) return;
+            if (!_isEnabled || SaveManager.Instance == null || !SaveManager.Instance.HasActiveSave) return;
+            _lastAutoSaveTime = Time.realtimeSinceStartup;
             _ = PerformAutoSaveAsync($"forced:{reason}", _cts?.Token ?? CancellationToken.None);
         }
 

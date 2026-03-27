@@ -50,6 +50,7 @@ namespace VeilBreakers.UI.Menus
 
         private bool _isOpen;
         private bool _isAnimating;
+        private bool _isDeleting;
         private SaveSlotMetadata[] _cachedMetadata;
 
         /// <summary>Fires when user selects a slot to load. Passes slot index.</summary>
@@ -100,7 +101,17 @@ namespace VeilBreakers.UI.Menus
 
         private void OnDisable()
         {
+            StopAllCoroutines();
             if (_btnBack != null) _btnBack.UnregisterCallback<ClickEvent>(OnBackClicked);
+
+            // Reset state so re-enable works cleanly
+            _isAnimating = false;
+            _isDeleting = false;
+            if (_isOpen && _overlay != null)
+            {
+                _overlay.style.display = DisplayStyle.None;
+                _isOpen = false;
+            }
         }
 
         // =============================================================================
@@ -382,6 +393,7 @@ namespace VeilBreakers.UI.Menus
                 int capturedSlot = meta.slotIndex;
                 loadBtn.RegisterCallback<ClickEvent>(evt =>
                 {
+                    if (_isDeleting) return; // Prevent load during delete operation
                     OnSlotSelected?.Invoke(capturedSlot);
                 });
                 actions.Add(loadBtn);
@@ -415,22 +427,31 @@ namespace VeilBreakers.UI.Menus
 
         private void OnDeleteClicked(int slot)
         {
-            // Build inline confirmation
+            if (_isDeleting || _isAnimating) return; // Prevent concurrent deletes
             StartCoroutine(ConfirmAndDelete(slot));
         }
 
         private IEnumerator ConfirmAndDelete(int slot)
         {
             if (!SaveManager.HasInstance) yield break;
+            if (SaveManager.Instance.IsSaving || SaveManager.Instance.IsLoading) yield break;
 
-            // Simple confirmation: replace the card content temporarily
-            // For now, just delete and rebuild. TODO: add confirmation dialog.
-            bool deleted = SaveManager.Instance.DeleteSlot(slot);
-            if (deleted)
+            _isDeleting = true;
+            try
             {
-                Debug.Log($"[SaveSlotBrowser] Deleted slot {slot}");
-                yield return LoadSlotMetadata();
-                RebuildSlotCards();
+                // Simple confirmation: replace the card content temporarily
+                // TODO: add confirmation dialog.
+                bool deleted = SaveManager.Instance.DeleteSlot(slot);
+                if (deleted)
+                {
+                    Debug.Log($"[SaveSlotBrowser] Deleted slot {slot}");
+                    yield return LoadSlotMetadata();
+                    RebuildSlotCards();
+                }
+            }
+            finally
+            {
+                _isDeleting = false;
             }
         }
     }

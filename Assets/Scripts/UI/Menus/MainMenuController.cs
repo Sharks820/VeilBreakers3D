@@ -117,6 +117,7 @@ namespace VeilBreakers.UI.Menus
         private bool _eventsBound;
         private int _continueSlot = SaveManager.kNoneSlot;
         private SaveSlotBrowserController _saveBrowser;
+        private bool _isLoadingGame;
 
         // AAA gradient textures (generated at runtime, destroyed on cleanup)
         private Texture2D _btnBaseGradient;
@@ -178,11 +179,20 @@ namespace VeilBreakers.UI.Menus
             UnbindEvents();
             UnbindHoverCallbacks();
 
+            // Unsubscribe from save browser events to prevent leaks
+            if (_saveBrowser != null)
+            {
+                _saveBrowser.OnSlotSelected -= OnSaveBrowserSlotSelected;
+                _saveBrowser.OnBrowserClosed -= OnSaveBrowserClosed;
+            }
+
             // Unsubscribe from InputManager
             if (InputManager.Instance != null)
             {
                 InputManager.Instance.OnActionTriggered -= OnActionTriggered;
             }
+
+            _isLoadingGame = false;
 
             // Stop all coroutines (entrance animations, RefreshContinueButton, etc.)
             StopAllCoroutines();
@@ -397,11 +407,15 @@ namespace VeilBreakers.UI.Menus
 
                 // Wire dependencies
                 _saveBrowser.AutoWire(_uiDocument);
-
-                _saveBrowser.OnSlotSelected += OnSaveBrowserSlotSelected;
-                _saveBrowser.OnBrowserClosed += OnSaveBrowserClosed;
             }
 
+            // Always ensure subscriptions (they may have been removed in OnDisable)
+            _saveBrowser.OnSlotSelected -= OnSaveBrowserSlotSelected; // Prevent double-subscribe
+            _saveBrowser.OnBrowserClosed -= OnSaveBrowserClosed;
+            _saveBrowser.OnSlotSelected += OnSaveBrowserSlotSelected;
+            _saveBrowser.OnBrowserClosed += OnSaveBrowserClosed;
+
+            _isLoadingGame = false;
             SetInteractable(false);
             _saveBrowser.Open();
         }
@@ -409,13 +423,18 @@ namespace VeilBreakers.UI.Menus
         private void OnSaveBrowserSlotSelected(int slot)
         {
             _continueSlot = slot;
+            _isLoadingGame = true; // Prevent OnSaveBrowserClosed from re-enabling buttons
             _saveBrowser.Close();
             LoadGame();
         }
 
         private void OnSaveBrowserClosed()
         {
-            SetInteractable(true);
+            // Only re-enable buttons if we're NOT about to load a game
+            if (!_isLoadingGame)
+            {
+                SetInteractable(true);
+            }
         }
 
         private void OnNewGameButtonClicked(ClickEvent evt)

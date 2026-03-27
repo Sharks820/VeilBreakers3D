@@ -207,17 +207,19 @@ namespace VeilBreakers.Managers
                 return false;
             }
 
-            if (!await _saveMutex.WaitAsync(5000)) // 5 second timeout
-            {
-                Debug.LogError("[SaveManager] Save/Load operation timeout - took longer than 5 seconds");
-                return false;
-            }
-
-            _isLoading = true;
-            EventBus.LoadStarted(slot);
-
+            bool acquiredMutex = false;
             try
             {
+                acquiredMutex = await _saveMutex.WaitAsync(5000); // 5 second timeout
+                if (!acquiredMutex)
+                {
+                    Debug.LogError("[SaveManager] Save/Load operation timeout - took longer than 5 seconds");
+                    return false;
+                }
+
+                _isLoading = true;
+                EventBus.LoadStarted(slot);
+
                 ErrorLogger.Log($"[SaveManager] Loading slot {slot}...");
 
                 // Read file
@@ -252,12 +254,17 @@ namespace VeilBreakers.Managers
                         throw new InvalidDataException("Migration failed");
                     }
 
-                    // Assign migrated data BEFORE saving (fixes race condition)
-                    _currentSave = data;
-
                     // Save migrated data (skip mutex since we already hold it)
+                    // Assign AFTER successful save to prevent partial-migration corruption
                     ErrorLogger.Log("[SaveManager] Saving migrated data...");
-                    await SaveInternalCoreAsync(slot, path);
+                    var prevSave = _currentSave;
+                    _currentSave = data;
+                    bool migrateSaveOk = await SaveInternalCoreAsync(slot, path);
+                    if (!migrateSaveOk)
+                    {
+                        _currentSave = prevSave; // Revert on failure
+                        throw new IOException("Failed to save migrated data");
+                    }
                 }
                 else
                 {
@@ -279,7 +286,7 @@ namespace VeilBreakers.Managers
             finally
             {
                 _isLoading = false;
-                _saveMutex.Release();
+                if (acquiredMutex) _saveMutex.Release();
             }
         }
 
@@ -363,7 +370,7 @@ namespace VeilBreakers.Managers
                 byte[] fileData = await SaveFileHandler.ReadFileAsync(path);
                 return SaveFileHandler.ExtractMetadata(fileData, slot);
             }
-            catch (IOException ex)
+            catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or System.Security.Cryptography.CryptographicException)
             {
                 return SaveSlotMetadata.Corrupted(slot, ex.Message);
             }
@@ -383,10 +390,31 @@ namespace VeilBreakers.Managers
             tasks[kSlotCount] = GetSlotMetadataAsync(kAutoSlot);
             tasks[kSlotCount + 1] = GetSlotMetadataAsync(kAutoSlotCheckpoint);
 
-            await Task.WhenAll(tasks);
+            try
+            {
+                await Task.WhenAll(tasks);
+            }
+            catch (Exception ex)
+            {
+                // Task.WhenAll throws the first exception; log it but continue
+                // collecting results from individual tasks below
+                Debug.LogWarning($"[SaveManager] Exception during metadata fetch: {ex.Message}");
+            }
 
             for (int i = 0; i < tasks.Length; i++)
-                results[i] = tasks[i].Result;
+            {
+                if (tasks[i].IsCompletedSuccessfully)
+                {
+                    results[i] = tasks[i].Result;
+                }
+                else
+                {
+                    // Faulted or cancelled — return corrupted metadata for this slot
+                    int slotIndex = i < kSlotCount ? i : (i == kSlotCount ? kAutoSlot : kAutoSlotCheckpoint);
+                    string error = tasks[i].Exception?.InnerException?.Message ?? "Unknown error";
+                    results[i] = SaveSlotMetadata.Corrupted(slotIndex, error);
+                }
+            }
 
             return results;
         }
@@ -557,19 +585,21 @@ namespace VeilBreakers.Managers
                 return false;
             }
 
-            if (!await _saveMutex.WaitAsync(5000)) // 5 second timeout
-            {
-                Debug.LogError("[SaveManager] Save/Load operation timeout - took longer than 5 seconds");
-                return false;
-            }
-
+            bool acquiredMutex = false;
             try
             {
+                acquiredMutex = await _saveMutex.WaitAsync(5000); // 5 second timeout
+                if (!acquiredMutex)
+                {
+                    Debug.LogError("[SaveManager] Save/Load operation timeout - took longer than 5 seconds");
+                    return false;
+                }
+
                 return await SaveInternalCoreAsync(slot, path);
             }
             finally
             {
-                _saveMutex.Release();
+                if (acquiredMutex) _saveMutex.Release();
             }
         }
 

@@ -160,6 +160,50 @@ namespace VeilBreakers.Data
             // Validate hero path enum
             if (!System.Enum.IsDefined(typeof(Path), heroPath)) heroPath = Path.NONE;
 
+            // Repair missing/invalid hero name
+            if (string.IsNullOrEmpty(heroName))
+            {
+                heroName = "Unknown Hero";
+                Debug.LogWarning("[SaveData] Repaired missing heroName");
+            }
+
+            // Clamp playtime (negative values are invalid)
+            if (playtimeSeconds < 0f)
+            {
+                playtimeSeconds = 0f;
+                Debug.LogWarning("[SaveData] Repaired negative playtimeSeconds");
+            }
+
+            // Repair missing/invalid saveDate
+            if (string.IsNullOrEmpty(saveDate) || !DateTime.TryParse(saveDate, out _))
+            {
+                saveDate = DateTime.UtcNow.ToString("o");
+                Debug.LogWarning("[SaveData] Repaired missing/invalid saveDate");
+            }
+
+            // Repair missing currentLocation
+            if (string.IsNullOrEmpty(currentLocation))
+            {
+                currentLocation = "Unknown";
+            }
+
+            // Repair missing saveId
+            if (string.IsNullOrEmpty(saveId))
+            {
+                saveId = Guid.NewGuid().ToString("N");
+                Debug.LogWarning("[SaveData] Repaired missing saveId");
+            }
+
+            // Clamp hero level to sane range
+            if (heroLevel > 100) heroLevel = 100;
+
+            // Clamp hero stats
+            if (heroCurrentHp < 0) heroCurrentHp = 0;
+            if (heroCurrentMp < 0) heroCurrentMp = 0;
+            if (heroExperience < 0) heroExperience = 0;
+            heroPathLevel = Mathf.Clamp(heroPathLevel, 0f, 1f);
+            if (currency < 0) currency = 0;
+
             // Initialize null lists to empty (defensive)
             party ??= new List<SavedMonster>();
             storage ??= new List<SavedMonster>();
