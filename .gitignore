@@ -164,5 +164,13 @@ dxdiag*.txt
 # .gitkeep placeholders (Unity generates .meta warnings for these)
 .gitkeep
 
+# Build/test logs
+TestLog.txt
+UnityBatch.log
+nul
+
+# .NET artifacts (Windows reserved name bugs)
+System.Drawing.*
+
 # GSD state backups
 .planning/*.bak*

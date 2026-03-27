@@ -1305,7 +1305,7 @@ TemplateContainer {
 
 .hero-card-name {
     -unity-font-definition: url('project://database/Assets/UI/Fonts/CinzelDecorative-Regular.ttf?fileID=12800000&guid=d13ae79c9243c964db9245ce6c976d4a&type=3');
-    font-size: 8px;
+    font-size: 9px;
     color: var(--text-secondary);
     letter-spacing: 1px;
     -unity-font-style: bold;

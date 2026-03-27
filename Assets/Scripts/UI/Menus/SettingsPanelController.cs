@@ -1049,7 +1049,7 @@ namespace VeilBreakers.UI.Menus
             // bypass the animation and potentially hide the entire main menu
             if (OnSettingsClosed != null)
             {
-                OnSettingsClosed.Invoke();
+                OnSettingsClosed?.Invoke();
             }
             else
             {
