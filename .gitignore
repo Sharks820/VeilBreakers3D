@@ -161,5 +161,8 @@ dxdiag*.txt
 .claude/hooks/.files-read-this-session
 .claude/hooks/.pre-compact-context.txt
 
+# .gitkeep placeholders (Unity generates .meta warnings for these)
+.gitkeep
+
 # GSD state backups
 .planning/*.bak*
