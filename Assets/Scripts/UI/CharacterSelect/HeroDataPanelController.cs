@@ -51,6 +51,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private Label _championRole;
         private Label _championDesc;
         private VisualElement _championSection;
+        private VisualElement _championSkillsContainer;
         private VisualElement _heroLoreSection;
         private Label _heroBackstory;
         private Label _heroSynergyDetail;
@@ -106,6 +107,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _championRole = root.Q<Label>("champion-role");
             _championDesc = root.Q<Label>("champion-desc");
             _championSection = root.Q<VisualElement>("champion-section");
+            _championSkillsContainer = root.Q<VisualElement>("champion-skills-container");
             _heroLoreSection = root.Q<VisualElement>(kHeroLoreSection);
             _heroBackstory = root.Q<Label>(kHeroBackstory);
             _heroSynergyDetail = root.Q<Label>("hero-synergy-detail");
@@ -227,7 +229,7 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 // Fallback: show monster ID with generic labels
                 CharSelectUIUtils.SetLabel(_championName, data.starter_monster_id.ToUpper());
-                CharSelectUIUtils.SetLabel(_championBrandLabel, "\u2B25 UNKNOWN BRAND");
+                CharSelectUIUtils.SetLabel(_championBrandLabel, "\u25C6 UNKNOWN BRAND");
                 CharSelectUIUtils.SetLabel(_championBrand, "?");
                 CharSelectUIUtils.SetLabel(_championRole, "?");
                 CharSelectUIUtils.SetLabel(_championDesc, "A creature yet to be discovered.");
@@ -238,10 +240,105 @@ namespace VeilBreakers.UI.CharacterSelect
             string roleName = monster.GetAIPattern().ToString().ToUpper();
 
             CharSelectUIUtils.SetLabel(_championName, (monster.display_name ?? data.starter_monster_id).ToUpper());
-            CharSelectUIUtils.SetLabel(_championBrandLabel, $"{brandName} BRAND");
+            CharSelectUIUtils.SetLabel(_championBrandLabel, $"\u25C6 {brandName} BRAND");
             CharSelectUIUtils.SetLabel(_championBrand, brandName);
             CharSelectUIUtils.SetLabel(_championRole, roleName);
             CharSelectUIUtils.SetLabel(_championDesc, $"Your starting {brandName.ToLower()} companion. A {roleName.ToLower()} fighter bound to your path.");
+
+            // Populate starter monster skills
+            PopulateChampionSkills(monster);
+        }
+
+        /// <summary>
+        /// Builds the starter monster skill list from innate_skills and learnable_skills data.
+        /// Shows skill name, brand dot, and power in the champion info panel.
+        /// </summary>
+        private void PopulateChampionSkills(MonsterData monster)
+        {
+            if (_championSkillsContainer == null) return;
+            _championSkillsContainer.Clear();
+
+            // Header
+            var header = new Label("STARTER SKILLS");
+            header.AddToClassList("champion-skills-header");
+            _championSkillsContainer.Add(header);
+
+            // Collect innate skills
+            string[] skills = monster.innate_skills;
+            if (skills == null || skills.Length == 0)
+            {
+                var empty = new Label("No known skills");
+                empty.style.fontSize = 9;
+                empty.style.color = new Color(0.5f, 0.47f, 0.6f, 0.4f);
+                empty.style.unityFontStyleAndWeight = FontStyle.Italic;
+                _championSkillsContainer.Add(empty);
+                return;
+            }
+
+            // Brand color for dots
+            Brand monsterBrand = monster.GetPrimaryBrand();
+            Color brandColor = GetBrandDotColor(monsterBrand);
+
+            for (int i = 0; i < skills.Length && i < 4; i++) // Show max 4 skills to keep compact
+            {
+                string skillId = skills[i];
+                var skillData = GameDatabase.HasInstance ? GameDatabase.Instance.GetSkill(skillId) : null;
+
+                var row = new VisualElement();
+                row.AddToClassList("champion-skill-row");
+
+                // Brand dot
+                var dot = new VisualElement();
+                dot.AddToClassList("champion-skill-dot");
+                dot.style.backgroundColor = brandColor;
+                row.Add(dot);
+
+                // Skill name
+                string displayName = skillData?.display_name ?? FormatSkillId(skillId);
+                var nameLabel = new Label(displayName);
+                nameLabel.AddToClassList("champion-skill-name");
+                row.Add(nameLabel);
+
+                // Power (if applicable)
+                if (skillData != null && skillData.base_power > 0)
+                {
+                    var powerLabel = new Label($"PWR {skillData.base_power}");
+                    powerLabel.AddToClassList("champion-skill-power");
+                    row.Add(powerLabel);
+                }
+
+                _championSkillsContainer.Add(row);
+            }
+        }
+
+        private static Color GetBrandDotColor(Brand brand)
+        {
+            switch (brand)
+            {
+                case Brand.IRON:    return new Color(0.65f, 0.65f, 0.70f, 0.9f);
+                case Brand.SAVAGE:  return new Color(0.85f, 0.25f, 0.15f, 0.9f);
+                case Brand.SURGE:   return new Color(0.90f, 0.80f, 0.20f, 0.9f);
+                case Brand.VENOM:   return new Color(0.30f, 0.80f, 0.25f, 0.9f);
+                case Brand.DREAD:   return new Color(0.55f, 0.20f, 0.70f, 0.9f);
+                case Brand.LEECH:   return new Color(0.70f, 0.15f, 0.35f, 0.9f);
+                case Brand.GRACE:   return new Color(1.00f, 0.90f, 0.55f, 0.9f);
+                case Brand.MEND:    return new Color(0.40f, 0.85f, 0.75f, 0.9f);
+                case Brand.RUIN:    return new Color(0.90f, 0.40f, 0.10f, 0.9f);
+                case Brand.VOID:    return new Color(0.35f, 0.75f, 0.90f, 0.9f);
+                default:            return new Color(0.5f, 0.5f, 0.5f, 0.6f);
+            }
+        }
+
+        private static string FormatSkillId(string skillId)
+        {
+            if (string.IsNullOrEmpty(skillId)) return "";
+            var parts = skillId.Split('_');
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (parts[i].Length > 0)
+                    parts[i] = char.ToUpper(parts[i][0]) + parts[i].Substring(1);
+            }
+            return string.Join(" ", parts);
         }
 
         /// <summary>

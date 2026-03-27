@@ -296,11 +296,12 @@ namespace VeilBreakers.UI.Core
             _spawnMarginBottom = 0f;
 
             // Keep visual density high but avoid first-frame spikes.
-            _emberCount = Mathf.Clamp(_emberCount, 120, 220);
-            _microSparkCount = Mathf.Clamp(_microSparkCount, 40, 80);
-            _ashCount = Mathf.Clamp(_ashCount, 18, 36);
-            _smokeCount = Mathf.Clamp(_smokeCount, 4, 8);
-            _sparkCount = Mathf.Clamp(_sparkCount, 8, 16);
+            // IMPORTANT: Respect zero values — they mean "disabled" (smoke/spark at 0 = intentional)
+            _emberCount = Mathf.Clamp(_emberCount, 80, 220);
+            _microSparkCount = Mathf.Clamp(_microSparkCount, 20, 80);
+            _ashCount = Mathf.Clamp(_ashCount, 10, 36);
+            _smokeCount = Mathf.Clamp(_smokeCount, 0, 8);   // Was min 4, override disabled value
+            _sparkCount = Mathf.Clamp(_sparkCount, 0, 16);  // Was min 8, override disabled value
 
             // Match particle colors to fiery red/orange portal video
             _emberColorCore = new Color(1f, 0.6f, 0.2f, 1f);    // Hot orange-yellow core
@@ -612,8 +613,9 @@ namespace VeilBreakers.UI.Core
                 CreateGrungeOverlay();
             }
 
-            // Atmospheric fog layers
-            CreateFogLayers();
+            // Atmospheric fog layers — DISABLED: creates visible semi-transparent rounded boxes
+            // TODO: Replace with proper shader-based fog when available
+            // CreateFogLayers();
 
             StartVFX();
             Debug.Log($"[TitleScreenVFX] Staggered VFX init complete: {_emberCount} embers, {_microSparkCount} micro-sparks, {_ashCount} ash, {_smokeCount} smoke, {_sparkCount} sparks");
@@ -1482,8 +1484,8 @@ namespace VeilBreakers.UI.Core
                 CreateGrungeOverlay();
             }
 
-            // 10. Atmospheric fog layers (drifting semi-transparent overlays)
-            CreateFogLayers();
+            // 10. Atmospheric fog layers — DISABLED: creates visible semi-transparent boxes
+            // CreateFogLayers();
 
             StartVFX();
             Debug.Log($"[TitleScreenVFX] AAA VFX Initialized: {_emberCount} embers, {_microSparkCount} micro-sparks, {_ashCount} ash, {_smokeCount} smoke, {_sparkCount} sparks (Lightning: {_enableLightning}) (Textures: {(_smokeTexture != null ? "smoke " : "")}{(_ashTexture != null ? "ash " : "")}{(_emberTexture != null ? "ember " : "")}{(_grungeTexture != null ? "grunge" : "")})");

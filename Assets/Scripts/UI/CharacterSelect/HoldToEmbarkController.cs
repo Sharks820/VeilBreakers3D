@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.UIElements;
+using PrimeTween;
 using VeilBreakers.Core;
 using VeilBreakers.Data;
 
@@ -17,7 +18,7 @@ namespace VeilBreakers.UI.CharacterSelect
         // CONSTANTS
         // =============================================================================
 
-        private const float kHoldDuration = 1.5f;
+        private const float kHoldDuration = 2.5f;
         private const string kBtnEmbark = "btn-embark";
         private const string kEmbarkProgressRing = "embark-progress-ring";
         private const string kHoldActiveClass = "hold-active";
@@ -48,6 +49,8 @@ namespace VeilBreakers.UI.CharacterSelect
         private bool _isInitialized;
         private VisualElement _btnEmbark;
         private VisualElement _progressRing;
+        private VisualElement _embarkGlow;
+        private Tween _breathingTween;
 
         // =============================================================================
         // AUDIO
@@ -90,6 +93,9 @@ namespace VeilBreakers.UI.CharacterSelect
                 _btnEmbark.UnregisterCallback<PointerLeaveEvent>(OnPointerLeave);
             }
 
+            // Stop breathing glow
+            _breathingTween.Stop();
+
             // Cleanup generated audio clips (owned by this component)
             if (_holdDroneClip != null) { Destroy(_holdDroneClip); _holdDroneClip = null; }
             if (_embarkCompleteClip != null) { Destroy(_embarkCompleteClip); _embarkCompleteClip = null; }
@@ -118,34 +124,51 @@ namespace VeilBreakers.UI.CharacterSelect
             _btnEmbark = root.Q<VisualElement>(kBtnEmbark);
             Debug.Assert(_btnEmbark != null, $"[HoldToEmbarkController] Element '{kBtnEmbark}' not found in UXML");
 
-            // Try to find existing progress ring, create one if missing
+            // Try to find existing progress bar, create one if missing
             _progressRing = root.Q<VisualElement>(kEmbarkProgressRing);
             if (_progressRing == null && _btnEmbark != null)
             {
+                // Background track (full width, sits at bottom of button)
+                var progressTrack = new VisualElement();
+                progressTrack.name = "embark-progress-track";
+                progressTrack.pickingMode = PickingMode.Ignore;
+                progressTrack.style.position = Position.Absolute;
+                progressTrack.style.left = 0;
+                progressTrack.style.right = 0;
+                progressTrack.style.bottom = 0;
+                progressTrack.style.height = 4;
+                progressTrack.style.backgroundColor = new Color(0f, 0f, 0f, 0.5f);
+                progressTrack.style.borderBottomLeftRadius = 6f;
+                progressTrack.style.borderBottomRightRadius = 6f;
+                progressTrack.style.overflow = Overflow.Hidden;
+                _btnEmbark.Add(progressTrack);
+
+                // Fill bar (width animates 0% → 100%)
                 _progressRing = new VisualElement();
                 _progressRing.name = kEmbarkProgressRing;
                 _progressRing.pickingMode = PickingMode.Ignore;
                 _progressRing.style.position = Position.Absolute;
-                _progressRing.style.top = 0;
                 _progressRing.style.left = 0;
-                _progressRing.style.right = 0;
+                _progressRing.style.top = 0;
                 _progressRing.style.bottom = 0;
-                _progressRing.style.opacity = 0f;
-                _progressRing.style.scale = new Scale(Vector2.one * 0.8f);
-                _progressRing.style.borderTopWidth = 3f;
-                _progressRing.style.borderBottomWidth = 3f;
-                _progressRing.style.borderLeftWidth = 3f;
-                _progressRing.style.borderRightWidth = 3f;
-                _progressRing.style.borderTopColor = new Color(1f, 0.7f, 0.2f, 0.8f);
-                _progressRing.style.borderBottomColor = new Color(1f, 0.7f, 0.2f, 0.8f);
-                _progressRing.style.borderLeftColor = new Color(1f, 0.7f, 0.2f, 0.8f);
-                _progressRing.style.borderRightColor = new Color(1f, 0.7f, 0.2f, 0.8f);
-                _progressRing.style.borderTopLeftRadius = 8f;
-                _progressRing.style.borderTopRightRadius = 8f;
-                _progressRing.style.borderBottomLeftRadius = 8f;
-                _progressRing.style.borderBottomRightRadius = 8f;
-                _progressRing.usageHints = UsageHints.DynamicTransform | UsageHints.DynamicColor;
-                _btnEmbark.Add(_progressRing);
+                _progressRing.style.width = new Length(0, LengthUnit.Percent);
+                _progressRing.style.backgroundColor = new Color(1f, 0.75f, 0.25f, 0.9f);
+                _progressRing.style.borderBottomLeftRadius = 6f;
+                _progressRing.style.borderBottomRightRadius = 6f;
+                _progressRing.usageHints = UsageHints.DynamicTransform;
+                progressTrack.Add(_progressRing);
+
+                // Bright edge highlight on the fill bar leading edge
+                var fillEdge = new VisualElement();
+                fillEdge.name = "embark-fill-edge";
+                fillEdge.pickingMode = PickingMode.Ignore;
+                fillEdge.style.position = Position.Absolute;
+                fillEdge.style.right = 0;
+                fillEdge.style.top = 0;
+                fillEdge.style.bottom = 0;
+                fillEdge.style.width = 3;
+                fillEdge.style.backgroundColor = new Color(1f, 0.95f, 0.8f, 1f);
+                _progressRing.Add(fillEdge);
             }
 
             // Register pointer events on btn-embark for mouse hold detection
@@ -163,6 +186,26 @@ namespace VeilBreakers.UI.CharacterSelect
 
             ResetProgressVisual();
             _isInitialized = true;
+
+            // Start breathing glow animation on embark button (V5 spec: 2.5s cycle)
+            StartBreathingGlow();
+        }
+
+        /// <summary>
+        /// Pulses the embark-glow element's opacity in a breathing pattern (2.5s cycle).
+        /// Matches the V5 mockup's embark button breathing animation.
+        /// </summary>
+        private void StartBreathingGlow()
+        {
+            if (_btnEmbark == null) return;
+            _embarkGlow = _btnEmbark.Q<VisualElement>("embark-glow");
+            if (_embarkGlow == null) return;
+
+            _breathingTween.Stop();
+            _embarkGlow.style.opacity = 0.25f;
+            _breathingTween = Tween.Custom(_embarkGlow, 0.25f, 0.6f, 1.25f,
+                onValueChange: (glow, val) => { glow.style.opacity = val; },
+                ease: Ease.InOutSine, cycles: -1, cycleMode: CycleMode.Yoyo);
         }
 
         private void HandleEmbarkTriggered()
@@ -265,24 +308,27 @@ namespace VeilBreakers.UI.CharacterSelect
                 _progressRing.AddToClassList(kHoldActiveClass);
             }
 
-            // Scale from 0.8 to 1.0 as progress fills
-            float scaleVal = 0.8f + 0.2f * progress;
-            _progressRing.style.scale = new Scale(new Vector2(scaleVal, scaleVal));
+            // Fill bar width from 0% to 100%
+            float pct = Mathf.Clamp01(progress) * 100f;
+            _progressRing.style.width = new Length(pct, LengthUnit.Percent);
 
-            // Opacity from 0.3 to 1.0 as progress fills
-            _progressRing.style.opacity = 0.3f + 0.7f * progress;
+            // Brighten the fill bar as it progresses
+            float r = Mathf.Lerp(0.8f, 1f, progress);
+            float g = Mathf.Lerp(0.6f, 0.85f, progress);
+            float b = Mathf.Lerp(0.15f, 0.3f, progress);
+            _progressRing.style.backgroundColor = new Color(r, g, b, 0.9f);
         }
 
         /// <summary>
-        /// Resets the progress ring visual to its initial hidden state.
+        /// Resets the progress bar to its initial empty state.
         /// </summary>
         private void ResetProgressVisual()
         {
             if (_progressRing == null) return;
 
             _progressRing.RemoveFromClassList(kHoldActiveClass);
-            _progressRing.style.scale = new Scale(Vector2.one * 0.8f);
-            _progressRing.style.opacity = 0f;
+            _progressRing.style.width = new Length(0, LengthUnit.Percent);
+            _progressRing.style.backgroundColor = new Color(1f, 0.75f, 0.25f, 0.9f);
         }
 
         // =============================================================================

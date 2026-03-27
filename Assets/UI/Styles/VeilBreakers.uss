@@ -2313,9 +2313,9 @@ TemplateContainer {
     height: 56px;
     flex-grow: 0;
     flex-shrink: 0;
-    font-size: 20px;
+    font-size: 18px;
     -unity-font-style: bold;
-    letter-spacing: 6px;
+    letter-spacing: 5px;
     /* background-color: initial — C# gradient texture is the visual base */
     border-width: 1px;
     border-radius: 3px;
@@ -2354,6 +2354,22 @@ TemplateContainer {
     scale: 0.97 0.97;
     translate: 0 0;
     transition-duration: 0.08s;
+}
+
+/* Prevent right-click / focus from causing stuck highlight */
+#menu-root .vb-menu-btn:focus,
+#menu-root #btn-new-game:focus,
+#menu-root #btn-continue:focus,
+#menu-root #btn-settings:focus,
+#menu-root #btn-credits:focus,
+#menu-root #btn-exit:focus {
+    border-width: 1px;
+    border-color: rgba(160, 115, 55, 0.45);
+    border-top-color: rgba(200, 155, 80, 0.35);
+    color: rgba(210, 180, 130, 0.85);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+    scale: 1 1;
+    translate: 0 0;
 }
 
 /* =============================================================================

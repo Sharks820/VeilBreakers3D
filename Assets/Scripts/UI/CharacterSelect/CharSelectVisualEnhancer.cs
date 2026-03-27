@@ -25,6 +25,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private Texture2D _vignetteGradient;
         private Texture2D _statBarHpGradient;
         private Texture2D _statBarStaGradient;
+        private Texture2D _statBarManaGradient;
         private Texture2D _statBarAtkGradient;
         private Texture2D _statBarDefGradient;
         private Texture2D _champAreaGradient;
@@ -47,8 +48,9 @@ namespace VeilBreakers.UI.CharacterSelect
             // Defer to let UXML instantiate first
             _uiDocument.rootVisualElement?.schedule.Execute(ApplyVisualPass).ExecuteLater(50);
 
-            // Subscribe to hero changes for dynamic card gradient updates
+            // Subscribe to hero changes for dynamic card gradient + stat bar updates
             CharSelectEvents.OnHeroChanged += HandleHeroChangedForCards;
+            CharSelectEvents.OnHeroChanged += HandleHeroChangedForStatBars;
             // Subscribe to screen ready in case carousel builds after our initial visual pass
             CharSelectEvents.OnScreenReady += HandleScreenReadyForCards;
         }
@@ -56,6 +58,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private void OnDisable()
         {
             CharSelectEvents.OnHeroChanged -= HandleHeroChangedForCards;
+            CharSelectEvents.OnHeroChanged -= HandleHeroChangedForStatBars;
             CharSelectEvents.OnScreenReady -= HandleScreenReadyForCards;
             CleanupTextures();
             _applied = false;
@@ -193,7 +196,7 @@ namespace VeilBreakers.UI.CharacterSelect
         }
 
         // =====================================================================
-        // STAT BARS — gradient fills (left-to-right, color → bright color)
+        // STAT BARS — gradient fills + bright end-cap (V5 mockup spec)
         // =====================================================================
 
         private void ApplyStatBarGradients()
@@ -203,35 +206,94 @@ namespace VeilBreakers.UI.CharacterSelect
                 new Color(204f/255f, 56f/255f, 56f/255f, 1f),
                 new Color(255f/255f, 85f/255f, 85f/255f, 1f)
             );
-            ApplyToStatFill("stat-hp-fill", _statBarHpGradient);
+            ApplyToStatFill("stat-hp-fill", _statBarHpGradient, new Color(255f/255f, 85f/255f, 85f/255f, 1f));
 
             // STAMINA: #38a855 → #55dd70
             _statBarStaGradient = CreateHorizontalGradient(
                 new Color(56f/255f, 168f/255f, 85f/255f, 1f),
                 new Color(85f/255f, 221f/255f, 112f/255f, 1f)
             );
-            ApplyToStatFill("stat-stamina-fill", _statBarStaGradient);
+            // MANA: #8250c8 → #b482ff (pre-generate for hero switching)
+            _statBarManaGradient = CreateHorizontalGradient(
+                new Color(130f/255f, 80f/255f, 200f/255f, 1f),
+                new Color(180f/255f, 130f/255f, 255f/255f, 1f)
+            );
+            // Default to stamina — HandleHeroChangedForStatBars will fix if mana user
+            ApplyToStatFill("stat-stamina-fill", _statBarStaGradient, new Color(85f/255f, 221f/255f, 112f/255f, 1f));
 
             // ATK: #cc8820 → #ffaa33
             _statBarAtkGradient = CreateHorizontalGradient(
                 new Color(204f/255f, 136f/255f, 32f/255f, 1f),
                 new Color(255f/255f, 170f/255f, 51f/255f, 1f)
             );
-            ApplyToStatFill("stat-atk-fill", _statBarAtkGradient);
+            ApplyToStatFill("stat-atk-fill", _statBarAtkGradient, new Color(255f/255f, 170f/255f, 51f/255f, 1f));
 
             // DEF: #3878cc → #55aaff
             _statBarDefGradient = CreateHorizontalGradient(
                 new Color(56f/255f, 120f/255f, 204f/255f, 1f),
                 new Color(85f/255f, 170f/255f, 255f/255f, 1f)
             );
-            ApplyToStatFill("stat-def-fill", _statBarDefGradient);
+            ApplyToStatFill("stat-def-fill", _statBarDefGradient, new Color(85f/255f, 170f/255f, 255f/255f, 1f));
         }
 
-        private void ApplyToStatFill(string elementName, Texture2D gradient)
+        /// <summary>
+        /// Applies gradient texture to a stat fill bar and adds a bright end-cap highlight element.
+        /// V5 mockup: .sc-f::after { width:3px; background:var(--b); box-shadow:0 0 6px var(--b); }
+        /// </summary>
+        private void ApplyToStatFill(string elementName, Texture2D gradient, Color endCapColor)
         {
             var fill = _root.Q<VisualElement>(elementName);
             if (fill == null) return;
             UIGradientHelper.ApplyGradient(fill, gradient);
+
+            // Remove any existing end-cap (prevents stacking on re-apply)
+            var existingCap = fill.Q<VisualElement>("stat-endcap");
+            if (existingCap != null) fill.Remove(existingCap);
+
+            // Bright end-cap highlight on the right edge of the fill bar
+            var endCap = new VisualElement();
+            endCap.name = "stat-endcap";
+            endCap.pickingMode = PickingMode.Ignore;
+            endCap.style.position = Position.Absolute;
+            endCap.style.right = 0;
+            endCap.style.top = -1;
+            endCap.style.bottom = -1;
+            endCap.style.width = 3;
+            endCap.style.backgroundColor = endCapColor;
+            endCap.style.borderTopRightRadius = 2;
+            endCap.style.borderBottomRightRadius = 2;
+            fill.Add(endCap);
+        }
+
+        /// <summary>
+        /// Re-applies the correct gradient to the stamina/mana bar when hero changes.
+        /// VOIDTOUCHED/UNCHAINED heroes use mana (purple), others use stamina (green).
+        /// </summary>
+        private void HandleHeroChangedForStatBars(int index, HeroData data, HeroDisplayConfig config)
+        {
+            if (_root == null || !_applied) return;
+            if (data == null) return;
+
+            bool isManaUser = data.GetPrimaryPath() == Path.VOIDTOUCHED
+                           || data.GetPrimaryPath() == Path.UNCHAINED;
+
+            var fill = _root.Q<VisualElement>("stat-stamina-fill");
+            if (fill == null) return;
+
+            if (isManaUser && _statBarManaGradient != null)
+            {
+                UIGradientHelper.ApplyGradient(fill, _statBarManaGradient);
+                // Update end-cap color to purple
+                var cap = fill.Q<VisualElement>("stat-endcap");
+                if (cap != null) cap.style.backgroundColor = new Color(180f/255f, 130f/255f, 255f/255f, 1f);
+            }
+            else if (_statBarStaGradient != null)
+            {
+                UIGradientHelper.ApplyGradient(fill, _statBarStaGradient);
+                // Update end-cap color to green
+                var cap = fill.Q<VisualElement>("stat-endcap");
+                if (cap != null) cap.style.backgroundColor = new Color(85f/255f, 221f/255f, 112f/255f, 1f);
+            }
         }
 
         /// <summary>Creates a horizontal gradient (left → right).</summary>
@@ -744,6 +806,7 @@ namespace VeilBreakers.UI.CharacterSelect
             DestroyTex(ref _vignetteGradient);
             DestroyTex(ref _statBarHpGradient);
             DestroyTex(ref _statBarStaGradient);
+            DestroyTex(ref _statBarManaGradient);
             DestroyTex(ref _statBarAtkGradient);
             DestroyTex(ref _statBarDefGradient);
             DestroyTex(ref _champAreaGradient);

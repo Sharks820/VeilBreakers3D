@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using PrimeTween;
@@ -8,7 +9,8 @@ namespace VeilBreakers.UI.CharacterSelect
 {
     /// <summary>
     /// Populates the abilities tab content: D&D attribute bars (STR/DEX/CON/INT/WIS/CHA)
-    /// with width-based fills, and the abilities list with skill names from GameDatabase.
+    /// with width-based fills, and dynamically-built AAA ability cards from GameDatabase.
+    /// Each ability card shows brand dot, skill name, damage/cost tags, and description.
     /// All Q() calls are confined to CacheReferences() at init time.
     /// </summary>
     public class HeroStatsPanelController : MonoBehaviour
@@ -18,21 +20,38 @@ namespace VeilBreakers.UI.CharacterSelect
         [SerializeField] private UIDocument _uiDocument;
 
         private VisualElement _panel;
+        private VisualElement _abilitiesList;
         private readonly VisualElement[] _barFills = new VisualElement[6];
         private readonly Label[] _barValues = new Label[6];
-        private readonly Label[] _abilitySlots = new Label[5];
 
-        // INT removed — redundant with WIS. 6 attributes = clean 6-column grid matching spec.
-        private static readonly string[] kStatNames = { "str", "dex", "con", "wis", "cha", "spd" };
+        // D&D standard 6 attributes: STR/DEX/CON/INT/WIS/CHA (V5 spec)
+        private static readonly string[] kStatNames = { "str", "dex", "con", "int", "wis", "cha" };
         private static readonly Color[] kStatColors =
         {
             new Color(0.85f, 0.25f, 0.20f),  // STR - Crimson red
             new Color(0.30f, 0.80f, 0.35f),  // DEX - Emerald green
             new Color(0.90f, 0.55f, 0.15f),  // CON - Burnt orange
+            new Color(0.55f, 0.30f, 0.85f),  // INT - Arcane purple
             new Color(0.25f, 0.55f, 0.90f),  // WIS - Deep blue
             new Color(0.90f, 0.75f, 0.20f),  // CHA - Gold
-            new Color(0.40f, 0.75f, 0.90f),  // SPD - Sky blue
         };
+
+        // Brand colors for ability dot indicators (matches 10-brand system)
+        private static readonly Dictionary<Brand, Color> kBrandColors = new Dictionary<Brand, Color>
+        {
+            { Brand.NONE,    new Color(0.5f, 0.5f, 0.5f, 0.6f) },
+            { Brand.IRON,    new Color(0.65f, 0.65f, 0.70f, 0.9f) },   // Steel gray
+            { Brand.SAVAGE,  new Color(0.85f, 0.25f, 0.15f, 0.9f) },   // Blood red
+            { Brand.SURGE,   new Color(0.90f, 0.80f, 0.20f, 0.9f) },   // Electric gold
+            { Brand.VENOM,   new Color(0.30f, 0.80f, 0.25f, 0.9f) },   // Toxic green
+            { Brand.DREAD,   new Color(0.55f, 0.20f, 0.70f, 0.9f) },   // Dark purple
+            { Brand.LEECH,   new Color(0.70f, 0.15f, 0.35f, 0.9f) },   // Crimson
+            { Brand.GRACE,   new Color(1.00f, 0.90f, 0.55f, 0.9f) },   // Holy gold
+            { Brand.MEND,    new Color(0.40f, 0.85f, 0.75f, 0.9f) },   // Healing teal
+            { Brand.RUIN,    new Color(0.90f, 0.40f, 0.10f, 0.9f) },   // Flame orange
+            { Brand.VOID,    new Color(0.35f, 0.75f, 0.90f, 0.9f) },   // Void cyan
+        };
+
         private Sequence _statCascadeSequence;
 
         private void OnEnable()
@@ -55,16 +74,12 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_uiDocument == null) { Debug.LogError("[HeroStatsPanelController] UIDocument not assigned!"); return; }
             var root = _uiDocument.rootVisualElement;
             _panel = root.Q<VisualElement>("tab-abilities-content");
+            _abilitiesList = root.Q<VisualElement>("abilities-list");
 
             for (int i = 0; i < kStatNames.Length; i++)
             {
                 _barFills[i] = root.Q<VisualElement>($"bar-{kStatNames[i]}-fill");
                 _barValues[i] = root.Q<Label>($"bar-{kStatNames[i]}-value");
-            }
-
-            for (int i = 0; i < _abilitySlots.Length; i++)
-            {
-                _abilitySlots[i] = root.Q<Label>($"ability-{i}");
             }
         }
 
@@ -87,8 +102,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             int[] values = {
                 stats.strength, stats.dexterity, stats.constitution,
-                stats.intelligence, stats.wisdom, stats.charisma,
-                data.base_speed
+                stats.intelligence, stats.wisdom, stats.charisma
             };
 
             for (int i = 0; i < values.Length && i < _barFills.Length; i++)
@@ -126,8 +140,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             int[] values = {
                 stats.strength, stats.dexterity, stats.constitution,
-                stats.intelligence, stats.wisdom, stats.charisma,
-                heroData.base_speed
+                stats.intelligence, stats.wisdom, stats.charisma
             };
 
             var seq = Sequence.Create();
@@ -160,39 +173,134 @@ namespace VeilBreakers.UI.CharacterSelect
         }
 
         // =============================================================================
-        // ABILITIES
+        // ABILITIES — AAA dynamic card builder
         // =============================================================================
 
         /// <summary>
-        /// Updates ability slot labels with skill display names and descriptions from GameDatabase.
+        /// Rebuilds ability cards from scratch using GameDatabase skill data.
+        /// Each card shows: brand color dot | skill name + tags | description.
         /// </summary>
         private void UpdateAbilities(HeroData data)
         {
+            if (_abilitiesList == null) return;
+
+            // Clear existing ability cards
+            _abilitiesList.Clear();
+
             string[] skills = data.innate_skills;
-
-            for (int i = 0; i < _abilitySlots.Length; i++)
+            if (skills == null || skills.Length == 0)
             {
-                if (_abilitySlots[i] == null) continue;
+                var emptyLabel = new Label("No abilities learned yet.");
+                emptyLabel.style.color = new Color(0.6f, 0.55f, 0.7f, 0.4f);
+                emptyLabel.style.fontSize = 11;
+                emptyLabel.style.unityFontStyleAndWeight = FontStyle.Italic;
+                emptyLabel.style.paddingTop = 10;
+                emptyLabel.style.paddingLeft = 8;
+                _abilitiesList.Add(emptyLabel);
+                return;
+            }
 
-                if (skills != null && i < skills.Length)
+            for (int i = 0; i < skills.Length; i++)
+            {
+                string skillId = skills[i];
+                var skillData = GameDatabase.HasInstance ? GameDatabase.Instance.GetSkill(skillId) : null;
+
+                var card = BuildAbilityCard(skillId, skillData);
+                _abilitiesList.Add(card);
+            }
+        }
+
+        /// <summary>
+        /// Builds a single AAA ability card VisualElement.
+        /// Layout: [brand-dot] [info-column: [header-row: name + tags] [description]]
+        /// </summary>
+        private VisualElement BuildAbilityCard(string skillId, SkillData skillData)
+        {
+            var card = new VisualElement();
+            card.AddToClassList("ability-card");
+
+            // Brand color dot
+            var dot = new VisualElement();
+            dot.AddToClassList("ability-brand-dot");
+            Brand brand = skillData != null ? skillData.GetBrandRequirement() : Brand.NONE;
+            Color dotColor;
+            if (!kBrandColors.TryGetValue(brand, out dotColor))
+                dotColor = kBrandColors[Brand.NONE];
+            dot.style.backgroundColor = dotColor;
+            card.Add(dot);
+
+            // Info column
+            var info = new VisualElement();
+            info.AddToClassList("ability-info");
+
+            // Header row: name + tags
+            var headerRow = new VisualElement();
+            headerRow.AddToClassList("ability-header-row");
+
+            string displayName = skillData?.display_name ?? FormatSkillId(skillId);
+            var nameLabel = new Label(displayName);
+            nameLabel.AddToClassList("ability-name");
+            headerRow.Add(nameLabel);
+
+            // Tags container
+            var tags = new VisualElement();
+            tags.AddToClassList("ability-tags");
+
+            if (skillData != null)
+            {
+                // Power tag
+                if (skillData.base_power > 0)
                 {
-                    string skillId = skills[i];
-                    var skillData = GameDatabase.HasInstance ? GameDatabase.Instance.GetSkill(skillId) : null;
-                    string displayName = skillData?.display_name ?? FormatSkillId(skillId);
-                    string description = skillData?.description;
-
-                    if (!string.IsNullOrEmpty(description))
-                        _abilitySlots[i].text = $"{displayName}\n{description}";
-                    else
-                        _abilitySlots[i].text = displayName;
-
-                    _abilitySlots[i].style.display = DisplayStyle.Flex;
+                    var powerTag = new Label($"PWR {skillData.base_power}");
+                    powerTag.AddToClassList("ability-power-tag");
+                    tags.Add(powerTag);
                 }
-                else
+
+                // Cost tag
+                if (skillData.mp_cost > 0)
                 {
-                    _abilitySlots[i].style.display = DisplayStyle.None;
+                    var costTag = new Label($"MP {skillData.mp_cost}");
+                    costTag.AddToClassList("ability-tag");
+                    tags.Add(costTag);
+                }
+                else if (skillData.hp_cost > 0)
+                {
+                    var costTag = new Label($"HP {skillData.hp_cost}");
+                    costTag.AddToClassList("ability-tag");
+                    tags.Add(costTag);
+                }
+
+                // Cooldown tag
+                if (skillData.cooldown_turns > 0)
+                {
+                    var cdTag = new Label($"CD {skillData.cooldown_turns}");
+                    cdTag.AddToClassList("ability-tag");
+                    tags.Add(cdTag);
+                }
+
+                // Brand tag
+                if (brand != Brand.NONE)
+                {
+                    var brandTag = new Label(brand.ToString());
+                    brandTag.AddToClassList("ability-tag");
+                    brandTag.style.color = new StyleColor(dotColor);
+                    tags.Add(brandTag);
                 }
             }
+
+            headerRow.Add(tags);
+            info.Add(headerRow);
+
+            // Description
+            if (skillData != null && !string.IsNullOrEmpty(skillData.description))
+            {
+                var desc = new Label(skillData.description);
+                desc.AddToClassList("ability-desc");
+                info.Add(desc);
+            }
+
+            card.Add(info);
+            return card;
         }
 
         private static string FormatSkillId(string skillId)

@@ -9,13 +9,14 @@
         <!-- Demon Figure -->
         <ui:VisualElement name="monster-image" picking-mode="Ignore" style="position: absolute; left: 0; right: 0; top: 20%; bottom: -3%; background-image: url('project://database/Assets/Art/UI/MainMenu/demon_figure.png?fileID=2800000&amp;guid=37ac0bd864327ca4ab90b841b55d87bc&amp;type=3'); -unity-background-scale-mode: scale-to-fit; background-position-x: center; background-position-y: bottom;" />
 
-        <!-- VEILBREAKERS LOGO -->
+        <!-- VEILBREAKERS LOGO with dark backing for visibility -->
         <ui:VisualElement name="logo-container" picking-mode="Ignore" style="position: absolute; left: 0; right: 0; top: -60px; height: 480px; justify-content: flex-start; align-items: center; background-color: rgba(0, 0, 0, 0);">
+            <!-- logo-backing removed: flat overlay created visible dark band across demon; logo has sufficient contrast without it -->
             <ui:VisualElement name="logo-image" style="width: 1600px; height: 400px; background-image: url('project://database/Assets/Art/UI/MainMenu/logo_veilbreakers.png?fileID=2800000&amp;guid=068214e22c8853d4c8fe90c83ab65bbc&amp;type=3'); -unity-background-scale-mode: scale-to-fit; background-color: rgba(0, 0, 0, 0); background-position-x: center; background-position-y: center;" />
         </ui:VisualElement>
 
         <!-- Menu Buttons - Vertical right-aligned (AAA V5) -->
-        <ui:VisualElement name="button-container" style="position: absolute; right: 5%; bottom: 14%; flex-direction: column; align-items: flex-end; padding: 0; background-color: transparent;">
+        <ui:VisualElement name="button-container" style="position: absolute; right: 5%; bottom: 7%; flex-direction: column; align-items: flex-end; padding: 0; background-color: transparent;">
             <ui:Button text="NEW GAME" name="btn-new-game" class="vb-menu-btn" style="margin-bottom: 9px;" />
             <ui:Button text="CONTINUE" name="btn-continue" class="vb-menu-btn" style="display: none; margin-bottom: 9px;" />
             <ui:Button text="SETTINGS" name="btn-settings" class="vb-menu-btn" style="margin-bottom: 9px;" />
@@ -23,8 +24,11 @@
             <ui:Button text="EXIT" name="btn-exit" class="vb-menu-btn" />
         </ui:VisualElement>
 
-        <!-- Small overlay to cover AI watermark in bottom-right corner of background art -->
-        <ui:VisualElement name="corner-overlay-br" picking-mode="Ignore" style="position: absolute; right: 0; bottom: 0; width: 80px; height: 24px; background-color: rgba(0, 0, 0, 0.9);" />
+        <!-- Version label - bottom right, very faint per V5 spec (.mm-ver) -->
+        <ui:Label name="version-label" picking-mode="Ignore" style="position: absolute; right: 12px; bottom: 8px; font-size: 9px; color: rgba(180, 170, 160, 0.25); letter-spacing: 2px;" />
+
+        <!-- Overlay to cover Veo AI watermark in bottom-right corner of video/background -->
+        <ui:VisualElement name="corner-overlay-br" picking-mode="Ignore" style="position: absolute; right: 0; bottom: 0; width: 120px; height: 36px; background-color: rgba(0, 0, 0, 0.98);" />
 
         <!-- Loading Overlay -->
         <ui:VisualElement name="loading-overlay" style="display: none; position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(8, 6, 12, 0.95); justify-content: center; align-items: center;">
