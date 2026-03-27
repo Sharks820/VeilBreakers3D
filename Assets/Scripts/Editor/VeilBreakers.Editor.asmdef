@@ -3,6 +3,7 @@
   "rootNamespace": "VeilBreakers.Editor",
   "references": [
     "VeilBreakers.Runtime",
+    "VeilBreakers.Tests.Runtime",
     "Unity.RenderPipelines.Universal.Runtime",
     "Unity.RenderPipelines.GPUDriven.Runtime"
   ],

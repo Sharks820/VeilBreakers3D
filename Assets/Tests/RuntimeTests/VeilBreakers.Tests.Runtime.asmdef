@@ -1,0 +1,16 @@
+{
+  "name": "VeilBreakers.Tests.Runtime",
+  "rootNamespace": "VeilBreakers.Test",
+  "references": [
+    "VeilBreakers.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

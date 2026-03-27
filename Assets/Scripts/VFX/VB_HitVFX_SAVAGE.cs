@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections;
 
+namespace VeilBreakers.VFX
+{
 /// <summary>
 /// Directional combat hit VFX for SAVAGE brand.
 /// Blood splatter with feral claw slash marks
@@ -184,4 +186,5 @@ public class VB_HitVFX_SAVAGE : MonoBehaviour
         renderer.material = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit") ?? Shader.Find("Particles/Standard Unlit"));
         renderer.material.SetColor("_Color", brandColor);
     }
+}
 }

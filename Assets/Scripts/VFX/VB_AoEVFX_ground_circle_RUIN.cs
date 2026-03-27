@@ -1,6 +1,8 @@
 using UnityEngine;
 using System.Collections;
 
+namespace VeilBreakers.VFX
+{
 /// <summary>
 /// Area-of-effect VFX controller (ground_circle) for RUIN brand.
 /// Supports ground circles, expanding domes, cone blasts, and ring waves.
@@ -242,4 +244,5 @@ public class VB_AoEVFX_ground_circle_RUIN : MonoBehaviour
 
         return ps;
     }
+}
 }

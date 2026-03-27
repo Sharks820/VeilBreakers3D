@@ -1,5 +1,7 @@
 using UnityEngine;
 
+namespace VeilBreakers.VFX
+{
 /// <summary>
 /// Status effect VFX for SURGE brand: Shocked.
 /// Lightning arcs jumping between random points
@@ -206,4 +208,5 @@ public class VB_StatusVFX_SURGE : MonoBehaviour
             if (r != null && r.material != null) Destroy(r.material);
         }
     }
+}
 }
