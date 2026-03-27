@@ -9,7 +9,7 @@ namespace VeilBreakers.Data
     /// </summary>
     public static class SaveVersion
     {
-        public const int CURRENT = 2;
+        public const int CURRENT = 3;
     }
 
     /// <summary>
@@ -69,6 +69,25 @@ namespace VeilBreakers.Data
         /// <summary>List of learned skill IDs</summary>
         public List<string> heroLearnedSkills = new List<string>();
 
+        /// <summary>Hero's equipped ability loadout — skill IDs mapped to the 6 AbilitySlots</summary>
+        public List<SavedAbilitySlot> heroAbilityLoadout = new List<SavedAbilitySlot>();
+
+        // =============================================================================
+        // HERO EQUIPMENT
+        // =============================================================================
+
+        /// <summary>Hero weapon item ID (null = none)</summary>
+        public string heroWeaponId;
+
+        /// <summary>Hero armor item ID (null = none)</summary>
+        public string heroArmorId;
+
+        /// <summary>Hero accessory item ID (null = none)</summary>
+        public string heroAccessoryId;
+
+        /// <summary>Hero ring item ID (null = none)</summary>
+        public string heroRingId;
+
         // =============================================================================
         // PARTY (Monsters)
         // =============================================================================
@@ -76,7 +95,10 @@ namespace VeilBreakers.Data
         /// <summary>Active party monsters (max 3)</summary>
         public List<SavedMonster> party = new List<SavedMonster>();
 
-        /// <summary>Monsters in storage</summary>
+        /// <summary>Backpack monsters — quick-swap reserves (max 3)</summary>
+        public List<SavedMonster> backpack = new List<SavedMonster>();
+
+        /// <summary>Monsters in long-term storage</summary>
         public List<SavedMonster> storage = new List<SavedMonster>();
 
         // =============================================================================
@@ -89,11 +111,48 @@ namespace VeilBreakers.Data
         /// <summary>IDs of completed quests</summary>
         public List<string> completedQuests = new List<string>();
 
+        /// <summary>Active quests with current objective progress</summary>
+        public List<SavedActiveQuest> activeQuests = new List<SavedActiveQuest>();
+
         /// <summary>Narrative story flags</summary>
         public List<string> storyFlags = new List<string>();
 
         /// <summary>Current currency amount</summary>
         public int currency;
+
+        /// <summary>Shrine ID where game was last saved (for respawn positioning)</summary>
+        public string lastSaveShrineId;
+
+        /// <summary>Player world position X at save time</summary>
+        public float playerPositionX;
+
+        /// <summary>Player world position Y at save time</summary>
+        public float playerPositionY;
+
+        /// <summary>Player world position Z at save time</summary>
+        public float playerPositionZ;
+
+        /// <summary>Player rotation Y (facing direction) at save time</summary>
+        public float playerRotationY;
+
+        /// <summary>Current scene/level name for loading the correct scene</summary>
+        public string currentSceneName;
+
+        /// <summary>IDs of defeated bosses (prevents respawn)</summary>
+        public List<string> defeatedBosses = new List<string>();
+
+        /// <summary>Unlocked fast travel destinations</summary>
+        public List<string> unlockedFastTravel = new List<string>();
+
+        // =============================================================================
+        // MOUNTS
+        // =============================================================================
+
+        /// <summary>IDs of unlocked mount types</summary>
+        public List<string> unlockedMounts = new List<string>();
+
+        /// <summary>Currently equipped mount ID (null = on foot)</summary>
+        public string activeMountId;
 
         // =============================================================================
         // INVENTORY
@@ -118,6 +177,7 @@ namespace VeilBreakers.Data
                 saveId = Guid.NewGuid().ToString("N"),
                 playtimeSeconds = 0f,
                 currentLocation = "Unknown",
+                currentSceneName = "",
                 heroId = heroId,
                 heroName = heroName,
                 heroLevel = 1,
@@ -127,12 +187,28 @@ namespace VeilBreakers.Data
                 heroPathLevel = 0f,
                 heroPath = heroPath,
                 heroLearnedSkills = new List<string>(),
+                heroAbilityLoadout = new List<SavedAbilitySlot>(),
+                heroWeaponId = null,
+                heroArmorId = null,
+                heroAccessoryId = null,
+                heroRingId = null,
                 party = new List<SavedMonster>(),
+                backpack = new List<SavedMonster>(),
                 storage = new List<SavedMonster>(),
                 discoveredShrines = new List<string>(),
                 completedQuests = new List<string>(),
+                activeQuests = new List<SavedActiveQuest>(),
                 storyFlags = new List<string>(),
                 currency = 0,
+                lastSaveShrineId = null,
+                playerPositionX = 0f,
+                playerPositionY = 0f,
+                playerPositionZ = 0f,
+                playerRotationY = 0f,
+                defeatedBosses = new List<string>(),
+                unlockedFastTravel = new List<string>(),
+                unlockedMounts = new List<string>(),
+                activeMountId = null,
                 inventory = new List<SavedItem>()
             };
         }
@@ -206,16 +282,49 @@ namespace VeilBreakers.Data
 
             // Initialize null lists to empty (defensive)
             party ??= new List<SavedMonster>();
+            backpack ??= new List<SavedMonster>();
             storage ??= new List<SavedMonster>();
             discoveredShrines ??= new List<string>();
             completedQuests ??= new List<string>();
+            activeQuests ??= new List<SavedActiveQuest>();
             storyFlags ??= new List<string>();
             heroLearnedSkills ??= new List<string>();
+            heroAbilityLoadout ??= new List<SavedAbilitySlot>();
             inventory ??= new List<SavedItem>();
+            defeatedBosses ??= new List<string>();
+            unlockedFastTravel ??= new List<string>();
+            unlockedMounts ??= new List<string>();
 
-            // Validate all monsters in party and storage
+            // Enforce party size limits (3 active, 3 backpack)
+            while (party.Count > 3)
+            {
+                Debug.LogWarning("[SaveData] Party exceeds max size 3, moving overflow to backpack");
+                backpack.Add(party[party.Count - 1]);
+                party.RemoveAt(party.Count - 1);
+            }
+            while (backpack.Count > 3)
+            {
+                Debug.LogWarning("[SaveData] Backpack exceeds max size 3, moving overflow to storage");
+                storage.Add(backpack[backpack.Count - 1]);
+                backpack.RemoveAt(backpack.Count - 1);
+            }
+
+            // Validate all monsters in party, backpack, and storage
             ValidateMonsterList(party);
+            ValidateMonsterList(backpack);
             ValidateMonsterList(storage);
+
+            // Validate active quests
+            for (int i = activeQuests.Count - 1; i >= 0; i--)
+            {
+                var quest = activeQuests[i];
+                if (quest == null || string.IsNullOrEmpty(quest.questId))
+                {
+                    activeQuests.RemoveAt(i);
+                    continue;
+                }
+                quest.objectiveProgress ??= new List<int>();
+            }
 
             return true;
         }
@@ -237,7 +346,17 @@ namespace VeilBreakers.Data
                 if (monster.level < 1) monster.level = 1;
                 if (monster.level > 100) monster.level = 100;
                 if (monster.currentHp < 0) monster.currentHp = 0;
+                if (monster.currentMp < 0) monster.currentMp = 0;
+                if (monster.experience < 0) monster.experience = 0;
+                if (monster.evolutionStage < 0) monster.evolutionStage = 0;
+                if (monster.evolutionStage > 2) monster.evolutionStage = 2;
                 monster.learnedSkills ??= new List<string>();
+                monster.abilityLoadout ??= new List<SavedAbilitySlot>();
+                if (string.IsNullOrEmpty(monster.instanceId))
+                {
+                    monster.instanceId = Guid.NewGuid().ToString("N");
+                    Debug.LogWarning($"[SaveData] Repaired missing instanceId for monster {monster.monsterId}");
+                }
             }
         }
 
@@ -295,6 +414,15 @@ namespace VeilBreakers.Data
         /// <summary>List of learned skill IDs</summary>
         public List<string> learnedSkills = new List<string>();
 
+        /// <summary>Ability loadout — which learned skill is slotted in which AbilitySlot</summary>
+        public List<SavedAbilitySlot> abilityLoadout = new List<SavedAbilitySlot>();
+
+        /// <summary>Current evolution stage (0 = Birth, 1 = Evo2, 2 = Evo3)</summary>
+        public int evolutionStage;
+
+        /// <summary>Equipped accessory item ID (null = none)</summary>
+        public string equippedAccessoryId;
+
         /// <summary>
         /// Creates a new saved monster from capture.
         /// </summary>
@@ -310,7 +438,10 @@ namespace VeilBreakers.Data
                 currentMp = 50,
                 corruption = Mathf.Clamp(corruption, 0f, 100f),
                 experience = 0,
-                learnedSkills = new List<string>()
+                learnedSkills = new List<string>(),
+                abilityLoadout = new List<SavedAbilitySlot>(),
+                evolutionStage = 0,
+                equippedAccessoryId = null
             };
         }
 
@@ -341,6 +472,56 @@ namespace VeilBreakers.Data
             {
                 itemId = itemId,
                 quantity = quantity
+            };
+        }
+    }
+
+    /// <summary>
+    /// Serializable ability slot assignment for save files.
+    /// Maps an AbilitySlot to a skill ID.
+    /// </summary>
+    [Serializable]
+    public class SavedAbilitySlot
+    {
+        /// <summary>AbilitySlot index (0-5, matching AbilitySlot enum)</summary>
+        public int slotIndex;
+
+        /// <summary>Skill ID assigned to this slot (empty = default/none)</summary>
+        public string skillId;
+
+        public static SavedAbilitySlot Create(int slot, string skillId)
+        {
+            return new SavedAbilitySlot { slotIndex = slot, skillId = skillId };
+        }
+    }
+
+    /// <summary>
+    /// Serializable active quest data for save files.
+    /// Tracks in-progress quest state.
+    /// </summary>
+    [Serializable]
+    public class SavedActiveQuest
+    {
+        /// <summary>Quest template ID (references QuestData)</summary>
+        public string questId;
+
+        /// <summary>Current objective index within the quest</summary>
+        public int currentObjectiveIndex;
+
+        /// <summary>Per-objective progress counters (e.g., 3/5 enemies killed)</summary>
+        public List<int> objectiveProgress = new List<int>();
+
+        /// <summary>ISO 8601 timestamp when quest was accepted</summary>
+        public string acceptedDate;
+
+        public static SavedActiveQuest Create(string questId)
+        {
+            return new SavedActiveQuest
+            {
+                questId = questId,
+                currentObjectiveIndex = 0,
+                objectiveProgress = new List<int>(),
+                acceptedDate = DateTime.UtcNow.ToString("o")
             };
         }
     }
