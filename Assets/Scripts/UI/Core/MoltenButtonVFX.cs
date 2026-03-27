@@ -415,10 +415,13 @@ namespace VeilBreakers.UI.Core
                 state.GlowUnderlay = glowUnderlay;
             }
 
-            // Register events
-            button.RegisterCallback<MouseEnterEvent>(evt => OnButtonHoverEnter(state));
-            button.RegisterCallback<MouseLeaveEvent>(evt => OnButtonHoverExit(state));
-            button.RegisterCallback<ClickEvent>(evt => OnButtonClick(state, evt));
+            // Register events (store delegates for proper unregistration in CleanupCallbacks)
+            state.EnterCallback = evt => OnButtonHoverEnter(state);
+            state.LeaveCallback = evt => OnButtonHoverExit(state);
+            state.ClickCallback = evt => OnButtonClick(state, evt);
+            button.RegisterCallback(state.EnterCallback);
+            button.RegisterCallback(state.LeaveCallback);
+            button.RegisterCallback(state.ClickCallback);
 
             _buttonStates[button] = state;
 
@@ -1077,6 +1080,19 @@ namespace VeilBreakers.UI.Core
             }
             _generatedButtonSkins.Clear();
 
+            // Unregister stored callbacks to prevent handler stacking on enable/disable cycles
+            foreach (var kvp in _buttonStates)
+            {
+                var btn = kvp.Key;
+                var state = kvp.Value;
+                if (btn != null)
+                {
+                    if (state.EnterCallback != null) btn.UnregisterCallback(state.EnterCallback);
+                    if (state.LeaveCallback != null) btn.UnregisterCallback(state.LeaveCallback);
+                    if (state.ClickCallback != null) btn.UnregisterCallback(state.ClickCallback);
+                }
+            }
+
             _buttonStates.Clear();
             _isActive = false;
         }
@@ -1132,6 +1148,11 @@ namespace VeilBreakers.UI.Core
             public float MoltenSeed;
             public float MoltenSheenOffset;
             public float MoltenHover;
+
+            // Stored delegates for proper unregistration (prevents callback stacking leak)
+            public EventCallback<MouseEnterEvent> EnterCallback;
+            public EventCallback<MouseLeaveEvent> LeaveCallback;
+            public EventCallback<ClickEvent> ClickCallback;
         }
 
         private class LavaBubble

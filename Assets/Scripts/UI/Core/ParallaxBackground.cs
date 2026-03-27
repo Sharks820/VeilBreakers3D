@@ -99,7 +99,7 @@ namespace VeilBreakers.UI.Core
             _screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
             _isInitialized = true;
 
-            Debug.Log($"[ParallaxBackground] Initialized with {_layers.Count} layers");
+            // Debug.Log removed — runs every scene load, wastes allocations in release builds
         }
 
         private void Update()
