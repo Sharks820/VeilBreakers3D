@@ -138,6 +138,7 @@ namespace VeilBreakers.UI.Menus
 
             EnsureOverlayVfx();
             EnsureTitleScreenAudio();
+            ApplyCornerBlend();
             DisableExpensiveVfxInBatchMode();
         }
 
@@ -456,6 +457,10 @@ namespace VeilBreakers.UI.Menus
             // Restore background elements
             DimBackground(false);
 
+            // Clear stale hover highlights on menu buttons (MouseLeaveEvent doesn't fire
+            // when overlay steals focus, so glow class persists after closing settings)
+            if (_mainMenuController != null) _mainMenuController.SetInteractable(true);
+
             var settingsPanel = _settingsOverlay.Q<VisualElement>("settings-panel");
             if (_animator == null)
             {
@@ -557,11 +562,55 @@ namespace VeilBreakers.UI.Menus
 
         private void EnsureTitleScreenAudio()
         {
-            // AAA audio: ambient music, random demon laughs, girl crying
             if (GetComponent<VeilBreakers.UI.Core.TitleScreenAudio>() == null)
             {
                 gameObject.AddComponent<VeilBreakers.UI.Core.TitleScreenAudio>();
             }
+        }
+
+        /// <summary>
+        /// Applies a feathered radial gradient to the bottom-right corner overlay so it
+        /// blends naturally into the scene instead of being an obvious black box.
+        /// </summary>
+        private void ApplyCornerBlend()
+        {
+            if (_root == null) return;
+            var overlay = _root.Q<VisualElement>("corner-overlay-br");
+            if (overlay == null) return;
+
+            // Create a gradient texture: strongly opaque at bottom-right corner, feathers to transparent
+            int w = 320;
+            int h = 80;
+            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            tex.filterMode = FilterMode.Bilinear;
+
+            // Match the dark fiery scene bottom — slight warm tint
+            Color darkBase = new Color(0.03f, 0.01f, 0.005f, 1f);
+
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    float nx = (float)x / w;   // 0=left, 1=right
+                    float ny = (float)y / h;   // 0=bottom, 1=top
+
+                    // Elliptical falloff — wider than tall to cover watermark area
+                    float dx = (1f - nx) * 0.8f;
+                    float dy = ny * 1.2f;
+                    float dist = Mathf.Sqrt(dx * dx + dy * dy);
+
+                    // Hard-ish falloff: opaque over watermark, smooth fade outward
+                    float alpha = Mathf.SmoothStep(1f, 0f, dist * 1.1f);
+                    alpha = Mathf.Pow(alpha, 0.5f); // Harder edge — ensures watermark is fully covered
+
+                    tex.SetPixel(x, h - 1 - y, new Color(darkBase.r, darkBase.g, darkBase.b, alpha));
+                }
+            }
+            tex.Apply();
+
+            overlay.style.backgroundImage = new StyleBackground(tex);
+            overlay.style.backgroundColor = new Color(0, 0, 0, 0); // Transparent base, texture handles alpha
         }
 
         /// <summary>

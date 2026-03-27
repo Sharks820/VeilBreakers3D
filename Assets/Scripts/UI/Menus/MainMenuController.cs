@@ -757,6 +757,56 @@ namespace VeilBreakers.UI.Menus
             _btnSettings?.SetEnabled(interactable);
             _btnCredits?.SetEnabled(interactable);
             _btnExit?.SetEnabled(interactable);
+
+            // When re-enabling buttons (overlay closed), clear any stale hover highlights.
+            // MouseLeaveEvent doesn't fire when an overlay steals focus, so the glow class persists.
+            if (interactable)
+            {
+                ClearAllHoverStates();
+            }
+        }
+
+        /// <summary>
+        /// Fully resets ALL hover visual state on every button: CSS class, gradient texture,
+        /// glow halo, shine sweep, and neighbor opacity. Called when overlays close because
+        /// MouseLeaveEvent never fires when an overlay steals focus.
+        /// </summary>
+        private void ClearAllHoverStates()
+        {
+            if (_cachedButtons == null) return;
+            foreach (var btn in _cachedButtons)
+            {
+                if (btn == null) continue;
+
+                // 1. Remove hover CSS class
+                btn.RemoveFromClassList("vb-button-hover-glow");
+                btn.style.opacity = 1f;
+
+                // 2. Restore base gradient (undo hover gradient from ApplyButtonGradients)
+                if (_btnBaseGradient != null)
+                {
+                    VeilBreakers.UI.Core.UIGradientHelper.ApplyGradient(btn, _btnBaseGradient);
+                }
+
+                // 3. Reset glow halo to idle
+                var glowHalo = btn.Q<VisualElement>("btn-glow-halo");
+                if (glowHalo != null) glowHalo.style.opacity = 0f;
+
+                // 4. Reset shine sweep position
+                var shineSweep = btn.Q<VisualElement>("btn-shine-sweep");
+                if (shineSweep != null) shineSweep.style.left = Length.Percent(-35);
+
+                // 5. Remove focus (clears :focus pseudo-class that keeps borders highlighted)
+                btn.Blur();
+
+                // 6. Clear any inline border overrides so USS base state takes control
+                btn.style.borderTopColor = StyleKeyword.Null;
+                btn.style.borderBottomColor = StyleKeyword.Null;
+                btn.style.borderLeftColor = StyleKeyword.Null;
+                btn.style.borderRightColor = StyleKeyword.Null;
+                btn.style.scale = StyleKeyword.Null;
+                btn.style.translate = StyleKeyword.Null;
+            }
         }
 
         /// <summary>
@@ -1267,8 +1317,11 @@ namespace VeilBreakers.UI.Menus
 
             button.RegisterCallback<MouseLeaveEvent>(evt =>
             {
+                // Reset gradient + glow + sweep + hover class (MUST remove class — it overrides inline styles)
+                button.RemoveFromClassList("vb-button-hover-glow");
                 UIGradientHelper.ApplyGradient(button, _btnBaseGradient);
                 glowHalo.style.opacity = 0;
+                button.Blur();
                 // Reset sweep position instantly (no transition)
                 shineSweep.style.transitionDuration = new List<TimeValue> { new(0f, TimeUnit.Second) };
                 shineSweep.style.left = Length.Percent(-35);
@@ -1276,6 +1329,21 @@ namespace VeilBreakers.UI.Menus
                 {
                     shineSweep.style.transitionDuration = new List<TimeValue> { new(0.5f, TimeUnit.Second) };
                 }).ExecuteLater(10);
+            });
+
+            // --- RIGHT-CLICK FIX: fully reset all hover visuals + release pointer capture ---
+            button.RegisterCallback<PointerDownEvent>(evt =>
+            {
+                if (evt.button == 1) // Right mouse button
+                {
+                    button.RemoveFromClassList("vb-button-hover-glow");
+                    UIGradientHelper.ApplyGradient(button, _btnBaseGradient);
+                    glowHalo.style.opacity = 0;
+                    shineSweep.style.left = Length.Percent(-35);
+                    button.Blur();
+                    button.ReleasePointer(evt.pointerId); // Release pointer capture to clear :hover
+                    evt.StopPropagation(); // Prevent Button's internal handler from re-capturing
+                }
             });
 
             // --- BREATHING GLOW: subtle idle pulse on all buttons ---
@@ -1364,6 +1432,18 @@ namespace VeilBreakers.UI.Menus
             // Register callbacks
             button.RegisterCallback(enterCallback);
             button.RegisterCallback(leaveCallback);
+
+            // Right-click also clears hover + focus (context menu steals MouseLeave)
+            button.RegisterCallback<PointerDownEvent>(evt =>
+            {
+                if (evt.button == 1 && !button.ClassListContains("vb-btn-sheet"))
+                {
+                    button.RemoveFromClassList("vb-button-hover-glow");
+                    PropagateHoverLight(button, false);
+                    if (_titleVfx != null) _titleVfx.OnButtonHovered(false, isPrimary);
+                    button.Blur();
+                }
+            });
 
             // Store for unregistration in OnDisable (prevents memory leaks)
             _hoverEnterCallbacks[button] = enterCallback;

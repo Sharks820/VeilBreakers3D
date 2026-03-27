@@ -34,7 +34,7 @@
     --surface-light: rgba(30, 24, 44, 0.85);
     --text-primary: rgba(240, 235, 250, 1);
     --text-secondary: rgba(190, 180, 210, 0.8);
-    --text-muted: rgba(140, 130, 160, 0.55);
+    --text-muted: rgba(160, 150, 180, 0.75);
     --border-subtle: rgba(80, 65, 100, 0.35);
     --border-accent: rgba(120, 100, 150, 0.5);
 }
@@ -44,35 +44,35 @@
    ============================================================================= */
 
 .theme-vex {
-    --hero-primary: rgb(200, 160, 60);
-    --hero-secondary: rgb(180, 140, 40);
-    --hero-accent: rgb(255, 210, 110);
-    --hero-glow: rgba(200, 160, 60, 0.20);
-    --hero-dim: rgba(200, 160, 60, 0.08);
+    --hero-primary: rgb(220, 68, 34);
+    --hero-secondary: rgb(190, 55, 25);
+    --hero-accent: rgb(255, 120, 60);
+    --hero-glow: rgba(220, 68, 34, 0.25);
+    --hero-dim: rgba(220, 68, 34, 0.10);
 }
 
 .theme-seraphina {
     --hero-primary: rgb(150, 90, 210);
     --hero-secondary: rgb(130, 70, 190);
-    --hero-accent: rgb(210, 170, 255);
-    --hero-glow: rgba(150, 90, 210, 0.20);
-    --hero-dim: rgba(150, 90, 210, 0.08);
+    --hero-accent: rgb(200, 150, 255);
+    --hero-glow: rgba(150, 90, 210, 0.25);
+    --hero-dim: rgba(150, 90, 210, 0.10);
 }
 
 .theme-orion {
-    --hero-primary: rgb(200, 60, 60);
-    --hero-secondary: rgb(180, 45, 45);
-    --hero-accent: rgb(255, 130, 110);
-    --hero-glow: rgba(200, 60, 60, 0.20);
-    --hero-dim: rgba(200, 60, 60, 0.08);
+    --hero-primary: rgb(100, 70, 220);
+    --hero-secondary: rgb(80, 55, 200);
+    --hero-accent: rgb(140, 110, 255);
+    --hero-glow: rgba(100, 70, 220, 0.25);
+    --hero-dim: rgba(100, 70, 220, 0.10);
 }
 
 .theme-nyx {
-    --hero-primary: rgb(70, 190, 210);
-    --hero-secondary: rgb(50, 170, 190);
-    --hero-accent: rgb(130, 230, 250);
-    --hero-glow: rgba(70, 190, 210, 0.20);
-    --hero-dim: rgba(70, 190, 210, 0.08);
+    --hero-primary: rgb(180, 25, 30);
+    --hero-secondary: rgb(150, 18, 22);
+    --hero-accent: rgb(240, 50, 55);
+    --hero-glow: rgba(180, 25, 30, 0.25);
+    --hero-dim: rgba(180, 25, 30, 0.10);
 }
 
 /* =============================================================================
@@ -177,8 +177,8 @@ TemplateContainer {
 
 /* Per-hero accent glow on veil-panel borders */
 .theme-vex .veil-panel {
-    border-color: rgba(200, 160, 60, 0.35);
-    border-top-color: rgba(200, 160, 60, 0.6);
+    border-color: rgba(220, 68, 34, 0.35);
+    border-top-color: rgba(220, 68, 34, 0.6);
 }
 
 .theme-seraphina .veil-panel {
@@ -187,13 +187,13 @@ TemplateContainer {
 }
 
 .theme-orion .veil-panel {
-    border-color: rgba(200, 60, 60, 0.35);
-    border-top-color: rgba(200, 60, 60, 0.6);
+    border-color: rgba(100, 70, 220, 0.35);
+    border-top-color: rgba(100, 70, 220, 0.6);
 }
 
 .theme-nyx .veil-panel {
-    border-color: rgba(70, 190, 210, 0.35);
-    border-top-color: rgba(70, 190, 210, 0.6);
+    border-color: rgba(180, 25, 30, 0.35);
+    border-top-color: rgba(180, 25, 30, 0.6);
 }
 
 /* =============================================================================
@@ -216,7 +216,7 @@ TemplateContainer {
     width: 180px;
     height: 320px;
     border-width: 1px;
-    border-color: var(--hero-dim, rgba(200, 160, 60, 0.1));
+    border-color: var(--hero-dim, rgba(180, 60, 50, 0.1));
     border-radius: 8px;
     -unity-background-scale-mode: scale-to-fit;
     align-self: center;
@@ -235,29 +235,30 @@ TemplateContainer {
 
 .stage-hero-name {
     -unity-font-definition: url('project://database/Assets/UI/Fonts/CinzelDecorative-Bold.ttf?fileID=12800000&guid=a571f12f2cfa23b44875b20ecbd843c4&type=3');
-    font-size: 54px;
+    font-size: 48px;
     -unity-font-style: bold;
     color: var(--text-primary);
-    letter-spacing: 16px;
+    letter-spacing: 12px;
     opacity: 0.06;
     -unity-text-align: middle-center;
+    white-space: nowrap;
 }
 
 .stage-hero-title {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--hero-primary);
     letter-spacing: 6px;
-    opacity: 0.35;
+    opacity: 0.45;
     -unity-text-align: middle-center;
-    margin-top: 4px;
-    text-shadow: 0 0 8px var(--hero-glow, rgba(200, 160, 60, 0.15));
+    margin-top: 10px;
+    text-shadow: 0 0 8px var(--hero-glow, rgba(180, 60, 50, 0.15));
 }
 
 .drag-hint {
     position: absolute;
     bottom: 12%;
-    font-size: 8px;
-    color: rgba(255, 255, 255, 0.12);
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.2);
     letter-spacing: 3px;
     -unity-text-align: middle-center;
     align-self: center;
@@ -297,7 +298,7 @@ TemplateContainer {
     border-width: 1px;
     border-color: rgba(80, 65, 100, 0.25);
     border-top-width: 2px;
-    border-top-color: var(--hero-primary, rgba(200, 160, 60, 0.5));
+    border-top-color: var(--hero-primary, rgba(180, 60, 50, 0.5));
     border-radius: 6px 6px 4px 4px;
     z-index: 20;
     padding: 16px 20px;
@@ -326,12 +327,12 @@ TemplateContainer {
 
 .tab-btn {
     background-color: transparent;
-    color: rgba(170, 160, 190, 0.65);
+    color: rgba(190, 180, 210, 0.80);
     border-width: 0;
     border-bottom-width: 2px;
     border-bottom-color: transparent;
     padding: 5px 12px;
-    font-size: 11px;
+    font-size: 12px;
     -unity-font-style: bold;
     letter-spacing: 3px;
     transition-property: border-bottom-color, background-color;
@@ -341,10 +342,10 @@ TemplateContainer {
 }
 
 .tab-btn-active {
-    color: rgba(240, 235, 250, 0.95);
-    border-bottom-color: var(--hero-primary, rgba(200, 160, 60, 0.9));
-    background-color: rgba(255, 255, 255, 0.03);
-    text-shadow: 0 0 8px var(--hero-glow, rgba(200, 160, 60, 0.3));
+    color: var(--hero-accent, rgba(240, 100, 80, 1.0));
+    border-bottom-color: var(--hero-primary, rgba(180, 60, 50, 0.9));
+    background-color: rgba(255, 255, 255, 0.04);
+    text-shadow: 0 0 10px var(--hero-glow, rgba(180, 60, 50, 0.4));
 }
 
 .tab-btn:hover {
@@ -353,10 +354,10 @@ TemplateContainer {
 }
 
 /* Per-hero active tab underline */
-.theme-vex .tab-btn-active { border-bottom-color: rgba(200, 160, 60, 0.9); }
-.theme-seraphina .tab-btn-active { border-bottom-color: rgba(150, 90, 210, 0.9); }
-.theme-orion .tab-btn-active { border-bottom-color: rgba(200, 60, 60, 0.9); }
-.theme-nyx .tab-btn-active { border-bottom-color: rgba(70, 190, 210, 0.9); }
+.theme-vex .tab-btn-active { border-bottom-color: rgba(220, 68, 34, 0.9); color: rgb(255, 120, 60); }
+.theme-seraphina .tab-btn-active { border-bottom-color: rgba(150, 90, 210, 0.9); color: rgb(200, 150, 255); }
+.theme-orion .tab-btn-active { border-bottom-color: rgba(100, 70, 220, 0.9); color: rgb(140, 110, 255); }
+.theme-nyx .tab-btn-active { border-bottom-color: rgba(180, 25, 30, 0.9); color: rgb(240, 50, 55); }
 
 .tab-content {
     flex-grow: 1;
@@ -394,8 +395,8 @@ TemplateContainer {
 }
 
 .divider-diamond {
-    font-size: 5px;
-    color: var(--hero-primary, rgba(200, 160, 60, 0.35));
+    font-size: 7px;
+    color: var(--hero-primary, rgba(180, 60, 50, 0.5));
     background-color: rgba(10, 8, 16, 0.98);
     padding: 0 8px;
     -unity-text-align: middle-center;
@@ -407,37 +408,41 @@ TemplateContainer {
 
 .hero-name {
     -unity-font-definition: url('project://database/Assets/UI/Fonts/CinzelDecorative-Bold.ttf?fileID=12800000&guid=a571f12f2cfa23b44875b20ecbd843c4&type=3');
-    font-size: 28px;
+    font-size: 26px;
     -unity-font-style: bold;
-    color: #f0ebfa;
-    letter-spacing: 4px;
+    color: var(--hero-accent, #f0ebfa);
+    letter-spacing: 3px;
     margin-bottom: 2px;
-    text-shadow: 0 0 20px var(--hero-glow, rgba(200, 160, 60, 0.3));
+    white-space: nowrap;
+    text-shadow: 0 0 20px var(--hero-glow, rgba(180, 60, 50, 0.3));
     transition-property: color, text-shadow;
     transition-duration: var(--transition-slow);
     transition-timing-function: var(--ease-out-expo);
 }
 
 .hero-title {
-    font-size: 11px;
+    font-size: 14px;
     color: var(--hero-primary);
     letter-spacing: 3px;
     margin-bottom: 5px;
-    opacity: 0.85;
+    opacity: 1.0;
     border-left-width: 3px;
     border-left-color: var(--hero-primary);
     padding-left: 10px;
-    text-shadow: 0 0 6px var(--hero-glow, rgba(200, 160, 60, 0.2));
+    white-space: nowrap;
+    text-shadow: 0 0 6px var(--hero-glow, rgba(180, 60, 50, 0.2));
     transition-property: color, border-left-color, text-shadow;
     transition-duration: var(--transition-slow), var(--transition-slow), var(--transition-slow);
 }
 
 .hero-quote {
-    font-size: 10px;
-    color: rgba(210, 200, 230, 0.7);
+    font-size: 15px;
+    color: rgba(235, 230, 250, 1.0);
     -unity-font-style: italic;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     white-space: normal;
+    line-height: 20px;
+    padding: 6px 0;
 }
 
 /* =============================================================================
@@ -457,8 +462,8 @@ TemplateContainer {
 }
 
 .info-label {
-    font-size: 10px;
-    color: rgba(140, 130, 160, 0.55);
+    font-size: 12px;
+    color: rgba(170, 160, 190, 0.8);
     letter-spacing: 3px;
     -unity-font-style: bold;
     margin-right: 4px;
@@ -513,7 +518,7 @@ TemplateContainer {
 .stat-chip-mana:hover .stat-chip-label { opacity: 1; }
 
 .stat-chip-label {
-    font-size: 9px;
+    font-size: 11px;
     color: var(--text-muted);
     letter-spacing: 2px;
     -unity-font-style: bold;
@@ -639,7 +644,7 @@ TemplateContainer {
     flex-direction: row;
     background-color: rgba(0, 0, 0, 0.3);
     border-width: 1px;
-    border-color: var(--hero-dim, rgba(200, 160, 60, 0.15));
+    border-color: var(--hero-dim, rgba(180, 60, 50, 0.15));
     border-radius: 6px;
     padding: 10px;
     margin-top: 2px;
@@ -651,7 +656,7 @@ TemplateContainer {
     min-height: 80px;
     background-color: rgba(0, 0, 0, 0.2);
     border-width: 1px;
-    border-color: var(--hero-dim, rgba(200, 160, 60, 0.1));
+    border-color: var(--hero-dim, rgba(180, 60, 50, 0.1));
     border-radius: 5px;
     -unity-background-scale-mode: scale-to-fit;
 }
@@ -666,32 +671,33 @@ TemplateContainer {
     -unity-font-definition: url('project://database/Assets/UI/Fonts/CinzelDecorative-Bold.ttf?fileID=12800000&guid=a571f12f2cfa23b44875b20ecbd843c4&type=3');
     font-size: 16px;
     -unity-font-style: bold;
-    color: var(--hero-accent, rgb(255, 210, 112));
+    color: var(--hero-accent, rgb(240, 100, 80));
     letter-spacing: 1px;
     margin-bottom: 4px;
-    text-shadow: 0 0 8px var(--hero-glow, rgba(200, 160, 60, 0.2));
+    white-space: nowrap;
+    text-shadow: 0 0 8px var(--hero-glow, rgba(180, 60, 50, 0.2));
 }
 
 .champion-brand-label {
     font-size: 12px;
     -unity-font-style: bold;
     letter-spacing: 3px;
-    color: var(--hero-primary, rgba(200, 160, 60, 0.8));
+    color: var(--hero-primary, rgba(180, 60, 50, 0.8));
     margin-bottom: 6px;
     padding-bottom: 4px;
     border-bottom-width: 1px;
-    border-bottom-color: var(--hero-primary, rgba(200, 160, 60, 0.15));
+    border-bottom-color: var(--hero-primary, rgba(180, 60, 50, 0.15));
 }
 
 .tag-brand {
-    border-color: var(--hero-primary, rgba(200, 160, 60, 0.35));
-    color: var(--hero-primary, rgba(200, 160, 60, 0.75));
-    background-color: var(--hero-dim, rgba(200, 160, 60, 0.06));
+    border-color: var(--hero-primary, rgba(180, 60, 50, 0.35));
+    color: var(--hero-primary, rgba(180, 60, 50, 0.75));
+    background-color: var(--hero-dim, rgba(180, 60, 50, 0.06));
 }
 
 .champion-desc {
-    font-size: 10px;
-    color: rgba(195, 185, 215, 0.65);
+    font-size: 13px;
+    color: rgba(210, 200, 230, 0.85);
     white-space: normal;
     margin-top: 8px;
 }
@@ -701,15 +707,15 @@ TemplateContainer {
 }
 
 .tag {
-    font-size: 8px;
-    color: rgba(190, 180, 210, 0.65);
+    font-size: 11px;
+    color: rgba(220, 215, 240, 0.95);
     letter-spacing: 2px;
-    background-color: rgba(0, 0, 0, 0.35);
-    padding: 3px 10px;
+    background-color: rgba(0, 0, 0, 0.45);
+    padding: 4px 12px;
     margin-right: 5px;
     border-radius: 3px;
     border-width: 1px;
-    border-color: rgba(80, 65, 100, 0.25);
+    border-color: rgba(120, 100, 160, 0.4);
     -unity-font-style: bold;
     transition-property: background-color, border-color;
     transition-duration: 0.2s, 0.2s;
@@ -730,10 +736,10 @@ TemplateContainer {
 }
 
 .champion-skills-header {
-    font-size: 8px;
+    font-size: 10px;
     letter-spacing: 3px;
     -unity-font-style: bold;
-    color: var(--hero-primary, rgba(200, 160, 60, 0.5));
+    color: var(--hero-primary, rgba(180, 60, 50, 0.7));
     margin-bottom: 4px;
 }
 
@@ -752,14 +758,14 @@ TemplateContainer {
 }
 
 .champion-skill-name {
-    font-size: 10px;
-    color: rgba(225, 215, 240, 0.85);
+    font-size: 12px;
+    color: rgba(230, 225, 245, 0.95);
     letter-spacing: 1px;
 }
 
 .champion-skill-power {
-    font-size: 8px;
-    color: rgba(255, 170, 85, 0.6);
+    font-size: 10px;
+    color: rgba(255, 180, 100, 0.85);
     margin-left: 6px;
     letter-spacing: 1px;
 }
@@ -780,8 +786,8 @@ TemplateContainer {
 }
 
 .section-header {
-    font-size: 8px;
-    color: rgba(140, 130, 160, 0.45);
+    font-size: 10px;
+    color: rgba(160, 150, 180, 0.7);
     letter-spacing: 3px;
     margin-bottom: 5px;
     -unity-font-style: bold;
@@ -812,10 +818,10 @@ TemplateContainer {
 }
 
 .attr-chip-label {
-    font-size: 9px;
+    font-size: 11px;
     letter-spacing: 2px;
     -unity-font-style: bold;
-    color: rgba(140, 130, 160, 0.6);
+    color: rgba(170, 160, 190, 0.8);
     margin-bottom: 1px;
     -unity-text-align: middle-center;
 }
@@ -833,7 +839,7 @@ TemplateContainer {
 .stat-bar-row { flex-direction: row; align-items: center; margin-bottom: 6px; }
 .stat-bar-label { width: 40px; font-size: 11px; color: var(--text-muted); letter-spacing: 3px; -unity-font-style: bold; }
 .stat-bar-track { flex-grow: 1; height: 10px; background-color: rgba(5, 5, 12, 0.8); border-radius: 5px; margin: 0 10px; overflow: hidden; }
-.stat-bar-fill { height: 100%; background-color: var(--hero-primary, rgb(200, 160, 60)); border-radius: 5px; }
+.stat-bar-fill { height: 100%; background-color: var(--hero-primary, rgb(180, 60, 50)); border-radius: 5px; }
 .stat-bar-value { width: 28px; font-size: 13px; color: var(--text-primary); -unity-text-align: middle-right; -unity-font-style: bold; }
 
 /* =============================================================================
@@ -856,7 +862,7 @@ TemplateContainer {
     border-width: 1px;
     border-color: rgba(80, 65, 100, 0.12);
     border-left-width: 3px;
-    border-left-color: var(--hero-primary, rgba(200, 160, 60, 0.5));
+    border-left-color: var(--hero-primary, rgba(180, 60, 50, 0.5));
     translate: 0 0;
     transition-property: translate, background-color, border-color, border-left-color;
     transition-duration: 0.2s, 0.2s, 0.2s, 0.2s;
@@ -868,7 +874,7 @@ TemplateContainer {
 .ability-card:hover {
     background-color: rgba(12, 10, 24, 0.85);
     translate: 3px 0;
-    border-left-color: var(--hero-accent, rgba(255, 210, 112, 0.9));
+    border-left-color: var(--hero-accent, rgba(240, 100, 80, 0.9));
     border-color: rgba(80, 65, 100, 0.25);
 }
 
@@ -913,36 +919,36 @@ TemplateContainer {
 }
 
 .ability-tag {
-    font-size: 8px;
+    font-size: 10px;
     letter-spacing: 1px;
     -unity-font-style: bold;
-    color: rgba(180, 170, 200, 0.75);
-    background-color: rgba(80, 65, 100, 0.15);
+    color: rgba(200, 190, 220, 0.9);
+    background-color: rgba(80, 65, 100, 0.2);
     border-radius: 8px;
-    padding: 2px 7px;
+    padding: 3px 8px;
     margin-left: 4px;
     border-width: 1px;
-    border-color: rgba(80, 65, 100, 0.12);
+    border-color: rgba(100, 80, 130, 0.2);
 }
 
 /* Power/damage display — warm accent pill */
 .ability-power-tag {
-    font-size: 8px;
+    font-size: 10px;
     letter-spacing: 1px;
     -unity-font-style: bold;
-    color: rgba(255, 180, 100, 0.95);
-    background-color: rgba(255, 140, 40, 0.12);
+    color: rgba(255, 190, 110, 1.0);
+    background-color: rgba(255, 140, 40, 0.15);
     border-radius: 8px;
-    padding: 2px 7px;
+    padding: 3px 8px;
     margin-left: 4px;
     border-width: 1px;
-    border-color: rgba(255, 140, 40, 0.15);
+    border-color: rgba(255, 140, 40, 0.2);
 }
 
 /* Skill description text */
 .ability-desc {
-    font-size: 10px;
-    color: rgba(195, 185, 215, 0.65);
+    font-size: 12px;
+    color: rgba(210, 200, 230, 0.8);
     white-space: normal;
     -unity-font-style: italic;
     margin-top: 2px;
@@ -974,23 +980,23 @@ TemplateContainer {
     border-width: 1px;
     border-color: rgba(80, 65, 100, 0.1);
     border-left-width: 3px;
-    border-left-color: var(--hero-primary, rgba(200, 160, 60, 0.3));
+    border-left-color: var(--hero-primary, rgba(180, 60, 50, 0.3));
 }
 
 .hero-backstory {
-    font-size: 12px;
-    color: rgba(195, 185, 215, 0.78);
+    font-size: 14px;
+    color: rgba(210, 200, 230, 0.9);
     white-space: normal;
     -unity-font-style: italic;
     padding: 0 4px;
-    line-height: 18px;
+    line-height: 20px;
 }
 
 /* Drop-cap first letter element (created in C#) */
 .lore-drop-cap {
     font-size: 32px;
     -unity-font-style: bold;
-    color: var(--hero-accent, rgba(255, 210, 112, 0.9));
+    color: var(--hero-accent, rgba(240, 100, 80, 0.9));
     float: left;
     margin-right: 4px;
     margin-top: -2px;
@@ -999,7 +1005,7 @@ TemplateContainer {
 /* Section headers in lore tab */
 .lore-section-divider {
     height: 1px;
-    background-color: var(--hero-dim, rgba(200, 160, 60, 0.12));
+    background-color: var(--hero-dim, rgba(180, 60, 50, 0.12));
     margin-top: 14px;
     margin-bottom: 10px;
 }
@@ -1013,25 +1019,25 @@ TemplateContainer {
     border-width: 1px;
     border-color: rgba(80, 65, 100, 0.1);
     border-left-width: 3px;
-    border-left-color: var(--hero-primary, rgba(200, 160, 60, 0.3));
+    border-left-color: var(--hero-primary, rgba(180, 60, 50, 0.3));
 }
 
 .synergy-detail-section .section-header {
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: 3px;
     -unity-font-style: bold;
-    color: var(--hero-primary, rgba(200, 160, 60, 0.8));
+    color: var(--hero-primary, rgba(180, 60, 50, 0.9));
     margin-bottom: 8px;
     padding-bottom: 6px;
     border-bottom-width: 1px;
-    border-bottom-color: var(--hero-dim, rgba(200, 160, 60, 0.1));
+    border-bottom-color: var(--hero-dim, rgba(180, 60, 50, 0.15));
 }
 
 .hero-synergy-detail {
-    font-size: 12px;
-    color: rgba(195, 185, 215, 0.7);
+    font-size: 14px;
+    color: rgba(210, 200, 230, 0.85);
     white-space: normal;
-    line-height: 17px;
+    line-height: 19px;
 }
 
 /* Brands detail card */
@@ -1043,31 +1049,25 @@ TemplateContainer {
     border-width: 1px;
     border-color: rgba(80, 65, 100, 0.1);
     border-left-width: 3px;
-    border-left-color: var(--hero-primary, rgba(200, 160, 60, 0.3));
+    border-left-color: var(--hero-primary, rgba(180, 60, 50, 0.3));
 }
 
 .brands-section .section-header {
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: 3px;
     -unity-font-style: bold;
-    color: var(--hero-primary, rgba(200, 160, 60, 0.8));
+    color: var(--hero-primary, rgba(180, 60, 50, 0.9));
     margin-bottom: 8px;
     padding-bottom: 6px;
     border-bottom-width: 1px;
-    border-bottom-color: var(--hero-dim, rgba(200, 160, 60, 0.1));
+    border-bottom-color: var(--hero-dim, rgba(180, 60, 50, 0.15));
 }
 
 .hero-brands-detail {
-    font-size: 12px;
-    color: rgba(195, 185, 215, 0.7);
+    font-size: 14px;
+    color: rgba(210, 200, 230, 0.85);
     white-space: normal;
-    line-height: 17px;
-}
-
-.hero-brands-detail {
-    font-size: 13px;
-    color: rgba(180, 170, 200, 0.65);
-    white-space: normal;
+    line-height: 19px;
 }
 
 /* =============================================================================
@@ -1095,10 +1095,10 @@ TemplateContainer {
 }
 
 /* Per-hero focus ring colors */
-.theme-vex .focus-ring-active { border-color: rgba(200, 160, 60, 0.9); }
+.theme-vex .focus-ring-active { border-color: rgba(220, 68, 34, 0.9); }
 .theme-seraphina .focus-ring-active { border-color: rgba(150, 90, 210, 0.9); }
-.theme-orion .focus-ring-active { border-color: rgba(200, 60, 60, 0.9); }
-.theme-nyx .focus-ring-active { border-color: rgba(70, 190, 210, 0.9); }
+.theme-orion .focus-ring-active { border-color: rgba(100, 70, 220, 0.9); }
+.theme-nyx .focus-ring-active { border-color: rgba(180, 25, 30, 0.9); }
 
 /* =============================================================================
    EMBARK AREA (Inline inside bottom-layer, sits to right of carousel)
@@ -1138,16 +1138,16 @@ TemplateContainer {
 }
 
 .embark-text {
-    font-size: 14px;
+    font-size: 16px;
     -unity-font-style: bold;
-    color: rgba(15, 10, 5, 0.90);
+    color: rgba(15, 10, 5, 0.95);
     letter-spacing: 4px;
 }
 
 .embark-subtitle {
-    font-size: 9px;
+    font-size: 10px;
     -unity-font-style: bold;
-    color: rgba(15, 10, 5, 0.70);
+    color: rgba(15, 10, 5, 0.75);
     letter-spacing: 4px;
     margin-top: 2px;
 }
@@ -1249,8 +1249,8 @@ TemplateContainer {
 }
 
 .hero-card {
-    width: 80px;
-    height: 100px;
+    width: 90px;
+    height: 105px;
     margin: 0 6px;
     background-color: rgba(22, 18, 34, 0.9);
     border-width: 1.5px;
@@ -1307,11 +1307,13 @@ TemplateContainer {
     -unity-font-definition: url('project://database/Assets/UI/Fonts/CinzelDecorative-Regular.ttf?fileID=12800000&guid=d13ae79c9243c964db9245ce6c976d4a&type=3');
     font-size: 8px;
     color: var(--text-secondary);
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     -unity-font-style: bold;
-    opacity: 0.35;
-    margin-top: 6px;
+    opacity: 0.5;
+    margin-top: 4px;
     -unity-text-align: middle-center;
+    white-space: nowrap;
+    overflow: hidden;
     transition-property: opacity, color;
     transition-duration: 0.3s, 0.3s;
 }
@@ -1321,10 +1323,11 @@ TemplateContainer {
 }
 
 .hero-card-role {
-    font-size: 7px;
+    font-size: 9px;
     color: var(--text-muted);
-    letter-spacing: 2px;
-    margin-top: 4px;
+    letter-spacing: 1px;
+    margin-top: 3px;
+    white-space: nowrap;
 }
 
 /* Selection dot below active card */
@@ -1369,8 +1372,8 @@ TemplateContainer {
     border-width: 1px;
     border-color: rgba(80, 65, 100, 0.15);
     border-radius: 3px;
-    color: rgba(190, 180, 210, 0.3);
-    font-size: 11px;
+    color: rgba(200, 190, 220, 0.55);
+    font-size: 12px;
     letter-spacing: 3px;
     z-index: 30;
     transition-property: color, border-color, background-color;
@@ -1388,8 +1391,8 @@ TemplateContainer {
     top: 12px;
     left: 50%;
     translate: -50% 0;
-    font-size: 10px;
-    color: rgba(190, 180, 210, 0.30);
+    font-size: 11px;
+    color: rgba(200, 190, 220, 0.50);
     letter-spacing: 5px;
     z-index: 30;
 }

@@ -2356,7 +2356,7 @@ TemplateContainer {
     transition-duration: 0.08s;
 }
 
-/* Prevent right-click / focus from causing stuck highlight */
+/* Prevent right-click / focus from causing stuck highlight — must match base state exactly */
 #menu-root .vb-menu-btn:focus,
 #menu-root #btn-new-game:focus,
 #menu-root #btn-continue:focus,
@@ -2370,6 +2370,16 @@ TemplateContainer {
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
     scale: 1 1;
     translate: 0 0;
+    /* Override any :hover bleed-through */
+    background-color: initial;
+}
+
+/* Double-specificity override: if :hover and :focus both active, force idle look */
+#menu-root .vb-menu-btn:focus:hover {
+    border-color: rgba(255, 180, 80, 0.7);
+    border-top-color: rgba(255, 220, 140, 0.65);
+    color: #fffae8;
+    scale: 1.04 1.04;
 }
 
 /* =============================================================================
@@ -3076,22 +3086,22 @@ TemplateContainer {
 }
 
 .save-slot-hero-name {
-    font-size: 15px;
+    font-size: 18px;
     -unity-font-style: bold;
-    color: rgba(240, 235, 250, 0.95);
+    color: rgba(245, 240, 255, 1.0);
     letter-spacing: 2px;
 }
 
 .save-slot-tag {
-    font-size: 8px;
+    font-size: 10px;
     letter-spacing: 2px;
     -unity-font-style: bold;
-    color: rgba(200, 140, 80, 0.9);
-    background-color: rgba(180, 80, 20, 0.08);
+    color: rgba(220, 155, 90, 1.0);
+    background-color: rgba(180, 80, 20, 0.12);
     border-radius: 8px;
-    padding: 2px 8px;
+    padding: 3px 10px;
     border-width: 1px;
-    border-color: rgba(180, 100, 30, 0.2);
+    border-color: rgba(180, 100, 30, 0.3);
 }
 
 .save-slot-tag-auto {
@@ -3107,24 +3117,24 @@ TemplateContainer {
 }
 
 .save-slot-detail {
-    font-size: 10px;
+    font-size: 13px;
     letter-spacing: 1px;
     -unity-font-style: bold;
-    color: rgba(180, 170, 200, 0.65);
+    color: rgba(200, 190, 220, 0.85);
     margin-right: 12px;
 }
 
 .save-slot-level {
-    color: rgba(255, 160, 70, 0.9);
+    color: rgba(255, 170, 80, 1.0);
 }
 
 .save-slot-path {
-    color: rgba(150, 130, 180, 0.7);
+    color: rgba(170, 150, 200, 0.9);
     letter-spacing: 2px;
 }
 
 .save-slot-location {
-    color: rgba(160, 150, 175, 0.55);
+    color: rgba(180, 170, 195, 0.8);
     -unity-font-style: italic;
 }
 
@@ -3135,14 +3145,14 @@ TemplateContainer {
 }
 
 .save-slot-playtime {
-    font-size: 10px;
-    color: rgba(140, 130, 160, 0.5);
+    font-size: 12px;
+    color: rgba(160, 150, 180, 0.75);
     letter-spacing: 1px;
 }
 
 .save-slot-date {
-    font-size: 9px;
-    color: rgba(140, 130, 160, 0.4);
+    font-size: 11px;
+    color: rgba(160, 150, 180, 0.65);
 }
 
 /* Right: action buttons */
@@ -3154,7 +3164,7 @@ TemplateContainer {
 }
 
 .save-slot-load-btn {
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: 3px;
     -unity-font-style: bold;
     color: rgba(15, 10, 5, 0.95);
@@ -3176,7 +3186,7 @@ TemplateContainer {
 }
 
 .save-slot-delete-btn {
-    font-size: 8px;
+    font-size: 10px;
     letter-spacing: 2px;
     color: rgba(180, 50, 50, 0.6);
     background-color: transparent;
@@ -3197,7 +3207,7 @@ TemplateContainer {
 }
 
 .save-slot-corrupt-label {
-    font-size: 9px;
+    font-size: 11px;
     letter-spacing: 2px;
     -unity-font-style: bold;
     color: rgba(180, 50, 50, 0.7);

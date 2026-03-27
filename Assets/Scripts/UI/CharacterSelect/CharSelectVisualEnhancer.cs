@@ -606,35 +606,35 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             ["vex"] = new HeroCardColors
             {
-                BorderColor = new Color(200f/255f, 160f/255f, 60f/255f, 0.65f),
-                GradTop     = new Color(60f/255f, 50f/255f, 30f/255f, 0.85f),
-                GradBottom  = new Color(30f/255f, 25f/255f, 15f/255f, 0.95f),
-                AccentText  = new Color(255f/255f, 210f/255f, 112f/255f, 1f),   // #ffd270
-                GlowColor   = new Color(200f/255f, 160f/255f, 60f/255f, 0.45f),
+                BorderColor = new Color(220f/255f, 68f/255f, 34f/255f, 0.75f),   // Red-orange
+                GradTop     = new Color(65f/255f, 25f/255f, 15f/255f, 0.85f),
+                GradBottom  = new Color(32f/255f, 12f/255f, 8f/255f, 0.95f),
+                AccentText  = new Color(255f/255f, 120f/255f, 60f/255f, 1f),     // Bright red-orange
+                GlowColor   = new Color(220f/255f, 68f/255f, 34f/255f, 0.45f),
             },
             ["seraphina"] = new HeroCardColors
             {
-                BorderColor = new Color(150f/255f, 90f/255f, 210f/255f, 0.65f),
+                BorderColor = new Color(150f/255f, 90f/255f, 210f/255f, 0.75f),  // Purple (kept)
                 GradTop     = new Color(45f/255f, 30f/255f, 65f/255f, 0.85f),
                 GradBottom  = new Color(22f/255f, 15f/255f, 32f/255f, 0.95f),
-                AccentText  = new Color(210f/255f, 170f/255f, 255f/255f, 1f),   // #d2aaff
+                AccentText  = new Color(200f/255f, 150f/255f, 255f/255f, 1f),    // Bright purple
                 GlowColor   = new Color(150f/255f, 90f/255f, 210f/255f, 0.45f),
             },
             ["orion"] = new HeroCardColors
             {
-                BorderColor = new Color(200f/255f, 60f/255f, 60f/255f, 0.65f),
-                GradTop     = new Color(60f/255f, 25f/255f, 25f/255f, 0.85f),
-                GradBottom  = new Color(30f/255f, 12f/255f, 12f/255f, 0.95f),
-                AccentText  = new Color(255f/255f, 136f/255f, 102f/255f, 1f),   // #ff8866
-                GlowColor   = new Color(200f/255f, 60f/255f, 60f/255f, 0.45f),
+                BorderColor = new Color(100f/255f, 70f/255f, 220f/255f, 0.75f),  // Purplish blue
+                GradTop     = new Color(30f/255f, 22f/255f, 65f/255f, 0.85f),
+                GradBottom  = new Color(15f/255f, 10f/255f, 32f/255f, 0.95f),
+                AccentText  = new Color(140f/255f, 110f/255f, 255f/255f, 1f),    // Bright purplish blue
+                GlowColor   = new Color(100f/255f, 70f/255f, 220f/255f, 0.45f),
             },
             ["nyx"] = new HeroCardColors
             {
-                BorderColor = new Color(70f/255f, 190f/255f, 210f/255f, 0.65f),
-                GradTop     = new Color(25f/255f, 55f/255f, 60f/255f, 0.85f),
-                GradBottom  = new Color(12f/255f, 27f/255f, 30f/255f, 0.95f),
-                AccentText  = new Color(130f/255f, 230f/255f, 250f/255f, 1f),   // #82e6fa
-                GlowColor   = new Color(70f/255f, 190f/255f, 210f/255f, 0.45f),
+                BorderColor = new Color(180f/255f, 25f/255f, 30f/255f, 0.75f),   // Blood red
+                GradTop     = new Color(55f/255f, 10f/255f, 12f/255f, 0.85f),
+                GradBottom  = new Color(28f/255f, 5f/255f, 6f/255f, 0.95f),
+                AccentText  = new Color(240f/255f, 50f/255f, 55f/255f, 1f),      // Bright blood red
+                GlowColor   = new Color(180f/255f, 25f/255f, 30f/255f, 0.45f),
             },
         };
 

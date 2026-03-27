@@ -27,8 +27,8 @@
         <!-- Version label - bottom right, very faint per V5 spec (.mm-ver) -->
         <ui:Label name="version-label" picking-mode="Ignore" style="position: absolute; right: 12px; bottom: 8px; font-size: 9px; color: rgba(180, 170, 160, 0.25); letter-spacing: 2px;" />
 
-        <!-- Overlay to cover Veo AI watermark in bottom-right corner of video/background -->
-        <ui:VisualElement name="corner-overlay-br" picking-mode="Ignore" style="position: absolute; right: 0; bottom: 0; width: 120px; height: 36px; background-color: rgba(0, 0, 0, 0.98);" />
+        <!-- Bottom-right corner blend — C# applies feathered gradient to cover watermark -->
+        <ui:VisualElement name="corner-overlay-br" picking-mode="Ignore" style="position: absolute; right: 0; bottom: 0; width: 320px; height: 80px; border-top-left-radius: 50px;" />
 
         <!-- Loading Overlay -->
         <ui:VisualElement name="loading-overlay" style="display: none; position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(8, 6, 12, 0.95); justify-content: center; align-items: center;">

@@ -291,21 +291,21 @@ namespace VeilBreakers.UI.CharacterSelect
             // Create runtime defaults for each hero
             var configs = new HeroThemeConfig[4];
             configs[0] = CreateDefaultTheme("vex", "Vex",
-                new Color(0.78f, 0.63f, 0.24f), // Amber gold
-                new Color(1f, 0.78f, 0.39f, 0.25f),
-                new Color(0.2f, 0.16f, 0.06f));
+                new Color(220f/255f, 68f/255f, 34f/255f), // Red-orange
+                new Color(1f, 0.47f, 0.24f, 0.30f),
+                new Color(0.25f, 0.10f, 0.05f));
             configs[1] = CreateDefaultTheme("seraphina", "Seraphina",
-                new Color(0.55f, 0.31f, 0.78f), // Violet
-                new Color(0.78f, 0.63f, 1f, 0.25f),
+                new Color(150f/255f, 90f/255f, 210f/255f), // Purple
+                new Color(0.78f, 0.59f, 1f, 0.30f),
                 new Color(0.14f, 0.08f, 0.2f));
             configs[2] = CreateDefaultTheme("orion", "Orion",
-                new Color(0.71f, 0.2f, 0.2f),  // Crimson
-                new Color(1f, 0.47f, 0.39f, 0.25f),
-                new Color(0.2f, 0.05f, 0.05f));
+                new Color(100f/255f, 70f/255f, 220f/255f), // Purplish blue
+                new Color(0.55f, 0.43f, 1f, 0.30f),
+                new Color(0.08f, 0.06f, 0.2f));
             configs[3] = CreateDefaultTheme("nyx", "Nyx",
-                new Color(0.24f, 0.71f, 0.78f), // Cyan
-                new Color(0.47f, 0.86f, 0.94f, 0.25f),
-                new Color(0.06f, 0.18f, 0.2f));
+                new Color(180f/255f, 25f/255f, 30f/255f), // Blood red
+                new Color(0.94f, 0.20f, 0.22f, 0.30f),
+                new Color(0.22f, 0.04f, 0.04f));
 
             Debug.Log("[CharSelectManager] Created 4 runtime HeroThemeConfigs (no assets found in Resources/CharacterSelect/HeroThemes).");
             return configs;
@@ -541,7 +541,7 @@ namespace VeilBreakers.UI.CharacterSelect
                 // Inner top highlight for panel depth
                 VeilBreakers.UI.Core.UIGradientHelper.CreateTopHighlight(
                     _infoPanelContainer,
-                    new Color(0.78f, 0.63f, 0.24f, 0.25f), // Gold highlight matching hero primary
+                    new Color(0.5f, 0.4f, 0.35f, 0.15f), // Neutral warm highlight (hero color applied dynamically)
                     1f
                 );
             }
@@ -564,8 +564,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _btnPrev?.RegisterCallback<ClickEvent>(OnPrevClicked);
             _btnNext?.RegisterCallback<ClickEvent>(OnNextClicked);
             _btnBack?.RegisterCallback<ClickEvent>(OnBackClicked);
-            // Embark ClickEvent REMOVED — HoldToEmbarkController owns the hold-to-confirm flow.
-            // A single click must NOT trigger embark; only a completed 1.5s hold should.
+            // Embark uses hold-to-confirm via HoldToEmbarkController — no ClickEvent here
             _tabBtnOverview?.RegisterCallback<ClickEvent>(OnTabOverviewClicked);
             _tabBtnAbilities?.RegisterCallback<ClickEvent>(OnTabAbilitiesClicked);
             _tabBtnLore?.RegisterCallback<ClickEvent>(OnTabLoreClicked);
@@ -581,7 +580,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _btnPrev?.UnregisterCallback<ClickEvent>(OnPrevClicked);
             _btnNext?.UnregisterCallback<ClickEvent>(OnNextClicked);
             _btnBack?.UnregisterCallback<ClickEvent>(OnBackClicked);
-            // Embark ClickEvent removed — HoldToEmbarkController owns hold-to-confirm
+            // Embark uses hold-to-confirm via HoldToEmbarkController — no ClickEvent here
             _tabBtnOverview?.UnregisterCallback<ClickEvent>(OnTabOverviewClicked);
             _tabBtnAbilities?.UnregisterCallback<ClickEvent>(OnTabAbilitiesClicked);
             _tabBtnLore?.UnregisterCallback<ClickEvent>(OnTabLoreClicked);
@@ -723,6 +722,7 @@ namespace VeilBreakers.UI.CharacterSelect
             if (hero == null) return;
             string name = string.IsNullOrEmpty(hero.display_name) ? (hero.hero_id?.ToUpper() ?? "UNKNOWN") : hero.display_name.ToUpper();
             if (_embarkText != null) _embarkText.text = $"EMBARK AS {name}";
+            if (_embarkSubtitle != null) _embarkSubtitle.text = "HOLD TO CONFIRM";
             _embarkGlow?.AddToClassList("breathing");
         }
 
@@ -986,7 +986,7 @@ namespace VeilBreakers.UI.CharacterSelect
             slotsContainer.name = "slot-replacement-slots";
             slotsContainer.style.display = DisplayStyle.Flex;
             slotsContainer.style.flexDirection = FlexDirection.Column;
-            slotsContainer.style.gap = 12;
+            // gap not available on IStyle in this Unity version; use child margins instead
             slotsContainer.style.maxHeight = 400;
             slotsContainer.style.overflow = Overflow.Hidden;
 
@@ -1043,6 +1043,7 @@ namespace VeilBreakers.UI.CharacterSelect
                     : null;
 
                 var card = BuildReplacementSlotCard(i, meta);
+                if (i > 0) card.style.marginTop = 12;
                 slotsContainer.Add(card);
             }
         }
@@ -1084,7 +1085,6 @@ namespace VeilBreakers.UI.CharacterSelect
                 var detailsRow = new VisualElement();
                 detailsRow.style.display = DisplayStyle.Flex;
                 detailsRow.style.flexDirection = FlexDirection.Row;
-                detailsRow.style.gap = 15;
 
                 var levelLabel = new Label($"LVL {meta.heroLevel}");
                 levelLabel.style.fontSize = 12;
@@ -1096,6 +1096,7 @@ namespace VeilBreakers.UI.CharacterSelect
                     var pathLabel = new Label(meta.heroPath.ToString());
                     pathLabel.style.fontSize = 12;
                     pathLabel.style.color = new Color(0.85f, 0.85f, 0.8f, 0.8f);
+                    pathLabel.style.marginLeft = 15;
                     detailsRow.Add(pathLabel);
                 }
 
@@ -1105,7 +1106,6 @@ namespace VeilBreakers.UI.CharacterSelect
                 var timeRow = new VisualElement();
                 timeRow.style.display = DisplayStyle.Flex;
                 timeRow.style.flexDirection = FlexDirection.Row;
-                timeRow.style.gap = 20;
                 timeRow.style.marginTop = 6;
 
                 var playtimeLabel = new Label(meta.GetFormattedPlaytime());
@@ -1116,6 +1116,7 @@ namespace VeilBreakers.UI.CharacterSelect
                 var dateLabel = new Label(meta.GetFormattedDate());
                 dateLabel.style.fontSize = 11;
                 dateLabel.style.color = new Color(0.75f, 0.75f, 0.7f, 0.7f);
+                dateLabel.style.marginLeft = 20;
                 timeRow.Add(dateLabel);
 
                 infoSection.Add(timeRow);

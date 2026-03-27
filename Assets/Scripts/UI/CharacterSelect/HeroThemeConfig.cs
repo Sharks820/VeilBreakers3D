@@ -23,7 +23,7 @@ namespace VeilBreakers.UI.CharacterSelect
         // =============================================================================
 
         [Header("Colors")]
-        [Tooltip("Main brand color (Vex: amber, Seraphina: violet, Orion: crimson, Nyx: cyan)")]
+        [Tooltip("Main brand color (Vex: red-orange, Seraphina: purple, Orion: purplish blue, Nyx: blood red)")]
         public Color primaryColor;
 
         [Tooltip("Glow/accent color with alpha for intensity")]
