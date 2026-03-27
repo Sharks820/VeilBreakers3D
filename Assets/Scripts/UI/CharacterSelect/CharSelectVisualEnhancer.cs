@@ -83,6 +83,13 @@ namespace VeilBreakers.UI.CharacterSelect
             ApplyNavArrowGradients();
 
             _applied = true;
+
+            // Flush any pending stat bar hero change that arrived before visual pass
+            if (_pendingStatBarHero != null)
+            {
+                HandleHeroChangedForStatBars(0, _pendingStatBarHero, null);
+                _pendingStatBarHero = null;
+            }
         }
 
         // =====================================================================
@@ -269,10 +276,18 @@ namespace VeilBreakers.UI.CharacterSelect
         /// Re-applies the correct gradient to the stamina/mana bar when hero changes.
         /// VOIDTOUCHED/UNCHAINED heroes use mana (purple), others use stamina (green).
         /// </summary>
+        private HeroData _pendingStatBarHero; // Stashed if event fires before visual pass completes
+
         private void HandleHeroChangedForStatBars(int index, HeroData data, HeroDisplayConfig config)
         {
-            if (_root == null || !_applied) return;
             if (data == null) return;
+
+            // If visual pass hasn't run yet, stash for later
+            if (_root == null || !_applied)
+            {
+                _pendingStatBarHero = data;
+                return;
+            }
 
             bool isManaUser = data.GetPrimaryPath() == Path.VOIDTOUCHED
                            || data.GetPrimaryPath() == Path.UNCHAINED;

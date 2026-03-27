@@ -116,6 +116,7 @@ namespace VeilBreakers.UI.Menus
         private TitleScreenVFX _titleVfx; // For logo aura hover response
         private bool _eventsBound;
         private int _continueSlot = SaveManager.kNoneSlot;
+        private SaveSlotBrowserController _saveBrowser;
 
         // AAA gradient textures (generated at runtime, destroyed on cleanup)
         private Texture2D _btnBaseGradient;
@@ -379,8 +380,42 @@ namespace VeilBreakers.UI.Menus
 
             OnContinueClicked?.Invoke();
 
-            // Load the most recent save
+            // Open save browser overlay instead of directly loading
+            OpenSaveBrowser();
+        }
+
+        /// <summary>
+        /// Opens the save slot browser overlay. Creates the controller if needed.
+        /// </summary>
+        private void OpenSaveBrowser()
+        {
+            if (_saveBrowser == null)
+            {
+                _saveBrowser = gameObject.GetComponent<SaveSlotBrowserController>();
+                if (_saveBrowser == null)
+                    _saveBrowser = gameObject.AddComponent<SaveSlotBrowserController>();
+
+                // Wire dependencies
+                _saveBrowser.AutoWire(_uiDocument);
+
+                _saveBrowser.OnSlotSelected += OnSaveBrowserSlotSelected;
+                _saveBrowser.OnBrowserClosed += OnSaveBrowserClosed;
+            }
+
+            SetInteractable(false);
+            _saveBrowser.Open();
+        }
+
+        private void OnSaveBrowserSlotSelected(int slot)
+        {
+            _continueSlot = slot;
+            _saveBrowser.Close();
             LoadGame();
+        }
+
+        private void OnSaveBrowserClosed()
+        {
+            SetInteractable(true);
         }
 
         private void OnNewGameButtonClicked(ClickEvent evt)

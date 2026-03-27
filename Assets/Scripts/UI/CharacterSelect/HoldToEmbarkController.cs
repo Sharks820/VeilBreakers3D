@@ -85,12 +85,14 @@ namespace VeilBreakers.UI.CharacterSelect
             CharSelectEvents.OnScreenReady -= HandleScreenReady;
             CharSelectEvents.OnEmbarkTriggered -= HandleEmbarkTriggered;
 
-            // Unregister UI callbacks
+            // Unregister UI callbacks (must match TrickleDown registration phase)
             if (_btnEmbark != null)
             {
-                _btnEmbark.UnregisterCallback<PointerDownEvent>(OnPointerDown);
-                _btnEmbark.UnregisterCallback<PointerUpEvent>(OnPointerUp);
-                _btnEmbark.UnregisterCallback<PointerLeaveEvent>(OnPointerLeave);
+                _btnEmbark.UnregisterCallback<PointerDownEvent>(OnPointerDown, TrickleDown.TrickleDown);
+                _btnEmbark.UnregisterCallback<PointerUpEvent>(OnPointerUp, TrickleDown.TrickleDown);
+                _btnEmbark.UnregisterCallback<PointerLeaveEvent>(OnPointerLeave, TrickleDown.TrickleDown);
+                _btnEmbark.UnregisterCallback<MouseDownEvent>(OnMouseDown, TrickleDown.TrickleDown);
+                _btnEmbark.UnregisterCallback<MouseUpEvent>(OnMouseUp, TrickleDown.TrickleDown);
             }
 
             // Stop breathing glow
@@ -171,17 +173,25 @@ namespace VeilBreakers.UI.CharacterSelect
                 _progressRing.Add(fillEdge);
             }
 
-            // Register pointer events on btn-embark for mouse hold detection
-            // Defensive unregister to prevent stacking on repeated OnScreenReady
+            // Register pointer events on btn-embark for mouse hold detection.
+            // CRITICAL: Use TrickleDown to capture events BEFORE Button's internal click handler
+            // consumes them. Without TrickleDown, Button eats PointerDown and hold never starts.
             if (_btnEmbark != null)
             {
-                _btnEmbark.UnregisterCallback<PointerDownEvent>(OnPointerDown);
-                _btnEmbark.UnregisterCallback<PointerUpEvent>(OnPointerUp);
-                _btnEmbark.UnregisterCallback<PointerLeaveEvent>(OnPointerLeave);
+                _btnEmbark.UnregisterCallback<PointerDownEvent>(OnPointerDown, TrickleDown.TrickleDown);
+                _btnEmbark.UnregisterCallback<PointerUpEvent>(OnPointerUp, TrickleDown.TrickleDown);
+                _btnEmbark.UnregisterCallback<PointerLeaveEvent>(OnPointerLeave, TrickleDown.TrickleDown);
+                _btnEmbark.UnregisterCallback<MouseDownEvent>(OnMouseDown, TrickleDown.TrickleDown);
+                _btnEmbark.UnregisterCallback<MouseUpEvent>(OnMouseUp, TrickleDown.TrickleDown);
 
-                _btnEmbark.RegisterCallback<PointerDownEvent>(OnPointerDown);
-                _btnEmbark.RegisterCallback<PointerUpEvent>(OnPointerUp);
-                _btnEmbark.RegisterCallback<PointerLeaveEvent>(OnPointerLeave);
+                _btnEmbark.RegisterCallback<PointerDownEvent>(OnPointerDown, TrickleDown.TrickleDown);
+                _btnEmbark.RegisterCallback<PointerUpEvent>(OnPointerUp, TrickleDown.TrickleDown);
+                _btnEmbark.RegisterCallback<PointerLeaveEvent>(OnPointerLeave, TrickleDown.TrickleDown);
+                // Redundant mouse events as fallback — some Unity versions route mouse differently
+                _btnEmbark.RegisterCallback<MouseDownEvent>(OnMouseDown, TrickleDown.TrickleDown);
+                _btnEmbark.RegisterCallback<MouseUpEvent>(OnMouseUp, TrickleDown.TrickleDown);
+
+                Debug.Log("[HoldToEmbark] Pointer events registered on btn-embark (TrickleDown capture phase)");
             }
 
             ResetProgressVisual();
@@ -228,6 +238,17 @@ namespace VeilBreakers.UI.CharacterSelect
         }
 
         private void OnPointerLeave(PointerLeaveEvent evt)
+        {
+            _isMouseHolding = false;
+        }
+
+        // Mouse event fallbacks — some Unity versions route mouse differently than pointer
+        private void OnMouseDown(MouseDownEvent evt)
+        {
+            _isMouseHolding = true;
+        }
+
+        private void OnMouseUp(MouseUpEvent evt)
         {
             _isMouseHolding = false;
         }

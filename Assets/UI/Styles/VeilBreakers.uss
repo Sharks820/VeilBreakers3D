@@ -2944,3 +2944,293 @@ TemplateContainer {
     background-image: radial-gradient(circle, rgba(200, 80, 40, 0.2) 0%, transparent 70%);
     pointer-events: none;
 }
+
+/* =============================================================================
+   SAVE BROWSER OVERLAY — AAA dark fantasy save slot picker
+   ============================================================================= */
+
+.save-browser-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(4, 2, 8, 0.88);
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.save-browser-panel {
+    width: 680px;
+    max-height: 85%;
+    background-color: rgba(12, 8, 18, 0.97);
+    border-width: 1px;
+    border-color: rgba(80, 65, 100, 0.25);
+    border-top-width: 2px;
+    border-top-color: rgba(200, 160, 60, 0.5);
+    border-radius: 8px;
+    padding: 24px 28px 20px 28px;
+    flex-direction: column;
+}
+
+.save-browser-header {
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.save-browser-title {
+    font-size: 18px;
+    letter-spacing: 6px;
+    -unity-font-style: bold;
+    color: rgba(240, 235, 250, 0.95);
+    -unity-text-align: middle-center;
+    text-shadow: 0 0 12px rgba(200, 160, 60, 0.25);
+    margin-bottom: 6px;
+}
+
+.save-browser-subtitle {
+    font-size: 11px;
+    color: rgba(160, 150, 175, 0.5);
+    -unity-text-align: middle-center;
+    letter-spacing: 1px;
+    -unity-font-style: italic;
+}
+
+.save-browser-divider {
+    width: 60%;
+    height: 1px;
+    background-color: rgba(200, 160, 60, 0.15);
+    margin-top: 12px;
+    align-self: center;
+}
+
+/* Save slots container — scrollable if needed */
+.save-slots-container {
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: scroll;
+    margin-bottom: 16px;
+}
+
+.save-browser-empty {
+    font-size: 13px;
+    color: rgba(160, 150, 175, 0.4);
+    -unity-text-align: middle-center;
+    -unity-font-style: italic;
+    padding: 40px 0;
+}
+
+/* Individual save slot card */
+.save-slot-card {
+    flex-direction: row;
+    align-items: stretch;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    background-color: rgba(8, 6, 14, 0.7);
+    border-width: 1px;
+    border-color: rgba(80, 65, 100, 0.12);
+    border-radius: 6px;
+    translate: 0 0;
+    transition-property: translate, background-color, border-color;
+    transition-duration: 0.2s, 0.2s, 0.2s;
+    transition-timing-function: ease-out, ease-out, ease-out;
+}
+
+.save-slot-card:hover {
+    background-color: rgba(14, 10, 24, 0.85);
+    border-color: rgba(200, 160, 60, 0.2);
+    translate: 2px 0;
+}
+
+.save-slot-corrupted {
+    border-color: rgba(180, 50, 50, 0.25);
+    opacity: 0.6;
+}
+
+/* Left edge indicator bar */
+.save-slot-indicator {
+    width: 4px;
+    border-radius: 2px;
+    background-color: rgba(200, 160, 60, 0.5);
+    margin-right: 14px;
+    flex-shrink: 0;
+    min-height: 48px;
+}
+
+.save-slot-indicator-auto {
+    background-color: rgba(70, 190, 210, 0.5);
+}
+
+/* Middle info section */
+.save-slot-info {
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.save-slot-top-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.save-slot-hero-name {
+    font-size: 15px;
+    -unity-font-style: bold;
+    color: rgba(240, 235, 250, 0.95);
+    letter-spacing: 2px;
+}
+
+.save-slot-tag {
+    font-size: 8px;
+    letter-spacing: 2px;
+    -unity-font-style: bold;
+    color: rgba(200, 160, 60, 0.8);
+    background-color: rgba(200, 160, 60, 0.08);
+    border-radius: 8px;
+    padding: 2px 8px;
+    border-width: 1px;
+    border-color: rgba(200, 160, 60, 0.15);
+}
+
+.save-slot-tag-auto {
+    color: rgba(70, 190, 210, 0.8);
+    background-color: rgba(70, 190, 210, 0.08);
+    border-color: rgba(70, 190, 210, 0.15);
+}
+
+.save-slot-mid-row {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.save-slot-detail {
+    font-size: 10px;
+    letter-spacing: 1px;
+    -unity-font-style: bold;
+    color: rgba(180, 170, 200, 0.65);
+    margin-right: 12px;
+}
+
+.save-slot-level {
+    color: rgba(255, 180, 100, 0.85);
+}
+
+.save-slot-path {
+    color: rgba(150, 130, 180, 0.7);
+    letter-spacing: 2px;
+}
+
+.save-slot-location {
+    color: rgba(160, 150, 175, 0.55);
+    -unity-font-style: italic;
+}
+
+.save-slot-bottom-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.save-slot-playtime {
+    font-size: 10px;
+    color: rgba(140, 130, 160, 0.5);
+    letter-spacing: 1px;
+}
+
+.save-slot-date {
+    font-size: 9px;
+    color: rgba(140, 130, 160, 0.4);
+}
+
+/* Right: action buttons */
+.save-slot-actions {
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-end;
+    margin-left: 14px;
+}
+
+.save-slot-load-btn {
+    font-size: 10px;
+    letter-spacing: 3px;
+    -unity-font-style: bold;
+    color: rgba(15, 10, 5, 0.9);
+    background-color: rgba(200, 160, 60, 0.85);
+    border-radius: 4px;
+    border-width: 1px;
+    border-color: rgba(255, 215, 90, 0.4);
+    padding: 6px 18px;
+    margin-bottom: 6px;
+    min-width: 80px;
+    -unity-text-align: middle-center;
+    transition-property: background-color, border-color;
+    transition-duration: 0.15s, 0.15s;
+}
+
+.save-slot-load-btn:hover {
+    background-color: rgba(220, 180, 70, 0.95);
+    border-color: rgba(255, 230, 120, 0.6);
+}
+
+.save-slot-delete-btn {
+    font-size: 8px;
+    letter-spacing: 2px;
+    color: rgba(180, 50, 50, 0.6);
+    background-color: transparent;
+    border-width: 1px;
+    border-color: rgba(180, 50, 50, 0.15);
+    border-radius: 3px;
+    padding: 3px 12px;
+    min-width: 80px;
+    -unity-text-align: middle-center;
+    transition-property: color, border-color, background-color;
+    transition-duration: 0.15s, 0.15s, 0.15s;
+}
+
+.save-slot-delete-btn:hover {
+    color: rgba(220, 60, 60, 0.9);
+    border-color: rgba(220, 60, 60, 0.35);
+    background-color: rgba(180, 50, 50, 0.06);
+}
+
+.save-slot-corrupt-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    -unity-font-style: bold;
+    color: rgba(180, 50, 50, 0.7);
+    margin-bottom: 6px;
+}
+
+/* Footer */
+.save-browser-footer {
+    flex-direction: row;
+    justify-content: center;
+    padding-top: 8px;
+    border-top-width: 1px;
+    border-top-color: rgba(80, 65, 100, 0.12);
+}
+
+.save-browser-back-btn {
+    font-size: 11px;
+    letter-spacing: 4px;
+    -unity-font-style: bold;
+    color: rgba(180, 170, 200, 0.6);
+    background-color: transparent;
+    border-width: 1px;
+    border-color: rgba(80, 65, 100, 0.2);
+    border-radius: 4px;
+    padding: 8px 32px;
+    transition-property: color, border-color, background-color;
+    transition-duration: 0.15s, 0.15s, 0.15s;
+}
+
+.save-browser-back-btn:hover {
+    color: rgba(240, 235, 250, 0.9);
+    border-color: rgba(200, 160, 60, 0.35);
+    background-color: rgba(255, 255, 255, 0.02);
+}

@@ -234,6 +234,7 @@ TemplateContainer {
 }
 
 .stage-hero-name {
+    -unity-font-definition: url('project://database/Assets/UI/Fonts/CinzelDecorative-Bold.ttf?fileID=12800000&guid=a571f12f2cfa23b44875b20ecbd843c4&type=3');
     font-size: 54px;
     -unity-font-style: bold;
     color: var(--text-primary);
@@ -405,6 +406,7 @@ TemplateContainer {
    ============================================================================= */
 
 .hero-name {
+    -unity-font-definition: url('project://database/Assets/UI/Fonts/CinzelDecorative-Bold.ttf?fileID=12800000&guid=a571f12f2cfa23b44875b20ecbd843c4&type=3');
     font-size: 28px;
     -unity-font-style: bold;
     color: #f0ebfa;
@@ -661,6 +663,7 @@ TemplateContainer {
 }
 
 .champion-name-v2 {
+    -unity-font-definition: url('project://database/Assets/UI/Fonts/CinzelDecorative-Bold.ttf?fileID=12800000&guid=a571f12f2cfa23b44875b20ecbd843c4&type=3');
     font-size: 16px;
     -unity-font-style: bold;
     color: var(--hero-accent, rgb(255, 210, 112));
@@ -839,19 +842,21 @@ TemplateContainer {
 
 .abilities-list {
     flex-direction: column;
+    padding: 2px 0;
 }
 
-/* Ability card container */
+/* Ability card container — AAA card with layered depth and accent edge */
 .ability-card {
     flex-direction: row;
-    padding: 8px 10px;
-    margin-bottom: 5px;
-    background-color: rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    background-color: rgba(8, 6, 16, 0.65);
+    border-radius: 6px;
     border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.04);
+    border-color: rgba(80, 65, 100, 0.12);
     border-left-width: 3px;
-    border-left-color: var(--hero-primary, rgba(200, 160, 60, 0.6));
+    border-left-color: var(--hero-primary, rgba(200, 160, 60, 0.5));
     translate: 0 0;
     transition-property: translate, background-color, border-color, border-left-color;
     transition-duration: 0.2s, 0.2s, 0.2s, 0.2s;
@@ -861,20 +866,22 @@ TemplateContainer {
 }
 
 .ability-card:hover {
-    background-color: rgba(0, 0, 0, 0.5);
-    translate: 4px 0;
+    background-color: rgba(12, 10, 24, 0.85);
+    translate: 3px 0;
     border-left-color: var(--hero-accent, rgba(255, 210, 112, 0.9));
-    border-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(80, 65, 100, 0.25);
 }
 
-/* Brand color dot */
+/* Brand color dot — glowing orb indicator */
 .ability-brand-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 4px;
-    margin-right: 8px;
-    margin-top: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    margin-right: 10px;
+    margin-top: 3px;
     flex-shrink: 0;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 /* Ability info column */
@@ -888,76 +895,95 @@ TemplateContainer {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
 }
 
 .ability-name {
     font-size: 12px;
     -unity-font-style: bold;
-    color: rgba(240, 235, 250, 0.92);
+    color: rgba(240, 235, 250, 0.95);
     letter-spacing: 1px;
 }
 
-/* Tag row: damage type, cost, cooldown */
+/* Tag row: damage type, cost, cooldown — pill badges */
 .ability-tags {
     flex-direction: row;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .ability-tag {
     font-size: 8px;
     letter-spacing: 1px;
     -unity-font-style: bold;
-    color: rgba(180, 170, 200, 0.7);
-    background-color: rgba(255, 255, 255, 0.04);
-    border-radius: 3px;
-    padding: 1px 5px;
+    color: rgba(180, 170, 200, 0.75);
+    background-color: rgba(80, 65, 100, 0.15);
+    border-radius: 8px;
+    padding: 2px 7px;
     margin-left: 4px;
+    border-width: 1px;
+    border-color: rgba(80, 65, 100, 0.12);
 }
 
-/* Power/damage display */
+/* Power/damage display — warm accent pill */
 .ability-power-tag {
     font-size: 8px;
     letter-spacing: 1px;
     -unity-font-style: bold;
-    color: rgba(255, 170, 85, 0.9);
-    background-color: rgba(255, 140, 40, 0.08);
-    border-radius: 3px;
-    padding: 1px 5px;
+    color: rgba(255, 180, 100, 0.95);
+    background-color: rgba(255, 140, 40, 0.12);
+    border-radius: 8px;
+    padding: 2px 7px;
     margin-left: 4px;
+    border-width: 1px;
+    border-color: rgba(255, 140, 40, 0.15);
 }
 
 /* Skill description text */
 .ability-desc {
     font-size: 10px;
-    color: rgba(180, 170, 200, 0.55);
+    color: rgba(180, 170, 200, 0.5);
     white-space: normal;
     -unity-font-style: italic;
+    margin-top: 2px;
+    padding-right: 4px;
 }
 
 .ability-card:hover .ability-desc {
-    color: rgba(180, 170, 200, 0.75);
+    color: rgba(195, 185, 215, 0.8);
 }
 
 .ability-card:hover .ability-name {
-    color: rgba(255, 245, 230, 1);
+    color: rgba(255, 250, 240, 1);
+}
+
+.ability-card:hover .ability-brand-dot {
+    border-color: rgba(255, 255, 255, 0.35);
 }
 
 /* =============================================================================
    LORE (Tab 3) — AAA immersive styling with drop-cap, section dividers
    ============================================================================= */
 
+/* Lore section — AAA immersive card with atmospheric depth */
 .hero-lore-section {
     margin-bottom: 14px;
-    padding: 8px 4px;
+    padding: 12px 10px;
+    background-color: rgba(8, 6, 16, 0.5);
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: rgba(80, 65, 100, 0.1);
+    border-left-width: 3px;
+    border-left-color: var(--hero-primary, rgba(200, 160, 60, 0.3));
 }
 
 .hero-backstory {
     font-size: 12px;
-    color: rgba(195, 185, 215, 0.72);
+    color: rgba(195, 185, 215, 0.78);
     white-space: normal;
     -unity-font-style: italic;
     padding: 0 4px;
+    line-height: 18px;
 }
 
 /* Drop-cap first letter element (created in C#) */
@@ -974,65 +1000,68 @@ TemplateContainer {
 .lore-section-divider {
     height: 1px;
     background-color: var(--hero-dim, rgba(200, 160, 60, 0.12));
-    margin-top: 12px;
-    margin-bottom: 8px;
+    margin-top: 14px;
+    margin-bottom: 10px;
 }
 
+/* Synergy detail card — deeper layered card with accent header */
 .synergy-detail-section {
-    margin-top: 6px;
-    padding: 8px;
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 5px;
+    margin-top: 8px;
+    padding: 10px 12px;
+    background-color: rgba(8, 6, 16, 0.5);
+    border-radius: 6px;
     border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.03);
+    border-color: rgba(80, 65, 100, 0.1);
+    border-left-width: 3px;
+    border-left-color: var(--hero-primary, rgba(200, 160, 60, 0.3));
 }
 
 .synergy-detail-section .section-header {
     font-size: 10px;
     letter-spacing: 3px;
-    color: var(--hero-primary, rgba(200, 160, 60, 0.7));
-    margin-bottom: 6px;
+    -unity-font-style: bold;
+    color: var(--hero-primary, rgba(200, 160, 60, 0.8));
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--hero-dim, rgba(200, 160, 60, 0.1));
 }
 
 .hero-synergy-detail {
-    font-size: 11px;
-    color: rgba(180, 170, 200, 0.6);
+    font-size: 12px;
+    color: rgba(195, 185, 215, 0.7);
     white-space: normal;
+    line-height: 17px;
 }
 
+/* Brands detail card */
 .brands-section {
-    margin-top: 6px;
-    padding: 8px;
-    background-color: rgba(0, 0, 0, 0.2);
-    border-radius: 5px;
+    margin-top: 8px;
+    padding: 10px 12px;
+    background-color: rgba(8, 6, 16, 0.5);
+    border-radius: 6px;
     border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.03);
+    border-color: rgba(80, 65, 100, 0.1);
+    border-left-width: 3px;
+    border-left-color: var(--hero-primary, rgba(200, 160, 60, 0.3));
 }
 
 .brands-section .section-header {
     font-size: 10px;
     letter-spacing: 3px;
-    color: var(--hero-primary, rgba(200, 160, 60, 0.7));
-    margin-bottom: 6px;
+    -unity-font-style: bold;
+    color: var(--hero-primary, rgba(200, 160, 60, 0.8));
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--hero-dim, rgba(200, 160, 60, 0.1));
 }
 
 .hero-brands-detail {
-    font-size: 11px;
-    color: rgba(180, 170, 200, 0.6);
+    font-size: 12px;
+    color: rgba(195, 185, 215, 0.7);
     white-space: normal;
-}
-
-.hero-synergy-detail {
-    font-size: 13px;
-    color: rgba(180, 170, 200, 0.65);
-    white-space: normal;
-}
-
-.brands-section {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top-width: 1px;
-    border-top-color: var(--border-subtle);
+    line-height: 17px;
 }
 
 .hero-brands-detail {
@@ -1252,7 +1281,7 @@ TemplateContainer {
 }
 
 .hero-card-initial {
-    -unity-font-definition: url('project://database/Assets/UI/Fonts/Cinzel-Variable.ttf?fileID=12800000&guid=c7b3e9f2a4d816543e8c1a0b5f927d4e&type=3');
+    -unity-font-definition: url('project://database/Assets/UI/Fonts/CinzelDecorative-Bold.ttf?fileID=12800000&guid=a571f12f2cfa23b44875b20ecbd843c4&type=3');
     font-size: 30px;
     -unity-font-style: bold;
     color: var(--hero-primary);
@@ -1272,7 +1301,7 @@ TemplateContainer {
 }
 
 .hero-card-name {
-    -unity-font-definition: url('project://database/Assets/UI/Fonts/Cinzel-Variable.ttf?fileID=12800000&guid=c7b3e9f2a4d816543e8c1a0b5f927d4e&type=3');
+    -unity-font-definition: url('project://database/Assets/UI/Fonts/CinzelDecorative-Regular.ttf?fileID=12800000&guid=d13ae79c9243c964db9245ce6c976d4a&type=3');
     font-size: 8px;
     color: var(--text-secondary);
     letter-spacing: 2px;
