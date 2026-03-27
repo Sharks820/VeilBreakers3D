@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2bdc87c02aea634faba7e0bb1b52884, type: 3}
+  m_Name: GameDataAssets
+  m_EditorClassIdentifier: VeilBreakers.Runtime::VeilBreakers.Core.GameDataAssets
+  _monstersJson: {fileID: 4900000, guid: bd84c42888a26c749ad2527b01b35445, type: 3}
+  _skillsJson: {fileID: 4900000, guid: 3e095117204b8264dab0247e1afea24f, type: 3}
+  _heroesJson: {fileID: 4900000, guid: f4c81277038007f42add3180d1c214ca, type: 3}
+  _itemsJson: {fileID: 4900000, guid: 7d13c633fc3bfc249825dab342c0452b, type: 3}
+  _statusEffects: []

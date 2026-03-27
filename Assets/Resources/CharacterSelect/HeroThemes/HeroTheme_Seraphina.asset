@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bc8a102156c8d048a8004d5c06d780b, type: 3}
+  m_Name: HeroTheme_Seraphina
+  m_EditorClassIdentifier: VeilBreakers.Runtime::VeilBreakers.UI.CharacterSelect.HeroThemeConfig
+  heroId: seraphina
+  primaryColor: {r: 0.5882353, g: 0.3529412, b: 0.8235294, a: 1}
+  glowColor: {r: 0.78, g: 0.59, b: 1, a: 0.3}
+  darkColor: {r: 0.14, g: 0.08, b: 0.2, a: 1}
+  dissolveEdgeColor: {r: 1.1764706, g: 0.7058824, b: 1.6470588, a: 2}
+  volumeProfile: {fileID: 0}
+  chromaticAberrationIntensity: 0
+  fillLightColor: {r: 0.87647057, g: 0.80588233, b: 0.9470588, a: 1}
+  fillLightIntensity: 0.8
+  rimLightColor: {r: 0.78, g: 0.59, b: 1, a: 0.3}
+  rimLightIntensity: 1.2
+  ambientColor: {r: 0.14, g: 0.08, b: 0.2, a: 1}
+  rimFlicker: 0
+  musicIntensity: 0.6
+  musicWarmth: 0.5
+  musicTension: 0.4
+  musicSynth: 0.3
+  musicPerc: 0.3
+  musicPad: 0.8
+  musicFilter: 0.6
+  particlePrefab: {fileID: 0}
+  maxParticleCount: 200
+  scanlineOpacity: 0.05
+  vignetteIntensity: 0.25
+  vignetteBorderWidth: 80
+  veilGlowOpacity: 0.08
+  dissolveNoiseScale: 1
+  dissolveDuration: 0.4
+  glitchResolveSpeed: 50
+  monsterAuraColor: {r: 0.5882353, g: 0.3529412, b: 0.8235294, a: 1}
