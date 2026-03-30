@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace VeilBreakers.VFX
@@ -7,8 +8,15 @@ namespace VeilBreakers.VFX
 /// Lightning arcs jumping between random points
 /// Phase 23 -- VFX3-05
 /// </summary>
+[RequireComponent(typeof(Renderer))]
 public class VB_StatusVFX_SURGE : MonoBehaviour
 {
+    // Cached shader reference to avoid Shader.Find at runtime (UNITY-19)
+    private static Shader _cachedParticleShader;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics() => _cachedParticleShader = null;
+
     [Header("Brand")]
     [SerializeField] private string brand = "SURGE";
     [SerializeField] private string effectName = "Shocked";
@@ -27,9 +35,13 @@ public class VB_StatusVFX_SURGE : MonoBehaviour
     private ParticleSystem mainPS;
     private ParticleSystem secondaryPS;
     private LineRenderer lineRenderer;
+    private Material _lineRendererMaterial; // Track for cleanup (VFX-01)
     private float pulsePhase = 0f;
     private Renderer[] targetRenderers;
     private MaterialPropertyBlock _mpb;
+
+    // Explicit list of dynamically created materials for safe cleanup (BUG-14)
+    private readonly List<Material> _dynamicMaterials = new List<Material>();
 
     public string Brand => brand;
     public string EffectName => effectName;
@@ -39,6 +51,13 @@ public class VB_StatusVFX_SURGE : MonoBehaviour
     {
         intensity = Mathf.Clamp01(newIntensity);
         UpdateIntensity();
+    }
+
+    private static Shader GetParticleShader()
+    {
+        if (_cachedParticleShader == null)
+            _cachedParticleShader = Shader.Find("Universal Render Pipeline/Particles/Unlit") ?? Shader.Find("Particles/Standard Unlit"); // VB-IGNORE UNITY-19 -- cached in static field, called once
+        return _cachedParticleShader;
     }
 
     private void Start()
@@ -51,8 +70,9 @@ public class VB_StatusVFX_SURGE : MonoBehaviour
         GameObject lrObj = new GameObject("LightningArc");
         lrObj.transform.SetParent(transform);
         lineRenderer = lrObj.AddComponent<LineRenderer>();
-        lineRenderer.material = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit") ?? Shader.Find("Particles/Standard Unlit"));
-        lineRenderer.material.SetColor("_Color", glowColor);
+        _lineRendererMaterial = new Material(GetParticleShader());
+        _lineRendererMaterial.SetColor("_Color", glowColor);
+        lineRenderer.material = _lineRendererMaterial;
     }
 
     private void Update()
@@ -142,8 +162,10 @@ public class VB_StatusVFX_SURGE : MonoBehaviour
         col.color = new ParticleSystem.MinMaxGradient(grad);
 
         var renderer = mainPS.GetComponent<ParticleSystemRenderer>();
-        renderer.material = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit") ?? Shader.Find("Particles/Standard Unlit"));
-        renderer.material.SetColor("_Color", glowColor);
+        var mat = new Material(GetParticleShader());
+        mat.SetColor("_Color", glowColor);
+        renderer.sharedMaterial = mat;
+        _dynamicMaterials.Add(mat);
     }
 
     private void CreateSecondaryParticleSystem()
@@ -168,8 +190,10 @@ public class VB_StatusVFX_SURGE : MonoBehaviour
         emission.rateOverTime = 0; // Emit manually in UpdateSecondaryEffect
 
         var renderer = secondaryPS.GetComponent<ParticleSystemRenderer>();
-        renderer.material = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit") ?? Shader.Find("Particles/Standard Unlit"));
-        renderer.material.SetColor("_Color", brandColor);
+        var mat = new Material(GetParticleShader());
+        mat.SetColor("_Color", brandColor);
+        renderer.sharedMaterial = mat;
+        _dynamicMaterials.Add(mat);
     }
 
     private void UpdateSecondaryEffect()
@@ -196,16 +220,17 @@ public class VB_StatusVFX_SURGE : MonoBehaviour
 
     private void OnDestroy()
     {
-        // Clean up dynamic materials
-        if (mainPS != null)
+        // Clean up tracked dynamic materials (BUG-14: avoid renderer.material cloning)
+        for (int i = 0; i < _dynamicMaterials.Count; i++)
         {
-            var r = mainPS.GetComponent<ParticleSystemRenderer>();
-            if (r != null && r.material != null) Destroy(r.material);
+            if (_dynamicMaterials[i] != null) Destroy(_dynamicMaterials[i]);
         }
-        if (secondaryPS != null)
+        _dynamicMaterials.Clear();
+
+        if (_lineRendererMaterial != null)
         {
-            var r = secondaryPS.GetComponent<ParticleSystemRenderer>();
-            if (r != null && r.material != null) Destroy(r.material);
+            Destroy(_lineRendererMaterial);
+            _lineRendererMaterial = null;
         }
     }
 }

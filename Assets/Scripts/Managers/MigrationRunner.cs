@@ -147,11 +147,11 @@ namespace VeilBreakers.Managers
             int version = fromVersion;
             while (version < _currentVersion)
             {
-                if (!_migrations.ContainsKey(version))
+                if (!_migrations.TryGetValue(version, out var migration))
                 {
                     return false;
                 }
-                version = _migrations[version].ToVersion;
+                version = migration.ToVersion;
             }
             return true;
         }

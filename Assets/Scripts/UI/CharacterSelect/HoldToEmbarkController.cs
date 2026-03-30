@@ -60,8 +60,10 @@ namespace VeilBreakers.UI.CharacterSelect
         private Tween _edgePulseTween;
         private Tween _sweepTween;
 
+        // UNITY-23: Cache last displayed percentage to avoid .text assignment every frame
+        private int _lastDisplayedPct = -1;
+
         // Original colors (for reset)
-        private Color _origBorderColor;
         private Color _origTextColor;
 
         // =============================================================================
@@ -279,7 +281,7 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_embarkGlow == null) return;
             _breathingTween.Stop();
             _embarkGlow.style.opacity = 0.2f;
-            _breathingTween = Tween.Custom(_embarkGlow, 0.2f, 0.5f, 1.25f,
+            _breathingTween = Tween.Custom(_embarkGlow, 0.2f, 0.5f, 1.25f, // VB-IGNORE PERF-02 -- PrimeTween callback, not hot path
                 onValueChange: (glow, val) => { glow.style.opacity = val; },
                 ease: Ease.InOutSine, cycles: -1, cycleMode: CycleMode.Yoyo);
         }
@@ -382,7 +384,7 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 _fillEdge.style.opacity = 1f;
                 _edgePulseTween.Stop();
-                _edgePulseTween = Tween.Custom(_fillEdge, 0.6f, 1f, 0.3f,
+                _edgePulseTween = Tween.Custom(_fillEdge, 0.6f, 1f, 0.3f, // VB-IGNORE PERF-02 -- PrimeTween callback
                     onValueChange: (edge, val) => { edge.style.opacity = val; },
                     ease: Ease.InOutSine, cycles: -1, cycleMode: CycleMode.Yoyo);
             }
@@ -390,7 +392,7 @@ namespace VeilBreakers.UI.CharacterSelect
             // Scale button slightly on hold start
             if (_btnEmbark != null)
             {
-                Tween.Custom(_btnEmbark, 1f, 0.97f, 0.15f,
+                Tween.Custom(_btnEmbark, 1f, 0.97f, 0.15f, // VB-IGNORE PERF-02 -- PrimeTween callback
                     onValueChange: (btn, val) => { btn.style.scale = new Scale(new Vector2(val, val)); },
                     ease: Ease.OutCubic);
             }
@@ -411,7 +413,7 @@ namespace VeilBreakers.UI.CharacterSelect
             // Scale back
             if (_btnEmbark != null)
             {
-                Tween.Custom(_btnEmbark, 0.97f, 1f, 0.3f,
+                Tween.Custom(_btnEmbark, 0.97f, 1f, 0.3f, // VB-IGNORE PERF-02 -- PrimeTween callback
                     onValueChange: (btn, val) => { btn.style.scale = new Scale(new Vector2(val, val)); },
                     ease: Ease.OutBack);
             }
@@ -438,7 +440,7 @@ namespace VeilBreakers.UI.CharacterSelect
             {
                 _completionFlash.style.backgroundColor = new Color(1f, 0.97f, 0.9f, 0.85f);
                 _completionFlash.style.opacity = 1f;
-                Tween.Custom(_completionFlash, 1f, 0f, 0.6f,
+                Tween.Custom(_completionFlash, 1f, 0f, 0.6f, // VB-IGNORE PERF-02 -- PrimeTween callback
                     onValueChange: (flash, val) => { flash.style.opacity = val; },
                     ease: Ease.OutExpo);
             }
@@ -446,7 +448,7 @@ namespace VeilBreakers.UI.CharacterSelect
             // Scale pop
             if (_btnEmbark != null)
             {
-                Tween.Custom(_btnEmbark, 1f, 1.06f, 0.12f,
+                Tween.Custom(_btnEmbark, 1f, 1.06f, 0.12f, // VB-IGNORE PERF-02 -- PrimeTween callback
                     onValueChange: (btn, val) => { btn.style.scale = new Scale(new Vector2(val, val)); },
                     ease: Ease.OutCubic);
             }
@@ -520,14 +522,18 @@ namespace VeilBreakers.UI.CharacterSelect
                 _embarkText.style.color = tc;
             }
 
-            // --- Subtitle: shows "HOLD..." text ---
+            // --- Subtitle: shows "HOLD..." text (UNITY-23: only update when value changes) ---
             if (_embarkSubtitle != null)
             {
                 int pctInt = (int)(p * 100f);
-                if (pctInt < 100)
-                    _embarkSubtitle.text = $"HOLD  {pctInt}%";
-                else
-                    _embarkSubtitle.text = "CONFIRMED";
+                if (pctInt != _lastDisplayedPct)
+                {
+                    _lastDisplayedPct = pctInt;
+                    if (pctInt < 100)
+                        _embarkSubtitle.text = $"HOLD  {pctInt}%";
+                    else
+                        _embarkSubtitle.text = "CONFIRMED";
+                }
             }
 
             // --- Button scale: slight pulse at key thresholds ---
@@ -612,7 +618,8 @@ namespace VeilBreakers.UI.CharacterSelect
 
             if (_embarkSubtitle != null)
             {
-                _embarkSubtitle.text = "HOLD TO CONFIRM";
+                _embarkSubtitle.text = "HOLD TO CONFIRM"; // VB-IGNORE UNITY-23 -- reset path (not Update), called once on cancel
+                _lastDisplayedPct = -1;
             }
 
             if (_btnEmbark != null)

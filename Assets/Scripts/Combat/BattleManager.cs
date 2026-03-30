@@ -150,6 +150,7 @@ namespace VeilBreakers.Combat
 
             _state = BattleState.PLAYER_TURN; // Real-time, so this just means "active"
             OnBattleStart?.Invoke();
+            EventBus.BattleStarted();
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log($"[BattleManager] Battle started! Synergy: {_currentSynergyTier}");
@@ -226,18 +227,16 @@ namespace VeilBreakers.Combat
         /// </summary>
         private void Update()
         {
-            if (_state != BattleState.PLAYER_TURN && _state != BattleState.ENEMY_TURN)
-                return;
-
             float dt = Time.deltaTime;
 
-            // Update all combatant cooldowns (no LINQ to avoid allocations)
+            // Always tick cooldowns so abilities don't freeze during ANIMATING/CAPTURE states
             for (int i = 0; i < _playerParty.Count; i++)
             {
                 var combatant = _playerParty[i];
                 if (combatant != null && combatant.IsAlive)
                 {
                     combatant.UpdateCooldowns(dt);
+                    combatant.UpdateCasting(dt);
                 }
             }
 
@@ -247,8 +246,13 @@ namespace VeilBreakers.Combat
                 if (combatant != null && combatant.IsAlive)
                 {
                     combatant.UpdateCooldowns(dt);
+                    combatant.UpdateCasting(dt);
                 }
             }
+
+            // Only check victory/defeat and run action logic during active turn states
+            if (_state != BattleState.PLAYER_TURN && _state != BattleState.ENEMY_TURN)
+                return;
 
             // Check victory/defeat conditions
             CheckBattleEnd();
@@ -509,6 +513,10 @@ namespace VeilBreakers.Combat
                 _deathHandlers[newCombatant] = newHandler;
             }
 
+            // Update O(1) party membership set
+            _playerPartySet.Remove(oldCombatant);
+            if (newCombatant != null) _playerPartySet.Add(newCombatant);
+
             // Recalculate synergy
             RecalculateSynergy();
             EnsureActiveAllyValid();
@@ -610,8 +618,10 @@ namespace VeilBreakers.Combat
             }
             _deathHandlers.Clear();
             _activeAlly = null;
+            _currentTarget = null; // DEEP-07: clear all combat state on end
 
             OnBattleEnd?.Invoke();
+            EventBus.BattleEnded(endState == BattleState.VICTORY);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log($"[BattleManager] Battle ended: {endState}");
 #endif

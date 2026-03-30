@@ -32,11 +32,11 @@ namespace VeilBreakers.Managers
 
         /// <summary>Effects mapped by target</summary>
         private Dictionary<GameObject, List<StatusEffectInstance>> _effectsByTarget
-            = new Dictionary<GameObject, List<StatusEffectInstance>>();
+            = new Dictionary<GameObject, List<StatusEffectInstance>>(); // VB-IGNORE BUG-34 -- not serialized, runtime-only tracking
 
         /// <summary>All loaded effect data (cached)</summary>
         private Dictionary<StatusEffectType, StatusEffectData> _effectDataCache
-            = new Dictionary<StatusEffectType, StatusEffectData>();
+            = new Dictionary<StatusEffectType, StatusEffectData>(); // VB-IGNORE BUG-34 -- not serialized, runtime-only cache
 
         /// <summary>Reusable lists to avoid allocations in hot paths</summary>
         private readonly List<GameObject> _tempTargetList = new List<GameObject>();
@@ -261,7 +261,7 @@ namespace VeilBreakers.Managers
             }
 
             Log($"Removed {_tempEffectList.Count} instances of {effectType} from {target.name}");
-            return _tempEffectList.Count;
+            return _tempEffectList.Count; // VB-IGNORE BUG-60 -- returns int count, not the shared buffer itself
         }
 
         /// <summary>
@@ -319,7 +319,7 @@ namespace VeilBreakers.Managers
                 while (j >= 0)
                 {
                     var compareItem = _tempEffectList[j];
-                    if (compareItem == null || (compareItem.effectData?.cleansePriority ?? 0) >= keyPriority)
+                    if (compareItem == null || (compareItem.effectData?.cleansePriority ?? 0) <= keyPriority)
                         break;
                     _tempEffectList[j + 1] = compareItem;
                     j--;
@@ -365,7 +365,7 @@ namespace VeilBreakers.Managers
             }
 
             Log($"Dispelled {_tempEffectList.Count} buffs from {target.name}");
-            return _tempEffectList.Count;
+            return _tempEffectList.Count; // VB-IGNORE BUG-60 -- returns int count, not the shared buffer itself
         }
 
         /// <summary>
@@ -472,9 +472,9 @@ namespace VeilBreakers.Managers
         public List<StatusEffectInstance> GetEffectsByCategory(GameObject target, EffectCategory category)
         {
             if (target == null || !_effectsByTarget.TryGetValue(target, out var effects))
-                return _emptyEffectList;
+                return new List<StatusEffectInstance>(0);
 
-            // Manual loop to avoid LINQ allocation
+            // Build into temp buffer then return a copy so callers get a stable snapshot
             _tempCategoryBuffer.Clear();
             for (int i = 0; i < effects.Count; i++)
             {
@@ -483,7 +483,7 @@ namespace VeilBreakers.Managers
                     _tempCategoryBuffer.Add(effects[i]);
                 }
             }
-            return _tempCategoryBuffer;
+            return new List<StatusEffectInstance>(_tempCategoryBuffer);
         }
 
         /// <summary>
@@ -786,12 +786,15 @@ namespace VeilBreakers.Managers
         /// </summary>
         public void ClearAllEffects()
         {
-            foreach (var kvp in _effectsByTarget)
+            // Copy keys to avoid modification during iteration (callbacks may re-enter)
+            var targets = new List<GameObject>(_effectsByTarget.Keys);
+            foreach (var target in targets)
             {
-                var target = kvp.Key;
-                var effects = kvp.Value;
+                if (!_effectsByTarget.TryGetValue(target, out var effects)) continue;
 
-                foreach (var effect in effects)
+                // Copy effects list before iterating - callbacks may re-enter and modify
+                var effectsCopy = new List<StatusEffectInstance>(effects);
+                foreach (var effect in effectsCopy)
                 {
                     // Check for null target (destroyed GameObject)
                     if (target != null)
@@ -802,6 +805,10 @@ namespace VeilBreakers.Managers
             }
 
             _effectsByTarget.Clear();
+            _tempTargetList.Clear(); // DEEP-07: clear temp state
+            _tempEffectList.Clear();
+            _tempRemoveList.Clear();
+            _tempCategoryBuffer.Clear();
             Log("Cleared all status effects");
         }
 
@@ -815,12 +822,14 @@ namespace VeilBreakers.Managers
 
             if (_effectsByTarget.TryGetValue(target, out var effects))
             {
-                foreach (var effect in effects)
+                // Copy before iterating - callbacks may re-enter and modify
+                var effectsCopy = new List<StatusEffectInstance>(effects);
+                _effectsByTarget.Remove(target);
+
+                foreach (var effect in effectsCopy)
                 {
                     OnEffectRemoved?.Invoke(target, effect, EffectRemovalReason.TARGET_DESTROYED);
                 }
-
-                _effectsByTarget.Remove(target);
             }
         }
     }

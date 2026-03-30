@@ -54,32 +54,33 @@ namespace VeilBreakers.Systems
             if (championPath == Path.UNCHAINED)
                 return SynergyTier.NEUTRAL;
 
-            // Check for weak brands (anti-synergy)
+            int safeCount = Mathf.Min(count, partyBrands.Length);
+
+            // Count both strong and weak brands first
+            int weakCount = 0;
             if (PathWeakBrands.TryGetValue(championPath, out var weakBrands))
             {
-                int safeCount = Mathf.Min(count, partyBrands.Length);
                 for (int i = 0; i < safeCount; i++)
                 {
                     if (System.Array.IndexOf(weakBrands, partyBrands[i]) >= 0)
-                        return SynergyTier.ANTI;
+                        weakCount++;
                 }
             }
 
-            // Count strong synergy matches
-            int matchCount = 0;
+            int strongCount = 0;
             if (PathSynergyBrands.TryGetValue(championPath, out var strongBrands))
             {
-                int safeCount = Mathf.Min(count, partyBrands.Length);
                 for (int i = 0; i < safeCount; i++)
                 {
                     if (System.Array.IndexOf(strongBrands, partyBrands[i]) >= 0)
-                        matchCount++;
+                        strongCount++;
                 }
             }
 
-            // Determine tier based on match count
-            if (matchCount >= 3) return SynergyTier.FULL;
-            if (matchCount == 2) return SynergyTier.PARTIAL;
+            // Determine tier: weak brands only override when they outnumber strong brands
+            if (weakCount > strongCount) return SynergyTier.ANTI;
+            if (strongCount >= 3) return SynergyTier.FULL;
+            if (strongCount >= 2) return SynergyTier.PARTIAL;
             return SynergyTier.NEUTRAL;
         }
 
@@ -95,31 +96,31 @@ namespace VeilBreakers.Systems
             if (championPath == Path.UNCHAINED)
                 return SynergyTier.NEUTRAL;
 
-            // Check for weak brands (anti-synergy) — Array.IndexOf to avoid LINQ allocation
+            // Count both strong and weak brands — Array.IndexOf to avoid LINQ allocation
+            int weakCount = 0;
             if (PathWeakBrands.TryGetValue(championPath, out var weakBrands))
             {
                 foreach (var brand in partyBrands)
                 {
                     if (System.Array.IndexOf(weakBrands, brand) >= 0)
-                        return SynergyTier.ANTI;
+                        weakCount++;
                 }
             }
 
-            // Count strong synergy matches — Array.IndexOf to avoid LINQ allocation
-            int matchCount = 0;
+            int strongCount = 0;
             if (PathSynergyBrands.TryGetValue(championPath, out var strongBrands))
             {
                 foreach (var brand in partyBrands)
                 {
                     if (System.Array.IndexOf(strongBrands, brand) >= 0)
-                        matchCount++;
+                        strongCount++;
                 }
             }
 
-            // Determine tier based on match count
-            // Note: >= 3 handles parties with 3+ strong brand members
-            if (matchCount >= 3) return SynergyTier.FULL;
-            if (matchCount == 2) return SynergyTier.PARTIAL;
+            // Determine tier: weak brands only override when they outnumber strong brands
+            if (weakCount > strongCount) return SynergyTier.ANTI;
+            if (strongCount >= 3) return SynergyTier.FULL;
+            if (strongCount >= 2) return SynergyTier.PARTIAL;
             return SynergyTier.NEUTRAL;
         }
 
@@ -143,8 +144,9 @@ namespace VeilBreakers.Systems
         {
             return tier switch
             {
-                SynergyTier.FULL => 1.08f,     // +8%
-                SynergyTier.PARTIAL => 1.05f,  // +5%
+                SynergyTier.FULL => 1.08f,     // +8% damage reduction
+                SynergyTier.PARTIAL => 1.05f,  // +5% damage reduction
+                SynergyTier.ANTI => 0.92f,     // 8% MORE damage taken (anti-synergy penalty)
                 _ => 1.0f
             };
         }

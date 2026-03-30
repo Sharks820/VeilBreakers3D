@@ -37,8 +37,8 @@ namespace VeilBreakers.Commands
         // STATE
         // =============================================================================
 
-        private Dictionary<Combatant, QuickCommandInstance> _activeCommands;
-        private Dictionary<Combatant, float> _cooldowns;
+        private Dictionary<Combatant, QuickCommandInstance> _activeCommands; // VB-IGNORE BUG-34 -- not serialized, runtime-only tracking
+        private Dictionary<Combatant, float> _cooldowns; // VB-IGNORE BUG-34 -- not serialized, runtime-only tracking
         private Dictionary<Combatant, Vector3> _formationPositions; // Saved formation positions relative to player
         private Combatant _player;
         private Combatant[] _allies;
@@ -53,6 +53,12 @@ namespace VeilBreakers.Commands
 
         // Cached command options (allocated once)
         private static CommandOption[] _cachedCommandOptions;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticState()
+        {
+            _cachedCommandOptions = null;
+        }
 
         // Events
         public event Action<Combatant, QuickCommandType> OnCommandIssued;
@@ -94,6 +100,8 @@ namespace VeilBreakers.Commands
             _activeCommands.Clear();
             _cooldowns.Clear();
             _formationPositions.Clear();
+            _cancelBuffer.Clear();
+            _expiredCooldownsBuffer.Clear();
 
             // Set default formation positions (V-formation behind player)
             SetDefaultFormation();
@@ -359,11 +367,11 @@ namespace VeilBreakers.Commands
                     break;
 
                 case QuickCommandType.FALL_BACK:
-                    // Calculate retreat position
+                    // Retreat toward the player (away from combat front)
                     if (command.executor != null && _player != null)
                     {
-                        Vector3 awayFromEnemy = command.executor.transform.position - _player.transform.position;
-                        command.targetPosition = command.executor.transform.position - awayFromEnemy.normalized * 5f;
+                        Vector3 toPlayer = (_player.transform.position - command.executor.transform.position).normalized;
+                        command.targetPosition = command.executor.transform.position + toPlayer * 5f;
                     }
                     break;
             }
@@ -611,16 +619,14 @@ namespace VeilBreakers.Commands
         {
             if (command.executor == null || _player == null) return;
 
-            float distToPlayer = Vector3.Distance(
-                command.executor.transform.position,
-                _player.transform.position
-            );
+            float sqrDistToPlayer = (command.executor.transform.position - _player.transform.position).sqrMagnitude;
+            float sqrArrivalThreshold = _arrivalThreshold * _arrivalThreshold;
 
             switch (command.state)
             {
                 case CommandState.MOVING:
                     // Check if arrived at player
-                    if (distToPlayer <= _arrivalThreshold)
+                    if (sqrDistToPlayer <= sqrArrivalThreshold)
                     {
                         command.state = CommandState.EXECUTING;
                         command.onMeAutoDefend = true;
@@ -669,17 +675,18 @@ namespace VeilBreakers.Commands
             if (_enemies == null || from == null) return null;
 
             Combatant nearest = null;
-            float nearestDist = float.MaxValue;
+            float sqrRange = range * range;
+            float nearestSqrDist = float.MaxValue;
 
             for (int i = 0; i < _enemies.Length; i++)
             {
                 var enemy = _enemies[i];
                 if (enemy == null || !enemy.IsAlive) continue;
 
-                float dist = Vector3.Distance(from.transform.position, enemy.transform.position);
-                if (dist <= range && dist < nearestDist)
+                float sqrDist = (from.transform.position - enemy.transform.position).sqrMagnitude;
+                if (sqrDist <= sqrRange && sqrDist < nearestSqrDist)
                 {
-                    nearestDist = dist;
+                    nearestSqrDist = sqrDist;
                     nearest = enemy;
                 }
             }
@@ -694,13 +701,14 @@ namespace VeilBreakers.Commands
         {
             if (_enemies == null || from == null) return false;
 
+            float sqrRange = range * range;
             for (int i = 0; i < _enemies.Length; i++)
             {
                 var enemy = _enemies[i];
                 if (enemy == null || !enemy.IsAlive) continue;
 
-                float dist = Vector3.Distance(from.transform.position, enemy.transform.position);
-                if (dist <= range)
+                float sqrDist = (from.transform.position - enemy.transform.position).sqrMagnitude;
+                if (sqrDist <= sqrRange)
                 {
                     return true;
                 }
@@ -713,12 +721,10 @@ namespace VeilBreakers.Commands
         {
             if (command.executor == null) return;
 
-            float dist = Vector3.Distance(
-                command.executor.transform.position,
-                command.targetPosition
-            );
+            float sqrDist = (command.executor.transform.position - command.targetPosition).sqrMagnitude;
+            float sqrArrivalThreshold = _arrivalThreshold * _arrivalThreshold;
 
-            if (dist <= _arrivalThreshold)
+            if (sqrDist <= sqrArrivalThreshold)
             {
                 CompleteCommand(command);
             }
@@ -795,8 +801,14 @@ namespace VeilBreakers.Commands
         public void OnCombatEnd()
         {
             CancelAllCommands();
+            _activeCommands.Clear();
             _cooldowns.Clear();
-            Debug.Log("[QuickCommandManager] Combat ended - all commands cancelled, cooldowns reset");
+            _formationPositions.Clear();
+            _cancelBuffer.Clear();
+            _expiredCooldownsBuffer.Clear();
+            _currentTarget = null;
+            _enemies = Array.Empty<Combatant>();
+            Debug.Log("[QuickCommandManager] Combat ended - all commands cancelled, state reset");
         }
 
         /// <summary>
@@ -804,8 +816,14 @@ namespace VeilBreakers.Commands
         /// </summary>
         public void OnEnemyDefeated(Combatant enemy)
         {
-            // Check if any On Me commands should trigger reform
+            // Use pre-allocated buffer to avoid modification during iteration
+            _commandsBuffer.Clear();
             foreach (var kvp in _activeCommands)
+            {
+                _commandsBuffer.Add(kvp);
+            }
+
+            foreach (var kvp in _commandsBuffer)
             {
                 var command = kvp.Value;
                 if (command.commandType == QuickCommandType.ON_ME &&

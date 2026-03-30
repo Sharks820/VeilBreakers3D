@@ -189,8 +189,12 @@ namespace VeilBreakers.Managers
             // Update debounce time BEFORE fire-and-forget to prevent double-trigger window
             _lastAutoSaveTime = Time.realtimeSinceStartup;
 
-            // Perform auto-save (fire-and-forget with explicit discard)
-            _ = PerformAutoSaveAsync(reason, _cts?.Token ?? CancellationToken.None);
+            // Perform auto-save with error handling
+            PerformAutoSaveAsync(reason, _cts?.Token ?? CancellationToken.None).ContinueWith(t =>
+            {
+                if (t.IsFaulted && t.Exception != null)
+                    Debug.LogError($"[AutoSave] Failed: {t.Exception.InnerException?.Message}");
+            }, TaskContinuationOptions.OnlyOnFaulted);
         }
 
         private async Task PerformAutoSaveAsync(string reason, CancellationToken token = default)
@@ -244,7 +248,11 @@ namespace VeilBreakers.Managers
         {
             if (!_isEnabled || SaveManager.Instance == null || !SaveManager.Instance.HasActiveSave) return;
             _lastAutoSaveTime = Time.realtimeSinceStartup;
-            _ = PerformAutoSaveAsync($"forced:{reason}", _cts?.Token ?? CancellationToken.None);
+            PerformAutoSaveAsync($"forced:{reason}", _cts?.Token ?? CancellationToken.None).ContinueWith(t =>
+            {
+                if (t.IsFaulted && t.Exception != null)
+                    Debug.LogError($"[AutoSave] Forced save failed: {t.Exception.InnerException?.Message}");
+            }, TaskContinuationOptions.OnlyOnFaulted);
         }
 
         /// <summary>

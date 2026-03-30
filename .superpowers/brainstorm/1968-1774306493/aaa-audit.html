@@ -1,0 +1,234 @@
+<h2>VeilBreakers UI vs AAA RPG Standards — Brutal Audit</h2>
+<p class="subtitle">Element-by-element comparison against Genshin Impact, Persona 5, Diablo IV, Monster Hunter, Honkai Star Rail</p>
+
+<div class="section">
+<h3>MAIN MENU — Current State</h3>
+<div class="mockup">
+<div class="mockup-header">Your Main Menu Buttons (actual USS values)</div>
+<div class="mockup-body" style="background: #0a0610; padding: 40px; text-align: center;">
+  <!-- Simulated current buttons -->
+  <div style="display: flex; justify-content: center; gap: 50px; flex-wrap: wrap;">
+    <div style="min-width: 160px; height: 50px; background: rgb(180, 80, 20); border: 2px solid rgb(255, 140, 50); border-radius: 6px; color: rgb(255, 245, 220); font-family: 'Cinzel', serif; font-size: 18px; display: flex; align-items: center; justify-content: center; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.65);">NEW GAME</div>
+    <div style="min-width: 160px; height: 50px; background: rgba(25, 18, 12, 0.95); border: 2px solid rgb(120, 70, 30); border-radius: 6px; color: rgb(200, 160, 100); font-family: 'Cinzel', serif; font-size: 18px; display: flex; align-items: center; justify-content: center; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.6);">SETTINGS</div>
+    <div style="min-width: 160px; height: 50px; background: rgba(25, 18, 12, 0.95); border: 2px solid rgb(120, 70, 30); border-radius: 6px; color: rgb(200, 160, 100); font-family: 'Cinzel', serif; font-size: 18px; display: flex; align-items: center; justify-content: center; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.6);">EXIT</div>
+  </div>
+  <p style="color: #555; margin-top: 20px; font-size: 12px;">160×50px, 18px font, flat fill, 2px border, no gradient, no glow, no shadow, no icon</p>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h3>What AAA Buttons Actually Look Like</h3>
+<div class="mockup">
+<div class="mockup-header">AAA Standard (Diablo IV / Genshin / Honkai style)</div>
+<div class="mockup-body" style="background: #0a0610; padding: 40px; text-align: center;">
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+    <!-- AAA Primary -->
+    <div style="min-width: 320px; height: 64px; background: linear-gradient(180deg, rgba(220,110,30,1) 0%, rgba(160,60,10,1) 100%); border: 2px solid rgba(255,180,80,0.8); border-radius: 4px; color: #fff8e8; font-family: 'Cinzel', serif; font-size: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; letter-spacing: 6px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); box-shadow: 0 0 20px rgba(255,140,50,0.3), inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 12px rgba(0,0,0,0.4);">NEW GAME</div>
+    <!-- AAA Secondary -->
+    <div style="min-width: 280px; height: 56px; background: linear-gradient(180deg, rgba(40,30,22,0.98) 0%, rgba(20,14,8,0.98) 100%); border: 1px solid rgba(160,120,60,0.5); border-radius: 4px; color: rgba(200,170,120,0.9); font-family: 'Cinzel', serif; font-size: 17px; display: flex; align-items: center; justify-content: center; font-weight: bold; letter-spacing: 5px; text-shadow: 0 1px 3px rgba(0,0,0,0.6); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 8px rgba(0,0,0,0.3);">SETTINGS</div>
+    <div style="min-width: 280px; height: 56px; background: linear-gradient(180deg, rgba(40,30,22,0.98) 0%, rgba(20,14,8,0.98) 100%); border: 1px solid rgba(160,120,60,0.5); border-radius: 4px; color: rgba(200,170,120,0.9); font-family: 'Cinzel', serif; font-size: 17px; display: flex; align-items: center; justify-content: center; font-weight: bold; letter-spacing: 5px; text-shadow: 0 1px 3px rgba(0,0,0,0.6); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 8px rgba(0,0,0,0.3);">EXIT</div>
+  </div>
+  <p style="color: #777; margin-top: 20px; font-size: 12px;">320×64px, gradient fill, box-shadow glow, inset highlight, letter-spacing 6px, VERTICAL layout, stacked center-right</p>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h3>ELEMENT-BY-ELEMENT VERDICT</h3>
+
+<table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+<thead>
+<tr style="border-bottom: 2px solid #444;">
+  <th style="text-align: left; padding: 10px; color: #aaa;">Element</th>
+  <th style="text-align: center; padding: 10px; color: #aaa;">Current</th>
+  <th style="text-align: center; padding: 10px; color: #aaa;">AAA Standard</th>
+  <th style="text-align: center; padding: 10px; color: #aaa;">Grade</th>
+</tr>
+</thead>
+<tbody>
+<!-- Main Menu -->
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 10px; font-weight: bold; color: #ddd;">MM: Background Art</td>
+  <td style="padding: 10px; color: #aaa;">Custom portal + demon art, parallax VFX, embers</td>
+  <td style="padding: 10px; color: #aaa;">Animated scene or key art with atmosphere</td>
+  <td style="padding: 10px; text-align: center;"><span style="background: #2a6e2a; padding: 3px 10px; border-radius: 4px; color: #fff; font-weight: bold;">A-</span></td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 10px; font-weight: bold; color: #ddd;">MM: Logo</td>
+  <td style="padding: 10px; color: #aaa;">Custom "VeilBreakers" logo with click pulse + smoke burst</td>
+  <td style="padding: 10px; color: #aaa;">Custom logo with idle glow/animation</td>
+  <td style="padding: 10px; text-align: center;"><span style="background: #2a6e2a; padding: 3px 10px; border-radius: 4px; color: #fff; font-weight: bold;">B+</span></td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 10px; font-weight: bold; color: #ddd;">MM: Button Layout</td>
+  <td style="padding: 10px; color: #c44;">HORIZONTAL row, all same size, flat at bottom edge</td>
+  <td style="padding: 10px; color: #aaa;">VERTICAL stack, center or right-aligned, size hierarchy</td>
+  <td style="padding: 10px; text-align: center;"><span style="background: #8b2020; padding: 3px 10px; border-radius: 4px; color: #fff; font-weight: bold;">D</span></td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 10px; font-weight: bold; color: #ddd;">MM: Button Visual Quality</td>
+  <td style="padding: 10px; color: #c44;">Flat fill, 2px border, no gradient, no glow, no shadow</td>
+  <td style="padding: 10px; color: #aaa;">Gradient fill, glow border, box-shadow, inner highlight</td>
+  <td style="padding: 10px; text-align: center;"><span style="background: #8b2020; padding: 3px 10px; border-radius: 4px; color: #fff; font-weight: bold;">D-</span></td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 10px; font-weight: bold; color: #ddd;">MM: Button Size</td>
+  <td style="padding: 10px; color: #c44;">160×50px — feels like a toolbar button</td>
+  <td style="padding: 10px; color: #aaa;">280-350px wide, 56-70px tall for primary</td>
+  <td style="padding: 10px; text-align: center;"><span style="background: #8b2020; padding: 3px 10px; border-radius: 4px; color: #fff; font-weight: bold;">F</span></td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 10px; font-weight: bold; color: #ddd;">MM: Hover States</td>
+  <td style="padding: 10px; color: #c80;">scale 1.03 + color shift, C# adds glow class</td>
+  <td style="padding: 10px; color: #aaa;">Glow pulse, shadow expansion, border brightening, sound</td>
+  <td style="padding: 10px; text-align: center;"><span style="background: #7a5c00; padding: 3px 10px; border-radius: 4px; color: #fff; font-weight: bold;">C</span></td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 10px; font-weight: bold; color: #ddd;">MM: Typography</td>
+  <td style="padding: 10px; color: #c80;">Cinzel font, 18px, bold, letter-spacing present</td>
+  <td style="padding: 10px; color: #aaa;">Display font, 18-24px, wide tracking, upper-case</td>
+  <td style="padding: 10px; text-align: center;"><span style="background: #7a5c00; padding: 3px 10px; border-radius: 4px; color: #fff; font-weight: bold;">C+</span></td>
+</tr>
+<!-- Character Select -->
+<tr style="border-bottom: 2px solid #666; background: rgba(255,255,255,0.02);">
+  <td colspan="4" style="padding: 12px; font-weight: bold; color: #fff; letter-spacing: 2px;">CHARACTER SELECT</td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 10px; font-weight: bold; color: #ddd;">CS: Hero Stage</td>
+  <td style="padding: 10px; color: #c44;">Magenta placeholder capsule, brown square BG</td>
+  <td style="padding: 10px; color: #aaa;">Full 3D model, 3-point lighting, particle aura, camera framing</td>
+  <td style="padding: 10px; text-align: center;"><span style="background: #8b2020; padding: 3px 10px; border-radius: 4px; color: #fff; font-weight: bold;">F</span></td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 10px; font-weight: bold; color: #ddd;">CS: Info Panel Design</td>
+  <td style="padding: 10px; color: #c80;">Dark frosted panel with border-accent per hero, tab system</td>
+  <td style="padding: 10px; color: #aaa;">Layered card panels with depth, ornate dividers, icon accents</td>
+  <td style="padding: 10px; text-align: center;"><span style="background: #7a5c00; padding: 3px 10px; border-radius: 4px; color: #fff; font-weight: bold;">C+</span></td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 10px; font-weight: bold; color: #ddd;">CS: Tab System</td>
+  <td style="padding: 10px; color: #aaa;">Underline tabs with hero-color accent, letter-spacing</td>
+  <td style="padding: 10px; color: #aaa;">Underline or pill tabs with animated indicator</td>
+  <td style="padding: 10px; text-align: center;"><span style="background: #2a6e2a; padding: 3px 10px; border-radius: 4px; color: #fff; font-weight: bold;">B</span></td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 10px; font-weight: bold; color: #ddd;">CS: Stat Chips</td>
+  <td style="padding: 10px; color: #aaa;">48% width, dark bg, hero-color left border, hover state</td>
+  <td style="padding: 10px; color: #aaa;">Icon + value, gradient accent, animated fill on switch</td>
+  <td style="padding: 10px; text-align: center;"><span style="background: #7a5c00; padding: 3px 10px; border-radius: 4px; color: #fff; font-weight: bold;">C+</span></td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 10px; font-weight: bold; color: #ddd;">CS: Attribute Bars</td>
+  <td style="padding: 10px; color: #aaa;">Colored fill bars with value labels</td>
+  <td style="padding: 10px; color: #aaa;">Gradient fills with animated transitions, icon labels</td>
+  <td style="padding: 10px; text-align: center;"><span style="background: #7a5c00; padding: 3px 10px; border-radius: 4px; color: #fff; font-weight: bold;">B-</span></td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 10px; font-weight: bold; color: #ddd;">CS: Embark Button</td>
+  <td style="padding: 10px; color: #c80;">Has hex bg + glow + subtitle, hold-to-confirm mechanic</td>
+  <td style="padding: 10px; color: #aaa;">Large hero CTA, breathing glow, progress ring, cinematic trigger</td>
+  <td style="padding: 10px; text-align: center;"><span style="background: #7a5c00; padding: 3px 10px; border-radius: 4px; color: #fff; font-weight: bold;">C+</span></td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 10px; font-weight: bold; color: #ddd;">CS: Carousel / Nav</td>
+  <td style="padding: 10px; color: #c44;">Unicode arrows (◀ ▶), basic strip</td>
+  <td style="padding: 10px; color: #aaa;">Character portrait cards, selection indicator, smooth scroll</td>
+  <td style="padding: 10px; text-align: center;"><span style="background: #8b2020; padding: 3px 10px; border-radius: 4px; color: #fff; font-weight: bold;">D</span></td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 10px; font-weight: bold; color: #ddd;">CS: Theme System</td>
+  <td style="padding: 10px; color: #aaa;">4 hero themes via CSS vars, border/text color shifts, transitions</td>
+  <td style="padding: 10px; color: #aaa;">Full color palette shift, lighting change, ambient audio</td>
+  <td style="padding: 10px; text-align: center;"><span style="background: #2a6e2a; padding: 3px 10px; border-radius: 4px; color: #fff; font-weight: bold;">B+</span></td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 10px; font-weight: bold; color: #ddd;">CS: Cinematic Overlays</td>
+  <td style="padding: 10px; color: #aaa;">Scanlines, vignette, veil glow overlays defined in UXML</td>
+  <td style="padding: 10px; color: #aaa;">Film grain, vignette, chromatic aberration, depth effects</td>
+  <td style="padding: 10px; text-align: center;"><span style="background: #2a6e2a; padding: 3px 10px; border-radius: 4px; color: #fff; font-weight: bold;">B</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<div class="section">
+<h3>OVERALL VERDICT</h3>
+<div style="background: rgba(139, 32, 32, 0.2); border: 1px solid rgba(200, 60, 60, 0.5); border-radius: 8px; padding: 24px; margin: 16px 0;">
+  <div style="font-size: 48px; font-weight: bold; color: #e04040; text-align: center; margin-bottom: 8px;">NOT AAA READY</div>
+  <div style="font-size: 18px; color: #ccc; text-align: center; margin-bottom: 16px;">Current grade: <strong style="color: #e08040;">C-</strong> — Would be rated "indie prototype" by players</div>
+  <div style="color: #aaa; font-size: 14px; line-height: 1.8;">
+    <strong style="color: #fff;">Critical failures (4 elements rated D or F):</strong>
+    <ol style="margin-top: 8px;">
+      <li><strong>Button layout</strong> — Horizontal row screams mobile/web app, not AAA game</li>
+      <li><strong>Button visual quality</strong> — Flat fills with thin borders. Zero depth, zero premium feel.</li>
+      <li><strong>Button size</strong> — 160×50px is tiny. AAA primary CTAs are 280-350px × 56-70px minimum.</li>
+      <li><strong>Hero stage</strong> — Magenta placeholder capsule is the #1 thing killing the character select.</li>
+      <li><strong>Carousel nav</strong> — Unicode arrows instead of styled hero portrait cards.</li>
+    </ol>
+  </div>
+</div>
+
+<div style="background: rgba(42, 110, 42, 0.15); border: 1px solid rgba(60, 180, 60, 0.4); border-radius: 8px; padding: 24px; margin: 16px 0;">
+  <div style="font-size: 20px; font-weight: bold; color: #5a5; margin-bottom: 12px;">What's Actually Good (keep these):</div>
+  <ul style="color: #aaa; line-height: 1.8;">
+    <li>Background art and demon figure are excellent quality</li>
+    <li>Logo design and click interaction are solid</li>
+    <li>Per-hero theme system with CSS variable switching is well-architected</li>
+    <li>Tab system design is close to AAA</li>
+    <li>Cinematic overlay system (scanlines, vignette, veil glow) adds atmosphere</li>
+    <li>VFX layer (embers, ash, smoke, lightning) is impressive</li>
+    <li>Hold-to-embark mechanic is a nice touch</li>
+  </ul>
+</div>
+</div>
+
+<div class="section">
+<h3>TOP 10 SPECIFIC GAPS vs AAA RPGs</h3>
+<div style="color: #ccc; line-height: 1.9; font-size: 14px;">
+<table style="width: 100%; border-collapse: collapse;">
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 8px; color: #e04040; font-weight: bold; width: 30px;">1</td>
+  <td style="padding: 8px;"><strong>No gradients anywhere</strong> — Every AAA button uses top-to-bottom gradients. Your buttons are flat solid colors. This alone makes them look 10 years old.</td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 8px; color: #e04040; font-weight: bold;">2</td>
+  <td style="padding: 8px;"><strong>No depth/shadow system</strong> — AAA UIs layer box-shadows, inner glows, and drop shadows. Your elements float flat on the screen with zero z-depth illusion.</td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 8px; color: #e04040; font-weight: bold;">3</td>
+  <td style="padding: 8px;"><strong>Wrong button layout paradigm</strong> — Horizontal button rows are for web apps. Every AAA RPG (Diablo, Genshin, Elden Ring, FF) uses VERTICAL stacked buttons, usually right-of-center or lower-center.</td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 8px; color: #e04040; font-weight: bold;">4</td>
+  <td style="padding: 8px;"><strong>Buttons are undersized</strong> — At 160×50px your buttons are toolbar-sized. AAA main menu buttons are hero elements — large, commanding, impossible to miss.</td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 8px; color: #e04040; font-weight: bold;">5</td>
+  <td style="padding: 8px;"><strong>No idle animation on buttons</strong> — AAA buttons breathe, pulse, shimmer. Genshin's buttons have subtle border glow animation. Diablo's have smoldering effects. Yours are static until hovered.</td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 8px; color: #e08040; font-weight: bold;">6</td>
+  <td style="padding: 8px;"><strong>Placeholder hero models</strong> — The magenta capsule on the character select screen instantly signals "prototype." This is the single biggest visual credibility killer.</td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 8px; color: #e08040; font-weight: bold;">7</td>
+  <td style="padding: 8px;"><strong>No ornamental decoration</strong> — AAA dark fantasy UIs use decorative corner pieces, ornate dividers, filigree borders. Your panels are clean rectangles with 1-2px borders.</td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 8px; color: #e08040; font-weight: bold;">8</td>
+  <td style="padding: 8px;"><strong>Typography lacks weight hierarchy</strong> — AAA uses dramatic size differences (hero title 48px+ vs body 14px). Your sizes are too uniform — 36px max for hero name is small for a centerpiece.</td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 8px; color: #e08040; font-weight: bold;">9</td>
+  <td style="padding: 8px;"><strong>No ambient glow/emission effects</strong> — AAA panels glow subtly from within. Borders emit light. Icons have halos. Your panels are dark boxes with thin borders.</td>
+</tr>
+<tr style="border-bottom: 1px solid #333;">
+  <td style="padding: 8px; color: #e08040; font-weight: bold;">10</td>
+  <td style="padding: 8px;"><strong>Carousel is text-based</strong> — Character selection carousels in AAA use hero portraits/busts with selection rings. Unicode arrows (◀ ▶) are placeholder-tier.</td>
+</tr>
+</table>
+</div>
+</div>
+
+<p class="subtitle" style="margin-top: 24px; text-align: center;">Review this audit, then let me know your priorities. I'll present the concrete fix plan next.</p>

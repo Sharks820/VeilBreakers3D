@@ -51,6 +51,7 @@ namespace VeilBreakers.UI.Menus
         private bool _isGlitched = false;
         private Coroutine _typewriterCoroutine;
         private Coroutine _glitchCoroutine;
+        private WaitForSeconds _glitchFlickerWait; // BUG-13: cached
 
         private DialogueData _currentDialogue;
         private int _currentLineIndex = 0;
@@ -109,12 +110,13 @@ namespace VeilBreakers.UI.Menus
         {
             if (_uiDocument == null)
             {
-                _uiDocument = GetComponent<UIDocument>();
+                _uiDocument = GetComponent<UIDocument>(); // VB-IGNORE UNITY-05 -- optional fallback, UIDocument may be assigned via inspector
             }
 
             // Cache WaitForSeconds to avoid per-character GC allocations in typewriter
             _waitGlitchChar = new WaitForSeconds(0.03f);
             _waitPunctuation = new WaitForSeconds(_punctuationPause);
+            _glitchFlickerWait = new WaitForSeconds(_glitchFlickerRate);
             _waitComma = new WaitForSeconds(_punctuationPause * 0.5f);
             _waitTypeSpeed = new WaitForSeconds(_baseTypeSpeed);
             _waitGlitchedTypeSpeed = new WaitForSeconds(_glitchedTypeSpeed);
@@ -400,7 +402,7 @@ namespace VeilBreakers.UI.Menus
 
         private IEnumerator GlitchFlickerCoroutine()
         {
-            var waitFlickerRate = new WaitForSeconds(_glitchFlickerRate);
+            var waitFlickerRate = _glitchFlickerWait;
             while (_isGlitched)
             {
                 // Random flicker
@@ -471,7 +473,7 @@ namespace VeilBreakers.UI.Menus
 
             if (_dialogueText != null)
             {
-                _dialogueText.text = "";
+                _dialogueText.text = ""; // VB-IGNORE UNITY-23 -- one-time clear at line start, not per-frame
             }
 
             // Hide continue indicator and choices
@@ -569,7 +571,7 @@ namespace VeilBreakers.UI.Menus
         {
             if (_dialogueText != null)
             {
-                _dialogueText.text = _displayedTextBuilder.ToString();
+                _dialogueText.text = _displayedTextBuilder.ToString(); // VB-IGNORE UNITY-23 -- typewriter effect, called per-character not per-frame; StringBuilder avoids repeated concatenation
             }
         }
 

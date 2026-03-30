@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bc8a102156c8d048a8004d5c06d780b, type: 3}
+  m_Name: NyxTheme
+  m_EditorClassIdentifier: VeilBreakers.Runtime::VeilBreakers.UI.CharacterSelect.HeroThemeConfig
+  heroId: nyx
+  primaryColor: {r: 0.7058824, g: 0.09803922, b: 0.11764706, a: 1}
+  glowColor: {r: 0.94, g: 0.2, b: 0.22, a: 0.3}
+  darkColor: {r: 0.22, g: 0.04, b: 0.04, a: 1}
+  dissolveEdgeColor: {r: 0.95, g: 0.15, b: 0.18, a: 1}
+  volumeProfile: {fileID: 0}
+  chromaticAberrationIntensity: 0.15
+  fillLightColor: {r: 1, g: 0.8, b: 0.8, a: 1}
+  fillLightIntensity: 0.7
+  rimLightColor: {r: 0.95, g: 0.2, b: 0.2, a: 1}
+  rimLightIntensity: 1.4
+  ambientColor: {r: 0.12, g: 0.03, b: 0.03, a: 1}
+  rimFlicker: 1
+  musicIntensity: 0.9
+  musicWarmth: 0.2
+  musicTension: 0.6
+  musicSynth: 0.9
+  musicPerc: 0.5
+  musicPad: 0.4
+  musicFilter: 0.7
+  particlePrefab: {fileID: 0}
+  maxParticleCount: 200
+  scanlineOpacity: 0.12
+  vignetteIntensity: 0.35
+  vignetteBorderWidth: 80
+  veilGlowOpacity: 0.1
+  dissolveNoiseScale: 1.6
+  dissolveDuration: 0.5
+  glitchResolveSpeed: 35
+  monsterAuraColor: {r: 0.9, g: 0.15, b: 0.18, a: 1}

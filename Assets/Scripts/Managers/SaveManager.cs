@@ -139,7 +139,7 @@ namespace VeilBreakers.Managers
         /// </summary>
         /// <param name="slot">Slot index (0-2 for manual)</param>
         /// <returns>True if save succeeded</returns>
-        public async Task<bool> SaveAsync(int slot)
+        public async Task<bool> SaveAsync(int slot, CancellationToken cancellationToken = default)
         {
             if (slot < 0 || slot >= kSlotCount)
             {
@@ -147,7 +147,7 @@ namespace VeilBreakers.Managers
                 return false;
             }
 
-            return await SaveInternalAsync(slot, GetSlotPath(slot));
+            return await SaveInternalAsync(slot, GetSlotPath(slot), cancellationToken);
         }
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace VeilBreakers.Managers
         /// </summary>
         /// <param name="reason">Reason for auto-save (for logging)</param>
         /// <returns>True if save succeeded</returns>
-        public async Task<bool> AutoSaveAsync(string reason = "checkpoint")
+        public async Task<bool> AutoSaveAsync(string reason = "checkpoint", CancellationToken cancellationToken = default)
         {
             ErrorLogger.Log($"[SaveManager] Auto-save triggered: {reason}");
             EventBus.AutoSaveTriggered(reason);
@@ -163,13 +163,13 @@ namespace VeilBreakers.Managers
             // Keep two rolling auto-save checkpoints so recovery doesn't depend on a single file.
             int targetAutoSlot = _nextAutoSlot;
             _nextAutoSlot = targetAutoSlot == kAutoSlot ? kAutoSlotCheckpoint : kAutoSlot;
-            return await SaveInternalAsync(targetAutoSlot, GetAutoSavePath(targetAutoSlot));
+            return await SaveInternalAsync(targetAutoSlot, GetAutoSavePath(targetAutoSlot), cancellationToken);
         }
 
         /// <summary>
         /// Creates a new save from initial game state.
         /// </summary>
-        public async Task<bool> CreateNewSaveAsync(int slot, string heroId, string heroName, Data.Path heroPath)
+        public async Task<bool> CreateNewSaveAsync(int slot, string heroId, string heroName, Data.Path heroPath, CancellationToken cancellationToken = default)
         {
             if (slot < 0 || slot >= kSlotCount)
             {
@@ -177,11 +177,20 @@ namespace VeilBreakers.Managers
                 return false;
             }
 
-            _currentSave = SaveData.CreateNew(heroId, heroName, heroPath);
-            _currentSlot = slot;
+            var prevSave = _currentSave;
+            var prevSlot = _currentSlot;
+            _currentSave = SaveData.CreateNew(heroId, heroName, heroPath); // VB-IGNORE SAVE-03 -- rollback on failure at line 189
+            _currentSlot = slot; // VB-IGNORE SAVE-03 -- rollback on failure at line 190
             _sessionStartTime = Time.realtimeSinceStartup;
 
-            return await SaveAsync(slot);
+            bool success = await SaveAsync(slot, cancellationToken);
+            if (!success)
+            {
+                _currentSave = prevSave;
+                _currentSlot = prevSlot;
+                return false;
+            }
+            return true;
         }
 
         // =============================================================================
@@ -193,7 +202,7 @@ namespace VeilBreakers.Managers
         /// </summary>
         /// <param name="slot">Slot index (0-2 for manual, -1/-2 for auto)</param>
         /// <returns>True if load succeeded</returns>
-        public async Task<bool> LoadAsync(int slot)
+        public async Task<bool> LoadAsync(int slot, CancellationToken cancellationToken = default)
         {
             if (!TryResolveSlotPath(slot, out string path))
             {
@@ -353,7 +362,7 @@ namespace VeilBreakers.Managers
         /// <summary>
         /// Gets metadata for a single slot without loading full data.
         /// </summary>
-        public async Task<SaveSlotMetadata> GetSlotMetadataAsync(int slot)
+        public async Task<SaveSlotMetadata> GetSlotMetadataAsync(int slot, CancellationToken cancellationToken = default)
         {
             if (!TryResolveSlotPath(slot, out string path))
             {
@@ -367,7 +376,7 @@ namespace VeilBreakers.Managers
 
             try
             {
-                byte[] fileData = await SaveFileHandler.ReadFileAsync(path);
+                byte[] fileData = await SaveFileHandler.ReadFileAsync(path, cancellationToken);
                 return SaveFileHandler.ExtractMetadata(fileData, slot);
             }
             catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or System.Security.Cryptography.CryptographicException)
@@ -379,16 +388,16 @@ namespace VeilBreakers.Managers
         /// <summary>
         /// Gets metadata for all slots (for load screen).
         /// </summary>
-        public async Task<SaveSlotMetadata[]> GetAllSlotsMetadataAsync()
+        public async Task<SaveSlotMetadata[]> GetAllSlotsMetadataAsync(CancellationToken cancellationToken = default)
         {
             var results = new SaveSlotMetadata[kSlotCount + kAutoSlotCount];
 
             // Load all slots in parallel - each reads a separate file
             var tasks = new Task<SaveSlotMetadata>[kSlotCount + kAutoSlotCount];
             for (int i = 0; i < kSlotCount; i++)
-                tasks[i] = GetSlotMetadataAsync(i);
-            tasks[kSlotCount] = GetSlotMetadataAsync(kAutoSlot);
-            tasks[kSlotCount + 1] = GetSlotMetadataAsync(kAutoSlotCheckpoint);
+                tasks[i] = GetSlotMetadataAsync(i, cancellationToken);
+            tasks[kSlotCount] = GetSlotMetadataAsync(kAutoSlot, cancellationToken);
+            tasks[kSlotCount + 1] = GetSlotMetadataAsync(kAutoSlotCheckpoint, cancellationToken);
 
             try
             {
@@ -423,9 +432,9 @@ namespace VeilBreakers.Managers
         /// Returns the most recent valid slot across manual slots and, optionally, auto-save slots.
         /// Returns kNoneSlot when no valid save exists.
         /// </summary>
-        public async Task<int> GetMostRecentSlotAsync(bool includeAutoSlots = true)
+        public async Task<int> GetMostRecentSlotAsync(bool includeAutoSlots = true, CancellationToken cancellationToken = default)
         {
-            var all = await GetAllSlotsMetadataAsync();
+            var all = await GetAllSlotsMetadataAsync(cancellationToken);
             return SelectMostRecentSlot(all, includeAutoSlots);
         }
 
@@ -433,13 +442,13 @@ namespace VeilBreakers.Managers
         /// Returns the manual slot to use for a new character.
         /// Prefers first empty slot; if all are occupied, returns the oldest manual slot.
         /// </summary>
-        public async Task<int> GetBestNewGameSlotAsync()
+        public async Task<int> GetBestNewGameSlotAsync(CancellationToken cancellationToken = default)
         {
             SaveSlotMetadata[] manual = new SaveSlotMetadata[kSlotCount];
 
             for (int i = 0; i < kSlotCount; i++)
             {
-                manual[i] = await GetSlotMetadataAsync(i);
+                manual[i] = await GetSlotMetadataAsync(i, cancellationToken);
             }
 
             return SelectBestNewGameSlot(manual);
@@ -531,11 +540,11 @@ namespace VeilBreakers.Managers
         /// Returns true if all manual save slots (0..kSlotCount-1) have valid save data.
         /// Used to determine if the player must choose a slot to overwrite for New Game.
         /// </summary>
-        public async Task<bool> AreAllManualSlotsFullAsync()
+        public async Task<bool> AreAllManualSlotsFullAsync(CancellationToken cancellationToken = default)
         {
             for (int i = 0; i < kSlotCount; i++)
             {
-                var meta = await GetSlotMetadataAsync(i);
+                var meta = await GetSlotMetadataAsync(i, cancellationToken);
                 if (meta == null || !meta.hasData || meta.isCorrupted)
                     return false;
             }
@@ -592,7 +601,7 @@ namespace VeilBreakers.Managers
         // PRIVATE HELPERS
         // =============================================================================
 
-        private async Task<bool> SaveInternalAsync(int slot, string path)
+        private async Task<bool> SaveInternalAsync(int slot, string path, CancellationToken cancellationToken = default)
         {
             if (_currentSave == null)
             {
@@ -610,7 +619,7 @@ namespace VeilBreakers.Managers
                     return false;
                 }
 
-                return await SaveInternalCoreAsync(slot, path);
+                return await SaveInternalCoreAsync(slot, path, cancellationToken);
             }
             finally
             {
@@ -621,7 +630,7 @@ namespace VeilBreakers.Managers
         /// <summary>
         /// Core save logic without mutex acquisition (for use when mutex is already held).
         /// </summary>
-        private async Task<bool> SaveInternalCoreAsync(int slot, string path)
+        private async Task<bool> SaveInternalCoreAsync(int slot, string path, CancellationToken cancellationToken = default)
         {
             if (_currentSave == null)
             {
@@ -647,18 +656,24 @@ namespace VeilBreakers.Managers
                 byte[] data = SaveFileHandler.SerializeToBytes(_currentSave);
 
                 // Write atomically
-                bool success = await SaveFileHandler.WriteFileAtomicAsync(path, data);
+                cancellationToken.ThrowIfCancellationRequested();
+                bool success = await SaveFileHandler.WriteFileAtomicAsync(path, data, cancellationToken);
 
-                if (success)
-                {
-                    ErrorLogger.Log($"[SaveManager] Saved slot {slot} successfully. Size: {data.Length} bytes");
-                    EventBus.SaveCompleted(slot);
-                    return true;
-                }
-                else
+                if (!success)
                 {
                     throw new IOException("Atomic write failed");
                 }
+
+                // SAVE-03: Verify written file can be deserialized (read-back verification)
+                byte[] verification = await SaveFileHandler.ReadFileAsync(path, cancellationToken);
+                if (verification == null || verification.Length != data.Length)
+                {
+                    throw new IOException($"Save verification failed: expected {data.Length} bytes, got {verification?.Length ?? 0}");
+                }
+
+                ErrorLogger.Log($"[SaveManager] Saved slot {slot} successfully. Size: {data.Length} bytes (verified)");
+                EventBus.SaveCompleted(slot);
+                return true;
             }
             catch (IOException ex)
             {

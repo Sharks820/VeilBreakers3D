@@ -4,6 +4,8 @@ using System.Linq;
 using UnityEngine;
 using VeilBreakers.Combat;
 using VeilBreakers.Data;
+using VeilBreakers.Managers;
+using VeilBreakers.Systems;
 
 namespace VeilBreakers.Audio
 {
@@ -33,6 +35,7 @@ namespace VeilBreakers.Audio
         private float _lastPlayerHealthPercent = 1f;
         private Coroutine _subscribeRetryCoroutine = null;
         private BattleManager _cachedBattleManager; // Cached for safe unsubscribe if singleton destroyed first
+        private StatusEffectManager _cachedStatusManager; // Cached for safe unsubscribe
 
         // Pre-allocated list for enemy IDs
         private List<string> _enemyIds = new List<string>(8);
@@ -94,6 +97,13 @@ namespace VeilBreakers.Audio
             _cachedBattleManager.OnHealApplied += HandleHealApplied;
             _cachedBattleManager.OnCombatantDeath += HandleCombatantDeath;
 
+            // Subscribe to status effect ticks so DoT damage updates low-health audio
+            _cachedStatusManager = StatusEffectManager.Instance;
+            if (_cachedStatusManager != null)
+            {
+                _cachedStatusManager.OnEffectTick += HandleEffectTick;
+            }
+
             _isSubscribed = true;
             Debug.Log("[AudioBattleIntegration] Subscribed to battle events");
         }
@@ -115,6 +125,12 @@ namespace VeilBreakers.Audio
             _cachedBattleManager.OnHealApplied -= HandleHealApplied;
             _cachedBattleManager.OnCombatantDeath -= HandleCombatantDeath;
             _cachedBattleManager = null;
+
+            if (_cachedStatusManager != null)
+            {
+                _cachedStatusManager.OnEffectTick -= HandleEffectTick;
+                _cachedStatusManager = null;
+            }
         }
 
         /// <summary>
@@ -221,6 +237,17 @@ namespace VeilBreakers.Audio
 
             // Update low health if player was healed
             if (target.IsPlayer)
+            {
+                UpdatePlayerHealth();
+            }
+        }
+
+        private void HandleEffectTick(GameObject target, StatusEffectInstance effect, float value)
+        {
+            // Update player health audio when the player takes DoT damage
+            if (BattleManager.Instance == null) return;
+            var player = BattleManager.Instance.Player;
+            if (player != null && target == player.gameObject)
             {
                 UpdatePlayerHealth();
             }

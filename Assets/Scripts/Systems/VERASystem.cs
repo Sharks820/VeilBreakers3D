@@ -306,6 +306,11 @@ namespace VeilBreakers.Systems
                 _dialogueQueue.Clear();
             }
 
+            const int kMaxQueueSize = 20;
+            if (_dialogueQueue.Count >= kMaxQueueSize)
+            {
+                _dialogueQueue.Dequeue(); // Drop oldest
+            }
             _dialogueQueue.Enqueue(request);
         }
 

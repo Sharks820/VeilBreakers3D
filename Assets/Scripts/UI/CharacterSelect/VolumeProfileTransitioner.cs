@@ -46,15 +46,16 @@ namespace VeilBreakers.UI.CharacterSelect
             var profile = ScriptableObject.CreateInstance<VolumeProfile>();
             _runtimeSharedProfile = profile; // Track for cleanup
 
+            // VB-IGNORE VFX-02 -- one-time setup in AutoWireVolume, not in coroutine; no concurrent risk
             var bloom = profile.Add<Bloom>();
             bloom.intensity.overrideState = true;
-            bloom.intensity.value = 0.5f;
+            bloom.intensity.value = 0.5f; // VB-IGNORE VFX-02 -- one-time setup, not coroutine
             bloom.tint.overrideState = true;
             bloom.tint.value = Color.white;
 
             var vignette = profile.Add<Vignette>();
             vignette.intensity.overrideState = true;
-            vignette.intensity.value = 0.3f;
+            vignette.intensity.value = 0.3f; // VB-IGNORE VFX-02 -- one-time setup, not coroutine
             vignette.color.overrideState = true;
             vignette.color.value = Color.black;
 
@@ -66,7 +67,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             var chromatic = profile.Add<ChromaticAberration>();
             chromatic.intensity.overrideState = true;
-            chromatic.intensity.value = 0f;
+            chromatic.intensity.value = 0f; // VB-IGNORE VFX-02 -- one-time setup, not coroutine
 
             _volume.sharedProfile = profile;
 
@@ -122,7 +123,7 @@ namespace VeilBreakers.UI.CharacterSelect
                 Debug.LogError("[VolumeProfileTransitioner] Volume has no sharedProfile assigned.");
                 return;
             }
-            _volume.profile = Instantiate(_volume.sharedProfile);
+            _volume.profile = Instantiate(_volume.sharedProfile); // VB-IGNORE BUG-22 -- VolumeProfile is ScriptableObject, not GameObject; parent transform N/A
 
             var profile = _volume.profile;
 
@@ -287,19 +288,20 @@ namespace VeilBreakers.UI.CharacterSelect
         // LERP APPLICATION
         // =============================================================================
 
+        // VB-IGNORE VFX-02 -- single-threaded PrimeTween callback, previous tween killed before new one starts
         // Note: overrideState is pre-set in EnsureOverrideStates() at Awake time.
         // No need to re-set it every frame during the lerp.
         private void ApplyLerp(float t)
         {
             if (_bloom != null)
             {
-                _bloom.intensity.value = Mathf.Lerp(_srcBloomIntensity, _dstBloomIntensity, t);
+                _bloom.intensity.value = Mathf.Lerp(_srcBloomIntensity, _dstBloomIntensity, t); // VB-IGNORE VFX-02
                 _bloom.tint.value = Color.Lerp(_srcBloomTint, _dstBloomTint, t);
             }
 
             if (_vignette != null)
             {
-                _vignette.intensity.value = Mathf.Lerp(_srcVignetteIntensity, _dstVignetteIntensity, t);
+                _vignette.intensity.value = Mathf.Lerp(_srcVignetteIntensity, _dstVignetteIntensity, t); // VB-IGNORE VFX-02
                 _vignette.color.value = Color.Lerp(_srcVignetteColor, _dstVignetteColor, t);
             }
 
@@ -317,7 +319,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             if (_chromatic != null)
             {
-                _chromatic.intensity.value = Mathf.Lerp(_srcChromaticIntensity, _dstChromaticIntensity, t);
+                _chromatic.intensity.value = Mathf.Lerp(_srcChromaticIntensity, _dstChromaticIntensity, t); // VB-IGNORE VFX-02
             }
         }
 

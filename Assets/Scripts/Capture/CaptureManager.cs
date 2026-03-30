@@ -60,6 +60,10 @@ namespace VeilBreakers.Capture
         private BoundMonsterData _currentCaptureTarget;
         private CaptureItem _selectedItem = CaptureItem.NONE;
 
+        // Cache invalidation timer (refresh thresholds every 2 seconds as allies reposition)
+        private const float THRESHOLD_CACHE_INTERVAL = 2f;
+        private float _thresholdCacheTimer = 0f;
+
         // Target override for custom targeting
         private Combatant _targetOverride;
 
@@ -102,19 +106,44 @@ namespace VeilBreakers.Capture
             // NOTE: Do NOT set events to null here - that breaks the event pattern
             // by clearing ALL subscribers globally. Events are cleaned up when
             // subscribers unsubscribe in their own OnDestroy/OnDisable.
-            // Only clear runtime state.
+            // Clear ALL runtime state to prevent stale references (DEEP-07)
             _bindAttempts.Clear();
             _bindTargetSet.Clear();
             _bindStartTimes.Clear();
+            _markedTargets.Clear();
+            _boundMonsters.Clear();
+            _cachedThresholds.Clear();
+            _iterationBuffer.Clear();
+            _inCapturePhase = false;
+            _currentCaptureTarget = null;
+            _selectedItem = CaptureItem.NONE;
+            _targetOverride = null;
         }
 
         private void Update()
         {
             if (_inCapturePhase) return;
 
+            // Periodically invalidate cached thresholds so they reflect ally repositioning
+            _thresholdCacheTimer += Time.deltaTime;
+            if (_thresholdCacheTimer >= THRESHOLD_CACHE_INTERVAL)
+            {
+                _thresholdCacheTimer = 0f;
+                InvalidateThresholdCache();
+            }
+
             HandleInput();
             UpdateBindAttempts();
             CheckBindThresholds();
+        }
+
+        /// <summary>
+        /// Invalidate the cached bind thresholds so they are recalculated on next check.
+        /// Call whenever ally positions change significantly or on a periodic timer.
+        /// </summary>
+        public void InvalidateThresholdCache()
+        {
+            _cachedThresholds.Clear();
         }
 
         // =============================================================================
@@ -136,6 +165,8 @@ namespace VeilBreakers.Capture
             _bindAttempts.Clear();
             _bindTargetSet.Clear();
             _bindStartTimes.Clear();
+            _cachedThresholds.Clear();
+            _iterationBuffer.Clear();
             _inCapturePhase = false;
             _currentCaptureTarget = null;
             _selectedItem = CaptureItem.NONE;
@@ -667,21 +698,24 @@ namespace VeilBreakers.Capture
 
                 // Resume combat - monster stays in battle as berserk enemy
                 EndCapturePhase();
+                // EndCapturePhase already sets _currentCaptureTarget = null, but guard against
+                // the code below re-assigning it after the phase has ended
+                _currentCaptureTarget = null;
 
                 // Signal battle to resume via EventBus (distinct from BattleStarted to avoid re-init)
                 EventBus.BattleResumed();
             }
 
-            // Check for more bound monsters
-            if (_boundMonsters.Count > 0)
+            // Check for more bound monsters (skip if BERSERK already ended the phase)
+            if (outcome != CaptureOutcome.BERSERK)
             {
-                _currentCaptureTarget = _boundMonsters[0];
-            }
-            else
-            {
-                _currentCaptureTarget = null;
-                if (outcome != CaptureOutcome.BERSERK)
+                if (_boundMonsters.Count > 0)
                 {
+                    _currentCaptureTarget = _boundMonsters[0];
+                }
+                else
+                {
+                    _currentCaptureTarget = null;
                     EndCapturePhase();
                 }
             }
@@ -750,6 +784,9 @@ namespace VeilBreakers.Capture
                 _boundMonsters.Clear();
                 _bindAttempts.Clear();
                 _bindStartTimes.Clear();
+                _bindTargetSet.Clear();
+                _cachedThresholds.Clear();
+                _iterationBuffer.Clear();
             }
         }
 

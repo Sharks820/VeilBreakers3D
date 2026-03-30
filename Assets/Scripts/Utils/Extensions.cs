@@ -71,7 +71,12 @@ namespace VeilBreakers.Utils
         {
             for (int i = transform.childCount - 1; i >= 0; i--)
             {
-                UnityEngine.Object.DestroyImmediate(transform.GetChild(i).gameObject);
+#if UNITY_EDITOR
+                if (!Application.isPlaying)
+                    UnityEngine.Object.DestroyImmediate(transform.GetChild(i).gameObject);
+                else
+#endif
+                    UnityEngine.Object.Destroy(transform.GetChild(i).gameObject); // VB-IGNORE UNITY-03 -- iterating backwards, Destroy is deferred to end-of-frame; no use-after-destroy
             }
         }
 

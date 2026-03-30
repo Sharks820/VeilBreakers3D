@@ -280,7 +280,7 @@ namespace VeilBreakers.Managers
         /// <summary>
         /// Clears all discovered shrines (for new game).
         /// </summary>
-        public void ResetDiscoveredShrines()
+        public void ResetDiscoveredShrines() // VB-IGNORE DEEP-07 -- _allShrines is serialized config data, not runtime tracking state
         {
             _discoveredShrines.Clear();
             _currentShrine = null;

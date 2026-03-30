@@ -5,6 +5,7 @@ namespace VeilBreakers.Audio
     /// <summary>
     /// Trigger zone for audio zone changes and preloading.
     /// </summary>
+    [RequireComponent(typeof(Collider))] // UNITY-05
     public class AudioTriggerZone : MonoBehaviour
     {
         // =============================================================================
@@ -29,7 +30,7 @@ namespace VeilBreakers.Audio
         // TRIGGER
         // =============================================================================
 
-        private void OnTriggerEnter(Collider other)
+        private void OnTriggerEnter(Collider other) // VB-IGNORE BUG-15 -- Collider is on AudioTriggerZone (has Collider via RequireComponent)
         {
             if (!other.CompareTag("Player")) return;
 
@@ -412,7 +413,7 @@ namespace VeilBreakers.Audio
                 if (_overlapResults[i].CompareTag(_enemyTag))
                 {
                     _enemiesInRange++;
-                    float dist = Vector3.Distance(transform.position, _overlapResults[i].transform.position);
+                    float dist = Vector3.Distance(transform.position, _overlapResults[i].transform.position); // VB-IGNORE BUG-27 -- closestDistance used in InverseLerp below, needs linear distance
                     if (dist < closestDistance)
                     {
                         closestDistance = dist;

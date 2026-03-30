@@ -130,7 +130,7 @@ namespace VeilBreakers.UI.Menus
         {
             if (_uiDocument == null)
             {
-                _uiDocument = GetComponent<UIDocument>();
+                _uiDocument = GetComponent<UIDocument>(); // VB-IGNORE UNITY-05 -- optional fallback, UIDocument may be assigned via inspector
             }
         }
 
@@ -138,9 +138,9 @@ namespace VeilBreakers.UI.Menus
         {
             InitializeUI();
             LoadInventory();
-            
-            // Subscribe to InputManager for universal navigation
-            if (InputManager.Instance != null)
+
+            // Subscribe to InputManager for universal navigation (UNITY-05: use HasInstance to avoid auto-create)
+            if (InputManager.HasInstance)
             {
                 InputManager.Instance.OnActionTriggered += OnActionTriggered;
             }
@@ -149,9 +149,9 @@ namespace VeilBreakers.UI.Menus
         private void OnDisable()
         {
             UnbindEvents();
-            
-            // Unsubscribe from InputManager
-            if (InputManager.Instance != null)
+
+            // Unsubscribe from InputManager (use HasInstance to avoid auto-create during quit)
+            if (InputManager.HasInstance)
             {
                 InputManager.Instance.OnActionTriggered -= OnActionTriggered;
             }

@@ -407,6 +407,21 @@ namespace VeilBreakers.Combat
         /// </summary>
         public void ApplyStatus(StatusEffectType type, float duration, Combatant source)
         {
+            // Route through StatusEffectManager to ensure stacking rules, caps,
+            // and effect lifecycle are respected (avoids orphaned effects)
+            if (Managers.StatusEffectManager.HasInstance)
+            {
+                Managers.StatusEffectManager.Instance.ApplyEffect(
+                    type,
+                    source?.gameObject,
+                    gameObject,
+                    source != null ? source.GetMagic() : 0f,
+                    1f,
+                    1f);
+                return;
+            }
+
+            // Fallback only if no StatusEffectManager exists
             var instance = new StatusEffectInstance
             {
                 directEffectType = type,

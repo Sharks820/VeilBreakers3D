@@ -769,9 +769,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private void ApplySelectedCardVisuals(VisualElement card)
         {
             string heroId = DetectHeroIdFromCard(card);
-            if (heroId == null || !kHeroCardPalette.ContainsKey(heroId)) return;
-
-            var colors = kHeroCardPalette[heroId];
+            if (heroId == null || !kHeroCardPalette.TryGetValue(heroId, out var colors)) return; // BUG-34: TryGetValue
 
             // Apply per-hero selected gradient
             if (_heroCardSelectedGradients.TryGetValue(heroId, out var selectedGrad))

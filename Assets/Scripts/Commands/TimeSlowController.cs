@@ -77,7 +77,8 @@ namespace VeilBreakers.Commands
             {
                 Time.fixedDeltaTime = _originalFixedDeltaTime;
             }
-            
+            AudioListener.volume = 1f;
+
             base.OnDestroy();
         }
 
@@ -91,7 +92,7 @@ namespace VeilBreakers.Commands
                 OnTimeScaleChanged?.Invoke(Time.timeScale);
 
                 // Adjust fixed delta time to maintain physics consistency
-                Time.fixedDeltaTime = _originalFixedDeltaTime * Time.timeScale;
+                Time.fixedDeltaTime = _originalFixedDeltaTime * Mathf.Max(Time.timeScale, 0.001f);
 
                 // Adjust audio pitch if enabled
                 if (_slowAudioPitch)

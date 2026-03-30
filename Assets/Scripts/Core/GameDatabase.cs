@@ -177,7 +177,16 @@ namespace VeilBreakers.Core
                 // Wrapping is trivial string work - no need for a background thread
                 string wrappedJson = WrapJsonArray(jsonContent, "monsters");
 
-                var wrapper = JsonUtility.FromJson<MonsterDataWrapper>(wrappedJson);
+                MonsterDataWrapper wrapper;
+                try
+                {
+                    wrapper = JsonUtility.FromJson<MonsterDataWrapper>(wrappedJson); // VB-IGNORE SEC-03 SEC-14 -- validated: try/catch + null check + format check below
+                }
+                catch (ArgumentException jsonEx)
+                {
+                    throw new FormatException($"[GameDatabase] monsters.json JSON parse error: {jsonEx.Message}", jsonEx);
+                }
+
                 MonsterData[] monsters = wrapper?.monsters;
 
                 if (monsters == null)
@@ -198,10 +207,12 @@ namespace VeilBreakers.Core
                 Debug.LogError($"[GameDatabase] Failed to load monsters: {e.Message}");
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 throw;
+#else
+                return Task.FromException(e);
 #endif
             }
 
-            return Task.CompletedTask;
+            return Task.CompletedTask; // VB-IGNORE TASK-01 -- success path; errors throw or return Task.FromException above
         }
 
         private Task LoadSkillsAsync()
@@ -220,7 +231,16 @@ namespace VeilBreakers.Core
                 // Wrapping is trivial string work - no need for a background thread
                 string wrappedJson = WrapJsonArray(jsonContent, "skills");
 
-                var wrapper = JsonUtility.FromJson<SkillDataWrapper>(wrappedJson);
+                SkillDataWrapper wrapper;
+                try
+                {
+                    wrapper = JsonUtility.FromJson<SkillDataWrapper>(wrappedJson); // VB-IGNORE SEC-03 SEC-14 -- validated: try/catch + null check + format check below
+                }
+                catch (ArgumentException jsonEx)
+                {
+                    throw new FormatException($"[GameDatabase] skills.json JSON parse error: {jsonEx.Message}", jsonEx);
+                }
+
                 SkillData[] skills = wrapper?.skills;
 
                 if (skills == null)
@@ -241,10 +261,12 @@ namespace VeilBreakers.Core
                 Debug.LogError($"[GameDatabase] Failed to load skills: {e.Message}");
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 throw;
+#else
+                return Task.FromException(e);
 #endif
             }
 
-            return Task.CompletedTask;
+            return Task.CompletedTask; // VB-IGNORE TASK-01 -- success path; errors throw or return Task.FromException above
         }
 
         private Task LoadHeroesAsync()
@@ -263,7 +285,16 @@ namespace VeilBreakers.Core
                 // Wrapping is trivial string work - no need for a background thread
                 string wrappedJson = WrapJsonArray(jsonContent, "heroes");
 
-                var wrapper = JsonUtility.FromJson<HeroDataWrapper>(wrappedJson);
+                HeroDataWrapper wrapper;
+                try
+                {
+                    wrapper = JsonUtility.FromJson<HeroDataWrapper>(wrappedJson); // VB-IGNORE SEC-03 SEC-14 -- validated: try/catch + null check + format check below
+                }
+                catch (ArgumentException jsonEx)
+                {
+                    throw new FormatException($"[GameDatabase] heroes.json JSON parse error: {jsonEx.Message}", jsonEx);
+                }
+
                 HeroData[] heroes = wrapper?.heroes;
 
                 if (heroes == null)
@@ -284,10 +315,12 @@ namespace VeilBreakers.Core
                 Debug.LogError($"[GameDatabase] Failed to load heroes: {e.Message}");
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 throw;
+#else
+                return Task.FromException(e);
 #endif
             }
 
-            return Task.CompletedTask;
+            return Task.CompletedTask; // VB-IGNORE TASK-01 -- success path; errors throw or return Task.FromException above
         }
 
         private Task LoadItemsAsync()
@@ -306,7 +339,16 @@ namespace VeilBreakers.Core
                 // Wrapping is trivial string work - no need for a background thread
                 string wrappedJson = WrapJsonArray(jsonContent, "items");
 
-                var wrapper = JsonUtility.FromJson<ItemDataWrapper>(wrappedJson);
+                ItemDataWrapper wrapper;
+                try
+                {
+                    wrapper = JsonUtility.FromJson<ItemDataWrapper>(wrappedJson); // VB-IGNORE SEC-03 SEC-14 -- validated: try/catch + null check + format check below
+                }
+                catch (ArgumentException jsonEx)
+                {
+                    throw new FormatException($"[GameDatabase] items.json JSON parse error: {jsonEx.Message}", jsonEx);
+                }
+
                 ItemData[] items = wrapper?.items;
 
                 if (items == null)
@@ -327,10 +369,12 @@ namespace VeilBreakers.Core
                 Debug.LogError($"[GameDatabase] Failed to load items: {e.Message}");
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 throw;
+#else
+                return Task.FromException(e);
 #endif
             }
 
-            return Task.CompletedTask;
+            return Task.CompletedTask; // VB-IGNORE TASK-01 -- success path; errors throw or return Task.FromException above
         }
 
         // =============================================================================
@@ -342,6 +386,7 @@ namespace VeilBreakers.Core
         /// </summary>
         public MonsterData GetMonster(string monsterId)
         {
+            if (!IsReady) return null;
             return _monsters.TryGetValue(monsterId, out var data) ? data : null;
         }
 
@@ -350,6 +395,7 @@ namespace VeilBreakers.Core
         /// </summary>
         public SkillData GetSkill(string skillId)
         {
+            if (!IsReady) return null;
             return _skills.TryGetValue(skillId, out var data) ? data : null;
         }
 
@@ -358,6 +404,7 @@ namespace VeilBreakers.Core
         /// </summary>
         public HeroData GetHero(string heroId)
         {
+            if (!IsReady) return null;
             return _heroes.TryGetValue(heroId, out var data) ? data : null;
         }
 
@@ -366,6 +413,7 @@ namespace VeilBreakers.Core
         /// </summary>
         public ItemData GetItem(string itemId)
         {
+            if (!IsReady) return null;
             return _items.TryGetValue(itemId, out var data) ? data : null;
         }
 

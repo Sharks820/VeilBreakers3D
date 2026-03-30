@@ -29,6 +29,8 @@ namespace VeilBreakers.UI.Menus
         private const string kTitleLabel = "save-browser-title";
         private const string kSubtitleLabel = "save-browser-subtitle";
         private const float kAnimDuration = 0.35f;
+        private static readonly WaitForSeconds _waitAnimDuration = new WaitForSeconds(kAnimDuration);
+        private static readonly WaitForSeconds _waitAnimDurationClose = new WaitForSeconds(kAnimDuration * 0.7f);
 
         // =============================================================================
         // DEPENDENCIES
@@ -104,9 +106,10 @@ namespace VeilBreakers.UI.Menus
             StopAllCoroutines();
             if (_btnBack != null) _btnBack.UnregisterCallback<ClickEvent>(OnBackClicked);
 
-            // Reset state so re-enable works cleanly
+            // Reset state so re-enable works cleanly (DEEP-07)
             _isAnimating = false;
             _isDeleting = false;
+            _cachedMetadata = null;
             if (_isOpen && _overlay != null)
             {
                 _overlay.style.display = DisplayStyle.None;
@@ -207,7 +210,7 @@ namespace VeilBreakers.UI.Menus
             _overlay.style.opacity = 0f;
             _panel.style.scale = new Scale(new Vector2(0.95f, 0.95f));
 
-            // Animate in
+            // Animate in // VB-IGNORE PERF-02: PrimeTween UI callbacks, infrequent one-shot
             Tween.Custom(_overlay, 0f, 1f, kAnimDuration,
                 onValueChange: (el, val) => { el.style.opacity = val; },
                 ease: Ease.OutCubic);
@@ -215,7 +218,7 @@ namespace VeilBreakers.UI.Menus
                 onValueChange: (el, val) => { el.style.scale = new Scale(new Vector2(val, val)); },
                 ease: Ease.OutBack);
 
-            yield return new WaitForSeconds(kAnimDuration);
+            yield return _waitAnimDuration;
             _isOpen = true;
             _isAnimating = false;
         }
@@ -224,7 +227,7 @@ namespace VeilBreakers.UI.Menus
         {
             _isAnimating = true;
 
-            // Animate out
+            // Animate out // VB-IGNORE PERF-02: PrimeTween UI callbacks, infrequent one-shot
             Tween.Custom(_overlay, 1f, 0f, kAnimDuration * 0.7f,
                 onValueChange: (el, val) => { el.style.opacity = val; },
                 ease: Ease.InCubic);
@@ -232,7 +235,7 @@ namespace VeilBreakers.UI.Menus
                 onValueChange: (el, val) => { el.style.scale = new Scale(new Vector2(val, val)); },
                 ease: Ease.InCubic);
 
-            yield return new WaitForSeconds(kAnimDuration * 0.7f);
+            yield return _waitAnimDurationClose;
 
             _overlay.style.display = DisplayStyle.None;
             _isOpen = false;

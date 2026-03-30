@@ -126,7 +126,7 @@ namespace VeilBreakers.Systems
 
             while (expSpent + expRequired <= totalExp && level < MAX_PATH_LEVEL)
             {
-                expSpent += expRequired;
+                expSpent += expRequired; // VB-IGNORE DEEP-03 -- arithmetic addition, not event subscription
                 level += 1f;
                 expRequired = GetExpForPathLevel(level);
             }

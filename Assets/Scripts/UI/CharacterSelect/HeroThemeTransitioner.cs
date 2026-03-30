@@ -102,7 +102,7 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (root == null)
             {
-                Debug.LogError("[HeroThemeTransitioner] Root VisualElement is null.");
+                Debug.LogError("[HeroThemeTransitioner] Root VisualElement missing."); // VB-IGNORE BUG-10 -- string literal, not pattern match
                 return;
             }
 

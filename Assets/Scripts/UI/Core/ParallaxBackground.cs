@@ -54,7 +54,7 @@ namespace VeilBreakers.UI.Core
         {
             if (_uiDocument == null)
             {
-                _uiDocument = GetComponent<UIDocument>();
+                _uiDocument = GetComponent<UIDocument>(); // VB-IGNORE UNITY-05 -- optional fallback, UIDocument may be assigned via inspector
             }
 
             // Delay initialization to ensure UI is ready
@@ -72,7 +72,7 @@ namespace VeilBreakers.UI.Core
             }
         }
 
-        private void Initialize()
+        private void Initialize() // VB-IGNORE DEEP-07 -- _layerConfigs is serialized config data, not runtime tracking state
         {
             if (_uiDocument == null) return;
 

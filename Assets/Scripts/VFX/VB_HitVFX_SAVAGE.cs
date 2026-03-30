@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace VeilBreakers.VFX
 {
@@ -21,18 +22,54 @@ public class VB_HitVFX_SAVAGE : MonoBehaviour
     [SerializeField] private float splashRadius = 0.5f;
     [SerializeField] private float effectDuration = 0.8f;
 
-
     [Header("Screen Effects")]
     [SerializeField] private bool screenEffectsEnabled = true;
     [SerializeField] private float flashDuration = 0.05f;
     [SerializeField] private float chromaticAberration = 0.3f;
+
+    // Cached shader reference (UNITY-19)
+    private static Shader _cachedParticleShader;
+
+    // Track concurrent screen flash coroutines to prevent CA restoration race condition (BUG-13)
+    private static int _activeFlashCount;
+    private static float _savedCaIntensity;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics()
+    {
+        _cachedParticleShader = null;
+        _activeFlashCount = 0;
+        _savedCaIntensity = 0f;
+    }
+
+    // Track dynamic materials for cleanup (VFX-01)
+    private readonly List<Material> _dynamicMaterials = new List<Material>();
+
+    // Track active coroutines for cleanup (BUG-12)
+    private readonly List<Coroutine> _activeCoroutines = new List<Coroutine>();
+
+    // Cached WaitForSeconds to avoid allocation per call (BUG-13)
+    private WaitForSeconds _cachedFlashWait;
+
+    private static Shader GetParticleShader()
+    {
+        if (_cachedParticleShader == null)
+            _cachedParticleShader = Shader.Find("Universal Render Pipeline/Particles/Unlit") ?? Shader.Find("Particles/Standard Unlit"); // VB-IGNORE UNITY-19 -- cached in static field, called once
+        return _cachedParticleShader;
+    }
+
+    private void Awake()
+    {
+        _cachedFlashWait = new WaitForSeconds(flashDuration);
+    }
 
     private void TriggerScreenEffect(float magnitude)
     {
         if (!screenEffectsEnabled) return;
 
         // Brief white flash
-        StartCoroutine(ScreenFlash(magnitude));
+        var cr = StartCoroutine(ScreenFlash(magnitude));
+        _activeCoroutines.Add(cr);
     }
 
     private System.Collections.IEnumerator ScreenFlash(float magnitude)
@@ -48,14 +85,27 @@ public class VB_HitVFX_SAVAGE : MonoBehaviour
 
         if (ca != null)
         {
-            float originalIntensity = ca.intensity.value;
+            // Only save the original value on the first concurrent flash to avoid stale captures
+            _activeFlashCount++;
+            if (_activeFlashCount == 1)
+            {
+                _savedCaIntensity = ca.intensity.value;
+            }
+
             ca.intensity.value = chromaticAberration * magnitude;
-            yield return new WaitForSeconds(flashDuration * magnitude);
-            ca.intensity.value = originalIntensity;
+            yield return new WaitForSeconds(flashDuration * magnitude); // magnitude varies, can't cache
+
+            _activeFlashCount--;
+            // Only restore when all concurrent flashes have finished
+            if (_activeFlashCount <= 0)
+            {
+                _activeFlashCount = 0;
+                ca.intensity.value = _savedCaIntensity;
+            }
         }
         else
         {
-            yield return new WaitForSeconds(flashDuration);
+            yield return _cachedFlashWait;
         }
     }
 
@@ -76,7 +126,8 @@ public class VB_HitVFX_SAVAGE : MonoBehaviour
         Quaternion hitRotation = Quaternion.LookRotation(-hitDirection.normalized, Vector3.up);
 
         // Create hit VFX at impact point
-        StartCoroutine(SpawnHitEffect(hitPoint, hitRotation, magnitude));
+        var cr = StartCoroutine(SpawnHitEffect(hitPoint, hitRotation, magnitude));
+        _activeCoroutines.Add(cr);
         TriggerScreenEffect(magnitude);
     }
 
@@ -102,7 +153,7 @@ public class VB_HitVFX_SAVAGE : MonoBehaviour
         ConfigureSplashParticles(splashPS, magnitude);
         splashPS.Play();
 
-        yield return new WaitForSeconds(effectDuration * magnitude);
+        yield return new WaitForSeconds(effectDuration * magnitude); // VB-IGNORE BUG-13 -- dynamic duration, varies per hit magnitude
 
         Destroy(burstObj);
         Destroy(splashObj);
@@ -154,8 +205,10 @@ public class VB_HitVFX_SAVAGE : MonoBehaviour
 
         // Renderer
         var renderer = ps.GetComponent<ParticleSystemRenderer>();
-        renderer.material = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit") ?? Shader.Find("Particles/Standard Unlit"));
-        renderer.material.SetColor("_Color", glowColor);
+        var mat = new Material(GetParticleShader()); // VB-IGNORE VFX-01 -- tracked in _dynamicMaterials, Destroyed in OnDestroy
+        mat.SetColor("_Color", glowColor);
+        renderer.material = mat;
+        _dynamicMaterials.Add(mat);
     }
 
     private void ConfigureSplashParticles(ParticleSystem ps, float magnitude)
@@ -183,8 +236,27 @@ public class VB_HitVFX_SAVAGE : MonoBehaviour
         shape.radius = splashRadius * 0.5f;
 
         var renderer = ps.GetComponent<ParticleSystemRenderer>();
-        renderer.material = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit") ?? Shader.Find("Particles/Standard Unlit"));
-        renderer.material.SetColor("_Color", brandColor);
+        var mat = new Material(GetParticleShader());
+        mat.SetColor("_Color", brandColor);
+        renderer.material = mat;
+        _dynamicMaterials.Add(mat);
+    }
+
+    private void OnDestroy()
+    {
+        // Stop all active coroutines (BUG-12)
+        foreach (var cr in _activeCoroutines)
+        {
+            if (cr != null) StopCoroutine(cr);
+        }
+        _activeCoroutines.Clear();
+
+        // Destroy all dynamically created materials (VFX-01)
+        foreach (var mat in _dynamicMaterials)
+        {
+            if (mat != null) Destroy(mat);
+        }
+        _dynamicMaterials.Clear();
     }
 }
 }

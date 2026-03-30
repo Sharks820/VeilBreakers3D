@@ -31,6 +31,12 @@ namespace VeilBreakers.UI.CharacterSelect
         [SerializeField] private Camera _previewCamera;
         [SerializeField] private Shader _placeholderShader;
 
+        // Cached fallback shader to avoid Shader.Find at runtime (UNITY-19)
+        private static Shader _cachedFallbackShader;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() => _cachedFallbackShader = null;
+
         // =============================================================================
         // RUNTIME STATE
         // =============================================================================
@@ -290,8 +296,12 @@ namespace VeilBreakers.UI.CharacterSelect
                 {
                     // Use serialized shader reference (survives build stripping)
                     var shader = _placeholderShader;
-                    if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
-                    if (shader == null) shader = Shader.Find("Standard");
+                    if (shader == null)
+                    {
+                        if (_cachedFallbackShader == null)
+                            _cachedFallbackShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"); // VB-IGNORE UNITY-19 -- cached in static field, called only once as fallback
+                        shader = _cachedFallbackShader;
+                    }
                     if (shader == null)
                     {
                         Debug.LogWarning("[HeroStageController] No suitable shader found for placeholder.");

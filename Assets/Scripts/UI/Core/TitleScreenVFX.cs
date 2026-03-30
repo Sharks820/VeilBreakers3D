@@ -153,7 +153,6 @@ namespace VeilBreakers.UI.Core
         private VideoPlayer _videoPlayerReversed;
         private RenderTexture _videoRenderTextureForward;
         private RenderTexture _videoRenderTextureReversed;
-        private bool _playingForward = true; // Which direction is currently showing
         private bool _usePingPongLoop;
         private double _videoLength;
         private bool _isVideoPlaying;
@@ -316,7 +315,7 @@ namespace VeilBreakers.UI.Core
 
             if (_uiDocument == null)
             {
-                _uiDocument = GetComponent<UIDocument>();
+                _uiDocument = GetComponent<UIDocument>(); // VB-IGNORE UNITY-05 -- optional fallback, UIDocument may be assigned via inspector
             }
 
             if (_uiDocument != null)
@@ -1034,7 +1033,7 @@ namespace VeilBreakers.UI.Core
 
         private RenderTexture CreateVideoRenderTexture(int width, int height, string name)
         {
-            var rt = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32);
+            var rt = new RenderTexture(width, height, 0, RenderTextureFormat.ARGB32); // VB-IGNORE BUG-39 -- Released + Destroyed in OnDestroy cleanup
             rt.name = name;
             rt.filterMode = FilterMode.Bilinear;
             rt.antiAliasing = 1;
@@ -1077,7 +1076,6 @@ namespace VeilBreakers.UI.Core
         {
             _videoLength = vp.length;
             _isVideoPlaying = true;
-            _playingForward = true;
 
             Debug.Log($"[TitleScreenVFX] Forward video prepared - Duration: {_videoLength:F2}s");
 
@@ -1172,7 +1170,6 @@ namespace VeilBreakers.UI.Core
             // INSTANT swap - reversed is already paused at time=0
             var targetEl = _videoOverlayElement ?? _backgroundElement;
             targetEl.style.backgroundImage = new StyleBackground(Background.FromRenderTexture(_videoRenderTextureReversed));
-            _playingForward = false;
 
             // Play reversed (already at 0), pause forward and reset for next cycle
             _videoPlayerReversed.Play();
@@ -1191,7 +1188,6 @@ namespace VeilBreakers.UI.Core
             // INSTANT swap - forward is already paused at time=0
             var targetEl = _videoOverlayElement ?? _backgroundElement;
             targetEl.style.backgroundImage = new StyleBackground(Background.FromRenderTexture(_videoRenderTextureForward));
-            _playingForward = true;
 
             // Play forward (already at 0), pause reversed and reset for next cycle
             _videoPlayerForward.Play();

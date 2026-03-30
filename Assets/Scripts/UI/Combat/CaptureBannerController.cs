@@ -57,6 +57,7 @@ namespace VeilBreakers.UI.Combat
         private CaptureBannerState _currentState = CaptureBannerState.HIDDEN;
         private Vector3 _baseScale;
         private Coroutine _animationCoroutine;
+        private Coroutine _fadeCoroutine;
         private bool _isSubscribed = false;
         private CaptureManager _cachedCaptureManager; // Cached for safe unsubscribe if singleton destroyed first
 
@@ -213,7 +214,7 @@ namespace VeilBreakers.UI.Combat
 
             if (_captureText != null)
             {
-                _captureText.text = "CAPTURE";
+                _captureText.text = "CAPTURE"; // VB-IGNORE UNITY-23 -- state transition, not Update
             }
         }
 
@@ -224,7 +225,7 @@ namespace VeilBreakers.UI.Combat
 
             if (_captureText != null)
             {
-                _captureText.text = "CAPTURE!";
+                _captureText.text = "CAPTURE!"; // VB-IGNORE UNITY-23 -- state transition, not Update
             }
 
             // Start breathing animation
@@ -237,7 +238,7 @@ namespace VeilBreakers.UI.Combat
 
             if (_captureText != null)
             {
-                _captureText.text = "CAPTURING...";
+                _captureText.text = "CAPTURING..."; // VB-IGNORE UNITY-23 -- state transition, not Update
             }
 
             // Flash animation
@@ -263,12 +264,13 @@ namespace VeilBreakers.UI.Combat
 
         private void FadeIn()
         {
-            gameObject.SetActive(true);
+            gameObject.SetActive(true); // VB-IGNORE PERF-19 -- state transition, not per-frame
 
             if (_canvasGroup != null)
             {
                 _canvasGroup.alpha = 0f;
-                StartCoroutine(FadeCoroutine(1f, _fadeInDuration));
+                if (_fadeCoroutine != null) StopCoroutine(_fadeCoroutine);
+                _fadeCoroutine = StartCoroutine(FadeCoroutine(1f, _fadeInDuration));
             }
         }
 
@@ -276,11 +278,12 @@ namespace VeilBreakers.UI.Combat
         {
             if (_canvasGroup != null)
             {
-                StartCoroutine(FadeOutCoroutine());
+                if (_fadeCoroutine != null) StopCoroutine(_fadeCoroutine);
+                _fadeCoroutine = StartCoroutine(FadeOutCoroutine());
             }
             else
             {
-                gameObject.SetActive(false);
+                gameObject.SetActive(false); // VB-IGNORE PERF-19 -- state transition, not per-frame
             }
         }
 
@@ -304,7 +307,7 @@ namespace VeilBreakers.UI.Combat
         private IEnumerator FadeOutCoroutine()
         {
             yield return FadeCoroutine(0f, _fadeOutDuration);
-            gameObject.SetActive(false);
+            gameObject.SetActive(false); // VB-IGNORE PERF-19 -- state transition after fade, not per-frame
         }
 
         private IEnumerator BreathingAnimation()

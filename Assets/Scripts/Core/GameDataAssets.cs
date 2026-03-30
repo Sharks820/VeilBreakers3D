@@ -20,6 +20,9 @@ namespace VeilBreakers.Core
 
         private static GameDataAssets _instance;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() => _instance = null;
+
         /// <summary>
         /// Singleton instance. Must be initialized via Initialize() before use.
         /// For Addressables, load this asset first then call Initialize().

@@ -65,6 +65,8 @@ namespace VeilBreakers.UI.Combat
         private static readonly string[] _tenthsStrings = { "0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1.0" };
         private bool _isUltimate = false;
         private bool _isGlowing = false;
+        private bool _cooldownTextActive = false; // PERF-19: cached SetActive state
+        private bool _cooldownOverlayActive = false; // PERF-19: cached SetActive state
         private Coroutine _glowCoroutine;
         private Coroutine _activationFlashCoroutine;
         private static readonly WaitForSeconds _waitActivationFlash = new WaitForSeconds(0.1f);
@@ -291,13 +293,13 @@ namespace VeilBreakers.UI.Combat
             {
                 if (_cooldownRemaining > 0)
                 {
-                    _cooldownText.gameObject.SetActive(true);
+                    if (!_cooldownTextActive) { _cooldownText.gameObject.SetActive(true); _cooldownTextActive = true; } // PERF-19
                     if (_cooldownRemaining >= 1f)
                     {
                         int cooldownValue = Mathf.CeilToInt(_cooldownRemaining);
                         if (_cachedCooldownValue != cooldownValue)
                         {
-                            _cooldownText.text = cooldownValue.ToString();
+                            _cooldownText.text = cooldownValue.ToString(); // VB-IGNORE UNITY-23 -- guarded by cache check above
                             _cachedCooldownValue = cooldownValue;
                         }
                     }
@@ -307,14 +309,14 @@ namespace VeilBreakers.UI.Combat
                         int tenths = Mathf.Clamp((int)(_cooldownRemaining * 10f), 0, 10);
                         if (_cachedCooldownTenths != tenths)
                         {
-                            _cooldownText.text = _tenthsStrings[tenths];
+                            _cooldownText.text = _tenthsStrings[tenths]; // VB-IGNORE UNITY-23 -- guarded by cache check above
                             _cachedCooldownTenths = tenths;
                         }
                     }
                 }
                 else
                 {
-                    _cooldownText.gameObject.SetActive(false);
+                    if (_cooldownTextActive) { _cooldownText.gameObject.SetActive(false); _cooldownTextActive = false; } // PERF-19
                 }
             }
         }
@@ -374,16 +376,18 @@ namespace VeilBreakers.UI.Combat
                 _iconImage.color = iconColor;
             }
 
-            // Show/hide cooldown overlay
+            // Show/hide cooldown overlay (PERF-19: cached SetActive)
             if (_cooldownOverlay != null)
             {
-                _cooldownOverlay.gameObject.SetActive(_currentState == SkillSlotState.COOLDOWN);
+                bool wantOverlay = _currentState == SkillSlotState.COOLDOWN;
+                if (_cooldownOverlayActive != wantOverlay) { _cooldownOverlay.gameObject.SetActive(wantOverlay); _cooldownOverlayActive = wantOverlay; } // VB-IGNORE PERF-19 -- guarded by cached active state
             }
 
-            // Update cooldown text visibility
+            // Update cooldown text visibility (PERF-19: cached SetActive)
             if (_cooldownText != null)
             {
-                _cooldownText.gameObject.SetActive(_currentState == SkillSlotState.COOLDOWN && _cooldownRemaining > 0);
+                bool wantText = _currentState == SkillSlotState.COOLDOWN && _cooldownRemaining > 0;
+                if (_cooldownTextActive != wantText) { _cooldownText.gameObject.SetActive(wantText); _cooldownTextActive = wantText; } // VB-IGNORE PERF-19 -- guarded by cached active state
             }
         }
 

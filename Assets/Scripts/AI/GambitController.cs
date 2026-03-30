@@ -182,8 +182,22 @@ namespace VeilBreakers.AI
                 return false;
             }
 
+            // Apply momentum/desperation bonuses to the best action's score
+            float boostedScore = _evaluator.ApplyPersonalityBonuses(_combatant, _battleContext, best.score, GetMomentumBonus());
+            if (boostedScore != best.score)
+            {
+                best = new ScoredAction(best.rule, best.target, boostedScore);
+            }
+
             // Apply quick presets
             ApplyQuickPresets(ref best);
+
+            // If a forced target is set, override the best action's target before execution
+            if (HasForcedTarget())
+            {
+                best = new ScoredAction(best.rule, _forcedTarget, best.score);
+                Debug.Log($"[GambitController] {_combatant.DisplayName} forced target override -> {_forcedTarget.DisplayName}");
+            }
 
             // Execute the action
             return ExecuteAction(best);
@@ -265,7 +279,7 @@ namespace VeilBreakers.AI
             // Guard against null personality or battle context
             if (_personality == null || _battleContext == null)
             {
-                Debug.LogWarning("[GambitController] Cannot get ultimate target: personality or context is null");
+                Debug.LogWarning("[GambitController] Cannot get ultimate target: personality or context is null"); // VB-IGNORE BUG-10 -- string literal, not pattern match
                 return null;
             }
 
@@ -315,30 +329,53 @@ namespace VeilBreakers.AI
         /// </summary>
         private void ApplyQuickPresets(ref ScoredAction action)
         {
-            // Focus Attack: prefer damage actions
-            if (_focusAttack && action.rule != null)
+            if (action.rule == null) return;
+
+            // Focus Attack: multiply attack action scores by 1.5
+            if (_focusAttack)
             {
-                if (action.rule.action.actionType == GambitAction.ActionType.BASIC_ATTACK ||
-                    action.rule.action.actionType == GambitAction.ActionType.USE_ABILITY ||
-                    action.rule.action.actionType == GambitAction.ActionType.EXECUTE)
+                var actionType = action.rule.action.actionType;
+                if (actionType == GambitAction.ActionType.BASIC_ATTACK ||
+                    actionType == GambitAction.ActionType.USE_ABILITY ||
+                    actionType == GambitAction.ActionType.USE_ULTIMATE ||
+                    actionType == GambitAction.ActionType.EXECUTE ||
+                    actionType == GambitAction.ActionType.DEBUFF_ENEMY)
                 {
-                    // Already attacking, boost score mentally
+                    action = new ScoredAction(action.rule, action.target, action.score * 1.5f);
                 }
             }
 
-            // Focus Defend: prefer survival
+            // Focus Defend: multiply defensive action scores by 1.5
             if (_focusDefend)
             {
-                // Could swap to defensive action if close score
+                var actionType = action.rule.action.actionType;
+                if (actionType == GambitAction.ActionType.DEFEND_SELF ||
+                    actionType == GambitAction.ActionType.GUARD_ALLY ||
+                    actionType == GambitAction.ActionType.BUFF_ALLY)
+                {
+                    action = new ScoredAction(action.rule, action.target, action.score * 1.5f);
+                }
             }
 
-            // Protect Ally: override target for guard/heal
+            // Focus Heal: multiply heal action scores by 1.5
+            if (_focusHeal)
+            {
+                var actionType = action.rule.action.actionType;
+                if (actionType == GambitAction.ActionType.HEAL_ALLY ||
+                    actionType == GambitAction.ActionType.CLEANSE_ALLY)
+                {
+                    action = new ScoredAction(action.rule, action.target, action.score * 1.5f);
+                }
+            }
+
+            // Protect Ally: override target for guard/heal to protected ally
             if (_protectedAlly != null && _protectedAlly.IsAlive)
             {
-                if (action.rule?.action.actionType == GambitAction.ActionType.GUARD_ALLY ||
-                    action.rule?.action.actionType == GambitAction.ActionType.HEAL_ALLY)
+                var actionType = action.rule.action.actionType;
+                if (actionType == GambitAction.ActionType.GUARD_ALLY ||
+                    actionType == GambitAction.ActionType.HEAL_ALLY)
                 {
-                    // Could override target to protected ally
+                    action = new ScoredAction(action.rule, _protectedAlly, action.score);
                 }
             }
         }

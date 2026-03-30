@@ -269,6 +269,9 @@ namespace VeilBreakers.Commands
                 float angle = (Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg + 360f) % 360f;
                 int itemCount = _state == RadialMenuState.SELECTING_ALLY ? _allies.Length : (_commandOptions?.Length ?? 0);
                 _highlightedIndex = GetIndexFromAngle(angle, itemCount);
+                // Clamp to valid range after state changes that may have reduced itemCount
+                if (itemCount > 0 && _highlightedIndex >= itemCount)
+                    _highlightedIndex = itemCount - 1;
             }
             else if (distance < _innerDeadzone)
             {

@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VeilBreakers AAA UI V2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #050308; color: #e0dce8; font-family: 'Segoe UI', sans-serif; }
+
+  h1 { font-family: 'Cinzel Decorative', serif; text-align: center; color: #ff9944; font-size: 26px; letter-spacing: 4px; margin: 20px 0 4px; }
+  .page-sub { text-align: center; color: #666; font-size: 13px; margin-bottom: 30px; }
+  h2 { font-family: 'Cinzel', serif; color: #ddd; font-size: 18px; letter-spacing: 3px; margin: 30px 20px 12px; border-bottom: 1px solid #222; padding-bottom: 8px; }
+  .note { background: rgba(255,200,60,0.06); border: 1px solid rgba(255,200,60,0.15); border-radius: 6px; padding: 14px 18px; margin: 12px 20px; color: #bbb; font-size: 13px; line-height: 1.7; }
+  .note strong { color: #ffcc44; }
+
+  /* =============================================
+     SECTION 1: TITLE SCREEN WITH REAL ASSETS
+     ============================================= */
+  .mm-frame { margin: 0 20px 30px; border: 1px solid #222; border-radius: 8px; overflow: hidden; }
+  .mm-label { background: #111118; padding: 6px 14px; font-size: 11px; color: #666; letter-spacing: 2px; border-bottom: 1px solid #222; }
+
+  .mm-scene {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .mm-bg {
+    position: absolute; inset: 0;
+    background: url('assets/bg.png') center/cover no-repeat;
+  }
+
+  .mm-demon {
+    position: absolute;
+    left: 0; right: 0; top: 18%; bottom: -5%;
+    background: url('assets/demon.png') center bottom/contain no-repeat;
+  }
+
+  .mm-logo {
+    position: absolute;
+    top: -2%; left: 50%;
+    transform: translateX(-50%);
+    width: 70%;
+    height: 40%;
+    background: url('assets/logo.png') center/contain no-repeat;
+    filter: drop-shadow(0 0 20px rgba(255,140,50,0.3));
+  }
+
+  .mm-vignette {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.7) 100%);
+    pointer-events: none;
+  }
+
+  /* Ember particles (CSS animated) */
+  .ember {
+    position: absolute;
+    width: 3px; height: 3px;
+    background: radial-gradient(circle, rgba(255,180,60,0.9), rgba(255,100,20,0.4));
+    border-radius: 50%;
+    pointer-events: none;
+    animation: ember-rise linear infinite;
+    box-shadow: 0 0 4px rgba(255,140,50,0.6);
+  }
+  @keyframes ember-rise {
+    0% { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+    10% { opacity: 1; }
+    80% { opacity: 0.6; }
+    100% { transform: translateY(-400px) translateX(var(--drift)) scale(0.3); opacity: 0; }
+  }
+
+  /* Scanline overlay */
+  .mm-scanlines {
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+  }
+
+  /* Bottom gradient for buttons */
+  .mm-bottom-fade {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 35%;
+    background: linear-gradient(0deg, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.4) 50%, transparent 100%);
+    pointer-events: none;
+  }
+
+  /* VERTICAL button stack */
+  .mm-buttons {
+    position: absolute;
+    right: 6%;
+    bottom: 10%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    z-index: 10;
+  }
+
+  .mm-btn {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    letter-spacing: 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+  }
+
+  .mm-btn-primary {
+    min-width: 300px; height: 62px; line-height: 62px;
+    font-size: 19px;
+    background: linear-gradient(180deg, rgba(230,120,35,1) 0%, rgba(170,65,12,1) 50%, rgba(140,50,8,1) 100%);
+    border: 2px solid rgba(255,180,80,0.7);
+    border-top: 2px solid rgba(255,220,140,0.5);
+    border-radius: 3px;
+    color: #fffae8;
+    text-shadow: 0 0 10px rgba(255,200,100,0.5), 0 2px 4px rgba(0,0,0,0.6);
+    box-shadow: 0 0 25px rgba(255,140,50,0.3), 0 0 60px rgba(255,100,20,0.1), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -2px 4px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.5);
+    animation: btn-breathe 3s ease-in-out infinite;
+  }
+  .mm-btn-primary:hover {
+    background: linear-gradient(180deg, rgba(250,140,50,1) 0%, rgba(200,85,25,1) 50%, rgba(170,65,15,1) 100%);
+    box-shadow: 0 0 40px rgba(255,160,60,0.5), 0 0 80px rgba(255,100,20,0.2), inset 0 1px 0 rgba(255,255,255,0.25), 0 6px 20px rgba(0,0,0,0.5);
+    transform: scale(1.03) translateY(-1px);
+  }
+
+  .mm-btn-secondary {
+    min-width: 260px; height: 50px; line-height: 50px;
+    font-size: 15px;
+    background: linear-gradient(180deg, rgba(50,38,28,0.97) 0%, rgba(28,20,12,0.98) 50%, rgba(18,12,6,0.99) 100%);
+    border: 1px solid rgba(140,100,50,0.35);
+    border-top: 1px solid rgba(180,140,80,0.25);
+    border-radius: 3px;
+    color: rgba(210,175,120,0.9);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 3px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .mm-btn-secondary:hover {
+    border-color: rgba(200,150,80,0.55);
+    color: rgba(255,215,150,1);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 0 16px rgba(200,140,60,0.15), 0 3px 12px rgba(0,0,0,0.5);
+    transform: scale(1.02) translateY(-1px);
+    background: linear-gradient(180deg, rgba(65,48,32,0.97) 0%, rgba(35,25,15,0.98) 50%, rgba(22,15,8,0.99) 100%);
+  }
+
+  .mm-btn-exit {
+    min-width: 220px; height: 42px; line-height: 42px;
+    font-size: 13px;
+  }
+
+  @keyframes btn-breathe {
+    0%, 100% { box-shadow: 0 0 25px rgba(255,140,50,0.3), 0 0 60px rgba(255,100,20,0.1), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -2px 4px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.5); }
+    50% { box-shadow: 0 0 35px rgba(255,140,50,0.45), 0 0 80px rgba(255,100,20,0.15), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -2px 4px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.5); }
+  }
+
+  .mm-version { position: absolute; bottom: 8px; right: 14px; font-size: 10px; color: rgba(150,140,130,0.3); letter-spacing: 2px; z-index: 5; }
+
+  /* =============================================
+     SECTION 2: AAA CHARACTER SELECT
+     ============================================= */
+  .cs-frame { margin: 0 20px 30px; border: 1px solid #222; border-radius: 8px; overflow: hidden; }
+
+  .cs-scene {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: rgb(6,4,10);
+    overflow: hidden;
+  }
+
+  /* Left hero stage */
+  .cs-stage {
+    position: absolute; left: 0; top: 0; width: 55%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cs-hero-glow {
+    position: absolute; width: 50%; height: 40%; bottom: 8%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, var(--hero-glow, rgba(200,160,60,0.15)) 0%, transparent 70%);
+    filter: blur(30px);
+  }
+  .cs-hero-figure {
+    position: relative; z-index: 2;
+    width: 160px; height: 300px;
+    background: linear-gradient(180deg, var(--hero-glow, rgba(200,160,60,0.06)) 0%, transparent 60%);
+    border: 1px solid var(--hero-border, rgba(200,160,60,0.12));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    color: var(--hero-color, rgba(200,160,60,0.3)); font-size: 12px; letter-spacing: 2px; text-align: center;
+    box-shadow: 0 0 40px var(--hero-glow, rgba(200,160,60,0.08));
+  }
+  .cs-hero-figure span { font-size: 10px; margin-top: 8px; color: rgba(255,255,255,0.2); }
+  .cs-hero-watermark {
+    position: absolute; bottom: 20%; left: 27%;
+    transform: translateX(-50%);
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 48px; font-weight: 900;
+    color: rgba(240,235,250,0.06);
+    letter-spacing: 16px;
+  }
+  .cs-hero-subtitle {
+    position: absolute; bottom: 17%; left: 27%;
+    transform: translateX(-50%);
+    font-size: 10px; letter-spacing: 6px;
+    color: var(--hero-color, rgba(200,160,60,0.3));
+  }
+
+  /* ===== THE PANEL ===== */
+  .cs-panel {
+    position: absolute; right: 2%; top: 5%; width: 40%; height: 70%;
+    /* LAYERED background for depth - NOT flat */
+    background:
+      linear-gradient(180deg, rgba(20,16,30,0.95) 0%, rgba(10,8,16,0.97) 40%, rgba(6,4,12,0.98) 100%);
+    /* Ornate border with glow */
+    border: 1px solid rgba(80,65,100,0.25);
+    border-top: 2px solid var(--hero-color, rgba(200,160,60,0.5));
+    border-radius: 6px 6px 4px 4px;
+    padding: 20px 24px;
+    display: flex; flex-direction: column;
+    overflow-y: auto; overflow-x: hidden;
+    /* DEPTH via multiple shadows */
+    box-shadow:
+      0 0 60px rgba(0,0,0,0.6),
+      0 0 30px rgba(0,0,0,0.4),
+      inset 0 1px 0 rgba(255,255,255,0.04),
+      inset 0 0 40px rgba(0,0,0,0.2),
+      0 0 20px var(--hero-glow, rgba(200,160,60,0.05));
+    z-index: 20;
+  }
+
+  /* Corner decorations */
+  .cs-panel::before {
+    content: '';
+    position: absolute; top: -1px; left: 20px; right: 20px; height: 1px;
+    background: linear-gradient(90deg, transparent 0%, var(--hero-color, rgba(200,160,60,0.4)) 30%, var(--hero-color, rgba(200,160,60,0.6)) 50%, var(--hero-color, rgba(200,160,60,0.4)) 70%, transparent 100%);
+  }
+
+  /* Tabs */
+  .cs-tabs { display: flex; gap: 2px; padding-bottom: 10px; border-bottom: 1px solid rgba(80,65,100,0.2); margin-bottom: 14px; flex-shrink: 0; }
+  .cs-tab {
+    padding: 7px 16px; font-size: 11px; letter-spacing: 3px; font-weight: bold;
+    color: rgba(140,130,160,0.4);
+    border-bottom: 2px solid transparent;
+    border-radius: 3px 3px 0 0;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .cs-tab.active {
+    color: rgba(240,235,250,0.95);
+    border-bottom-color: var(--hero-color, rgba(200,160,60,0.9));
+    background: rgba(255,255,255,0.03);
+    text-shadow: 0 0 8px var(--hero-glow, rgba(200,160,60,0.3));
+  }
+
+  /* Hero identity */
+  .cs-name {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 34px; font-weight: 900;
+    color: #f0ebfa;
+    letter-spacing: 5px;
+    text-shadow: 0 0 20px var(--hero-glow, rgba(200,160,60,0.3)), 0 2px 6px rgba(0,0,0,0.5);
+    margin-bottom: 4px;
+  }
+  .cs-title {
+    font-family: 'Cinzel', serif;
+    font-size: 12px; letter-spacing: 3px;
+    color: var(--hero-color, rgba(200,160,60,0.85));
+    padding-left: 14px;
+    border-left: 3px solid var(--hero-color, rgba(200,160,60,0.6));
+    margin-bottom: 8px;
+    text-shadow: 0 0 6px var(--hero-glow, rgba(200,160,60,0.2));
+  }
+  .cs-quote {
+    font-size: 11px; color: rgba(180,170,200,0.35); font-style: italic;
+    margin-bottom: 12px;
+  }
+
+  /* ===== ORNAMENTAL DIVIDER ===== */
+  .divider {
+    position: relative; height: 20px; margin: 8px 0;
+    display: flex; align-items: center; flex-shrink: 0;
+  }
+  .divider::before {
+    content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(80,65,100,0.3) 20%, rgba(80,65,100,0.4) 50%, rgba(80,65,100,0.3) 80%, transparent 100%);
+  }
+  .divider::after {
+    content: '◆'; position: absolute; left: 50%; transform: translateX(-50%);
+    font-size: 6px; color: var(--hero-color, rgba(200,160,60,0.4));
+    background: rgba(10,8,16,0.98); padding: 0 8px;
+  }
+
+  /* Info rows (compact) */
+  .cs-info { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-bottom: 4px; }
+  .cs-info-item { display: flex; align-items: center; gap: 6px; }
+  .cs-info-label { font-size: 9px; color: rgba(140,130,160,0.4); letter-spacing: 3px; font-weight: bold; }
+  .cs-info-val { font-size: 12px; color: rgba(210,200,230,0.8); letter-spacing: 1px; }
+
+  /* ===== STAT BARS (HP/STAMINA/ATK/DEF) with individual colors ===== */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .stat-card {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 5px;
+    padding: 8px 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Subtle inner glow per stat */
+  .stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: var(--stat-color);
+    opacity: 0.4;
+  }
+  .stat-header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 5px;
+  }
+  .stat-label {
+    font-size: 9px; letter-spacing: 2px; font-weight: bold;
+    color: var(--stat-color); opacity: 0.8;
+  }
+  .stat-value {
+    font-size: 14px; font-weight: bold;
+    color: rgba(240,235,250,0.95);
+    text-shadow: 0 0 6px var(--stat-glow);
+  }
+  .stat-track {
+    width: 100%; height: 5px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 3px; overflow: hidden;
+  }
+  .stat-fill {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--stat-color), var(--stat-bright));
+    box-shadow: 0 0 8px var(--stat-glow), inset 0 1px 0 rgba(255,255,255,0.2);
+    position: relative;
+  }
+  /* Bright leading edge */
+  .stat-fill::after {
+    content: '';
+    position: absolute; right: 0; top: 0; bottom: 0; width: 3px;
+    background: var(--stat-bright);
+    border-radius: 0 3px 3px 0;
+    box-shadow: 0 0 6px var(--stat-bright);
+  }
+
+  /* Individual stat colors */
+  .stat-hp { --stat-color: #cc3838; --stat-bright: #ff5555; --stat-glow: rgba(204,56,56,0.3); }
+  .stat-sta { --stat-color: #38a855; --stat-bright: #55dd70; --stat-glow: rgba(56,168,85,0.3); }
+  .stat-atk { --stat-color: #cc8820; --stat-bright: #ffaa33; --stat-glow: rgba(204,136,32,0.3); }
+  .stat-def { --stat-color: #3878cc; --stat-bright: #55aaff; --stat-glow: rgba(56,120,204,0.3); }
+
+  /* ===== ATTRIBUTE NUMBERS (D&D style - no bars) ===== */
+  .attr-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+  }
+  .attr-chip {
+    text-align: center;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(80,65,100,0.15);
+    border-radius: 5px;
+    padding: 6px 2px;
+    transition: all 0.2s;
+  }
+  .attr-chip:hover {
+    background: rgba(0,0,0,0.4);
+    border-color: rgba(80,65,100,0.3);
+  }
+  .attr-label {
+    font-size: 8px; letter-spacing: 2px; font-weight: bold;
+    color: rgba(140,130,160,0.45);
+    margin-bottom: 3px;
+  }
+  .attr-value {
+    font-family: 'Cinzel', serif;
+    font-size: 20px; font-weight: 900;
+    color: rgba(240,235,250,0.85);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    line-height: 1;
+  }
+  /* Modifier badge */
+  .attr-mod {
+    font-size: 9px; color: rgba(140,130,160,0.4);
+    margin-top: 2px;
+  }
+
+  /* ===== CHAMPION / STARTER MONSTER ===== */
+  .champion-card {
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.15) 100%);
+    border: 1px solid rgba(80,65,100,0.2);
+    border-left: 3px solid var(--hero-color, rgba(200,160,60,0.5));
+    border-radius: 5px;
+    padding: 10px 14px;
+  }
+  .champion-icon {
+    width: 42px; height: 42px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--hero-glow, rgba(200,160,60,0.15)), rgba(0,0,0,0.3));
+    border: 1px solid var(--hero-color, rgba(200,160,60,0.25));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: var(--hero-color, rgba(200,160,60,0.6));
+    flex-shrink: 0;
+    box-shadow: 0 0 10px var(--hero-glow, rgba(200,160,60,0.1));
+  }
+  .champion-info { flex: 1; }
+  .champion-name { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 700; color: var(--hero-accent, #ffd270); letter-spacing: 1px; margin-bottom: 3px; }
+  .champion-tags { display: flex; gap: 6px; }
+  .tag {
+    font-size: 9px; letter-spacing: 2px; font-weight: bold;
+    padding: 2px 8px; border-radius: 3px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(80,65,100,0.25);
+    color: rgba(190,180,210,0.6);
+  }
+
+  /* Section headers */
+  .section-hdr {
+    font-size: 9px; letter-spacing: 3px; font-weight: bold;
+    color: rgba(140,130,160,0.4);
+    margin-bottom: 8px;
+  }
+
+  /* ===== BOTTOM CAROUSEL ===== */
+  .cs-bottom {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 110px;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0.85) 100%);
+    padding: 0 80px;
+    z-index: 25;
+  }
+  .cs-nav-arrow {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1px solid rgba(80,65,100,0.25);
+    background: linear-gradient(180deg, rgba(25,20,35,0.8), rgba(12,10,18,0.9));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: rgba(190,180,210,0.35);
+    cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    flex-shrink: 0;
+  }
+  .cs-nav-arrow:hover {
+    border-color: rgba(120,100,150,0.4);
+    color: rgba(220,210,240,0.7);
+    box-shadow: 0 0 8px rgba(120,100,150,0.15), 0 2px 6px rgba(0,0,0,0.4);
+  }
+
+  /* ===== HERO CARDS (not Roblox boxes!) ===== */
+  .hero-card {
+    width: 68px; height: 88px;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    /* Layered background */
+    background: linear-gradient(180deg, rgba(30,24,44,0.85) 0%, rgba(15,12,22,0.95) 100%);
+    border: 1px solid rgba(80,65,100,0.2);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .hero-card-letter {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 28px; font-weight: 900;
+    opacity: 0.25;
+    line-height: 1;
+  }
+  .hero-card-name {
+    font-size: 8px; letter-spacing: 2px; font-weight: bold;
+    margin-top: 6px; opacity: 0.4;
+  }
+
+  /* Active card - GLOWING */
+  .hero-card.active {
+    border-color: var(--card-color, rgba(200,160,60,0.6));
+    background: linear-gradient(180deg, var(--card-bg-top, rgba(60,50,30,0.85)) 0%, var(--card-bg-bot, rgba(30,25,15,0.95)) 100%);
+    transform: translateY(-6px) scale(1.05);
+    box-shadow:
+      0 0 16px var(--card-glow, rgba(200,160,60,0.25)),
+      0 8px 20px rgba(0,0,0,0.4),
+      inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .hero-card.active .hero-card-letter { opacity: 0.7; color: var(--card-text, #ffd270); }
+  .hero-card.active .hero-card-name { opacity: 0.8; color: var(--card-text, #ffd270); }
+
+  /* Selection indicator dot */
+  .hero-card.active::after {
+    content: '';
+    position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%);
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--card-color, rgba(200,160,60,0.8));
+    box-shadow: 0 0 6px var(--card-glow, rgba(200,160,60,0.4));
+  }
+
+  .hero-card:hover:not(.active) {
+    border-color: rgba(120,100,150,0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .hero-card:hover:not(.active) .hero-card-letter { opacity: 0.4; }
+
+  /* Per-hero card colors */
+  .card-vex { --card-color: rgba(200,160,60,0.6); --card-glow: rgba(200,160,60,0.25); --card-bg-top: rgba(60,50,30,0.85); --card-bg-bot: rgba(30,25,15,0.95); --card-text: #ffd270; }
+  .card-sera { --card-color: rgba(150,90,210,0.6); --card-glow: rgba(150,90,210,0.25); --card-bg-top: rgba(45,30,65,0.85); --card-bg-bot: rgba(22,15,32,0.95); --card-text: #d2aaff; }
+  .card-orion { --card-color: rgba(200,60,60,0.6); --card-glow: rgba(200,60,60,0.25); --card-bg-top: rgba(60,25,25,0.85); --card-bg-bot: rgba(30,12,12,0.95); --card-text: #ff8866; }
+  .card-nyx { --card-color: rgba(70,190,210,0.6); --card-glow: rgba(70,190,210,0.25); --card-bg-top: rgba(25,55,60,0.85); --card-bg-bot: rgba(12,27,30,0.95); --card-text: #82e6fa; }
+
+  .cs-hero-index { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); font-size: 9px; color: rgba(190,180,210,0.2); letter-spacing: 4px; z-index: 26; }
+
+  /* Embark button */
+  .cs-embark { position: absolute; right: 3%; bottom: 118px; z-index: 30; }
+  .cs-embark-btn {
+    min-width: 240px; height: 52px;
+    background: linear-gradient(180deg, var(--hero-color, rgba(200,160,60,0.95)) 0%, rgba(160,120,30,0.98) 100%);
+    border: 2px solid rgba(255,210,80,0.5);
+    border-top: 2px solid rgba(255,230,140,0.4);
+    border-radius: 4px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 0 20px var(--hero-glow, rgba(200,160,60,0.2)), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -2px 4px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.4);
+    animation: embark-breathe 2.5s ease-in-out infinite;
+    transition: all 0.2s;
+  }
+  .cs-embark-btn:hover {
+    box-shadow: 0 0 35px var(--hero-glow, rgba(200,160,60,0.35)), inset 0 1px 0 rgba(255,255,255,0.2), 0 6px 16px rgba(0,0,0,0.5);
+    transform: scale(1.02);
+  }
+  .cs-embark-text { font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700; color: rgba(10,6,16,0.9); letter-spacing: 4px; }
+  .cs-embark-sub { font-size: 8px; color: rgba(10,6,16,0.5); letter-spacing: 3px; margin-top: 1px; }
+  @keyframes embark-breathe {
+    0%, 100% { box-shadow: 0 0 20px var(--hero-glow, rgba(200,160,60,0.2)), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -2px 4px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.4); }
+    50% { box-shadow: 0 0 35px var(--hero-glow, rgba(200,160,60,0.35)), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -2px 4px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.4); }
+  }
+
+  /* Back button */
+  .cs-back {
+    position: absolute; top: 12px; left: 12px;
+    font-size: 12px; color: rgba(190,180,210,0.35); letter-spacing: 3px;
+    padding: 6px 14px; border: 1px solid rgba(80,65,100,0.15);
+    border-radius: 3px; background: rgba(10,8,16,0.4);
+    cursor: pointer; z-index: 30; transition: all 0.2s;
+  }
+  .cs-back:hover { border-color: rgba(120,100,150,0.3); color: rgba(220,210,240,0.6); }
+
+  /* Vignette */
+  .cs-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.5) 100%); pointer-events: none; z-index: 40; }
+
+  /* Vex theme defaults */
+  .cs-scene { --hero-color: rgba(200,160,60,0.85); --hero-glow: rgba(200,160,60,0.15); --hero-border: rgba(200,160,60,0.12); --hero-accent: #ffd270; }
+
+  .scroll-area { flex: 1; overflow-y: auto; overflow-x: hidden; }
+  .scroll-area::-webkit-scrollbar { width: 3px; }
+  .scroll-area::-webkit-scrollbar-track { background: transparent; }
+  .scroll-area::-webkit-scrollbar-thumb { background: rgba(80,65,100,0.3); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<h1>VEILBREAKERS — AAA UI V2</h1>
+<p class="page-sub">Real assets + redesigned stats + premium visual depth</p>
+
+<!-- ============================================ -->
+<h2>1. TITLE SCREEN — With Real Art + VFX</h2>
+
+<div class="mm-frame">
+  <div class="mm-label">Main Menu — actual background, demon, logo with VFX layer</div>
+  <div class="mm-scene">
+    <div class="mm-bg"></div>
+    <div class="mm-demon"></div>
+    <div class="mm-bottom-fade"></div>
+    <div class="mm-logo"></div>
+    <div class="mm-vignette"></div>
+    <div class="mm-scanlines"></div>
+
+    <!-- CSS Ember Particles -->
+    <div class="ember" style="left:15%; bottom:10%; --drift:20px; animation-duration:4s; animation-delay:0s; width:3px; height:3px;"></div>
+    <div class="ember" style="left:25%; bottom:5%; --drift:-15px; animation-duration:5s; animation-delay:0.5s; width:2px; height:2px;"></div>
+    <div class="ember" style="left:35%; bottom:15%; --drift:30px; animation-duration:3.5s; animation-delay:1s; width:4px; height:4px;"></div>
+    <div class="ember" style="left:45%; bottom:8%; --drift:-25px; animation-duration:4.5s; animation-delay:0.3s; width:2px; height:2px;"></div>
+    <div class="ember" style="left:55%; bottom:12%; --drift:10px; animation-duration:3.8s; animation-delay:1.5s; width:3px; height:3px;"></div>
+    <div class="ember" style="left:65%; bottom:6%; --drift:-20px; animation-duration:5.2s; animation-delay:0.8s; width:2px; height:2px;"></div>
+    <div class="ember" style="left:72%; bottom:18%; --drift:35px; animation-duration:4.2s; animation-delay:2s; width:3px; height:3px;"></div>
+    <div class="ember" style="left:80%; bottom:3%; --drift:-10px; animation-duration:3.2s; animation-delay:0.2s; width:2px; height:2px;"></div>
+    <div class="ember" style="left:20%; bottom:20%; --drift:15px; animation-duration:6s; animation-delay:1.2s; width:4px; height:4px;"></div>
+    <div class="ember" style="left:50%; bottom:25%; --drift:-30px; animation-duration:5.5s; animation-delay:0.6s; width:2px; height:2px;"></div>
+    <div class="ember" style="left:40%; bottom:2%; --drift:25px; animation-duration:4.8s; animation-delay:1.8s; width:3px; height:3px;"></div>
+    <div class="ember" style="left:60%; bottom:14%; --drift:-18px; animation-duration:3.6s; animation-delay:2.5s; width:2px; height:2px;"></div>
+
+    <div class="mm-buttons">
+      <div class="mm-btn mm-btn-primary">NEW GAME</div>
+      <div class="mm-btn mm-btn-secondary">CONTINUE</div>
+      <div class="mm-btn mm-btn-secondary">SETTINGS</div>
+      <div class="mm-btn mm-btn-secondary">CREDITS</div>
+      <div class="mm-btn mm-btn-secondary mm-btn-exit">EXIT</div>
+    </div>
+    <div class="mm-version">v0.1.0</div>
+  </div>
+</div>
+
+<div class="note">
+  <strong>VFX shown:</strong> Floating ember particles (CSS animated), vignette overlay, scanline texture, bottom-fade gradient for button readability. In Unity these would include the full TitleScreenVFX system (lightning strikes, ash particles, fog wisps, micro-sparks) plus the demon vein pulse effect.
+</div>
+
+<!-- ============================================ -->
+<h2>2. CHARACTER SELECT — Redesigned Stats + Premium Feel</h2>
+
+<div class="note">
+  <strong>Changes from V1:</strong> Stat bars now use RPG-standard colors (HP=red, STAMINA=green, ATK=orange, DEF=blue). D&D attributes shown as bold numbers, no bars. Champion/starter monster has its own card section. Panel has layered depth + ornamental details. Carousel cards have per-hero coloring with glow selection ring.
+</div>
+
+<div class="cs-frame">
+  <div class="mm-label">Character Select — "Vex" theme (gold/amber)</div>
+  <div class="cs-scene">
+    <!-- Hero Stage -->
+    <div class="cs-stage">
+      <div class="cs-hero-glow"></div>
+      <div class="cs-hero-figure">3D MODEL<span>(replaces placeholder)</span></div>
+      <div class="cs-hero-watermark">VEX</div>
+      <div class="cs-hero-subtitle">THE WARDEN</div>
+    </div>
+
+    <!-- Info Panel -->
+    <div class="cs-panel">
+      <div class="cs-tabs">
+        <div class="cs-tab active">OVERVIEW</div>
+        <div class="cs-tab">ABILITIES</div>
+        <div class="cs-tab">LORE</div>
+      </div>
+
+      <div class="scroll-area">
+        <div class="cs-name">VEX</div>
+        <div class="cs-title">THE WARDEN</div>
+        <div class="cs-quote">"I hold the line."</div>
+
+        <div class="cs-info">
+          <div class="cs-info-item"><span class="cs-info-label">PATH</span><span class="cs-info-val">IRONBOUND</span></div>
+          <div class="cs-info-item"><span class="cs-info-label">ROLE</span><span class="cs-info-val">TANK</span></div>
+          <div class="cs-info-item"><span class="cs-info-label">SYNERGY</span><span class="cs-info-val">IRON / DREAD</span></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- STAT BARS: HP/STA top, ATK/DEF bottom — each with own color -->
+        <div class="section-hdr">COMBAT STATS</div>
+        <div class="stat-grid">
+          <div class="stat-card stat-hp">
+            <div class="stat-header"><span class="stat-label">HP</span><span class="stat-value">68</span></div>
+            <div class="stat-track"><div class="stat-fill" style="width:85%;"></div></div>
+          </div>
+          <div class="stat-card stat-sta">
+            <div class="stat-header"><span class="stat-label">STAMINA</span><span class="stat-value">45</span></div>
+            <div class="stat-track"><div class="stat-fill" style="width:56%;"></div></div>
+          </div>
+          <div class="stat-card stat-atk">
+            <div class="stat-header"><span class="stat-label">ATK</span><span class="stat-value">10</span></div>
+            <div class="stat-track"><div class="stat-fill" style="width:25%;"></div></div>
+          </div>
+          <div class="stat-card stat-def">
+            <div class="stat-header"><span class="stat-label">DEF</span><span class="stat-value">20</span></div>
+            <div class="stat-track"><div class="stat-fill" style="width:50%;"></div></div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ATTRIBUTES: Numbers only, no bars -->
+        <div class="section-hdr">ATTRIBUTES</div>
+        <div class="attr-grid">
+          <div class="attr-chip"><div class="attr-label">STR</div><div class="attr-value">14</div><div class="attr-mod">+2</div></div>
+          <div class="attr-chip"><div class="attr-label">DEX</div><div class="attr-value">10</div><div class="attr-mod">+0</div></div>
+          <div class="attr-chip"><div class="attr-label">CON</div><div class="attr-value">14</div><div class="attr-mod">+2</div></div>
+          <div class="attr-chip"><div class="attr-label">INT</div><div class="attr-value">10</div><div class="attr-mod">+0</div></div>
+          <div class="attr-chip"><div class="attr-label">WIS</div><div class="attr-value">12</div><div class="attr-mod">+1</div></div>
+          <div class="attr-chip"><div class="attr-label">CHA</div><div class="attr-value">10</div><div class="attr-mod">+0</div></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- CHAMPION / STARTER MONSTER -->
+        <div class="section-hdr">CHAMPION MONSTER</div>
+        <div class="champion-card">
+          <div class="champion-icon">⚔</div>
+          <div class="champion-info">
+            <div class="champion-name">SKITTER-TEETH</div>
+            <div class="champion-tags">
+              <span class="tag">IRON</span>
+              <span class="tag">TANK</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Back -->
+    <div class="cs-back">◀ BACK</div>
+
+    <!-- Embark -->
+    <div class="cs-embark">
+      <div class="cs-embark-btn">
+        <div class="cs-embark-text">EMBARK AS VEX</div>
+        <div class="cs-embark-sub">HOLD TO CONFIRM</div>
+      </div>
+    </div>
+
+    <!-- Bottom Carousel with per-hero colored cards -->
+    <div class="cs-bottom">
+      <div class="cs-nav-arrow">◀</div>
+      <div class="hero-card active card-vex"><div class="hero-card-letter">V</div><div class="hero-card-name">VEX</div></div>
+      <div class="hero-card card-sera"><div class="hero-card-letter">S</div><div class="hero-card-name">SERA</div></div>
+      <div class="hero-card card-orion"><div class="hero-card-letter">O</div><div class="hero-card-name">ORION</div></div>
+      <div class="hero-card card-nyx"><div class="hero-card-letter">N</div><div class="hero-card-name">NYX</div></div>
+      <div class="cs-nav-arrow">▶</div>
+    </div>
+    <div class="cs-hero-index">HERO 1 / 4</div>
+
+    <div class="cs-vignette"></div>
+  </div>
+</div>
+
+<div class="note">
+  <strong>Key AAA techniques used:</strong><br>
+  • Panel has multi-stop gradient background + layered box-shadows (not flat color)<br>
+  • Top border glow in hero color bleeds light into the panel<br>
+  • Ornamental diamond dividers between sections<br>
+  • Stat bars have individual RPG colors with gradient fills + glowing leading edge<br>
+  • D&D attributes as bold numbers with modifier badges (no bars)<br>
+  • Champion monster in its own card with icon + brand tags<br>
+  • Carousel cards with per-hero coloring, active glow ring, lift animation<br>
+  • Embark button breathes with animated glow<br>
+  • Hero name uses Cinzel Decorative with text-shadow glow
+</div>
+
+</body>
+</html>

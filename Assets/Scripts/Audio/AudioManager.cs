@@ -44,8 +44,8 @@ namespace VeilBreakers.Audio
 
         // Bank tracking
         private HashSet<string> _loadedBanks = new HashSet<string>();
-        private Dictionary<string, float> _bankLastUsed = new Dictionary<string, float>();
-        private Dictionary<string, long> _bankMemoryUsage = new Dictionary<string, long>();
+        private Dictionary<string, float> _bankLastUsed = new Dictionary<string, float>(); // VB-IGNORE BUG-34 -- not serialized, runtime-only tracking
+        private Dictionary<string, long> _bankMemoryUsage = new Dictionary<string, long>(); // VB-IGNORE BUG-34 -- not serialized, runtime-only tracking
 
         // Zone tracking
         private string _currentZone;
@@ -257,7 +257,7 @@ namespace VeilBreakers.Audio
 
         private IEnumerator UnloadCombatBanksDelayedCoroutine(float delay)
         {
-            yield return new WaitForSeconds(delay);
+            yield return new WaitForSeconds(delay); // VB-IGNORE BUG-13 -- dynamic delay parameter, cannot cache
 
             // Unload monster banks that aren't in the party
             _banksToUnload.Clear();
@@ -600,7 +600,7 @@ namespace VeilBreakers.Audio
 
         private IEnumerator DelayedUnloadCoroutine(string bankName, float delay)
         {
-            yield return new WaitForSeconds(delay);
+            yield return new WaitForSeconds(delay); // VB-IGNORE BUG-13 -- dynamic delay parameter, cannot cache
             UnloadBank(bankName);
         }
 

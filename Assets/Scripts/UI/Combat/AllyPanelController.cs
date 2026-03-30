@@ -234,7 +234,7 @@ namespace VeilBreakers.UI.Combat
             }
         }
 
-        private void ClearSkillSlots()
+        private void ClearSkillSlots() // VB-IGNORE DEEP-07 -- intentionally clears only _skillSlots; _statusIcons managed by ClearStatusIcons()
         {
             for (int i = 0; i < _skillSlots.Count; i++)
             {
@@ -264,7 +264,7 @@ namespace VeilBreakers.UI.Combat
             }
         }
 
-        private void ClearStatusIcons()
+        private void ClearStatusIcons() // VB-IGNORE DEEP-07 -- intentionally clears only _statusIcons; _skillSlots managed by ClearSkillSlots()
         {
             for (int i = 0; i < _statusIcons.Count; i++)
             {

@@ -104,7 +104,7 @@ namespace VeilBreakers.Data
         {
             if (string.IsNullOrEmpty(hero_id))
             {
-                Debug.LogError("[HeroData] Hero ID is null or empty!");
+                Debug.LogError("[HeroData] Hero ID is null or empty!"); // VB-IGNORE BUG-10 -- string literal, not pattern match on UnityEngine.Object
                 return false;
             }
             

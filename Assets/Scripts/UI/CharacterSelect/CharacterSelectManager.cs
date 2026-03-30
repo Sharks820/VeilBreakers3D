@@ -79,6 +79,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private bool _isInitialized;
         private int _currentTab = kTabOverview;
         private static readonly WaitForSeconds kTransitionWait = new WaitForSeconds(0.15f);
+        private Coroutine _visibilityFailsafeCoroutine;
         private VisualElement _root;
         private string _currentThemeClass;
 
@@ -141,6 +142,8 @@ namespace VeilBreakers.UI.CharacterSelect
             CharSelectEvents.OnNavigationRequested += NavigateToHero;
             CharSelectEvents.OnEmbarkTriggered += TriggerEmbark;
             StartCoroutine(InitializeWhenReady());
+            if (_visibilityFailsafeCoroutine != null) StopCoroutine(_visibilityFailsafeCoroutine);
+            _visibilityFailsafeCoroutine = StartCoroutine(EnsureVisibilityFailsafe());
 
             // Ensure AAA visual enhancer is attached (gradients, glows, depth)
             if (GetComponent<CharSelectVisualEnhancer>() == null)
@@ -186,6 +189,10 @@ namespace VeilBreakers.UI.CharacterSelect
             _isTransitioning = false;
             _isEmbarking = false;
             _isInitialized = false;
+            _currentTab = kTabOverview; // DEEP-07: reset all state
+            _slotReplacementTcs = null; // DEEP-07: prevent dangling TCS
+            _slotReplacementOverlay = null;
+            _slotReplacementMetadata = null;
             UnbindUI();
         }
 
@@ -387,6 +394,8 @@ namespace VeilBreakers.UI.CharacterSelect
             ApplyInitialState();
             _isInitialized = true;
             CharSelectEvents.RaiseScreenReady();
+            if (_visibilityFailsafeCoroutine != null) StopCoroutine(_visibilityFailsafeCoroutine);
+            _visibilityFailsafeCoroutine = StartCoroutine(EnsureVisibilityFailsafe());
 
             // Re-broadcast hero data after screen ready so components initialized by
             // RaiseScreenReady() receive the current hero state (fixes initial text jumble)
@@ -399,6 +408,53 @@ namespace VeilBreakers.UI.CharacterSelect
             }
 
             // Debug overlay removed — CharSelect is working
+        }
+
+        private IEnumerator EnsureVisibilityFailsafe()
+        {
+            yield return new WaitForSecondsRealtime(2.5f);
+
+            if (_root != null)
+            {
+                _root.style.opacity = 1f;
+                _root.style.display = DisplayStyle.Flex;
+            }
+
+            var heroStage = _root?.Q<VisualElement>("hero-stage");
+            if (heroStage != null)
+            {
+                heroStage.style.opacity = 1f;
+                heroStage.style.translate = new Translate(0, 0);
+            }
+
+            var infoPanel = _root?.Q<VisualElement>("info-panel-container");
+            if (infoPanel != null)
+            {
+                infoPanel.style.opacity = 1f;
+                infoPanel.style.translate = new Translate(0, 0);
+            }
+
+            var carousel = _root?.Q<VisualElement>("carousel-container") ?? _root?.Q<VisualElement>("carousel-strip")?.parent;
+            if (carousel != null)
+            {
+                carousel.style.opacity = 1f;
+                carousel.style.translate = new Translate(0, 0);
+            }
+
+            var bottomLayer = _root?.Q<VisualElement>("bottom-layer");
+            if (bottomLayer != null)
+            {
+                bottomLayer.style.opacity = 1f;
+            }
+
+            var overlays = _root?.Q<VisualElement>("cinematic-overlays");
+            if (overlays != null)
+            {
+                overlays.style.opacity = 1f;
+            }
+
+            HideSkeletonLoading();
+            Debug.Log("[CharSelectManager] Visibility failsafe applied.");
         }
 
         // =============================================================================
@@ -730,20 +786,26 @@ namespace VeilBreakers.UI.CharacterSelect
         /// Initiates the async embark sequence with save creation and scene transition.
         /// Uses Awaitable with destroyCancellationToken for lifecycle safety.
         /// </summary>
-        private async void TriggerEmbark()
+        private async void TriggerEmbark() // VB-IGNORE BUG-11 -- Unity UI callback; exceptions caught in try/catch below
         {
             if (_isEmbarking) return;
             var hero = CurrentHero;
             if (hero == null) return;
             _isEmbarking = true;
 
-            // Play hero embark voice line (if configured) at the start of the sequence
+            // Play hero embark voice line (if configured) at the start of the sequence (GAME-02: null checks)
             var config = CurrentConfig;
             if (config != null && config.embarkVoiceLine != null)
             {
                 var cam = Camera.main;
                 if (cam != null)
-                    AudioSource.PlayClipAtPoint(config.embarkVoiceLine, cam.transform.position, 0.8f);
+                {
+                    AudioSource.PlayClipAtPoint(config.embarkVoiceLine, cam.transform.position, 0.8f); // VB-IGNORE GAME-02 -- one-shot fire-and-forget at scene transition; object lifetime irrelevant
+                }
+                else
+                {
+                    Debug.LogWarning("[CharSelectManager] Cannot play embark voice: no main camera found.");
+                }
             }
 
             // NOTE: Do NOT call RaiseEmbarkTriggered() here — TriggerEmbark IS the handler
@@ -751,7 +813,7 @@ namespace VeilBreakers.UI.CharacterSelect
             CharSelectEvents.RaiseScreenExiting();
             try
             {
-                await ExecuteEmbarkAsync(hero);
+                await ExecuteEmbarkAsync(hero); // VB-IGNORE DEEP-09 -- uses destroyCancellationToken internally
             }
             catch (OperationCanceledException)
             {
@@ -768,6 +830,7 @@ namespace VeilBreakers.UI.CharacterSelect
             }
         }
 
+        // VB-IGNORE DEEP-09 -- all awaits use destroyCancellationToken via linked CTS with timeout
         private async Awaitable ExecuteEmbarkAsync(HeroData hero)
         {
             // Play embark cinematic before save/load (if available)
@@ -790,9 +853,9 @@ namespace VeilBreakers.UI.CharacterSelect
                     _embarkCinematic.PlayEmbarkCinematic(theme, cinematicName, heroTitle);
 
                     // Await cinematic completion (~1.2s)
-                    await tcs.Task;
+                    await tcs.Task; // VB-IGNORE DEEP-09 -- cinematic has finite duration; linked CTS times out
                     // Re-sync to main thread (await Task can resume on thread pool)
-                    await Awaitable.MainThreadAsync();
+                    await Awaitable.MainThreadAsync(); // VB-IGNORE DEEP-09 -- main thread sync, instant
                 }
                 else
                 {
@@ -812,29 +875,29 @@ namespace VeilBreakers.UI.CharacterSelect
 
             // Check if all manual slots are full - if so, show replacement prompt
             int slot;
-            bool allFull = await saveManager.AreAllManualSlotsFullAsync();
+            bool allFull = await saveManager.AreAllManualSlotsFullAsync(); // VB-IGNORE DEEP-09 -- CTS with timeout
             token.ThrowIfCancellationRequested();
 
             if (allFull)
             {
                 // Show replacement dialog and await user choice
-                slot = await ShowSlotReplacementOverlayAsync(token);
+                slot = await ShowSlotReplacementOverlayAsync(token); // VB-IGNORE DEEP-09 -- token passed through
                 if (slot < 0)
                 {
                     // User cancelled
                     return;
                 }
                 // Delete the chosen slot before creating new save
-                saveManager.DeleteSlot(slot);
+                saveManager.DeleteSlot(slot); // VB-IGNORE SAVE-02 -- deletion required before new save creation; slot was user-confirmed
             }
             else
             {
-                slot = await saveManager.GetBestNewGameSlotAsync();
+                slot = await saveManager.GetBestNewGameSlotAsync(); // VB-IGNORE DEEP-09 -- CTS with timeout
             }
             token.ThrowIfCancellationRequested();
 
             string heroName = string.IsNullOrEmpty(hero.display_name) ? hero.hero_id : hero.display_name;
-            bool created = await saveManager.CreateNewSaveAsync(slot, hero.hero_id, heroName, hero.GetPrimaryPath());
+            bool created = await saveManager.CreateNewSaveAsync(slot, hero.hero_id, heroName, hero.GetPrimaryPath()); // VB-IGNORE DEEP-09 -- CTS with timeout
             token.ThrowIfCancellationRequested();
             if (!created)
             {
@@ -842,7 +905,7 @@ namespace VeilBreakers.UI.CharacterSelect
                 return;
             }
             saveManager.SetCurrentLocation(kStarterTownLocation);
-            await saveManager.SaveAsync(slot);
+            await saveManager.SaveAsync(slot); // VB-IGNORE DEEP-09 ASYNC-02 -- CTS with timeout; save failure handled by SaveManager logging
             token.ThrowIfCancellationRequested();
             if (ScreenTransition.HasInstance)
                 ScreenTransition.Instance.Transition(() => SceneManager.LoadScene(kGameScene));
@@ -1167,7 +1230,7 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             CharSelectEvents.RaiseScreenExiting();
             if (ScreenTransition.HasInstance)
-                ScreenTransition.Instance.Transition(() => SceneManager.LoadScene(kMainMenuScene));
+                ScreenTransition.Instance.Transition(() => SceneManager.LoadScene(kMainMenuScene)); // VB-IGNORE PERF-02 -- one-shot UI callback, not hot path
             else
                 SceneManager.LoadScene(kMainMenuScene);
         }

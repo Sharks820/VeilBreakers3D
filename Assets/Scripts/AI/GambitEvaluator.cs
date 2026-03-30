@@ -186,13 +186,15 @@ namespace VeilBreakers.AI
 
         /// <summary>
         /// Evaluates all rules in a specific bucket.
+        /// For enemy-targeting rules, evaluates with each actual enemy target so
+        /// enemy conditions (e.g. ENEMY_HP_BELOW) are not silently skipped.
         /// </summary>
         private void EvaluateBucket(Combatant self, BattleContext context, PriorityBucket bucket)
         {
             var enemies = context.GetEnemies();
             if (enemies == null) return; // Guard against null enemy array
 
-            // Find all matching rules in this bucket
+            // Collect rules whose conditions only depend on self/allies (null target safe)
             _bucketRules.Clear();
             _ruleSet.FindMatchingRulesInBucket(self, null, context, bucket, _bucketRules);
 
@@ -201,6 +203,30 @@ namespace VeilBreakers.AI
             {
                 var rule = _bucketRules[i];
                 ScoreRule(self, context, rule, enemies);
+            }
+
+            // Re-evaluate enemy-targeting rules with actual targets so enemy conditions fire
+            for (int e = 0; e < enemies.Length; e++)
+            {
+                var enemy = enemies[e];
+                if (enemy == null || !enemy.IsAlive) continue;
+
+                var enemyRules = new List<GambitRule>(8);
+                _ruleSet.FindMatchingRulesInBucket(self, enemy, context, bucket, enemyRules);
+
+                for (int i = 0; i < enemyRules.Count; i++)
+                {
+                    var rule = enemyRules[i];
+                    // Skip rules already covered by null-target pass (self/ally targeted)
+                    if (IsAllyTargetedAction(rule.action.actionType) || IsSelfTargetedAction(rule.action.actionType))
+                        continue;
+
+                    float score = CalculateScore(self, enemy, context, rule);
+                    if (score >= MIN_SCORE)
+                    {
+                        _scoredActions.Add(new ScoredAction(rule, enemy, score));
+                    }
+                }
             }
         }
 
@@ -756,6 +782,31 @@ namespace VeilBreakers.AI
             var target = context.GetLowestHpEnemy();
             if (target == null) return default;
             return new ScoredAction(_fallbackRule, target, MIN_SCORE);
+        }
+
+        // =============================================================================
+        // MOMENTUM / DESPERATION BONUS APPLICATION
+        // =============================================================================
+
+        /// <summary>
+        /// Apply momentum and desperation multipliers to a scored action's final score.
+        /// Called by GambitController after evaluation.
+        /// </summary>
+        public float ApplyPersonalityBonuses(Combatant self, BattleContext context, float baseScore, float momentumBonus)
+        {
+            float score = baseScore;
+
+            if (_personality.tracksMomentum && momentumBonus > 1f)
+            {
+                score *= momentumBonus;
+            }
+
+            if (_personality.desperationBonus)
+            {
+                score *= CalculateDesperationBonus(self, context);
+            }
+
+            return Mathf.Clamp(score, MIN_SCORE, MAX_SCORE);
         }
 
         // =============================================================================

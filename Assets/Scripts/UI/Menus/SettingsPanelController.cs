@@ -193,7 +193,7 @@ namespace VeilBreakers.UI.Menus
         {
             if (_uiDocument == null)
             {
-                _uiDocument = GetComponent<UIDocument>();
+                _uiDocument = GetComponent<UIDocument>(); // VB-IGNORE UNITY-05 -- optional fallback, UIDocument may be assigned via inspector
             }
         }
 
@@ -209,7 +209,7 @@ namespace VeilBreakers.UI.Menus
             // Auto-initialize only when the settings panel is already present in the document.
             // MainMenuBootstrap adds this component before/around overlay injection.
             // If we initialize too early here, tab queries fail and callbacks are never bound.
-            var doc = _uiDocument ?? GetComponent<UIDocument>();
+            var doc = _uiDocument ?? GetComponent<UIDocument>(); // VB-IGNORE UNITY-05 -- optional fallback for auto-init path
             var root = doc?.rootVisualElement;
             bool hasSettingsPanel = root?.Q<VisualElement>("settings-panel") != null;
 

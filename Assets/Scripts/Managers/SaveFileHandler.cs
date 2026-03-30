@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using VeilBreakers.Core;
@@ -89,7 +90,7 @@ namespace VeilBreakers.Managers
         {
             if (fileData == null || fileData.Length < HEADER_SIZE)
             {
-                Debug.LogError("[SaveFileHandler] File data is null or too small");
+                Debug.LogError("[SaveFileHandler] File data is null or too small"); // VB-IGNORE BUG-10 -- string literal, not pattern match on UnityEngine.Object
                 return null;
             }
 
@@ -151,7 +152,16 @@ namespace VeilBreakers.Managers
 
                 // 8. Deserialize JSON
                 string json = Encoding.UTF8.GetString(decompressed);
-                SaveData data = JsonUtility.FromJson<SaveData>(json);
+                SaveData data;
+                try
+                {
+                    data = JsonUtility.FromJson<SaveData>(json); // VB-IGNORE SEC-03 SEC-14 -- validated: try/catch + null check + ValidateAndRepair below
+                }
+                catch (ArgumentException jsonEx)
+                {
+                    Debug.LogError($"[SaveFileHandler] JSON parse error: {jsonEx.Message}");
+                    return null;
+                }
 
                 // 9. Validate
                 if (data == null || !data.ValidateAndRepair())
@@ -173,7 +183,7 @@ namespace VeilBreakers.Managers
         /// Writes data to file atomically with retry logic.
         /// Uses temp file + rename pattern for crash safety.
         /// </summary>
-        public static async Task<bool> WriteFileAtomicAsync(string filePath, byte[] data)
+        public static async Task<bool> WriteFileAtomicAsync(string filePath, byte[] data, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(filePath))
                 throw new ArgumentNullException(nameof(filePath));
@@ -191,6 +201,7 @@ namespace VeilBreakers.Managers
 
             for (int attempt = 1; attempt <= MAX_RETRIES; attempt++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
                     // 1. Check disk space (need 3x file size for safety)
@@ -201,9 +212,9 @@ namespace VeilBreakers.Managers
                     }
 
                     // 2. Write to temp file
-                    using (var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                    using (var stream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None)) // VB-IGNORE DEEP-14 -- already in using block
                     {
-                        await stream.WriteAsync(data, 0, data.Length);
+                        await stream.WriteAsync(data, 0, data.Length); // VB-IGNORE ASYNC-02 -- WriteAsync result consumed by await
                         await stream.FlushAsync();
                     }
 
@@ -240,12 +251,14 @@ namespace VeilBreakers.Managers
                         // Only delete old backup after successful move
                         if (File.Exists(oldBackup)) File.Delete(oldBackup);
                     }
-                    catch
+                    catch (IOException moveEx)
                     {
+                        ErrorLogger.Warn($"[SaveFileHandler] Atomic move failed: {moveEx.Message}");
                         // If move failed but old backup exists, restore it
                         if (File.Exists(oldBackup) && !File.Exists(filePath))
                         {
-                            try { File.Move(oldBackup, filePath); } catch { }
+                            try { File.Move(oldBackup, filePath); }
+                            catch (IOException restoreEx) { ErrorLogger.Warn($"[SaveFileHandler] Restore from backup failed: {restoreEx.Message}"); }
                         }
                         throw;
                     }
@@ -258,7 +271,8 @@ namespace VeilBreakers.Managers
                     ErrorLogger.Warn($"[SaveFileHandler] Write attempt {attempt}/{MAX_RETRIES} failed: {ex.Message}");
 
                     // Cleanup temp file
-                    try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { }
+                    try { if (File.Exists(tempPath)) File.Delete(tempPath); }
+                    catch (IOException cleanupEx) { ErrorLogger.Warn($"[SaveFileHandler] Temp cleanup failed: {cleanupEx.Message}"); }
 
                     if (attempt < MAX_RETRIES)
                     {
@@ -274,7 +288,7 @@ namespace VeilBreakers.Managers
         /// <summary>
         /// Reads a file asynchronously.
         /// </summary>
-        public static async Task<byte[]> ReadFileAsync(string filePath)
+        public static async Task<byte[]> ReadFileAsync(string filePath, CancellationToken cancellationToken = default)
         {
             if (!File.Exists(filePath))
             {
@@ -283,7 +297,7 @@ namespace VeilBreakers.Managers
 
             try
             {
-                using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read)) // VB-IGNORE DEEP-14 -- already in using block
                 {
                     // Guard against integer overflow on large files (>2GB)
                     if (stream.Length > int.MaxValue)
@@ -297,13 +311,14 @@ namespace VeilBreakers.Managers
                     int totalRead = 0;
                     while (totalRead < length)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         int bytesRead = await stream.ReadAsync(data, totalRead, length - totalRead);
                         if (bytesRead == 0)
                         {
                             Debug.LogError($"[SaveFileHandler] Unexpected EOF: read {totalRead}/{length} bytes");
                             return null;
                         }
-                        totalRead += bytesRead;
+                        totalRead += bytesRead; // VB-IGNORE DEEP-03 -- arithmetic addition, not event subscription
                     }
                     return data;
                 }
@@ -354,7 +369,7 @@ namespace VeilBreakers.Managers
         /// <summary>
         /// Attempts to recover data from backup files.
         /// </summary>
-        public static async Task<byte[]> TryRecoverFromBackup(string filePath)
+        public static async Task<byte[]> TryRecoverFromBackup(string filePath, CancellationToken cancellationToken = default)
         {
             string bak1 = IOPath.ChangeExtension(filePath, ".bak1");
             string bak2 = IOPath.ChangeExtension(filePath, ".bak2");
@@ -363,7 +378,7 @@ namespace VeilBreakers.Managers
             if (File.Exists(bak1))
             {
                 ErrorLogger.Log($"[SaveFileHandler] Attempting recovery from .bak1");
-                byte[] data = await ReadFileAsync(bak1);
+                byte[] data = await ReadFileAsync(bak1, cancellationToken);
                 if (data != null && ValidateMagicBytes(data))
                 {
                     return data;
@@ -374,7 +389,7 @@ namespace VeilBreakers.Managers
             if (File.Exists(bak2))
             {
                 ErrorLogger.Log($"[SaveFileHandler] Attempting recovery from .bak2");
-                byte[] data = await ReadFileAsync(bak2);
+                byte[] data = await ReadFileAsync(bak2, cancellationToken);
                 if (data != null && ValidateMagicBytes(data))
                 {
                     return data;
@@ -407,7 +422,7 @@ namespace VeilBreakers.Managers
                             ErrorLogger.Log($"[SaveFileHandler] Cleaned up orphan: {tempFile}");
                         }
                     }
-                    catch { }
+                    catch (IOException deleteEx) { ErrorLogger.Warn($"[SaveFileHandler] Failed to delete orphan {tempFile}: {deleteEx.Message}"); }
                 }
             }
             catch (IOException ex)
@@ -488,7 +503,7 @@ namespace VeilBreakers.Managers
 
         private static byte[] CompressGZip(byte[] data)
         {
-            using (var outputStream = new MemoryStream())
+            using (var outputStream = new MemoryStream()) // VB-IGNORE DEEP-14 -- already in using block
             {
                 using (var gzipStream = new GZipStream(outputStream, System.IO.Compression.CompressionLevel.Optimal))
                 {
@@ -500,9 +515,9 @@ namespace VeilBreakers.Managers
 
         private static byte[] DecompressGZip(byte[] data)
         {
-            using (var inputStream = new MemoryStream(data))
+            using (var inputStream = new MemoryStream(data)) // VB-IGNORE DEEP-14 -- already in using block
             using (var gzipStream = new GZipStream(inputStream, CompressionMode.Decompress))
-            using (var outputStream = new MemoryStream())
+            using (var outputStream = new MemoryStream()) // VB-IGNORE DEEP-14 -- already in using block
             {
                 gzipStream.CopyTo(outputStream);
                 return outputStream.ToArray();
@@ -519,7 +534,7 @@ namespace VeilBreakers.Managers
                 aes.Padding = PaddingMode.PKCS7;
 
                 using (var encryptor = aes.CreateEncryptor())
-                using (var outputStream = new MemoryStream())
+                using (var outputStream = new MemoryStream()) // VB-IGNORE DEEP-14 -- already in using block
                 {
                     // Prepend IV to encrypted data (IV is not secret, just unique)
                     outputStream.Write(aes.IV, 0, aes.IV.Length);
@@ -557,9 +572,9 @@ namespace VeilBreakers.Managers
                 Array.Copy(data, AES_IV_SIZE, cipherData, 0, cipherLength);
 
                 using (var decryptor = aes.CreateDecryptor())
-                using (var inputStream = new MemoryStream(cipherData))
+                using (var inputStream = new MemoryStream(cipherData)) // VB-IGNORE DEEP-14 -- already in using block
                 using (var cryptoStream = new CryptoStream(inputStream, decryptor, CryptoStreamMode.Read))
-                using (var outputStream = new MemoryStream())
+                using (var outputStream = new MemoryStream()) // VB-IGNORE DEEP-14 -- already in using block
                 {
                     cryptoStream.CopyTo(outputStream);
                     return outputStream.ToArray();
@@ -599,7 +614,12 @@ namespace VeilBreakers.Managers
             }
         }
 
-        private static readonly string kKeyFilePath = IOPath.Combine(Application.persistentDataPath, ".vb_device_key");
+        private static string _keyFilePath;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() => _keyFilePath = null;
+
+        private static string KeyFilePath => _keyFilePath ??= IOPath.Combine(Application.persistentDataPath, ".vb_device_key");
 
         private static byte[] GetOrCreateDeviceKey()
         {
@@ -614,16 +634,16 @@ namespace VeilBreakers.Managers
             }
 
             // Try file fallback (survives PlayerPrefs clear)
-            if (File.Exists(kKeyFilePath))
+            if (File.Exists(KeyFilePath))
             {
                 try
                 {
-                    var key = Convert.FromBase64String(File.ReadAllText(kKeyFilePath));
+                    var key = Convert.FromBase64String(File.ReadAllText(KeyFilePath));
                     PlayerPrefs.SetString(prefsKey, Convert.ToBase64String(key));
                     PlayerPrefs.Save();
                     return key;
                 }
-                catch { /* Fall through to generate new */ }
+                catch (Exception ex) { ErrorLogger.Warn($"[SaveFileHandler] Key file read failed, generating new: {ex.Message}"); }
             }
 
             // Generate new key
@@ -642,7 +662,7 @@ namespace VeilBreakers.Managers
 
         private static void PersistKeyToFile(byte[] key)
         {
-            try { File.WriteAllText(kKeyFilePath, Convert.ToBase64String(key)); }
+            try { File.WriteAllText(KeyFilePath, Convert.ToBase64String(key)); }
             catch (IOException ex) { ErrorLogger.Warn($"[SaveFileHandler] Could not persist key file: {ex.Message}"); }
         }
 
@@ -677,9 +697,10 @@ namespace VeilBreakers.Managers
                 var driveInfo = new DriveInfo(IOPath.GetPathRoot(path));
                 return driveInfo.AvailableFreeSpace >= requiredBytes;
             }
-            catch
+            catch (Exception ex)
             {
                 // If we can't check, assume we have space
+                ErrorLogger.Warn($"[SaveFileHandler] Disk space check failed (assuming OK): {ex.Message}");
                 return true;
             }
         }

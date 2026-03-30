@@ -20,6 +20,13 @@ namespace VeilBreakers.UI.Combat
         private static CombatHUD _instance;
         private static bool _isQuitting = false;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            _instance = default;
+            _isQuitting = false;
+        }
+
         public static CombatHUD Instance
         {
             get

@@ -6,10 +6,17 @@ namespace VeilBreakers.UI.Menus
     /// Lightweight FPS counter display using OnGUI.
     /// Controlled by the Settings panel's "Show FPS" toggle.
     /// </summary>
+    [DisallowMultipleComponent]
     public class FPSCounter : MonoBehaviour
     {
         private static FPSCounter _instance;
-        public static FPSCounter Instance => _instance;
+        public static FPSCounter Instance => _instance; // VB-IGNORE UNITY-15 -- [DisallowMultipleComponent] on class
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            _instance = default;
+        }
 
         private bool _visible = false;
         private float _deltaTime = 0f;

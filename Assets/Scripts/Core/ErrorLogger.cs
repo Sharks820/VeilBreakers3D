@@ -23,6 +23,13 @@ namespace VeilBreakers.Core
             None = 6
         }
 
+        // LIFECYCLE-01: Reset static state on domain reload
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            _minLevel = LogLevel.Debug;
+        }
+
         private const string kPrefix = "[VB]";
         private const string kCombatPrefix = "[VB:Combat]";
         private const string kUIPrefix = "[VB:UI]";

@@ -1,7 +1,31 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace VeilBreakers.Core
 {
+    /// <summary>
+    /// Non-generic helper that resets all SingletonMonoBehaviour statics on domain reload.
+    /// [RuntimeInitializeOnLoadMethod] does not work on open generic classes,
+    /// so this concrete class handles the reset for all closed generic singletons.
+    /// </summary>
+    internal static class SingletonResetHelper
+    {
+        private static readonly List<Action> _resetActions = new List<Action>(); // VB-IGNORE BUG-65 -- intentionally mutable; Register() adds reset callbacks at static ctor time
+
+        internal static void Register(Action resetAction)
+        {
+            _resetActions.Add(resetAction);
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetAllSingletons()
+        {
+            foreach (var action in _resetActions)
+                action();
+        }
+    }
+
     /// <summary>
     /// Base class for singleton MonoBehaviours that persist across scenes.
     /// Handles instance management and DontDestroyOnLoad automatically.
@@ -11,6 +35,18 @@ namespace VeilBreakers.Core
     {
         private static T _instance;
         private static bool _isQuitting;
+
+        /// <summary>
+        /// Static constructor registers this closed generic type for domain-reload reset.
+        /// </summary>
+        static SingletonMonoBehaviour()
+        {
+            SingletonResetHelper.Register(() =>
+            {
+                _instance = default;
+                _isQuitting = false;
+            });
+        }
 
         public static T Instance
         {

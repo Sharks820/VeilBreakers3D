@@ -297,7 +297,7 @@ namespace VeilBreakers.AI
         {
             foreach (var kvp in _cachedDefaults)
             {
-                if (kvp.Value != null) DestroyImmediate(kvp.Value);
+                if (kvp.Value != null) Destroy(kvp.Value);
             }
             _cachedDefaults.Clear();
         }

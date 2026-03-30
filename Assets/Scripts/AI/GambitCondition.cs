@@ -601,10 +601,8 @@ namespace VeilBreakers.AI
         {
             if (enemy == null) return;
 
-            if (_damageDealtRecently.ContainsKey(enemy))
-                _damageDealtRecently[enemy] += damageAmount;
-            else
-                _damageDealtRecently[enemy] = damageAmount;
+            _damageDealtRecently.TryGetValue(enemy, out float existing);
+            _damageDealtRecently[enemy] = existing + damageAmount;
 
             UpdateThreatScores();
         }
@@ -645,10 +643,8 @@ namespace VeilBreakers.AI
             // Add recent damage to threat
             foreach (var kvp in _damageDealtRecently)
             {
-                if (_threatScores.ContainsKey(kvp.Key))
-                    _threatScores[kvp.Key] += kvp.Value;
-                else
-                    _threatScores[kvp.Key] = kvp.Value;
+                _threatScores.TryGetValue(kvp.Key, out float existingThreat);
+                _threatScores[kvp.Key] = existingThreat + kvp.Value;
             }
             _damageDealtRecently.Clear();
         }

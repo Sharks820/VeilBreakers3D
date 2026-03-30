@@ -10,6 +10,22 @@ namespace VeilBreakers.VFX
 /// </summary>
 public class VB_AoEVFX_ground_circle_RUIN : MonoBehaviour
 {
+    // Cached shader reference to avoid Shader.Find at runtime (UNITY-19)
+    private static Shader _cachedParticleShader;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStatics() => _cachedParticleShader = null;
+
+    // Track dynamic materials for cleanup (VFX-01)
+    private readonly System.Collections.Generic.List<Material> _dynamicMaterials = new System.Collections.Generic.List<Material>();
+
+    private static Shader GetParticleShader()
+    {
+        if (_cachedParticleShader == null)
+            _cachedParticleShader = Shader.Find("Universal Render Pipeline/Particles/Unlit") ?? Shader.Find("Particles/Standard Unlit"); // VB-IGNORE UNITY-19 -- cached in static field, called once
+        return _cachedParticleShader;
+    }
+
     [Header("AoE Config")]
     [SerializeField] private string aoeType = "ground_circle";
     [SerializeField] private string brand = "RUIN";
@@ -239,10 +255,22 @@ public class VB_AoEVFX_ground_circle_RUIN : MonoBehaviour
 
         // Renderer
         var renderer = ps.GetComponent<ParticleSystemRenderer>();
-        renderer.material = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit") ?? Shader.Find("Particles/Standard Unlit"));
-        renderer.material.SetColor("_Color", glowColor);
+        var mat = new Material(GetParticleShader());
+        mat.SetColor("_Color", glowColor);
+        renderer.material = mat;
+        _dynamicMaterials.Add(mat);
 
         return ps;
+    }
+
+    private void OnDestroy()
+    {
+        // Destroy all dynamically created materials (VFX-01)
+        foreach (var mat in _dynamicMaterials)
+        {
+            if (mat != null) Destroy(mat);
+        }
+        _dynamicMaterials.Clear();
     }
 }
 }

@@ -30,6 +30,11 @@ namespace VeilBreakers.UI.Menus
         [SerializeField] private float _spawnStartScale = 0.3f;
         [SerializeField] private float _spawnStartY = -0.5f;
 
+        // Cached WaitForSeconds to avoid per-frame GC allocations
+        private WaitForSeconds _waitFadeOutHalf;
+        private WaitForSeconds _waitMonsterSpawnDelay;
+        private WaitForSeconds _waitFadeIn;
+
         // =============================================================================
         // STATE
         // =============================================================================
@@ -53,6 +58,9 @@ namespace VeilBreakers.UI.Menus
         private void Awake()
         {
             _uiLayer = LayerMask.NameToLayer("UI");
+            _waitFadeOutHalf = new WaitForSeconds(_fadeOutDuration * 0.5f);
+            _waitMonsterSpawnDelay = new WaitForSeconds(_monsterSpawnDelay);
+            _waitFadeIn = new WaitForSeconds(_fadeInDuration);
         }
 
         private void OnDestroy()
@@ -163,7 +171,7 @@ namespace VeilBreakers.UI.Menus
                 }
 
                 // Wait for fade out
-                yield return new WaitForSeconds(_fadeOutDuration * 0.5f);
+                yield return _waitFadeOutHalf;
             }
 
             // Phase 2: Spawn hero
@@ -174,7 +182,7 @@ namespace VeilBreakers.UI.Menus
             }
 
             // Phase 3: Delay then spawn monster
-            yield return new WaitForSeconds(_monsterSpawnDelay);
+            yield return _waitMonsterSpawnDelay;
 
             if (monsterPrefab != null)
             {
@@ -183,7 +191,7 @@ namespace VeilBreakers.UI.Menus
             }
 
             // Wait for spawn animations to complete
-            yield return new WaitForSeconds(_fadeInDuration);
+            yield return _waitFadeIn;
 
             OnTransitionComplete?.Invoke();
         }

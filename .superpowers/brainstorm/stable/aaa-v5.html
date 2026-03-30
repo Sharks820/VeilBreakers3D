@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VeilBreakers V5 — Final Design</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #050308; color: #e0dce8; font-family: 'Segoe UI', sans-serif; }
+  h2 { font-family: 'Cinzel Decorative', serif; font-size: 18px; letter-spacing: 3px; margin: 30px 20px 12px; border-bottom: 1px solid #222; padding-bottom: 8px; color: #ddd; }
+  .note { background: rgba(255,200,60,0.06); border: 1px solid rgba(255,200,60,0.15); border-radius: 6px; padding: 14px 18px; margin: 12px 20px; color: #bbb; font-size: 13px; line-height: 1.8; }
+  .note strong { color: #ffcc44; }
+  .note .req { color: #88ccff; }
+  .frame { margin: 0 20px 30px; border: 1px solid #222; border-radius: 8px; overflow: hidden; }
+  .lbl { background: #111118; padding: 6px 14px; font-size: 11px; color: #666; letter-spacing: 2px; border-bottom: 1px solid #222; }
+
+  /* ===========================================================
+     TITLE SCREEN
+     =========================================================== */
+  .mm { position: relative; width: 100%; aspect-ratio: 16/9; overflow: hidden; background: #000; }
+  .mm video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+  .mm-bg-img { position: absolute; inset: 0; background: url('./bg.png') center/cover no-repeat; z-index: 0; }
+  .mm-demon {
+    position: absolute; left: 3%; right: 3%; top: 10%; bottom: -10%;
+    background: url('./demon.png') center bottom/contain no-repeat;
+    z-index: 2; filter: drop-shadow(0 0 50px rgba(255,80,20,0.2));
+    animation: demon-idle 6s ease-in-out infinite;
+    transition: filter 0.5s;
+  }
+  .mm-demon:hover { filter: drop-shadow(0 0 80px rgba(255,100,30,0.4)) brightness(1.08); }
+  @keyframes demon-idle { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  @keyframes logo-pulse { 0%,100% { filter: drop-shadow(0 0 40px rgba(255,140,50,0.4)); } 50% { filter: drop-shadow(0 0 60px rgba(255,140,50,0.6)); } }
+  .mm-vig { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.8) 100%); pointer-events: none; z-index: 4; }
+  .mm-scan { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(0,0,0,0.03) 3px, rgba(0,0,0,0.03) 6px); pointer-events: none; z-index: 5; }
+  .mm-heat { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 65%, rgba(255,80,10,0.06) 0%, transparent 50%); pointer-events: none; z-index: 3; animation: heat 3s ease-in-out infinite; }
+  @keyframes heat { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+  .mm-bfade { position: absolute; left: 0; right: 0; bottom: 0; height: 45%; background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 45%, transparent 100%); pointer-events: none; z-index: 4; }
+  .mm-wm { position: absolute; right: 0; bottom: 0; width: 90px; height: 28px; background: rgba(0,0,0,0.95); z-index: 10; }
+  .emb { position: absolute; border-radius: 50%; pointer-events: none; z-index: 6; background: radial-gradient(circle, rgba(255,180,60,0.95), rgba(255,80,10,0.2)); box-shadow: 0 0 6px rgba(255,140,50,0.8), 0 0 14px rgba(255,100,20,0.3); animation: erise linear infinite; }
+  @keyframes erise { 0% { transform: translateY(0) translateX(0) scale(1); opacity: 0; } 8% { opacity: 1; } 70% { opacity: 0.4; } 100% { transform: translateY(-500px) translateX(var(--d)) scale(0.15); opacity: 0; } }
+  .mm-btns { position: absolute; right: 5%; bottom: 7%; display: flex; flex-direction: column; align-items: flex-end; gap: 9px; z-index: 10; }
+  .mb { width: 300px; height: 56px; display: flex; align-items: center; justify-content: center; font-family: 'Cinzel', serif; font-size: 18px; font-weight: 700; letter-spacing: 5px; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; background: linear-gradient(180deg, rgba(50,38,28,0.96) 0%, rgba(25,18,10,0.98) 100%); border: 1px solid rgba(140,100,50,0.3); border-radius: 3px; color: rgba(210,180,130,0.85); text-shadow: 0 1px 4px rgba(0,0,0,0.7); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), inset 0 -1px 3px rgba(0,0,0,0.4), 0 3px 10px rgba(0,0,0,0.5); }
+  .mb::before { content: ''; position: absolute; top: 0; left: 15%; right: 15%; height: 1px; background: linear-gradient(90deg, transparent, rgba(200,150,70,0.3), transparent); }
+  .mb::after { content: ''; position: absolute; top: 0; left: -120%; width: 60%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent); transition: left 0.5s ease; }
+  .mb:hover::after { left: 150%; }
+  .mb:hover { background: linear-gradient(180deg, rgba(230,120,35,1) 0%, rgba(180,70,15,1) 50%, rgba(145,55,10,1) 100%); border-color: rgba(255,180,80,0.7); color: #fffae8; text-shadow: 0 0 12px rgba(255,200,100,0.5), 0 2px 4px rgba(0,0,0,0.6); box-shadow: 0 0 35px rgba(255,140,50,0.4), 0 0 70px rgba(255,100,20,0.12), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -2px 4px rgba(0,0,0,0.3), 0 5px 16px rgba(0,0,0,0.5); transform: scale(1.04) translateY(-2px); }
+  .mb:active { transform: scale(0.97); box-shadow: 0 0 20px rgba(255,140,50,0.25), inset 0 3px 8px rgba(0,0,0,0.5); }
+  .mm-ver { position: absolute; bottom: 6px; right: 12px; font-size: 9px; color: rgba(150,140,130,0.2); letter-spacing: 2px; z-index: 10; }
+
+  /* ===========================================================
+     CHARACTER SELECT — V5 FINAL
+     =========================================================== */
+  .cs {
+    position: relative; width: 100%; aspect-ratio: 16/9;
+    background: rgb(6,4,10); overflow: hidden;
+  }
+
+  .cs-stage { position: absolute; left: 0; top: 0; width: 55%; height: 100%; display: flex; align-items: center; justify-content: center; }
+  .cs-glow { position: absolute; width: 50%; height: 45%; bottom: 20%; border-radius: 50%; background: radial-gradient(ellipse, rgba(200,160,60,0.15) 0%, transparent 70%); filter: blur(30px); }
+
+  .cs-model-area {
+    position: relative; z-index: 2;
+    width: 180px; height: 320px;
+    background: linear-gradient(180deg, rgba(200,160,60,0.06) 0%, transparent 60%);
+    border: 1px solid rgba(200,160,60,0.1); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    color: rgba(200,160,60,0.25); font-size: 11px; letter-spacing: 2px; text-align: center;
+    box-shadow: 0 0 40px rgba(200,160,60,0.06);
+    cursor: grab;
+  }
+  .cs-model-area:active { cursor: grabbing; }
+  .cs-model-hint { font-size: 8px; margin-top: 8px; color: rgba(255,255,255,0.12); letter-spacing: 3px; }
+  .cs-model-idle { font-size: 9px; margin-top: 4px; color: rgba(200,160,60,0.15); }
+
+  .cs-wmark { position: absolute; bottom: 22%; left: 25%; transform: translateX(-50%); font-family: 'Cinzel Decorative', serif; font-size: 54px; font-weight: 900; color: rgba(240,235,250,0.06); letter-spacing: 16px; }
+  .cs-wmark-sub { position: absolute; bottom: 19%; left: 25%; transform: translateX(-50%); font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 6px; color: rgba(200,160,60,0.35); text-shadow: 0 0 8px rgba(200,160,60,0.15); }
+
+  /* Panel */
+  .cs-panel {
+    position: absolute; right: 2%; top: 5%; width: 40%; bottom: 18%;
+    background: linear-gradient(180deg, rgba(18,14,26,0.96) 0%, rgba(10,8,16,0.97) 40%, rgba(6,4,12,0.98) 100%);
+    border: 1px solid rgba(80,65,100,0.25); border-top: 2px solid rgba(200,160,60,0.5);
+    border-radius: 6px 6px 4px 4px; padding: 16px 20px;
+    display: flex; flex-direction: column;
+    box-shadow: 0 0 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04), inset 0 0 30px rgba(0,0,0,0.2), 0 0 15px rgba(200,160,60,0.05);
+    z-index: 20; overflow: hidden;
+  }
+  .cs-panel::before { content: ''; position: absolute; top: -1px; left: 20px; right: 20px; height: 1px; background: linear-gradient(90deg, transparent, rgba(200,160,60,0.4) 30%, rgba(200,160,60,0.6) 50%, rgba(200,160,60,0.4) 70%, transparent); }
+
+  .tabs { display: flex; gap: 2px; padding-bottom: 8px; border-bottom: 1px solid rgba(80,65,100,0.2); margin-bottom: 10px; flex-shrink: 0; }
+  .tab { padding: 5px 12px; font-size: 10px; letter-spacing: 3px; font-weight: bold; color: rgba(140,130,160,0.4); border-bottom: 2px solid transparent; border-radius: 3px 3px 0 0; cursor: pointer; }
+  .tab.on { color: rgba(240,235,250,0.95); border-bottom-color: rgba(200,160,60,0.9); background: rgba(255,255,255,0.03); text-shadow: 0 0 8px rgba(200,160,60,0.3); }
+
+  .scrl { flex: 1; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; }
+  .scrl::-webkit-scrollbar { width: 3px; }
+  .scrl::-webkit-scrollbar-thumb { background: rgba(80,65,100,0.3); border-radius: 3px; }
+
+  .hn { font-family: 'Cinzel Decorative', serif; font-size: 28px; font-weight: 900; color: #f0ebfa; letter-spacing: 4px; text-shadow: 0 0 20px rgba(200,160,60,0.3), 0 2px 6px rgba(0,0,0,0.5); margin-bottom: 2px; }
+  .ht { font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 3px; color: rgba(200,160,60,0.85); padding-left: 10px; border-left: 3px solid rgba(200,160,60,0.6); margin-bottom: 5px; text-shadow: 0 0 6px rgba(200,160,60,0.2); }
+  .hq { font-size: 10px; color: rgba(180,170,200,0.3); font-style: italic; margin-bottom: 8px; }
+
+  .inf { display: flex; flex-wrap: wrap; gap: 2px 12px; margin-bottom: 2px; }
+  .il { font-size: 8px; color: rgba(140,130,160,0.45); letter-spacing: 3px; font-weight: bold; }
+  .iv { font-size: 11px; color: rgba(210,200,230,0.85); letter-spacing: 1px; margin-left: 4px; }
+
+  .dv { position: relative; height: 14px; margin: 4px 0; flex-shrink: 0; }
+  .dv::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: linear-gradient(90deg, transparent, rgba(80,65,100,0.3) 20%, rgba(80,65,100,0.4) 50%, rgba(80,65,100,0.3) 80%, transparent); }
+  .dv::after { content: '◆'; position: absolute; left: 50%; transform: translateX(-50%); font-size: 5px; color: rgba(200,160,60,0.35); background: rgba(10,8,16,0.98); padding: 0 8px; }
+
+  .sh { font-size: 8px; letter-spacing: 3px; font-weight: bold; color: rgba(140,130,160,0.45); margin-bottom: 5px; }
+
+  /* Stats */
+  .sg { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .sc { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.04); border-radius: 4px; padding: 6px 8px; position: relative; overflow: hidden; transition: all 0.2s ease; cursor: default; }
+  .sc:hover { background: rgba(0,0,0,0.45); border-color: var(--c); box-shadow: 0 0 12px var(--g), inset 0 0 8px rgba(0,0,0,0.2); transform: translateY(-1px); }
+  .sc:hover .sc-l { opacity: 1; }
+  .sc:hover .sc-v { text-shadow: 0 0 10px var(--b); }
+  .sc::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: var(--c); opacity: 0.5; }
+  .sc-h { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .sc-l { font-size: 9px; letter-spacing: 2px; font-weight: bold; color: var(--c); opacity: 0.85; }
+  .sc-v { font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700; color: rgba(240,235,250,0.95); text-shadow: 0 0 6px var(--g); }
+  .sc-t { width: 100%; height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+  .sc-f { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--c), var(--b)); box-shadow: 0 0 8px var(--g); }
+  .sc-f::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 3px; background: var(--b); box-shadow: 0 0 6px var(--b); }
+  .c-hp { --c: #cc3838; --b: #ff5555; --g: rgba(204,56,56,0.3); }
+  .c-sta { --c: #38a855; --b: #55dd70; --g: rgba(56,168,85,0.3); }
+  .c-atk { --c: #cc8820; --b: #ffaa33; --g: rgba(204,136,32,0.3); }
+  .c-def { --c: #3878cc; --b: #55aaff; --g: rgba(56,120,204,0.3); }
+
+  .ag { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+  .ac { text-align: center; background: rgba(0,0,0,0.25); border: 1px solid rgba(80,65,100,0.15); border-radius: 4px; padding: 4px 2px; }
+  .ac:hover { background: rgba(0,0,0,0.4); border-color: rgba(80,65,100,0.3); }
+  .ac-l { font-size: 7px; letter-spacing: 2px; font-weight: bold; color: rgba(140,130,160,0.5); margin-bottom: 1px; }
+  .ac-v { font-family: 'Cinzel', serif; font-size: 18px; font-weight: 900; color: rgba(240,235,250,0.85); text-shadow: 0 1px 3px rgba(0,0,0,0.4); line-height: 1; }
+
+  /* ===== CHAMPION — 50/50 split: model left, info right ===== */
+  .champ-area {
+    flex: 1; min-height: 100px;
+    background: linear-gradient(135deg, rgba(0,0,0,0.3) 0%, rgba(200,160,60,0.02) 100%);
+    border: 1px solid rgba(200,160,60,0.15);
+    border-radius: 6px; padding: 10px;
+    display: flex; flex-direction: row; gap: 10px;
+    position: relative; overflow: hidden; margin-top: 2px;
+  }
+  .champ-area::before { content: ''; position: absolute; top: 0; left: 0; width: 40%; height: 100%; background: radial-gradient(ellipse at 30% 50%, rgba(200,160,60,0.04) 0%, transparent 70%); pointer-events: none; }
+
+  /* Left half: 3D model */
+  .champ-model {
+    width: 48%; min-height: 80px;
+    background: linear-gradient(180deg, rgba(200,160,60,0.03) 0%, rgba(0,0,0,0.2) 100%);
+    border: 1px solid rgba(200,160,60,0.1);
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    color: rgba(200,160,60,0.2); font-size: 10px; letter-spacing: 2px;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.15), 0 0 10px rgba(200,160,60,0.03);
+    cursor: grab; position: relative; flex-shrink: 0;
+  }
+  .champ-model:active { cursor: grabbing; }
+  .champ-model-hint { font-size: 7px; color: rgba(200,160,60,0.12); letter-spacing: 3px; margin-top: 6px; }
+  .champ-model::before { content: ''; position: absolute; top: -20%; left: 25%; width: 50%; height: 50%; background: radial-gradient(ellipse, rgba(200,160,60,0.06) 0%, transparent 70%); pointer-events: none; }
+
+  /* Right half: name + brand + info */
+  .champ-info-right { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .champ-n { font-family: 'Cinzel Decorative', serif; font-size: 16px; font-weight: 700; color: #ffd270; letter-spacing: 1px; margin-bottom: 4px; text-shadow: 0 0 8px rgba(200,160,60,0.2); }
+  .champ-brand { font-family: 'Cinzel', serif; font-size: 12px; font-weight: 700; letter-spacing: 3px; color: rgba(200,160,60,0.8); margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(200,160,60,0.15); }
+  .champ-tags { display: flex; gap: 5px; margin-bottom: 8px; }
+  .tg { font-size: 8px; letter-spacing: 2px; font-weight: bold; padding: 3px 10px; border-radius: 3px; background: rgba(0,0,0,0.35); border: 1px solid rgba(80,65,100,0.25); color: rgba(190,180,210,0.65); }
+  .tg-brand { border-color: rgba(200,160,60,0.35); color: rgba(200,160,60,0.75); background: rgba(200,160,60,0.06); }
+  .champ-desc { font-size: 10px; color: rgba(180,170,200,0.4); line-height: 1.6; }
+
+  /* Bottom bar */
+  .cs-bot {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 16%;
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0.85) 100%);
+    z-index: 25; display: flex; align-items: center; justify-content: center; padding: 10px 4% 8px;
+  }
+  .cs-cards { display: flex; align-items: center; gap: 10px; flex: 1; justify-content: center; }
+
+  .na { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(180deg, rgba(30,24,40,0.9), rgba(14,10,20,0.95)); border: 1px solid rgba(100,80,130,0.3); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.25s; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05); }
+  .na svg { width: 14px; height: 14px; fill: rgba(190,180,210,0.4); transition: all 0.2s; }
+  .na:hover { border-color: rgba(150,130,180,0.5); box-shadow: 0 0 12px rgba(150,130,180,0.15), 0 2px 8px rgba(0,0,0,0.4); transform: scale(1.1); }
+  .na:hover svg { fill: rgba(230,220,250,0.8); }
+
+  .hc { width: 80px; height: 100px; border-radius: 6px; cursor: pointer; position: relative; overflow: hidden; transition: all 0.3s ease; flex-shrink: 0; background: linear-gradient(180deg, rgba(30,24,44,0.85), rgba(15,12,22,0.95)); border: 1.5px solid rgba(80,65,100,0.2); display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+  .hc-l { font-family: 'Cinzel Decorative', serif; font-size: 30px; font-weight: 900; opacity: 0.2; line-height: 1; transition: all 0.3s; }
+  .hc-n { font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 2px; font-weight: 700; margin-top: 6px; opacity: 0.35; transition: all 0.3s; }
+  .hc.on { border-color: var(--cc); background: linear-gradient(180deg, var(--ct), var(--cb)); transform: translateY(-6px) scale(1.08); box-shadow: 0 0 18px var(--cg), 0 10px 22px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08); }
+  .hc.on .hc-l { opacity: 0.75; color: var(--cx); }
+  .hc.on .hc-n { opacity: 0.85; color: var(--cx); }
+  .hc.on::after { content: ''; position: absolute; bottom: -4px; left: 50%; transform: translateX(-50%); width: 6px; height: 6px; border-radius: 50%; background: var(--cc); box-shadow: 0 0 6px var(--cg); }
+  .hc:hover:not(.on) { border-color: rgba(120,100,150,0.4); transform: translateY(-3px); box-shadow: 0 6px 14px rgba(0,0,0,0.35); }
+  .hc:hover:not(.on) .hc-l { opacity: 0.45; }
+  .c-vex { --cc: rgba(200,160,60,0.65); --cg: rgba(200,160,60,0.3); --ct: rgba(60,50,30,0.85); --cb: rgba(30,25,15,0.95); --cx: #ffd270; }
+  .c-sera { --cc: rgba(150,90,210,0.65); --cg: rgba(150,90,210,0.3); --ct: rgba(45,30,65,0.85); --cb: rgba(22,15,32,0.95); --cx: #d2aaff; }
+  .c-orion { --cc: rgba(200,60,60,0.65); --cg: rgba(200,60,60,0.3); --ct: rgba(60,25,25,0.85); --cb: rgba(30,12,12,0.95); --cx: #ff8866; }
+  .c-nyx { --cc: rgba(70,190,210,0.65); --cg: rgba(70,190,210,0.3); --ct: rgba(25,55,60,0.85); --cb: rgba(12,27,30,0.95); --cx: #82e6fa; }
+
+  .emb-btn { min-width: 240px; height: 54px; background: linear-gradient(180deg, rgba(220,175,70,0.95) 0%, rgba(180,135,40,0.98) 50%, rgba(150,110,25,0.99) 100%); border: 2px solid rgba(255,215,90,0.55); border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-left: 24px; position: relative; overflow: hidden; box-shadow: 0 0 24px rgba(200,160,60,0.25), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -2px 4px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.4); animation: emb-b 2.5s ease-in-out infinite; transition: all 0.2s; }
+  .emb-btn::before { content: ''; position: absolute; top: 3px; left: 10%; right: 10%; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent); }
+  .emb-btn::after { content: ''; position: absolute; top: 0; left: -120%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); animation: esw 3.5s ease-in-out infinite; }
+  @keyframes esw { 0%,100% { left: -120%; } 50% { left: 150%; } }
+  .emb-btn:hover { box-shadow: 0 0 45px rgba(200,160,60,0.45), inset 0 1px 0 rgba(255,255,255,0.25), 0 6px 18px rgba(0,0,0,0.5); transform: scale(1.04); border-color: rgba(255,230,120,0.7); }
+  .emb-btn:active { transform: scale(0.96); background: linear-gradient(180deg, rgba(255,220,100,1) 0%, rgba(220,180,60,1) 100%); border-color: rgba(255,240,150,0.9); box-shadow: 0 0 60px rgba(255,200,80,0.5), inset 0 0 20px rgba(255,255,255,0.15); }
+  .emb-t { font-family: 'Cinzel', serif; font-size: 14px; font-weight: 700; color: rgba(15,10,5,0.9); letter-spacing: 4px; position: relative; z-index: 1; }
+  .emb-s { font-size: 9px; color: rgba(15,10,5,0.7); letter-spacing: 4px; margin-top: 2px; position: relative; z-index: 1; font-weight: bold; animation: hold-pulse 2s ease-in-out infinite; }
+  @keyframes hold-pulse { 0%,100% { opacity: 0.7; } 50% { opacity: 1; } }
+  @keyframes emb-b { 0%,100% { box-shadow: 0 0 24px rgba(200,160,60,0.25), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -2px 4px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.4); } 50% { box-shadow: 0 0 40px rgba(200,160,60,0.4), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -2px 4px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.4); } }
+
+  .cs-idx { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); font-size: 10px; color: rgba(190,180,210,0.3); letter-spacing: 5px; z-index: 30; }
+  .cs-back { position: absolute; top: 10px; left: 12px; font-size: 11px; color: rgba(190,180,210,0.3); letter-spacing: 3px; padding: 5px 12px; border: 1px solid rgba(80,65,100,0.15); border-radius: 3px; background: rgba(10,8,16,0.4); cursor: pointer; z-index: 30; }
+  .cs-vig { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.5) 100%); pointer-events: none; z-index: 40; }
+</style>
+</head>
+<body>
+
+<h2>1. TITLE SCREEN — V5</h2>
+<div class="note">
+  <strong>Updates:</strong> Seamless video loop (no glitch), logo bigger + more visible with dark backing, clickable logo (pulse), Veo watermark hidden, demon with idle animation, interactive hover glow on demon, buttons with decorative inner lines + sweep.
+  Audio layer notes: demon laughs, girl crying, ambient music (implementation-time).
+</div>
+
+<div class="frame">
+  <div class="lbl">Video bg (seamless) + interactive logo + demon with hover glow + bigger logo + hidden watermark</div>
+  <div class="mm">
+    <div class="mm-bg-img"></div>
+    <video autoplay loop muted playsinline src="./video.mp4" style="z-index:1;"></video>
+    <div class="mm-demon"></div>
+    <div class="mm-bfade"></div>
+    <!-- Logo with dark backing for visibility -->
+    <div style="position:absolute; top:-2%; left:50%; transform:translateX(-50%); width:82%; height:46%; z-index:3;">
+      <div style="position:absolute; inset:0; background:radial-gradient(ellipse at 50% 60%, rgba(0,0,0,0.5) 0%, transparent 60%); pointer-events:none;"></div>
+      <div style="position:absolute; inset:0; background:url('./logo.png') center/contain no-repeat; filter:drop-shadow(0 0 40px rgba(255,140,50,0.4)); animation:logo-pulse 4s ease-in-out infinite; cursor:pointer;" title="Click me!"></div>
+    </div>
+    <div class="mm-heat"></div>
+    <div class="mm-vig"></div>
+    <div class="mm-scan"></div>
+    <div class="mm-wm"></div>
+
+    <!-- Embers -->
+    <div class="emb" style="left:10%; bottom:6%; --d:22px; animation-duration:4s; width:3px; height:3px;"></div>
+    <div class="emb" style="left:20%; bottom:2%; --d:-16px; animation-duration:5.2s; animation-delay:.5s; width:2px; height:2px;"></div>
+    <div class="emb" style="left:30%; bottom:12%; --d:32px; animation-duration:3.4s; animation-delay:1s; width:4px; height:4px;"></div>
+    <div class="emb" style="left:42%; bottom:5%; --d:-24px; animation-duration:4.6s; animation-delay:.3s; width:2px; height:2px;"></div>
+    <div class="emb" style="left:52%; bottom:9%; --d:12px; animation-duration:3.8s; animation-delay:1.5s; width:3px; height:3px;"></div>
+    <div class="emb" style="left:62%; bottom:3%; --d:-20px; animation-duration:5.4s; animation-delay:.8s; width:2px; height:2px;"></div>
+    <div class="emb" style="left:70%; bottom:15%; --d:36px; animation-duration:4.2s; animation-delay:2s; width:4px; height:4px;"></div>
+    <div class="emb" style="left:78%; bottom:1%; --d:-12px; animation-duration:3.1s; animation-delay:.2s; width:2px; height:2px;"></div>
+    <div class="emb" style="left:16%; bottom:20%; --d:18px; animation-duration:6s; animation-delay:1.2s; width:3px; height:3px;"></div>
+    <div class="emb" style="left:46%; bottom:22%; --d:-28px; animation-duration:5.5s; animation-delay:.6s; width:2px; height:2px;"></div>
+    <div class="emb" style="left:56%; bottom:1%; --d:24px; animation-duration:4.8s; animation-delay:1.8s; width:3px; height:3px;"></div>
+    <div class="emb" style="left:86%; bottom:8%; --d:-10px; animation-duration:4s; animation-delay:1.4s; width:3px; height:3px;"></div>
+    <div class="emb" style="left:35%; bottom:18%; --d:15px; animation-duration:7s; animation-delay:3s; width:5px; height:5px;"></div>
+    <div class="emb" style="left:65%; bottom:25%; --d:-35px; animation-duration:6.5s; animation-delay:2.5s; width:4px; height:4px;"></div>
+
+    <div class="mm-btns">
+      <div class="mb">NEW GAME</div>
+      <div class="mb">CONTINUE</div>
+      <div class="mb">SETTINGS</div>
+      <div class="mb">CREDITS</div>
+      <div class="mb">EXIT</div>
+    </div>
+    <div class="mm-ver">v0.1.0</div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<h2>2. CHARACTER SELECT — V5</h2>
+<div class="note">
+  <strong>Key change this round:</strong> Champion monster's 3D model viewer fills the entire remaining space in the info panel (see below). No champion on the 3D stage — hero gets full spotlight. Hero model is rotatable with idle animations. On embark: unique character voice line plays.
+</div>
+
+<div class="frame">
+  <div class="lbl">Champion model fills remaining panel space • Hero-only stage • Rotatable models • Voice on embark</div>
+  <div class="cs">
+    <div class="cs-stage">
+      <div class="cs-glow"></div>
+      <div class="cs-model-area">
+        3D HERO<br>MODEL
+        <div class="cs-model-hint">DRAG TO ROTATE</div>
+        <div class="cs-model-idle">♦ idle animation ♦</div>
+      </div>
+      <div class="cs-wmark">VEX</div>
+      <div class="cs-wmark-sub">THE WARDEN</div>
+    </div>
+
+    <div class="cs-panel">
+      <div class="tabs">
+        <div class="tab on">OVERVIEW</div>
+        <div class="tab">ABILITIES</div>
+        <div class="tab">LORE</div>
+      </div>
+      <div class="scrl">
+        <div class="hn">VEX</div>
+        <div class="ht">THE WARDEN</div>
+        <div class="hq">"I hold the line."</div>
+        <div class="inf">
+          <span class="il">PATH</span><span class="iv">IRONBOUND</span>
+          <span class="il" style="margin-left:10px;">ROLE</span><span class="iv">TANK</span>
+          <span class="il" style="margin-left:10px;">SYNERGY</span><span class="iv">IRON / DREAD</span>
+        </div>
+        <div class="dv"></div>
+        <div class="sh">COMBAT STATS</div>
+        <div class="sg">
+          <div class="sc c-hp"><div class="sc-h"><span class="sc-l">HP</span><span class="sc-v">68</span></div><div class="sc-t"><div class="sc-f" style="width:85%;"></div></div></div>
+          <div class="sc c-sta"><div class="sc-h"><span class="sc-l">STAMINA</span><span class="sc-v">45</span></div><div class="sc-t"><div class="sc-f" style="width:56%;"></div></div></div>
+          <div class="sc c-atk"><div class="sc-h"><span class="sc-l">ATK</span><span class="sc-v">10</span></div><div class="sc-t"><div class="sc-f" style="width:25%;"></div></div></div>
+          <div class="sc c-def"><div class="sc-h"><span class="sc-l">DEF</span><span class="sc-v">20</span></div><div class="sc-t"><div class="sc-f" style="width:50%;"></div></div></div>
+        </div>
+        <div class="dv"></div>
+        <div class="sh">ATTRIBUTES</div>
+        <div class="ag">
+          <div class="ac"><div class="ac-l">STR</div><div class="ac-v">14</div></div>
+          <div class="ac"><div class="ac-l">DEX</div><div class="ac-v">10</div></div>
+          <div class="ac"><div class="ac-l">CON</div><div class="ac-v">14</div></div>
+          <div class="ac"><div class="ac-l">INT</div><div class="ac-v">10</div></div>
+          <div class="ac"><div class="ac-l">WIS</div><div class="ac-v">12</div></div>
+          <div class="ac"><div class="ac-l">CHA</div><div class="ac-v">10</div></div>
+        </div>
+        <div class="dv"></div>
+
+        <!-- CHAMPION — fills ALL remaining space -->
+        <div class="champ-area">
+          <!-- Left: 3D Model (50%) -->
+          <div class="champ-model">
+            SKITTER-TEETH<br>3D MODEL
+            <div class="champ-model-hint">DRAG TO ROTATE</div>
+          </div>
+          <!-- Right: Name + Brand + Info (50%) -->
+          <div class="champ-info-right">
+            <div class="champ-n">SKITTER-TEETH</div>
+            <div class="champ-brand">⬥ IRON BRAND</div>
+            <div class="champ-tags"><span class="tg tg-brand">IRON</span><span class="tg">TANK</span></div>
+            <div class="champ-desc">Your starting companion. A resilient iron-brand creature that absorbs punishment while you command the battlefield.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cs-back">◀ BACK</div>
+    <div class="cs-idx">HERO 1 / 4</div>
+
+    <div class="cs-bot">
+      <div class="cs-cards">
+        <div class="na"><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
+        <div class="hc on c-vex"><div class="hc-l">V</div><div class="hc-n">VEX</div></div>
+        <div class="hc c-sera"><div class="hc-l">S</div><div class="hc-n">SERA</div></div>
+        <div class="hc c-orion"><div class="hc-l">O</div><div class="hc-n">ORION</div></div>
+        <div class="hc c-nyx"><div class="hc-l">N</div><div class="hc-n">NYX</div></div>
+        <div class="na"><svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg></div>
+      </div>
+      <div class="emb-btn">
+        <div class="emb-t">EMBARK AS VEX</div>
+        <div class="emb-s">HOLD TO CONFIRM</div>
+      </div>
+    </div>
+
+    <div class="cs-vig"></div>
+  </div>
+</div>
+
+<div class="note">
+  <strong>Design decisions locked in:</strong><br><br>
+
+  <strong>TITLE SCREEN (from V4 — approved "looks so sick"):</strong><br>
+  • Looping video background (need seamless loop — no glitch)<br>
+  • Demon with idle breathing animation + interactive layers<br>
+  • VeilBreakers logo: clickable (pulse+smoke), more visible against bg<br>
+  • Hide Veo watermark<br>
+  • Audio: demon laughs, girl crying softly, ambient music fade-in<br>
+  • Buttons: all same size, dark base, orange gradient on hover only, Cinzel font<br>
+  • VFX: embers, ash, vignette, scanlines, heat haze<br><br>
+
+  <strong>CHARACTER SELECT:</strong><br>
+  • <strong>Hero stage:</strong> Full spotlight, no champion on stage. Rotatable model with idle animation<br>
+  • <strong>Stats:</strong> HP(red)/STAMINA(green)/ATK(orange)/DEF(blue) as bars — 2×2 grid<br>
+  • <strong>Attributes:</strong> STR/DEX/CON/INT/WIS/CHA as bold numbers only (no bars, no modifiers)<br>
+  • <strong>Champion monster:</strong> In panel with name+tags+description PLUS 3D model viewer filling remaining space (rotatable)<br>
+  • <strong>Cards:</strong> 80×100px, per-hero colors, hover lift animation (kept)<br>
+  • <strong>Bottom bar:</strong> Cards + embark aligned together<br>
+  • <strong>HERO 1/4:</strong> Top center<br>
+  • <strong>Embark:</strong> Breathing glow + shine sweep + hold-press brightens + <span class="req">plays character voice line on confirm</span><br>
+  • <strong>Panel:</strong> Layered gradient bg, glowing top border, ornamental dividers, depth shadows<br>
+  • <strong>Theme system:</strong> Per-hero colors shift everything (panel border, tabs, stat accents, card colors)<br><br>
+
+  <strong class="req">AUDIO REQUIREMENTS (new):</strong><br>
+  • Title: demon laughs (random), girl crying softly, ambient music fade<br>
+  • CharSelect: hero voice line on embark confirm<br>
+  • Need: AI-generated or placeholder audio assets<br><br>
+
+  <strong class="req">VIDEO REQUIREMENTS (new):</strong><br>
+  • Need seamless loop version of title video (no jump cut)<br>
+  • Remove Veo watermark from video<br>
+  • Consider generating a better background video
+</div>
+
+<h2 style="color: #ffcc44;">READY TO APPROVE?</h2>
+<div class="note">
+  If this design looks right, I'll write the full spec document and create an implementation plan. The title screen V4 layout + this character select layout become the build target.<br><br>
+  <strong>Let me know:</strong> approve as-is, or any final changes before I write the spec?
+</div>
+
+</body>
+</html>

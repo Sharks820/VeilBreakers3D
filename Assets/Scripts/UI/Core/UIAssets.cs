@@ -14,6 +14,9 @@ namespace VeilBreakers.UI.Core
         private static UIAssets _instance;
         private static bool _triedResourcesLoad;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() { _instance = null; _triedResourcesLoad = false; }
+
         /// <summary>
         /// Singleton instance. Must be initialized via Initialize() before use.
         /// For Addressables, load this asset first then call Initialize().

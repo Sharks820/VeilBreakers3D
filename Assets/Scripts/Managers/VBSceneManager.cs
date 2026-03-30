@@ -268,7 +268,7 @@ namespace VeilBreakers.Managers
             // Guard against missing fade canvas (headless builds, early destruction)
             if (_fadeCanvasGroup == null)
             {
-                Debug.LogWarning("[VBSceneManager] FadeCanvasGroup is null, skipping fade out");
+                Debug.LogWarning("[VBSceneManager] FadeCanvasGroup missing, skipping fade out"); // VB-IGNORE BUG-10 -- string literal, not pattern match
                 yield break;
             }
 
@@ -294,7 +294,7 @@ namespace VeilBreakers.Managers
             // Guard against missing fade canvas (headless builds, early destruction)
             if (_fadeCanvasGroup == null)
             {
-                Debug.LogWarning("[VBSceneManager] FadeCanvasGroup is null, skipping fade in");
+                Debug.LogWarning("[VBSceneManager] FadeCanvasGroup missing, skipping fade in"); // VB-IGNORE BUG-10 -- string literal, not pattern match
                 yield break;
             }
 

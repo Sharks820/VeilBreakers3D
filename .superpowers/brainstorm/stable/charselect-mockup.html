@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VeilBreakers AAA UI Mockups</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; color: #e0dce8; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+
+  h1 { font-family: 'Cinzel', serif; text-align: center; color: #ff9944; font-size: 28px; letter-spacing: 4px; margin-bottom: 8px; }
+  .subtitle { text-align: center; color: #888; font-size: 14px; margin-bottom: 40px; }
+  h2 { font-family: 'Cinzel', serif; color: #ddd; font-size: 20px; letter-spacing: 3px; margin: 40px 0 16px; border-bottom: 1px solid #333; padding-bottom: 8px; }
+
+  .mockup-frame { border: 1px solid #333; border-radius: 8px; overflow: hidden; margin-bottom: 30px; }
+  .mockup-label { background: #1a1a24; padding: 8px 16px; font-size: 12px; color: #888; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid #333; }
+
+  /* ============================================
+     MAIN MENU MOCKUP
+     ============================================ */
+  .mm-scene {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: radial-gradient(ellipse at 50% 30%, #3a1a08 0%, #1a0a02 40%, #080408 80%);
+    overflow: hidden;
+  }
+
+  /* Demon silhouette suggestion */
+  .mm-demon {
+    position: absolute;
+    left: 50%; top: 15%;
+    transform: translateX(-50%);
+    width: 55%;
+    height: 75%;
+    background: radial-gradient(ellipse at 50% 60%, rgba(180,60,10,0.15) 0%, transparent 70%);
+  }
+
+  /* Portal glow */
+  .mm-portal {
+    position: absolute;
+    left: 50%; top: 10%;
+    transform: translateX(-50%);
+    width: 50%;
+    height: 40%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(255,120,30,0.12) 0%, rgba(255,60,10,0.05) 40%, transparent 70%);
+  }
+
+  /* Logo area */
+  .mm-logo {
+    position: absolute;
+    top: 6%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Cinzel', serif;
+    font-size: 42px;
+    font-weight: 900;
+    letter-spacing: 8px;
+    color: #f0e0c0;
+    text-shadow: 0 0 40px rgba(255,140,50,0.4), 0 0 80px rgba(255,100,20,0.2), 0 2px 4px rgba(0,0,0,0.8);
+  }
+
+  /* VERTICAL button stack - right side */
+  .mm-buttons {
+    position: absolute;
+    right: 8%;
+    bottom: 15%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+  }
+
+  .mm-btn {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    letter-spacing: 5px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .mm-btn-primary {
+    min-width: 320px;
+    height: 64px;
+    line-height: 64px;
+    font-size: 20px;
+    background: linear-gradient(180deg, rgba(220,110,30,1) 0%, rgba(160,60,10,1) 100%);
+    border: 2px solid rgba(255,180,80,0.8);
+    border-radius: 4px;
+    color: #fff8e8;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    box-shadow: 0 0 20px rgba(255,140,50,0.25), inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 12px rgba(0,0,0,0.4);
+  }
+  .mm-btn-primary:hover {
+    background: linear-gradient(180deg, rgba(240,130,40,1) 0%, rgba(180,80,20,1) 100%);
+    box-shadow: 0 0 30px rgba(255,160,60,0.4), inset 0 1px 0 rgba(255,255,255,0.2), 0 4px 16px rgba(0,0,0,0.5);
+    transform: scale(1.02);
+  }
+
+  .mm-btn-secondary {
+    min-width: 280px;
+    height: 52px;
+    line-height: 52px;
+    font-size: 16px;
+    background: linear-gradient(180deg, rgba(40,30,22,0.95) 0%, rgba(18,12,6,0.98) 100%);
+    border: 1px solid rgba(160,120,60,0.4);
+    border-radius: 4px;
+    color: rgba(200,170,120,0.85);
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .mm-btn-secondary:hover {
+    border-color: rgba(200,150,80,0.6);
+    color: rgba(255,210,150,0.95);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 0 12px rgba(200,140,60,0.15), 0 2px 8px rgba(0,0,0,0.4);
+    transform: scale(1.02);
+  }
+
+  /* Version label */
+  .mm-version {
+    position: absolute;
+    bottom: 12px;
+    right: 16px;
+    font-size: 11px;
+    color: rgba(150,140,130,0.4);
+    letter-spacing: 2px;
+  }
+
+  /* ============================================
+     CHARACTER SELECT MOCKUP
+     ============================================ */
+  .cs-scene {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: rgb(6,4,10);
+    overflow: hidden;
+    display: flex;
+  }
+
+  /* Left: Hero Stage */
+  .cs-stage {
+    position: relative;
+    width: 55%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cs-hero-glow {
+    position: absolute;
+    width: 60%;
+    height: 50%;
+    bottom: 10%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(200,160,60,0.12) 0%, transparent 70%);
+    filter: blur(20px);
+  }
+
+  /* Hero silhouette placeholder */
+  .cs-hero-figure {
+    position: relative;
+    width: 180px;
+    height: 340px;
+    background: linear-gradient(180deg, rgba(200,160,60,0.08) 0%, rgba(200,160,60,0.02) 100%);
+    border: 1px solid rgba(200,160,60,0.15);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(200,160,60,0.4);
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-align: center;
+    z-index: 2;
+  }
+
+  /* Hero name watermark */
+  .cs-hero-watermark {
+    position: absolute;
+    bottom: 18%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Cinzel', serif;
+    font-size: 52px;
+    font-weight: 900;
+    color: rgba(240,235,250,0.08);
+    letter-spacing: 14px;
+    z-index: 1;
+  }
+
+  .cs-hero-subtitle {
+    position: absolute;
+    bottom: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: rgba(200,160,60,0.35);
+    letter-spacing: 6px;
+  }
+
+  /* Right: Info Panel */
+  .cs-panel {
+    position: absolute;
+    right: 0;
+    top: 40px;
+    width: 42%;
+    height: 72%;
+    background: rgba(10,8,16,0.88);
+    border: 1px solid rgba(200,160,60,0.25);
+    border-top: 2px solid rgba(200,160,60,0.5);
+    border-radius: 8px;
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03);
+  }
+
+  /* Tab strip */
+  .cs-tabs {
+    display: flex;
+    gap: 4px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(80,65,100,0.25);
+    margin-bottom: 16px;
+  }
+  .cs-tab {
+    padding: 8px 18px;
+    font-size: 12px;
+    letter-spacing: 3px;
+    font-weight: bold;
+    color: rgba(140,130,160,0.5);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    border-radius: 4px 4px 0 0;
+  }
+  .cs-tab.active {
+    color: rgba(240,235,250,0.95);
+    border-bottom-color: rgba(200,160,60,0.9);
+    background: rgba(255,255,255,0.03);
+  }
+
+  /* Hero identity */
+  .cs-hero-name {
+    font-family: 'Cinzel', serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: #f0ebfa;
+    letter-spacing: 4px;
+    margin-bottom: 4px;
+  }
+  .cs-hero-title-text {
+    font-size: 13px;
+    color: rgba(200,160,60,0.9);
+    letter-spacing: 3px;
+    padding-left: 14px;
+    border-left: 3px solid rgba(200,160,60,0.7);
+    margin-bottom: 12px;
+  }
+  .cs-quote {
+    font-size: 12px;
+    color: rgba(180,170,200,0.4);
+    font-style: italic;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(80,65,100,0.2);
+  }
+
+  /* Info rows */
+  .cs-info-row {
+    display: flex;
+    margin: 4px 0;
+    align-items: center;
+  }
+  .cs-info-label {
+    width: 80px;
+    font-size: 10px;
+    color: rgba(140,130,160,0.5);
+    letter-spacing: 3px;
+    font-weight: bold;
+  }
+  .cs-info-value {
+    font-size: 13px;
+    color: rgba(190,180,210,0.8);
+    letter-spacing: 1px;
+  }
+
+  /* Stat chips */
+  .cs-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .cs-stat {
+    width: 48%;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.03);
+    border-left: 3px solid rgba(200,160,60,0.6);
+    border-radius: 6px;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cs-stat-label {
+    font-size: 10px;
+    color: rgba(140,130,160,0.5);
+    letter-spacing: 2px;
+    font-weight: bold;
+  }
+  .cs-stat-value {
+    font-size: 15px;
+    color: #f0ebfa;
+    font-weight: bold;
+  }
+
+  /* Attribute bars */
+  .cs-bars {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .cs-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cs-bar-label {
+    width: 32px;
+    font-size: 10px;
+    color: rgba(140,130,160,0.5);
+    letter-spacing: 2px;
+    font-weight: bold;
+  }
+  .cs-bar-track {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .cs-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, rgba(200,160,60,0.8), rgba(255,210,80,0.9));
+    box-shadow: 0 0 6px rgba(200,160,60,0.3);
+  }
+  .cs-bar-value {
+    width: 24px;
+    font-size: 11px;
+    color: rgba(190,180,210,0.6);
+    text-align: right;
+  }
+
+  /* Bottom carousel */
+  .cs-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.6) 100%);
+    padding: 0 60px;
+  }
+
+  .cs-card {
+    width: 72px;
+    height: 72px;
+    border-radius: 8px;
+    border: 2px solid rgba(80,65,100,0.3);
+    background: rgba(20,16,30,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    color: rgba(190,180,210,0.5);
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .cs-card.active {
+    border-color: rgba(200,160,60,0.7);
+    box-shadow: 0 0 12px rgba(200,160,60,0.2);
+    background: rgba(200,160,60,0.08);
+    color: rgba(200,160,60,0.9);
+    transform: scale(1.08);
+  }
+  .cs-card:hover:not(.active) {
+    border-color: rgba(120,100,150,0.5);
+    background: rgba(30,24,44,0.8);
+  }
+
+  /* Nav arrows */
+  .cs-nav {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(80,65,100,0.3);
+    background: rgba(20,16,30,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: rgba(190,180,210,0.4);
+    cursor: pointer;
+  }
+
+  /* Embark area */
+  .cs-embark {
+    position: absolute;
+    right: 4%;
+    bottom: 110px;
+    z-index: 30;
+  }
+  .cs-embark-btn {
+    min-width: 260px;
+    height: 56px;
+    background: linear-gradient(180deg, rgba(200,160,60,0.9) 0%, rgba(160,120,30,0.95) 100%);
+    border: 2px solid rgba(255,210,80,0.6);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 0 24px rgba(200,160,60,0.2), inset 0 1px 0 rgba(255,255,255,0.15);
+    transition: all 0.2s;
+  }
+  .cs-embark-btn:hover {
+    box-shadow: 0 0 36px rgba(200,160,60,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+    transform: scale(1.02);
+  }
+  .cs-embark-text {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #0a0610;
+    letter-spacing: 4px;
+  }
+  .cs-embark-sub {
+    font-size: 9px;
+    color: rgba(10,6,16,0.6);
+    letter-spacing: 3px;
+    margin-top: 2px;
+  }
+
+  /* Back button */
+  .cs-back {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    font-size: 13px;
+    color: rgba(190,180,210,0.4);
+    letter-spacing: 3px;
+    cursor: pointer;
+    padding: 8px 16px;
+    border: 1px solid rgba(80,65,100,0.2);
+    border-radius: 4px;
+    background: rgba(10,8,16,0.5);
+  }
+
+  /* Cinematic overlays */
+  .cs-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.4) 100%);
+    pointer-events: none;
+    z-index: 50;
+  }
+
+  .cs-hero-index {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: rgba(190,180,210,0.25);
+    letter-spacing: 4px;
+  }
+
+  .note {
+    background: rgba(255,200,60,0.08);
+    border: 1px solid rgba(255,200,60,0.2);
+    border-radius: 6px;
+    padding: 16px;
+    margin: 16px 0;
+    color: #ccc;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .note strong { color: #ffcc44; }
+
+  .callout-red {
+    background: rgba(200,60,60,0.08);
+    border: 1px solid rgba(200,60,60,0.3);
+    border-radius: 6px;
+    padding: 16px;
+    margin: 16px 0;
+    color: #ccc;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .callout-red strong { color: #ff6666; }
+
+  .callout-green {
+    background: rgba(60,180,60,0.08);
+    border: 1px solid rgba(60,180,60,0.3);
+    border-radius: 6px;
+    padding: 16px;
+    margin: 16px 0;
+    color: #ccc;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .callout-green strong { color: #66ff88; }
+
+  @keyframes breathe {
+    0%, 100% { box-shadow: 0 0 20px rgba(255,140,50,0.25), inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 12px rgba(0,0,0,0.4); }
+    50% { box-shadow: 0 0 28px rgba(255,140,50,0.35), inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 12px rgba(0,0,0,0.4); }
+  }
+  @keyframes embark-breathe {
+    0%, 100% { box-shadow: 0 0 24px rgba(200,160,60,0.2), inset 0 1px 0 rgba(255,255,255,0.15); }
+    50% { box-shadow: 0 0 36px rgba(200,160,60,0.35), inset 0 1px 0 rgba(255,255,255,0.15); }
+  }
+</style>
+</head>
+<body>
+
+<h1>VEILBREAKERS AAA UI MOCKUPS</h1>
+<p class="subtitle">What each screen should look like to compete with Genshin / Diablo IV / Honkai Star Rail</p>
+
+<!-- ============================================ -->
+<h2>1. MAIN MENU — AAA Redesign</h2>
+
+<div class="note">
+  <strong>Key change:</strong> Buttons move from horizontal row at bottom to VERTICAL stack on the right side. This lets the demon figure dominate the left/center while buttons sit cleanly against the darker right edge. Primary button (NEW GAME) is larger with gradient + glow. Secondary buttons are smaller and darker.
+</div>
+
+<div class="mockup-frame">
+  <div class="mockup-label">Proposed Main Menu — Vertical buttons, right-aligned, with demon background</div>
+  <div class="mm-scene">
+    <div class="mm-portal"></div>
+    <div class="mm-demon"></div>
+    <div class="mm-logo">VEILBREAKERS</div>
+
+    <div class="mm-buttons">
+      <div class="mm-btn mm-btn-primary" style="animation: breathe 3s ease-in-out infinite;">NEW GAME</div>
+      <div class="mm-btn mm-btn-secondary">CONTINUE</div>
+      <div class="mm-btn mm-btn-secondary">SETTINGS</div>
+      <div class="mm-btn mm-btn-secondary">CREDITS</div>
+      <div class="mm-btn mm-btn-secondary" style="min-width: 240px; font-size: 14px; height: 44px; line-height: 44px;">EXIT</div>
+    </div>
+
+    <div class="mm-version">v0.1.0</div>
+  </div>
+</div>
+
+<div class="callout-green">
+  <strong>Why this works with the demon:</strong> The demon figure is center-left. Vertical buttons on the right create a natural composition — the player's eye flows: logo (top) → demon (center) → buttons (right). The darker right edge of your background art provides a natural anchor for the button stack. No overlap with the demon.
+</div>
+
+<!-- ============================================ -->
+<h2>2. CHARACTER SELECT — AAA Target</h2>
+
+<div class="note">
+  <strong>This is what the character select should feel like.</strong> All the systems you've built (theme colors, tabs, stat chips, embark) are here — just with AAA visual polish applied. The biggest gap is still the hero model (placeholder capsule), but everything else is CSS-fixable.
+</div>
+
+<div class="mockup-frame">
+  <div class="mockup-label">AAA Character Select — "Vex" (Amber/Gold theme)</div>
+  <div class="cs-scene">
+    <!-- Hero Stage (left 55%) -->
+    <div class="cs-stage">
+      <div class="cs-hero-glow"></div>
+      <div class="cs-hero-figure">3D MODEL<br>HERE</div>
+      <div class="cs-hero-watermark">VEX</div>
+      <div class="cs-hero-subtitle">THE WARDEN</div>
+    </div>
+
+    <!-- Info Panel (right 42%) -->
+    <div class="cs-panel">
+      <div class="cs-tabs">
+        <div class="cs-tab active">OVERVIEW</div>
+        <div class="cs-tab">ABILITIES</div>
+        <div class="cs-tab">LORE</div>
+      </div>
+
+      <div class="cs-hero-name">VEX</div>
+      <div class="cs-hero-title-text">THE WARDEN</div>
+      <div class="cs-quote">"I hold the line."</div>
+
+      <div style="margin-bottom: 10px;">
+        <div class="cs-info-row">
+          <div class="cs-info-label">PATH</div>
+          <div class="cs-info-value">IRONBOUND</div>
+        </div>
+        <div class="cs-info-row">
+          <div class="cs-info-label">ROLE</div>
+          <div class="cs-info-value">TANK</div>
+        </div>
+        <div class="cs-info-row">
+          <div class="cs-info-label">SYNERGY</div>
+          <div class="cs-info-value">IRON / DREAD</div>
+        </div>
+      </div>
+
+      <div class="cs-stats">
+        <div class="cs-stat">
+          <span class="cs-stat-label">HP</span>
+          <span class="cs-stat-value">68</span>
+        </div>
+        <div class="cs-stat">
+          <span class="cs-stat-label">ATK</span>
+          <span class="cs-stat-value">10</span>
+        </div>
+        <div class="cs-stat">
+          <span class="cs-stat-label">DEF</span>
+          <span class="cs-stat-value">20</span>
+        </div>
+        <div class="cs-stat">
+          <span class="cs-stat-label">SPD</span>
+          <span class="cs-stat-value">5</span>
+        </div>
+      </div>
+
+      <div class="cs-bars">
+        <div class="cs-bar-row">
+          <span class="cs-bar-label">STR</span>
+          <div class="cs-bar-track"><div class="cs-bar-fill" style="width: 70%;"></div></div>
+          <span class="cs-bar-value">14</span>
+        </div>
+        <div class="cs-bar-row">
+          <span class="cs-bar-label">DEX</span>
+          <div class="cs-bar-track"><div class="cs-bar-fill" style="width: 50%;"></div></div>
+          <span class="cs-bar-value">10</span>
+        </div>
+        <div class="cs-bar-row">
+          <span class="cs-bar-label">CON</span>
+          <div class="cs-bar-track"><div class="cs-bar-fill" style="width: 70%;"></div></div>
+          <span class="cs-bar-value">14</span>
+        </div>
+        <div class="cs-bar-row">
+          <span class="cs-bar-label">INT</span>
+          <div class="cs-bar-track"><div class="cs-bar-fill" style="width: 50%;"></div></div>
+          <span class="cs-bar-value">10</span>
+        </div>
+        <div class="cs-bar-row">
+          <span class="cs-bar-label">WIS</span>
+          <div class="cs-bar-track"><div class="cs-bar-fill" style="width: 60%;"></div></div>
+          <span class="cs-bar-value">12</span>
+        </div>
+        <div class="cs-bar-row">
+          <span class="cs-bar-label">CHA</span>
+          <div class="cs-bar-track"><div class="cs-bar-fill" style="width: 50%;"></div></div>
+          <span class="cs-bar-value">10</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Back button -->
+    <div class="cs-back">◀ BACK</div>
+
+    <!-- Embark -->
+    <div class="cs-embark">
+      <div class="cs-embark-btn" style="animation: embark-breathe 2.5s ease-in-out infinite;">
+        <div class="cs-embark-text">EMBARK AS VEX</div>
+        <div class="cs-embark-sub">HOLD TO CONFIRM</div>
+      </div>
+    </div>
+
+    <!-- Bottom carousel -->
+    <div class="cs-bottom">
+      <div class="cs-nav">◀</div>
+      <div class="cs-card active">VEX</div>
+      <div class="cs-card">SERA</div>
+      <div class="cs-card">ORION</div>
+      <div class="cs-card">NYX</div>
+      <div class="cs-nav">▶</div>
+    </div>
+
+    <div class="cs-hero-index">HERO 1 / 4</div>
+
+    <!-- Vignette overlay -->
+    <div class="cs-vignette"></div>
+  </div>
+</div>
+
+<div class="callout-red">
+  <strong>What this mockup reveals about current gaps:</strong>
+  <ul style="margin-top: 8px; padding-left: 20px;">
+    <li><strong>Panel depth:</strong> Current panel has no box-shadow. Needs <code>box-shadow: 0 0 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03)</code></li>
+    <li><strong>Panel top-border accent:</strong> Current has uniform border. Needs stronger top edge: <code>border-top: 2px solid hero-primary at 50% opacity</code></li>
+    <li><strong>Embark button:</strong> Needs gradient fill + breathing glow animation (currently flat)</li>
+    <li><strong>Carousel cards:</strong> Currently just a strip — needs portrait cards with active/hover states and selection ring</li>
+    <li><strong>Nav arrows:</strong> Currently unicode text — needs circular button containers</li>
+    <li><strong>Bar fills:</strong> Need gradient + subtle glow shadow to feel premium</li>
+    <li><strong>Hero model:</strong> Placeholder capsule is the #1 issue but that's a 3D art problem, not CSS</li>
+  </ul>
+</div>
+
+<div class="callout-green">
+  <strong>What's already close to AAA in your current code:</strong>
+  <ul style="margin-top: 8px; padding-left: 20px;">
+    <li>Tab system — underline tabs with hero-color accent already look professional</li>
+    <li>Stat chip layout — 2-column grid with left accent border is solid</li>
+    <li>Theme variable system — per-hero color switching is well-architected</li>
+    <li>Info row layout — label + value structure is clean</li>
+    <li>Vignette + cinematic overlays — adding atmosphere correctly</li>
+    <li>Hero name watermark on stage — great subtle touch</li>
+  </ul>
+</div>
+
+<h2>3. NEXT STEPS — Your Call</h2>
+<div class="note">
+  <strong>What needs to happen to make these mockups real:</strong>
+  <ol style="margin-top: 8px; padding-left: 20px; line-height: 2;">
+    <li><strong>Main Menu buttons:</strong> Change UXML layout to vertical + update USS with gradient/shadow/size (2-3 hours)</li>
+    <li><strong>CharSelect panel depth:</strong> Add box-shadow, gradient bar fills, stronger borders (1-2 hours)</li>
+    <li><strong>Embark button:</strong> Add gradient + breathing CSS animation (30 min)</li>
+    <li><strong>Carousel cards:</strong> Restyle nav arrows + card containers in USS (1 hour)</li>
+    <li><strong>Hero models:</strong> This is 3D art work, not code — separate task</li>
+  </ol>
+</div>
+
+</body>
+</html>

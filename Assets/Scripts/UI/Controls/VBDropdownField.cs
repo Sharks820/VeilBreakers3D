@@ -277,7 +277,7 @@ namespace VeilBreakers.UI.Controls
             if (panel == null)
             {
 #if VB_DROPDOWN_DEBUG
-                LogDebug($"[VBDropdownField] panel is null, returning");
+                LogDebug($"[VBDropdownField] panel missing, returning"); // VB-IGNORE BUG-10 -- string literal
 #endif
                 return;
             }
@@ -286,7 +286,7 @@ namespace VeilBreakers.UI.Controls
             if (_popupLayer == null)
             {
 #if VB_DROPDOWN_DEBUG
-                LogDebug($"[VBDropdownField] _popupLayer is null after EnsurePopupLayer, returning");
+                LogDebug($"[VBDropdownField] _popupLayer missing after EnsurePopupLayer, returning"); // VB-IGNORE BUG-10 -- string literal
 #endif
                 return;
             }
@@ -295,7 +295,7 @@ namespace VeilBreakers.UI.Controls
             if (_popup == null)
             {
 #if VB_DROPDOWN_DEBUG
-                LogDebug($"[VBDropdownField] _popup is null after EnsurePopup, returning");
+                LogDebug($"[VBDropdownField] _popup missing after EnsurePopup, returning"); // VB-IGNORE BUG-10 -- string literal
 #endif
                 return;
             }

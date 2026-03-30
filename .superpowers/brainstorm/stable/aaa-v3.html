@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VeilBreakers AAA V3</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #050308; color: #e0dce8; font-family: 'Cinzel Decorative', serif; }
+
+  h2 { font-size: 18px; letter-spacing: 3px; margin: 30px 20px 12px; border-bottom: 1px solid #222; padding-bottom: 8px; color: #ddd; }
+  .note { background: rgba(255,200,60,0.06); border: 1px solid rgba(255,200,60,0.15); border-radius: 6px; padding: 14px 18px; margin: 12px 20px; color: #bbb; font-size: 13px; line-height: 1.7; font-family: 'Segoe UI', sans-serif; }
+  .note strong { color: #ffcc44; }
+  .frame { margin: 0 20px 30px; border: 1px solid #222; border-radius: 8px; overflow: hidden; }
+  .label { background: #111118; padding: 6px 14px; font-size: 11px; color: #666; letter-spacing: 2px; border-bottom: 1px solid #222; font-family: 'Segoe UI', sans-serif; }
+
+  /* ===========================================================
+     TITLE SCREEN
+     =========================================================== */
+  .mm {
+    position: relative; width: 100%; aspect-ratio: 16/9;
+    overflow: hidden; background: #000;
+  }
+  .mm-bg { position: absolute; inset: 0; background: url('/files/bg.png') center/cover no-repeat; }
+  .mm-demon {
+    position: absolute; left: 5%; right: 5%; top: 12%; bottom: -8%;
+    background: url('/files/demon.png') center bottom/contain no-repeat;
+    animation: demon-enter 2s ease-out both;
+    filter: drop-shadow(0 0 40px rgba(255,80,20,0.15));
+  }
+  @keyframes demon-enter {
+    0% { opacity: 0; transform: scale(1.08) translateY(30px); filter: brightness(0.3) drop-shadow(0 0 60px rgba(255,80,20,0.3)); }
+    60% { opacity: 1; filter: brightness(1.1) drop-shadow(0 0 40px rgba(255,80,20,0.2)); }
+    100% { opacity: 1; transform: scale(1) translateY(0); filter: brightness(1) drop-shadow(0 0 40px rgba(255,80,20,0.15)); }
+  }
+  .mm-logo {
+    position: absolute; top: -3%; left: 50%; transform: translateX(-50%);
+    width: 72%; height: 42%;
+    background: url('/files/logo.png') center/contain no-repeat;
+    filter: drop-shadow(0 0 30px rgba(255,140,50,0.35));
+    animation: logo-glow 4s ease-in-out infinite;
+  }
+  @keyframes logo-glow {
+    0%, 100% { filter: drop-shadow(0 0 30px rgba(255,140,50,0.3)); }
+    50% { filter: drop-shadow(0 0 45px rgba(255,140,50,0.5)); }
+  }
+  .mm-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.75) 100%); pointer-events: none; }
+  .mm-scanlines { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(0,0,0,0.04) 2px, rgba(0,0,0,0.04) 4px); pointer-events: none; opacity: 0.6; }
+  .mm-heat { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 70%, rgba(255,60,10,0.04) 0%, transparent 50%); pointer-events: none; animation: heat-pulse 3s ease-in-out infinite; }
+  @keyframes heat-pulse {
+    0%, 100% { opacity: 0.5; } 50% { opacity: 1; }
+  }
+  .mm-bottom-fade { position: absolute; left: 0; right: 0; bottom: 0; height: 40%; background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.5) 40%, transparent 100%); pointer-events: none; }
+
+  /* Ember particles */
+  .ember {
+    position: absolute; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle, rgba(255,180,60,0.95), rgba(255,80,10,0.3));
+    box-shadow: 0 0 6px rgba(255,140,50,0.7), 0 0 12px rgba(255,100,20,0.3);
+    animation: ember-rise linear infinite;
+  }
+  @keyframes ember-rise {
+    0% { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+    8% { opacity: 1; }
+    75% { opacity: 0.5; }
+    100% { transform: translateY(-500px) translateX(var(--drift)) scale(0.2); opacity: 0; }
+  }
+  /* Larger slow ash */
+  .ash {
+    position: absolute; border-radius: 40%; pointer-events: none;
+    background: rgba(180,140,100,0.12);
+    animation: ash-drift linear infinite;
+  }
+  @keyframes ash-drift {
+    0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.4; }
+    90% { opacity: 0.15; }
+    100% { transform: translateY(-300px) translateX(var(--drift)) rotate(var(--rot)); opacity: 0; }
+  }
+
+  /* Buttons — ALL same size, neutral base, orange on hover */
+  .mm-buttons {
+    position: absolute; right: 5%; bottom: 8%;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 8px; z-index: 10;
+  }
+  .mm-btn {
+    width: 280px; height: 54px; line-height: 54px;
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 16px; font-weight: 700; letter-spacing: 4px;
+    text-align: center; cursor: pointer;
+    transition: all 0.3s ease;
+    /* Neutral dark base */
+    background: linear-gradient(180deg, rgba(45,35,25,0.96) 0%, rgba(22,16,10,0.98) 100%);
+    border: 1px solid rgba(140,100,50,0.3);
+    border-top: 1px solid rgba(180,140,70,0.2);
+    border-radius: 3px;
+    color: rgba(210,180,130,0.85);
+    text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 3px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .mm-btn:hover {
+    background: linear-gradient(180deg, rgba(230,120,35,1) 0%, rgba(170,65,12,1) 50%, rgba(140,50,8,1) 100%);
+    border-color: rgba(255,180,80,0.7);
+    border-top-color: rgba(255,220,140,0.5);
+    color: #fffae8;
+    text-shadow: 0 0 10px rgba(255,200,100,0.5), 0 2px 4px rgba(0,0,0,0.6);
+    box-shadow: 0 0 30px rgba(255,140,50,0.35), 0 0 60px rgba(255,100,20,0.12), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -2px 4px rgba(0,0,0,0.3), 0 4px 14px rgba(0,0,0,0.5);
+    transform: scale(1.03) translateY(-1px);
+  }
+  .mm-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 0 15px rgba(255,140,50,0.2), inset 0 2px 6px rgba(0,0,0,0.5);
+  }
+  .mm-version { position: absolute; bottom: 6px; right: 12px; font-size: 9px; color: rgba(150,140,130,0.25); letter-spacing: 2px; z-index: 5; font-family: 'Segoe UI', sans-serif; }
+
+  /* ===========================================================
+     CHARACTER SELECT
+     =========================================================== */
+  .cs {
+    position: relative; width: 100%; aspect-ratio: 16/9;
+    background: rgb(6,4,10); overflow: hidden;
+    --hero-color: rgba(200,160,60,0.85);
+    --hero-glow: rgba(200,160,60,0.15);
+    --hero-accent: #ffd270;
+  }
+
+  /* Hero stage */
+  .cs-stage { position: absolute; left: 0; top: 0; width: 55%; height: 100%; display: flex; align-items: center; justify-content: center; }
+  .cs-glow { position: absolute; width: 50%; height: 40%; bottom: 8%; border-radius: 50%; background: radial-gradient(ellipse, var(--hero-glow) 0%, transparent 70%); filter: blur(30px); }
+  .cs-model {
+    position: relative; z-index: 2;
+    width: 160px; height: 300px;
+    background: linear-gradient(180deg, var(--hero-glow) 0%, transparent 60%);
+    border: 1px solid rgba(200,160,60,0.12);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    color: rgba(200,160,60,0.3); font-size: 11px; letter-spacing: 2px; text-align: center;
+    box-shadow: 0 0 40px rgba(200,160,60,0.08);
+  }
+  .cs-model-sub { font-size: 9px; margin-top: 6px; color: rgba(255,255,255,0.15); font-family: 'Segoe UI', sans-serif; }
+  .cs-watermark {
+    position: absolute; bottom: 20%; left: 27%; transform: translateX(-50%);
+    font-size: 52px; font-weight: 900; color: rgba(240,235,250,0.06); letter-spacing: 16px;
+  }
+  .cs-watermark-sub { position: absolute; bottom: 17%; left: 27%; transform: translateX(-50%); font-size: 10px; letter-spacing: 6px; color: rgba(200,160,60,0.3); }
+
+  /* Info panel */
+  .cs-panel {
+    position: absolute; right: 2%; top: 6%; width: 40%; bottom: 22%;
+    background: linear-gradient(180deg, rgba(20,16,30,0.95) 0%, rgba(10,8,16,0.97) 40%, rgba(6,4,12,0.98) 100%);
+    border: 1px solid rgba(80,65,100,0.25);
+    border-top: 2px solid var(--hero-color);
+    border-radius: 6px 6px 4px 4px;
+    padding: 18px 22px;
+    display: flex; flex-direction: column;
+    box-shadow: 0 0 60px rgba(0,0,0,0.6), 0 0 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.04), inset 0 0 40px rgba(0,0,0,0.2), 0 0 20px var(--hero-glow);
+    z-index: 20;
+  }
+  .cs-panel::before { content: ''; position: absolute; top: -1px; left: 20px; right: 20px; height: 1px; background: linear-gradient(90deg, transparent, var(--hero-color) 30%, rgba(200,160,60,0.6) 50%, var(--hero-color) 70%, transparent); }
+
+  .cs-tabs { display: flex; gap: 2px; padding-bottom: 8px; border-bottom: 1px solid rgba(80,65,100,0.2); margin-bottom: 12px; flex-shrink: 0; }
+  .cs-tab { padding: 6px 14px; font-size: 10px; letter-spacing: 3px; font-weight: 700; color: rgba(140,130,160,0.4); border-bottom: 2px solid transparent; border-radius: 3px 3px 0 0; cursor: pointer; }
+  .cs-tab.active { color: rgba(240,235,250,0.95); border-bottom-color: var(--hero-color); background: rgba(255,255,255,0.03); text-shadow: 0 0 8px var(--hero-glow); }
+
+  .cs-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; }
+  .cs-scroll::-webkit-scrollbar { width: 3px; }
+  .cs-scroll::-webkit-scrollbar-track { background: transparent; }
+  .cs-scroll::-webkit-scrollbar-thumb { background: rgba(80,65,100,0.3); border-radius: 3px; }
+
+  .cs-name { font-size: 30px; font-weight: 900; color: #f0ebfa; letter-spacing: 5px; text-shadow: 0 0 20px var(--hero-glow), 0 2px 6px rgba(0,0,0,0.5); margin-bottom: 4px; }
+  .cs-title { font-size: 11px; letter-spacing: 3px; color: var(--hero-color); padding-left: 12px; border-left: 3px solid rgba(200,160,60,0.6); margin-bottom: 6px; text-shadow: 0 0 6px var(--hero-glow); }
+  .cs-quote { font-size: 10px; color: rgba(180,170,200,0.3); font-style: italic; margin-bottom: 10px; font-family: 'Segoe UI', sans-serif; }
+
+  .cs-info { display: flex; flex-wrap: wrap; gap: 3px 14px; margin-bottom: 4px; font-family: 'Segoe UI', sans-serif; }
+  .info-label { font-size: 8px; color: rgba(140,130,160,0.4); letter-spacing: 3px; font-weight: bold; }
+  .info-val { font-size: 11px; color: rgba(210,200,230,0.8); letter-spacing: 1px; margin-left: 4px; }
+
+  /* Dividers */
+  .div { position: relative; height: 16px; margin: 6px 0; display: flex; align-items: center; flex-shrink: 0; }
+  .div::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: linear-gradient(90deg, transparent, rgba(80,65,100,0.3) 20%, rgba(80,65,100,0.4) 50%, rgba(80,65,100,0.3) 80%, transparent); }
+  .div::after { content: '◆'; position: absolute; left: 50%; transform: translateX(-50%); font-size: 5px; color: rgba(200,160,60,0.35); background: rgba(10,8,16,0.98); padding: 0 8px; }
+
+  /* Stat bars */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .s-card { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.04); border-radius: 4px; padding: 7px 9px; position: relative; overflow: hidden; }
+  .s-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: var(--sc); opacity: 0.4; }
+  .s-hdr { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; font-family: 'Segoe UI', sans-serif; }
+  .s-lbl { font-size: 8px; letter-spacing: 2px; font-weight: bold; color: var(--sc); opacity: 0.8; }
+  .s-val { font-size: 13px; font-weight: bold; color: rgba(240,235,250,0.95); text-shadow: 0 0 6px var(--sg); font-family: 'Cinzel Decorative', serif; }
+  .s-trk { width: 100%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; }
+  .s-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--sc), var(--sb)); box-shadow: 0 0 8px var(--sg); position: relative; }
+  .s-fill::after { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 3px; background: var(--sb); border-radius: 0 2px 2px 0; box-shadow: 0 0 6px var(--sb); }
+  .hp { --sc: #cc3838; --sb: #ff5555; --sg: rgba(204,56,56,0.3); }
+  .sta { --sc: #38a855; --sb: #55dd70; --sg: rgba(56,168,85,0.3); }
+  .atk { --sc: #cc8820; --sb: #ffaa33; --sg: rgba(204,136,32,0.3); }
+  .def { --sc: #3878cc; --sb: #55aaff; --sg: rgba(56,120,204,0.3); }
+
+  /* Attribute numbers */
+  .attr-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+  .attr { text-align: center; background: rgba(0,0,0,0.25); border: 1px solid rgba(80,65,100,0.15); border-radius: 4px; padding: 5px 2px; transition: all 0.2s; }
+  .attr:hover { background: rgba(0,0,0,0.4); border-color: rgba(80,65,100,0.3); }
+  .attr-l { font-size: 7px; letter-spacing: 2px; font-weight: bold; color: rgba(140,130,160,0.45); font-family: 'Segoe UI', sans-serif; margin-bottom: 2px; }
+  .attr-v { font-size: 18px; font-weight: 900; color: rgba(240,235,250,0.85); text-shadow: 0 1px 3px rgba(0,0,0,0.4); line-height: 1; }
+
+  .sec-hdr { font-size: 8px; letter-spacing: 3px; font-weight: bold; color: rgba(140,130,160,0.4); margin-bottom: 6px; font-family: 'Segoe UI', sans-serif; }
+
+  /* Champion monster - spotlight treatment */
+  .champ {
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(135deg, rgba(0,0,0,0.35) 0%, rgba(200,160,60,0.03) 100%);
+    border: 1px solid rgba(80,65,100,0.2);
+    border-left: 3px solid rgba(200,160,60,0.5);
+    border-radius: 5px;
+    padding: 10px 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Spotlight gradient behind icon */
+  .champ::before {
+    content: '';
+    position: absolute; left: -10px; top: -10px; width: 80px; height: 80px;
+    background: radial-gradient(circle, rgba(200,160,60,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .champ-icon {
+    width: 48px; height: 48px; border-radius: 6px;
+    background: linear-gradient(135deg, rgba(200,160,60,0.12), rgba(0,0,0,0.3));
+    border: 1px solid rgba(200,160,60,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: rgba(200,160,60,0.5); flex-shrink: 0;
+    box-shadow: 0 0 12px rgba(200,160,60,0.1), inset 0 0 8px rgba(200,160,60,0.05);
+    position: relative;
+  }
+  /* Model silhouette hint */
+  .champ-icon span { font-size: 9px; color: rgba(200,160,60,0.3); text-align: center; line-height: 1.2; font-family: 'Segoe UI', sans-serif; }
+  .champ-info { flex: 1; }
+  .champ-name { font-size: 12px; font-weight: 700; color: #ffd270; letter-spacing: 1px; margin-bottom: 3px; }
+  .champ-tags { display: flex; gap: 6px; font-family: 'Segoe UI', sans-serif; }
+  .tag { font-size: 8px; letter-spacing: 2px; font-weight: bold; padding: 2px 8px; border-radius: 3px; background: rgba(0,0,0,0.35); border: 1px solid rgba(80,65,100,0.25); color: rgba(190,180,210,0.6); }
+
+  /* ===== BOTTOM AREA: Carousel + Embark aligned ===== */
+  .cs-bottom-area {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 18%;
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.6) 30%, rgba(0,0,0,0.85) 100%);
+    z-index: 25;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 3%;
+  }
+
+  /* Nav section (left-center) */
+  .cs-nav-section {
+    display: flex; align-items: center; gap: 10px;
+    flex: 1; justify-content: center;
+  }
+
+  /* Nav arrows - styled */
+  .nav-arr {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(180deg, rgba(30,24,40,0.85), rgba(14,10,20,0.95));
+    border: 1px solid rgba(100,80,130,0.25);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.25s; flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .nav-arr svg { width: 12px; height: 12px; fill: rgba(190,180,210,0.35); transition: fill 0.2s; }
+  .nav-arr:hover { border-color: rgba(140,120,170,0.4); box-shadow: 0 0 10px rgba(140,120,170,0.12), 0 2px 8px rgba(0,0,0,0.4); transform: scale(1.08); }
+  .nav-arr:hover svg { fill: rgba(220,210,240,0.7); }
+
+  /* Hero cards */
+  .h-card {
+    width: 64px; height: 82px; border-radius: 5px; cursor: pointer;
+    position: relative; overflow: hidden; transition: all 0.3s ease; flex-shrink: 0;
+    background: linear-gradient(180deg, rgba(30,24,44,0.85), rgba(15,12,22,0.95));
+    border: 1px solid rgba(80,65,100,0.2);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .h-card-letter { font-size: 24px; font-weight: 900; opacity: 0.2; line-height: 1; }
+  .h-card-name { font-size: 7px; letter-spacing: 2px; font-weight: 700; margin-top: 5px; opacity: 0.35; }
+  .h-card.active {
+    border-color: var(--cc, rgba(200,160,60,0.6));
+    background: linear-gradient(180deg, var(--ct, rgba(60,50,30,0.85)), var(--cb, rgba(30,25,15,0.95)));
+    transform: translateY(-5px) scale(1.06);
+    box-shadow: 0 0 14px var(--cg, rgba(200,160,60,0.25)), 0 8px 18px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .h-card.active .h-card-letter { opacity: 0.7; color: var(--cx, #ffd270); }
+  .h-card.active .h-card-name { opacity: 0.8; color: var(--cx, #ffd270); }
+  .h-card.active::after { content: ''; position: absolute; bottom: -3px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 50%; background: var(--cc, rgba(200,160,60,0.8)); box-shadow: 0 0 5px var(--cg, rgba(200,160,60,0.4)); }
+  .h-card:hover:not(.active) { border-color: rgba(120,100,150,0.35); transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+  .h-card:hover:not(.active) .h-card-letter { opacity: 0.4; }
+
+  .vex { --cc: rgba(200,160,60,0.6); --cg: rgba(200,160,60,0.25); --ct: rgba(60,50,30,0.85); --cb: rgba(30,25,15,0.95); --cx: #ffd270; }
+  .sera { --cc: rgba(150,90,210,0.6); --cg: rgba(150,90,210,0.25); --ct: rgba(45,30,65,0.85); --cb: rgba(22,15,32,0.95); --cx: #d2aaff; }
+  .orion { --cc: rgba(200,60,60,0.6); --cg: rgba(200,60,60,0.25); --ct: rgba(60,25,25,0.85); --cb: rgba(30,12,12,0.95); --cx: #ff8866; }
+  .nyx { --cc: rgba(70,190,210,0.6); --cg: rgba(70,190,210,0.25); --ct: rgba(25,55,60,0.85); --cb: rgba(12,27,30,0.95); --cx: #82e6fa; }
+
+  /* Embark button — right-aligned in bottom area */
+  .cs-embark-btn {
+    min-width: 220px; height: 50px;
+    background: linear-gradient(180deg, rgba(200,160,60,0.95) 0%, rgba(160,120,30,0.98) 50%, rgba(130,95,20,0.99) 100%);
+    border: 2px solid rgba(255,210,80,0.5);
+    border-top: 2px solid rgba(255,230,140,0.35);
+    border-radius: 4px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0; margin-left: 20px;
+    box-shadow: 0 0 22px rgba(200,160,60,0.2), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -2px 4px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.4);
+    animation: eb 2.5s ease-in-out infinite;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Inner shine sweep */
+  .cs-embark-btn::before {
+    content: '';
+    position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    animation: shine-sweep 4s ease-in-out infinite;
+  }
+  @keyframes shine-sweep {
+    0%, 100% { left: -100%; }
+    50% { left: 150%; }
+  }
+  .cs-embark-btn:hover { box-shadow: 0 0 40px rgba(200,160,60,0.4), inset 0 1px 0 rgba(255,255,255,0.2), 0 6px 16px rgba(0,0,0,0.5); transform: scale(1.03); }
+  /* Hold animation */
+  .cs-embark-btn:active {
+    transform: scale(0.97);
+    box-shadow: 0 0 50px rgba(200,160,60,0.5), inset 0 0 20px rgba(255,255,255,0.1), 0 2px 6px rgba(0,0,0,0.5);
+    border-color: rgba(255,230,120,0.8);
+    background: linear-gradient(180deg, rgba(240,200,80,1) 0%, rgba(200,160,50,1) 100%);
+  }
+  .eb-text { font-size: 13px; font-weight: 700; color: rgba(10,6,16,0.9); letter-spacing: 4px; position: relative; z-index: 1; }
+  .eb-sub { font-size: 7px; color: rgba(10,6,16,0.45); letter-spacing: 3px; margin-top: 1px; position: relative; z-index: 1; font-family: 'Segoe UI', sans-serif; }
+  @keyframes eb {
+    0%, 100% { box-shadow: 0 0 22px rgba(200,160,60,0.2), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -2px 4px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.4); }
+    50% { box-shadow: 0 0 35px rgba(200,160,60,0.35), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -2px 4px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.4); }
+  }
+
+  /* Hero index at top */
+  .cs-hero-idx { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); font-size: 9px; color: rgba(190,180,210,0.25); letter-spacing: 5px; z-index: 30; }
+  .cs-back { position: absolute; top: 10px; left: 12px; font-size: 11px; color: rgba(190,180,210,0.3); letter-spacing: 3px; padding: 5px 12px; border: 1px solid rgba(80,65,100,0.15); border-radius: 3px; background: rgba(10,8,16,0.4); cursor: pointer; z-index: 30; transition: all 0.2s; }
+  .cs-back:hover { border-color: rgba(120,100,150,0.3); color: rgba(220,210,240,0.6); }
+  .cs-vig { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.5) 100%); pointer-events: none; z-index: 40; }
+</style>
+</head>
+<body>
+
+<h2>1. TITLE SCREEN — V3</h2>
+<div class="frame">
+  <div class="label" style="font-family: 'Segoe UI', sans-serif;">Real assets + demon entrance animation + VFX + uniform buttons (orange on hover)</div>
+  <div class="mm">
+    <div class="mm-bg"></div>
+    <div class="mm-demon"></div>
+    <div class="mm-bottom-fade"></div>
+    <div class="mm-logo"></div>
+    <div class="mm-heat"></div>
+    <div class="mm-vignette"></div>
+    <div class="mm-scanlines"></div>
+
+    <!-- Embers -->
+    <div class="ember" style="left:12%; bottom:8%; --drift:20px; animation-duration:4s; width:3px; height:3px;"></div>
+    <div class="ember" style="left:22%; bottom:3%; --drift:-15px; animation-duration:5.2s; animation-delay:0.5s; width:2px; height:2px;"></div>
+    <div class="ember" style="left:33%; bottom:14%; --drift:30px; animation-duration:3.5s; animation-delay:1s; width:4px; height:4px;"></div>
+    <div class="ember" style="left:43%; bottom:6%; --drift:-25px; animation-duration:4.5s; animation-delay:0.3s; width:2px; height:2px;"></div>
+    <div class="ember" style="left:53%; bottom:10%; --drift:10px; animation-duration:3.8s; animation-delay:1.5s; width:3px; height:3px;"></div>
+    <div class="ember" style="left:63%; bottom:4%; --drift:-20px; animation-duration:5.5s; animation-delay:0.8s; width:2px; height:2px;"></div>
+    <div class="ember" style="left:71%; bottom:16%; --drift:35px; animation-duration:4.2s; animation-delay:2s; width:3px; height:3px;"></div>
+    <div class="ember" style="left:78%; bottom:2%; --drift:-10px; animation-duration:3.2s; animation-delay:0.2s; width:2px; height:2px;"></div>
+    <div class="ember" style="left:18%; bottom:18%; --drift:15px; animation-duration:6s; animation-delay:1.2s; width:3px; height:3px;"></div>
+    <div class="ember" style="left:48%; bottom:22%; --drift:-30px; animation-duration:5.5s; animation-delay:0.6s; width:2px; height:2px;"></div>
+    <div class="ember" style="left:58%; bottom:1%; --drift:22px; animation-duration:4.8s; animation-delay:1.8s; width:3px; height:3px;"></div>
+    <div class="ember" style="left:38%; bottom:12%; --drift:-18px; animation-duration:3.6s; animation-delay:2.5s; width:2px; height:2px;"></div>
+    <div class="ember" style="left:8%; bottom:25%; --drift:12px; animation-duration:7s; animation-delay:0.4s; width:4px; height:4px;"></div>
+    <div class="ember" style="left:88%; bottom:8%; --drift:-8px; animation-duration:4s; animation-delay:1.4s; width:2px; height:2px;"></div>
+
+    <!-- Ash flakes -->
+    <div class="ash" style="left:20%; bottom:5%; --drift:40px; --rot:180deg; animation-duration:8s; width:6px; height:4px;"></div>
+    <div class="ash" style="left:40%; bottom:10%; --drift:-35px; --rot:270deg; animation-duration:10s; animation-delay:2s; width:8px; height:5px;"></div>
+    <div class="ash" style="left:65%; bottom:3%; --drift:25px; --rot:90deg; animation-duration:9s; animation-delay:4s; width:5px; height:4px;"></div>
+    <div class="ash" style="left:80%; bottom:15%; --drift:-20px; --rot:360deg; animation-duration:11s; animation-delay:1s; width:7px; height:4px;"></div>
+
+    <div class="mm-buttons">
+      <div class="mm-btn">NEW GAME</div>
+      <div class="mm-btn">CONTINUE</div>
+      <div class="mm-btn">SETTINGS</div>
+      <div class="mm-btn">CREDITS</div>
+      <div class="mm-btn">EXIT</div>
+    </div>
+    <div class="mm-version">v0.1.0</div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<h2>2. CHARACTER SELECT — V3</h2>
+<div class="frame">
+  <div class="label" style="font-family: 'Segoe UI', sans-serif;">Redesigned stats + premium depth + aligned carousel + embark flair</div>
+  <div class="cs">
+    <div class="cs-stage">
+      <div class="cs-glow"></div>
+      <div class="cs-model">3D MODEL<div class="cs-model-sub">(replaces capsule)</div></div>
+      <div class="cs-watermark">VEX</div>
+      <div class="cs-watermark-sub">THE WARDEN</div>
+    </div>
+
+    <div class="cs-panel">
+      <div class="cs-tabs">
+        <div class="cs-tab active">OVERVIEW</div>
+        <div class="cs-tab">ABILITIES</div>
+        <div class="cs-tab">LORE</div>
+      </div>
+      <div class="cs-scroll">
+        <div class="cs-name">VEX</div>
+        <div class="cs-title">THE WARDEN</div>
+        <div class="cs-quote" style="font-family:'Segoe UI',sans-serif;">"I hold the line."</div>
+        <div class="cs-info">
+          <span class="info-label">PATH</span><span class="info-val">IRONBOUND</span>
+          <span class="info-label" style="margin-left:12px;">ROLE</span><span class="info-val">TANK</span>
+          <span class="info-label" style="margin-left:12px;">SYNERGY</span><span class="info-val">IRON / DREAD</span>
+        </div>
+        <div class="div"></div>
+        <div class="sec-hdr">COMBAT STATS</div>
+        <div class="stat-grid">
+          <div class="s-card hp"><div class="s-hdr"><span class="s-lbl">HP</span><span class="s-val">68</span></div><div class="s-trk"><div class="s-fill" style="width:85%;"></div></div></div>
+          <div class="s-card sta"><div class="s-hdr"><span class="s-lbl">STAMINA</span><span class="s-val">45</span></div><div class="s-trk"><div class="s-fill" style="width:56%;"></div></div></div>
+          <div class="s-card atk"><div class="s-hdr"><span class="s-lbl">ATK</span><span class="s-val">10</span></div><div class="s-trk"><div class="s-fill" style="width:25%;"></div></div></div>
+          <div class="s-card def"><div class="s-hdr"><span class="s-lbl">DEF</span><span class="s-val">20</span></div><div class="s-trk"><div class="s-fill" style="width:50%;"></div></div></div>
+        </div>
+        <div class="div"></div>
+        <div class="sec-hdr">ATTRIBUTES</div>
+        <div class="attr-grid">
+          <div class="attr"><div class="attr-l">STR</div><div class="attr-v">14</div></div>
+          <div class="attr"><div class="attr-l">DEX</div><div class="attr-v">10</div></div>
+          <div class="attr"><div class="attr-l">CON</div><div class="attr-v">14</div></div>
+          <div class="attr"><div class="attr-l">INT</div><div class="attr-v">10</div></div>
+          <div class="attr"><div class="attr-l">WIS</div><div class="attr-v">12</div></div>
+          <div class="attr"><div class="attr-l">CHA</div><div class="attr-v">10</div></div>
+        </div>
+        <div class="div"></div>
+        <div class="sec-hdr">CHAMPION MONSTER</div>
+        <div class="champ">
+          <div class="champ-icon"><span>3D<br>MODEL</span></div>
+          <div class="champ-info">
+            <div class="champ-name">SKITTER-TEETH</div>
+            <div class="champ-tags"><span class="tag">IRON</span><span class="tag">TANK</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cs-back">◀ BACK</div>
+    <div class="cs-hero-idx">HERO 1 / 4</div>
+
+    <!-- Bottom area: carousel + embark aligned -->
+    <div class="cs-bottom-area">
+      <div class="cs-nav-section">
+        <div class="nav-arr"><svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></div>
+        <div class="h-card active vex"><div class="h-card-letter">V</div><div class="h-card-name">VEX</div></div>
+        <div class="h-card sera"><div class="h-card-letter">S</div><div class="h-card-name">SERA</div></div>
+        <div class="h-card orion"><div class="h-card-letter">O</div><div class="h-card-name">ORION</div></div>
+        <div class="h-card nyx"><div class="h-card-letter">N</div><div class="h-card-name">NYX</div></div>
+        <div class="nav-arr"><svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg></div>
+      </div>
+      <div class="cs-embark-btn">
+        <div class="eb-text">EMBARK AS VEX</div>
+        <div class="eb-sub">HOLD TO CONFIRM</div>
+      </div>
+    </div>
+
+    <div class="cs-vig"></div>
+  </div>
+</div>
+
+<div class="note">
+  <strong>V3 changes:</strong><br>
+  • <strong>Title:</strong> Demon visible with entrance animation (scale up + brighten), logo with pulsing glow, heat haze effect, ash flakes, all buttons same size/dark base with orange on hover only<br>
+  • <strong>CharSelect:</strong> No +modifiers on attributes, champion has spotlight glow + model placeholder, cards aligned with embark in same bottom bar, HERO 1/4 at top of screen, SVG nav arrows, embark has shine-sweep animation + hold-to-press effect, panel extends down to bottom area<br>
+  • <strong>Font:</strong> Cinzel Decorative throughout (titles, buttons, stat values, card names)
+</div>
+
+</body>
+</html>

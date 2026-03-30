@@ -112,6 +112,8 @@ namespace VeilBreakers.UI.Menus
             // caused visible flickering as two systems fought over the same elements.
             SetupEventHandlers();
             StartCoroutine(DeferredStartupInit());
+            if (_failsafeCoroutine != null) StopCoroutine(_failsafeCoroutine);
+            _failsafeCoroutine = StartCoroutine(EnsureVisibilityFailsafe());
         }
 
         private void OnDestroy()
@@ -194,7 +196,7 @@ namespace VeilBreakers.UI.Menus
                 mainContainer.Add(menuContent);
 
                 // Initialize controller (guard against duplicates on reload)
-                _mainMenuController = GetComponent<MainMenuController>() ?? gameObject.AddComponent<MainMenuController>();
+                _mainMenuController = GetComponent<MainMenuController>() ?? gameObject.AddComponent<MainMenuController>(); // VB-IGNORE UNITY-05 -- dynamically added, not a GetComponent-without-require pattern
                 _mainMenuController.Initialize(_root);
             }
             else
@@ -250,7 +252,7 @@ namespace VeilBreakers.UI.Menus
                 _root.Add(_settingsOverlay);
 
                 // Initialize settings controller (guard against duplicates on reload)
-                _settingsController = GetComponent<SettingsPanelController>() ?? gameObject.AddComponent<SettingsPanelController>();
+                _settingsController = GetComponent<SettingsPanelController>() ?? gameObject.AddComponent<SettingsPanelController>(); // VB-IGNORE UNITY-05 -- dynamically added, not a GetComponent-without-require pattern
                 _settingsController.Initialize(_settingsOverlay);
             }
             else
@@ -272,12 +274,26 @@ namespace VeilBreakers.UI.Menus
             var mainContainer = _root.Q<VisualElement>("main-container");
             if (mainContainer != null) mainContainer.style.opacity = 1;
 
+            var background = _root.Q<VisualElement>("background");
+            if (background != null) background.style.opacity = 1;
+
+            var monster = _root.Q<VisualElement>("monster-image");
+            if (monster != null) monster.style.opacity = 1;
+
+            var logoContainer = _root.Q<VisualElement>("logo-container");
+            if (logoContainer != null) logoContainer.style.opacity = 1;
+
+            var logo = _root.Q<VisualElement>("logo-image");
+            if (logo != null) logo.style.opacity = 1;
+
             var title = _root.Q<Label>("game-title");
             if (title != null) title.style.opacity = 1;
 
             var buttonContainer = _root.Q<VisualElement>("button-container");
             if (buttonContainer != null)
             {
+                buttonContainer.style.opacity = 1;
+                buttonContainer.style.translate = new Translate(0, 0);
                 var buttons = buttonContainer.Query<Button>().ToList();
                 foreach (var btn in buttons)
                 {
@@ -285,6 +301,8 @@ namespace VeilBreakers.UI.Menus
                     btn.style.translate = new Translate(0, 0);
                 }
             }
+
+            Debug.Log("[MainMenuBootstrap] Visibility failsafe applied.");
         }
 
         private IEnumerator EntranceAnimationSequence()
@@ -392,7 +410,7 @@ namespace VeilBreakers.UI.Menus
             if (volume <= 0.001f) return;
 
             if (_cachedCamera == null) _cachedCamera = Camera.main;
-            AudioSource.PlayClipAtPoint(clip, _cachedCamera?.transform.position ?? Vector3.zero, volume);
+            AudioSource.PlayClipAtPoint(clip, _cachedCamera?.transform.position ?? Vector3.zero, volume); // VB-IGNORE GAME-02 -- one-shot UI click SFX, fire-and-forget is acceptable
         }
 
         // =============================================================================
@@ -604,7 +622,7 @@ namespace VeilBreakers.UI.Menus
                     float alpha = Mathf.SmoothStep(1f, 0f, dist * 1.1f);
                     alpha = Mathf.Pow(alpha, 0.5f); // Harder edge — ensures watermark is fully covered
 
-                    tex.SetPixel(x, h - 1 - y, new Color(darkBase.r, darkBase.g, darkBase.b, alpha));
+                    tex.SetPixel(x, h - 1 - y, new Color(darkBase.r, darkBase.g, darkBase.b, alpha)); // VB-IGNORE PERF-06 -- one-time texture generation at startup, not per-frame
                 }
             }
             tex.Apply();
@@ -634,7 +652,7 @@ namespace VeilBreakers.UI.Menus
                 "VeilBreakers.UI.Core.MoltenButtonVFX"
             };
 
-            var behaviours = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var behaviours = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None); // VB-IGNORE PERF-43 PERF-44 -- one-time call at startup (batch mode only), not per-frame
             for (int i = 0; i < behaviours.Length; i++)
             {
                 var behaviour = behaviours[i];

@@ -20,6 +20,14 @@ namespace VeilBreakers.UI.Menus
     public class MainMenuController : MonoBehaviour
     {
         // =============================================================================
+        // CACHED WAIT INSTANCES (BUG-13)
+        // =============================================================================
+
+        private static readonly WaitForSecondsRealtime kWaitScatter = new WaitForSecondsRealtime(0.25f);
+        private static readonly WaitForSecondsRealtime kWaitFlash = new WaitForSecondsRealtime(0.15f);
+        private static readonly WaitForSecondsRealtime kWaitFadeToBlack = new WaitForSecondsRealtime(0.45f);
+
+        // =============================================================================
         // CACHED TRANSITION LISTS
         // =============================================================================
 
@@ -150,7 +158,7 @@ namespace VeilBreakers.UI.Menus
         {
             if (_uiDocument == null)
             {
-                _uiDocument = GetComponent<UIDocument>();
+                _uiDocument = GetComponent<UIDocument>(); // VB-IGNORE UNITY-05 -- optional fallback, UIDocument may be assigned via inspector
             }
         }
 
@@ -167,8 +175,8 @@ namespace VeilBreakers.UI.Menus
                 StartCoroutine(RefreshContinueButton());
             }
 
-            // Subscribe to InputManager for universal navigation
-            if (InputManager.Instance != null)
+            // Subscribe to InputManager for universal navigation (UNITY-05: use HasInstance to avoid auto-create)
+            if (InputManager.HasInstance)
             {
                 InputManager.Instance.OnActionTriggered += OnActionTriggered;
             }
@@ -186,8 +194,8 @@ namespace VeilBreakers.UI.Menus
                 _saveBrowser.OnBrowserClosed -= OnSaveBrowserClosed;
             }
 
-            // Unsubscribe from InputManager
-            if (InputManager.Instance != null)
+            // Unsubscribe from InputManager (use HasInstance to avoid auto-create during quit)
+            if (InputManager.HasInstance)
             {
                 InputManager.Instance.OnActionTriggered -= OnActionTriggered;
             }
@@ -544,7 +552,7 @@ namespace VeilBreakers.UI.Menus
                 _titleSection.style.scale = new Scale(new Vector2(1.1f, 1.1f));
             }
 
-            yield return new WaitForSecondsRealtime(0.25f);
+            yield return kWaitScatter;
 
             // Phase 2: Flash white overlay (0.15s in, 0.2s out)
             var flash = new VisualElement();
@@ -566,7 +574,7 @@ namespace VeilBreakers.UI.Menus
                 flash.style.backgroundColor = new Color(1f, 0.9f, 0.7f, 0.6f);
             });
 
-            yield return new WaitForSecondsRealtime(0.15f);
+            yield return kWaitFlash;
 
             // Phase 3: Flash fades to black (0.4s)
             flash.style.transitionDuration = kFlashOutDurations;
@@ -576,7 +584,7 @@ namespace VeilBreakers.UI.Menus
             _root.style.transitionProperty = kRootFadeProperties;
             _root.style.transitionDuration = kRootFadeDurations;
 
-            yield return new WaitForSecondsRealtime(0.45f);
+            yield return kWaitFadeToBlack;
 
             // Load scene
             var asyncOp = SceneManager.LoadSceneAsync(sceneName);
@@ -848,7 +856,7 @@ namespace VeilBreakers.UI.Menus
             BindEvents();
 
             // Cache TitleScreenVFX for logo hover response (use GetComponent first, fallback to scene search)
-            _titleVfx = GetComponent<TitleScreenVFX>() ?? GetComponentInChildren<TitleScreenVFX>() ?? FindAnyObjectByType<TitleScreenVFX>();
+            _titleVfx = GetComponent<TitleScreenVFX>() ?? GetComponentInChildren<TitleScreenVFX>() ?? FindAnyObjectByType<TitleScreenVFX>(); // VB-IGNORE UNITY-05 -- optional search for VFX controller, may not exist
 
             // Initialize audio system
             InitAudio();
@@ -998,7 +1006,7 @@ namespace VeilBreakers.UI.Menus
         private IEnumerator FadeInElement(VisualElement element, float duration, float delay)
         {
             if (delay > 0)
-                yield return new WaitForSeconds(delay);
+                yield return new WaitForSeconds(delay); // VB-IGNORE BUG-13 -- dynamic delay parameter, one-shot animation
 
             float elapsed = 0;
             while (elapsed < duration)
@@ -1015,7 +1023,7 @@ namespace VeilBreakers.UI.Menus
         private IEnumerator SlideInElement(VisualElement element, float fromX, float fromY, float duration, float delay, EaseType easeType = EaseType.EaseOut)
         {
             if (delay > 0)
-                yield return new WaitForSeconds(delay);
+                yield return new WaitForSeconds(delay); // VB-IGNORE BUG-13 -- dynamic delay parameter, one-shot animation
 
             float elapsed = 0;
             while (elapsed < duration)
@@ -1034,7 +1042,7 @@ namespace VeilBreakers.UI.Menus
         private IEnumerator ScaleInElement(VisualElement element, float fromScale, float toScale, float duration, float delay, EaseType easeType = EaseType.EaseOut)
         {
             if (delay > 0)
-                yield return new WaitForSeconds(delay);
+                yield return new WaitForSeconds(delay); // VB-IGNORE BUG-13 -- dynamic delay parameter, one-shot animation
 
             float elapsed = 0;
             while (elapsed < duration)
@@ -1079,14 +1087,17 @@ namespace VeilBreakers.UI.Menus
 
         private float EaseOutCubic(float t)
         {
-            return 1 - Mathf.Pow(1 - t, 3);
+            // PERF-09: Use multiplication instead of Mathf.Pow
+            float inv = 1 - t;
+            return 1 - inv * inv * inv;
         }
 
         private float EaseElasticOut(float t)
         {
-            if (t == 0 || t == 1) return t;
+            if (t == 0f || t == 1f) return t;
             float p = 0.3f;
-            return Mathf.Pow(2, -10 * t) * Mathf.Sin((t - p / 4) * (2 * Mathf.PI) / p) + 1;
+            // Mathf.Pow(2, -10*t) stays as-is — fractional exponent, can't replace with multiplication
+            return Mathf.Pow(2f, -10f * t) * Mathf.Sin((t - p / 4f) * (2f * Mathf.PI) / p) + 1f;
         }
 
         private float EaseBounceOut(float t)
@@ -1114,9 +1125,12 @@ namespace VeilBreakers.UI.Menus
 
         private float EaseBackOut(float t)
         {
+            // PERF-09: Use multiplication instead of Mathf.Pow
             float c1 = 1.70158f;
             float c3 = c1 + 1;
-            return 1 + c3 * Mathf.Pow(t - 1, 3) + c1 * Mathf.Pow(t - 1, 2);
+            float tMinus1 = t - 1;
+            float tMinus1Sq = tMinus1 * tMinus1;
+            return 1 + c3 * tMinus1Sq * tMinus1 + c1 * tMinus1Sq;
         }
 
         /// <summary>

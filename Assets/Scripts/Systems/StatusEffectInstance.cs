@@ -17,6 +17,9 @@ namespace VeilBreakers.Systems
 
         private static long _nextInstanceId;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics() => _nextInstanceId = 0;
+
         /// <summary>Unique instance ID for this application</summary>
         public string instanceId;
 

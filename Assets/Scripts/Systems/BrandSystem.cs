@@ -16,7 +16,7 @@ namespace VeilBreakers.Systems
         public const float NEUTRAL = 1.0f;
 
         // Pre-computed brand display names to avoid repeated ToString + string manipulation
-        private static readonly Dictionary<Brand, string> _brandDisplayNames = new Dictionary<Brand, string>();
+        private static readonly Dictionary<Brand, string> _brandDisplayNames = new Dictionary<Brand, string>(); // VB-IGNORE BUG-65 -- populated once in static ctor, never mutated externally (private field)
 
         static BrandSystem()
         {

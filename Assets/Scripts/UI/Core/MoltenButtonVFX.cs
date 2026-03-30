@@ -83,7 +83,7 @@ namespace VeilBreakers.UI.Core
 
         private VisualElement _root;
         private VisualElement _lavaSweepElement;
-        private readonly Dictionary<Button, ButtonVFXState> _buttonStates = new();
+        private readonly Dictionary<Button, ButtonVFXState> _buttonStates = new(); // VB-IGNORE BUG-34 -- not serialized, runtime-only tracking
         private readonly List<Texture2D> _generatedButtonSkins = new();
         private bool _isActive;
         private Coroutine _lavaUpdateCoroutine;
@@ -105,7 +105,7 @@ namespace VeilBreakers.UI.Core
 
             if (_uiDocument == null)
             {
-                _uiDocument = GetComponent<UIDocument>();
+                _uiDocument = GetComponent<UIDocument>(); // VB-IGNORE UNITY-05 -- optional fallback, UIDocument may be assigned via inspector
             }
 
             if (_uiDocument != null)
@@ -1063,7 +1063,7 @@ namespace VeilBreakers.UI.Core
         // CLEANUP
         // =============================================================================
 
-        private void CleanupCallbacks()
+        private void CleanupCallbacks() // VB-IGNORE DEEP-07 -- CrackElements/LavaBubbles are UI Toolkit VisualElements, GC-collected with panel; no Destroy needed
         {
             if (_lavaUpdateCoroutine != null)
             {

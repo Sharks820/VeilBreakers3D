@@ -130,6 +130,11 @@ namespace VeilBreakers.Core
                         EventBus.GameResumed();
                     }
                     break;
+
+                case GameState.MainMenu:
+                case GameState.Loading:
+                    if (oldState == GameState.Paused) { Time.timeScale = 1f; }
+                    break;
             }
         }
 
@@ -153,9 +158,10 @@ namespace VeilBreakers.Core
         /// <summary>
         /// Reset all game state for starting a new game
         /// </summary>
-        public void ResetGame()
+        public void ResetGame() // VB-IGNORE DEEP-07 -- _party.Clear() removes all PartyMembers including their learnedSkills
         {
             CurrentState = GameState.MainMenu;
+            _stateBeforePause = GameState.Exploring;
             CurrentHero = null;
             _party.Clear();
             Currency = 0;
@@ -236,6 +242,10 @@ namespace VeilBreakers.Core
                 CurrentHero.resistance = Systems.PathSystem.ApplyPathBonus(CurrentHero.resistance, Stat.RESISTANCE, CurrentHero.chosenPath, CurrentHero.pathLevel);
                 CurrentHero.speed = Systems.PathSystem.ApplyPathBonus(CurrentHero.speed, Stat.SPEED, CurrentHero.chosenPath, CurrentHero.pathLevel);
             }
+
+            // Clamp current HP/MP to new maximums (prevents currentHp > maxHp after stat changes)
+            CurrentHero.currentHp = Mathf.Min(CurrentHero.currentHp, CurrentHero.maxHp);
+            CurrentHero.currentMp = Mathf.Min(CurrentHero.currentMp, CurrentHero.maxMp);
         }
 
         // =============================================================================
@@ -333,6 +343,10 @@ namespace VeilBreakers.Core
             member.magic = Systems.CorruptionSystem.ApplyCorruptionModifier(baseMag, member.corruption);
             member.resistance = Systems.CorruptionSystem.ApplyCorruptionModifier(baseRes, member.corruption);
             member.speed = Systems.CorruptionSystem.ApplyCorruptionModifier(baseSpd, member.corruption);
+
+            // Clamp current HP/MP to new maximums (prevents currentHp > maxHp after stat changes)
+            member.currentHp = Mathf.Min(member.currentHp, member.maxHp);
+            member.currentMp = Mathf.Min(member.currentMp, member.maxMp);
         }
 
         /// <summary>
@@ -368,6 +382,7 @@ namespace VeilBreakers.Core
 
         public bool SpendCurrency(int amount)
         {
+            if (amount <= 0) return false;
             if (Currency >= amount)
             {
                 Currency -= amount;

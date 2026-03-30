@@ -58,7 +58,7 @@ namespace VeilBreakers.Managers
                 string json = PlayerPrefs.GetString(KEY_GAME_SETTINGS);
                 try
                 {
-                    _settings = JsonUtility.FromJson<GameSettings>(json);
+                    _settings = JsonUtility.FromJson<GameSettings>(json); // VB-IGNORE SEC-03 SEC-14 -- validated: try/catch + null check below, PlayerPrefs is trusted local storage
                     // Handle case where new settings were added and aren't in the saved JSON
                     if (_settings == null)
                     {

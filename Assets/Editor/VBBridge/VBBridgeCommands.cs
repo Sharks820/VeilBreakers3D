@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,6 +23,7 @@ public static class VBBridgeCommands
         ["console_logs"] = HandleConsoleLogs,
         ["read_result"] = HandleReadResult,
         ["get_game_objects"] = HandleGetGameObjects,
+        ["load_scene"] = HandleLoadScene,
         ["check_compile_status"] = HandleCheckCompileStatus,
     };
 
@@ -218,7 +220,29 @@ public static class VBBridgeCommands
         {
             roots.Add(SerializeGameObject(go));
         }
-        return new Dictionary<string, object> { ["game_objects"] = roots };
+        var scene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+        return new Dictionary<string, object>
+        {
+            ["scene_name"] = scene.name,
+            ["is_loaded"] = scene.isLoaded,
+            ["game_objects"] = roots
+        };
+    }
+
+    static Dictionary<string, object> HandleLoadScene(Dictionary<string, object> p)
+    {
+        string scenePath = p.ContainsKey("path") ? p["path"].ToString() : "";
+        if (string.IsNullOrEmpty(scenePath))
+            throw new ArgumentException("Missing required parameter: path");
+
+        var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+        return new Dictionary<string, object>
+        {
+            ["scene_name"] = scene.name,
+            ["path"] = scenePath,
+            ["is_valid"] = scene.IsValid(),
+            ["is_loaded"] = scene.isLoaded
+        };
     }
 
     static Dictionary<string, object> HandleCheckCompileStatus(Dictionary<string, object> p)
@@ -607,4 +631,3 @@ public static class VBBridgeCommands
         }
     }
 }
-

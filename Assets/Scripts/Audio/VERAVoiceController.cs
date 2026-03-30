@@ -36,10 +36,10 @@ namespace VeilBreakers.Audio
         private float _nextGlitchTime = 0f;
         private bool _isSpeaking = false;
         private string _currentDialogueId;
+        private WaitForSeconds _glitchWait; // BUG-13: cached
 
         // Voice processing parameters
         private float _pitchShift = 0f;
-        private float _reverb = 0f;
         private float _distortion = 0f;
         private float _dualVoiceBlend = 0f;
 
@@ -64,6 +64,11 @@ namespace VeilBreakers.Audio
         // =============================================================================
         // UNITY LIFECYCLE
         // =============================================================================
+
+        protected override void OnSingletonAwake()
+        {
+            _glitchWait = new WaitForSeconds(_glitchDuration);
+        }
 
         private void Update()
         {
@@ -223,7 +228,6 @@ namespace VeilBreakers.Audio
             {
                 // Default calculations
                 _pitchShift = _corruptionLevel * 0.2f;
-                _reverb = _corruptionLevel * 0.5f;
                 _distortion = _corruptionLevel * 0.3f;
                 _dualVoiceBlend = Mathf.Max(0f, (_corruptionLevel - 0.5f) * 2f);
                 return;
@@ -234,7 +238,6 @@ namespace VeilBreakers.Audio
             {
                 // Clean voice
                 _pitchShift = 0f;
-                _reverb = 0.1f;
                 _distortion = 0f;
                 _dualVoiceBlend = 0f;
             }
@@ -242,7 +245,6 @@ namespace VeilBreakers.Audio
             {
                 // Mild glitches
                 _pitchShift = 0.02f;
-                _reverb = 0.15f;
                 _distortion = 0.05f;
                 _dualVoiceBlend = 0f;
             }
@@ -250,7 +252,6 @@ namespace VeilBreakers.Audio
             {
                 // Noticeable distortion
                 _pitchShift = 0.05f;
-                _reverb = 0.25f;
                 _distortion = 0.15f;
                 _dualVoiceBlend = 0.1f;
             }
@@ -258,7 +259,6 @@ namespace VeilBreakers.Audio
             {
                 // Dual voice bleeding through
                 _pitchShift = 0.1f;
-                _reverb = 0.4f;
                 _distortion = 0.25f;
                 _dualVoiceBlend = 0.4f;
             }
@@ -266,7 +266,6 @@ namespace VeilBreakers.Audio
             {
                 // Full corruption / reveal
                 _pitchShift = 0.15f;
-                _reverb = 0.6f;
                 _distortion = 0.35f;
                 _dualVoiceBlend = 0.8f;
             }
@@ -276,7 +275,6 @@ namespace VeilBreakers.Audio
         {
             // FMOD Integration:
             // _veraVoice.setParameterByName("PitchShift", _pitchShift);
-            // _veraVoice.setParameterByName("Reverb", _reverb);
             // _veraVoice.setParameterByName("Distortion", _distortion);
             // _veraVoice.setParameterByName("DualVoice", _dualVoiceBlend);
         }
@@ -324,7 +322,7 @@ namespace VeilBreakers.Audio
             // FMOD Integration: Could also trigger a glitch sound effect
             // FMODUnity.RuntimeManager.PlayOneShot("event:/SFX/VERA/Glitch");
 
-            yield return new WaitForSeconds(_glitchDuration);
+            yield return _glitchWait;
 
             // Restore
             _pitchShift = originalPitch;
