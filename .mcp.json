@@ -65,6 +65,12 @@
         "GEMINI_API_KEY": "${GEMINI_API_KEY}"
       },
       "description": "VeilBreakers Unity toolkit - VFX, audio, UI, scene, gameplay, performance tools"
+    },
+    "unity-mcp": {
+      "type": "stdio",
+      "command": "unity-mcp-server",
+      "args": ["--client-transport=stdio", "--port=8080", "--plugin-timeout=10000"],
+      "description": "IvanMurzak Unity-MCP - runtime debugging, Roslyn execute, reflection, package manager, editor selection"
     }
   },
   "_profile": {

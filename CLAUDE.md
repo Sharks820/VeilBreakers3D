@@ -45,7 +45,7 @@ These rules exist because a session lost hours to regressions from skipped verif
 - **Stop conditions:** when confidence is high and tests/validation pass, ship instead of over-analyzing
 - **Loop detection:** If you've made 3+ attempts at the same fix without progress, STOP. Summarize what you've tried, what failed, and ask the user or try a completely different approach.
 
-## 4. Commit When It Makes Sense
+## 5. Commit When It Makes Sense
 - Commit after completing logical units of work
 - Don't interrupt mid-task for arbitrary time-based commits
 - Version updates in VEILBREAKERS.md track progress
@@ -54,16 +54,42 @@ These rules exist because a session lost hours to regressions from skipped verif
 
 # TOOL GUIDANCE (Smart Judgment)
 
-## Serena - Use Judgment, Not Defaults
+## Visual QA Pipeline (Closes Design→Implementation Gap)
+
+The #1 struggle: mockups look great but implementation doesn't match. Use this pipeline:
+
+1. **Design** → superpowers brainstorm / HTML mockup / reference screenshot
+2. **Extract spec** → `zai ui_to_artifact` (output_type=spec) from mockup image
+3. **Implement** → Unity UI Toolkit (UXML + USS + C#/PrimeTween)
+4. **Capture** → `unity_editor action=screenshot` of actual result
+5. **Compare** → `zai ui_diff_check` (expected=mockup, actual=screenshot)
+6. **Iterate** → fix gaps identified by diff check until it passes
+
+**Also available:**
+- `zai analyze_image` — general visual analysis of any screenshot
+- `zai diagnose_error_screenshot` — analyze Unity error screenshots
+- `gemini analyzeFile` — Gemini visual analysis as second opinion
+
+## Serena — C# Symbol Intelligence (28 tools, LSP-backed)
 
 | Task | Use Serena? | Instead |
 |------|-------------|---------|
 | Understand unfamiliar file structure | YES - `get_symbols_overview` | - |
 | Find where a method is called | YES - `find_referencing_symbols` | - |
-| Refactor a symbol | YES - `replace_symbol_body` | - |
+| Refactor a symbol safely | YES - `rename_symbol` / `replace_symbol_body` | - |
 | Read a file you know the path to | **NO** | Just use `Read` tool |
 | Quick text search | **NO** | Just use `Grep` tool |
 | Small edit to known code | **NO** | Just use `Edit` tool |
+
+## Context7 — Mandatory API Lookups (NEVER HALLUCINATE)
+
+| Library | Context7 ID | When to Use |
+|---------|-------------|-------------|
+| PrimeTween | `/kyrylokuzyk/primetween` | **EVERY** PrimeTween call — 85 verified snippets |
+| Unity UI Toolkit | `/needle-mirror/com.unity.ui` | **EVERY** UXML/USS/VisualElement API call — 36 snippets |
+| Unity URP | resolve via Context7 | Shader/rendering API questions |
+
+**HARD RULE:** Before writing ANY PrimeTween, UI Toolkit, Cinemachine, or URP code, you MUST call `context7 resolve-library-id` then `query-docs`. This is NON-NEGOTIABLE. Hallucinated APIs have cost entire sessions. If Context7 has no answer, read the source in `Packages/` — NEVER guess.
 
 ## Superpowers Skills - Use When Valuable
 
@@ -88,7 +114,8 @@ These rules exist because a session lost hours to regressions from skipped verif
 | Unity API questions | Context7 `query-docs` | Up-to-date documentation |
 | Complex analysis | `sequential-thinking` | Structured breakdown |
 | Second opinion | `gemini-cli` or `codex-cli` MCP | Different AI perspectives |
-| C# code intelligence | csharp-lsp plugin | Real-time diagnostics |
+| Code strengthening | `unity_qa analyze_code` + `code_review` | Catch regressions before they compound |
+| Visual QA | `zai ui_diff_check` | Compare mockup vs implementation |
 
 ## Model Routing (Quality-First Token Optimization)
 
