@@ -9,10 +9,10 @@
 
 ## Phases
 
-- [ ] **Phase 1: Critical Combat Bug Fixes** — Fix 5 verified bugs breaking combat correctness
-- [ ] **Phase 2: High-Priority Bug Fixes** — Fix 11 high-priority bugs (stability, events, memory)
-- [ ] **Phase 3: Code Quality Hardening** — Debug.Log, singletons, Roslyn analyzer, dead code
-- [ ] **Phase 4: Title Screen & CharSelect Bug Fixes** — USS consolidation, interaction bugs, gamepad
+- [x] **Phase 1: Critical Combat Bug Fixes** — Fix 5 verified bugs breaking combat correctness
+- [x] **Phase 2: High-Priority Bug Fixes** — Fix 11 high-priority bugs (stability, events, memory)
+- [x] **Phase 3: Code Quality Hardening** — Debug.Log, singletons, Roslyn analyzer, dead code
+- [x] **Phase 4: Title Screen & CharSelect Bug Fixes** — USS consolidation, interaction bugs, gamepad
 - [ ] **Phase 5: Title Screen AAA Rebuild** — VFX, VERA audio, gradients, glow effects
 - [ ] **Phase 6: Character Select AAA Rebuild** — Per-hero theming, gradients, embark polish
 - [ ] **Phase 7: 3D Model Audit & Integration** — Audit 28 GLB models, wire into HeroDisplayConfig
@@ -31,7 +31,7 @@
 3. UNTAMED corruption tier (80-100%) exists in enum, CorruptionSystem, and DamageCalculator (BUG-A-03 ✓)
 4. CharSelectFocusManager _heroCount initialized before use (BUG-A-04 ✓)
 5. CharSelectVisualEnhancer hover lambdas properly unregistered in OnDisable (BUG-A-05 ✓)
-**Plans:** 2-3 plans (combat fixes, corruption tier, UI fixes)
+**Plans:** 1 plan (all 5 bugs in single commit)
 
 ## Phase 2: High-Priority Bug Fixes
 
@@ -45,7 +45,7 @@
 4. GameDatabase async init has error handling (BUG-B-04 ✓)
 5. Static events subscribed in OnEnable, unsubscribed in OnDisable (BUG-B-10 ✓)
 6. Texture2D/PanelSettings leaks fixed (BUG-B-07 ✓)
-**Plans:** 2-3 plans (combat fixes, data/systems, memory/lifecycle)
+**Plans:** 1 plan (all bugs in single commit)
 
 ## Phase 3: Code Quality Hardening
 
@@ -58,7 +58,7 @@
 3. Microsoft.Unity.Analyzers DLL installed (QUAL-08)
 4. .editorconfig at project root (QUAL-09)
 5. Duplicate Rarity enum marked [Obsolete] (QUAL-07)
-**Plans:** 2-3 plans (tooling, singleton/log migration, dead code)
+**Plans:** 1 plan (quality pass in single commit)
 
 ## Phase 4: Title Screen & CharSelect Bug Fixes
 
@@ -71,7 +71,7 @@
 3. Title loads without battle screen flash (UIFIX-03)
 4. Settings button wired and functional (UIFIX-07)
 5. Gamepad navigation crash-free (UIFIX-06)
-**Plans:** 2 plans (USS consolidation, interaction fixes)
+**Plans:** 1 plan (USS + interaction fixes)
 
 ## Phase 5: Title Screen AAA Rebuild
 
@@ -83,7 +83,13 @@
 2. Native filter:blur tested and used for panel glows (TITLE-07)
 3. TitleScreenVFX decomposed from god class (TITLE-04)
 4. Zero Texture2D leaks via UITextureRegistry pattern (TITLE-01)
-**Plans:** 3-4 plans
+**Plans:** 4 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — UITextureRegistry utility + UIGradientHelper leak fix (TITLE-01, TITLE-02, TITLE-08)
+- [ ] 05-02-PLAN.md — FilterFunction.Blur smoke test (TITLE-07)
+- [ ] 05-03-PLAN.md — TitleScreenVFX decomposition into 5 subsystems (TITLE-03, TITLE-04, TITLE-05)
+- [ ] 05-04-PLAN.md — UIVFXContainer + VERA audio randomization + blur glow integration (TITLE-05, TITLE-06, TITLE-09, TITLE-10)
 
 ## Phase 6: Character Select AAA Rebuild
 
@@ -131,7 +137,7 @@
 | 2. High-Priority Bug Fixes | 1/1 | Done | 2026-03-30 |
 | 3. Code Quality Hardening | 1/1 | Done | 2026-03-30 |
 | 4. Title Screen & CharSelect Bug Fixes | 1/1 | Done | 2026-03-30 |
-| 5. Title Screen AAA Rebuild | 0/? | Not Started | - |
+| 5. Title Screen AAA Rebuild | 0/4 | Planning Complete | - |
 | 6. Character Select AAA Rebuild | 0/? | Not Started | - |
 | 7. 3D Model Audit & Integration | 0/? | Not Started | - |
 | 8. End-to-End Verification | 0/? | Not Started | - |
