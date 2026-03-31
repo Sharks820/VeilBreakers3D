@@ -86,10 +86,10 @@
 **Plans:** 4 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — UITextureRegistry utility + UIGradientHelper leak fix (TITLE-01, TITLE-02, TITLE-08)
-- [ ] 05-02-PLAN.md — FilterFunction.Blur smoke test (TITLE-07)
-- [ ] 05-03-PLAN.md — TitleScreenVFX decomposition into 5 subsystems (TITLE-03, TITLE-04, TITLE-05)
-- [ ] 05-04-PLAN.md — UIVFXContainer + VERA audio randomization + blur glow integration (TITLE-05, TITLE-06, TITLE-09, TITLE-10)
+- [x] 05-01-PLAN.md — UITextureRegistry utility + UIGradientHelper leak fix (TITLE-01, TITLE-02, TITLE-08)
+- [x] 05-02-PLAN.md — FilterFunction.Blur smoke test (TITLE-07)
+- [x] 05-03-PLAN.md — TitleScreenVFX decomposition into 5 subsystems (TITLE-03, TITLE-04, TITLE-05)
+- [x] 05-04-PLAN.md — UIVFXContainer + VERA audio randomization + blur glow integration (TITLE-05, TITLE-06, TITLE-09, TITLE-10)
 
 ## Phase 6: Character Select AAA Rebuild
 

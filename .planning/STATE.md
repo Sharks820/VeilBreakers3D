@@ -1,14 +1,14 @@
 ---
 gsd_state_version: 1.0
 milestone: v6.0
-milestone_name: Bug Fixes & Code Quality Hardening + UI Rebuild
-current_phase: 5
-current_plan: 0 of 0
-status: Executing phases
-last_updated: "2026-03-31T04:30:00.000Z"
+milestone_name: milestone
+current_phase: 5 — Title Screen AAA Rebuild (COMPLETE)
+status: completed
+stopped_at: Completed 05-04-PLAN.md
+last_updated: "2026-03-31T13:16:22.749Z"
 progress:
   total_phases: 8
-  completed_phases: 4
+  completed_phases: 1
   total_plans: 4
   completed_plans: 4
 ---
@@ -22,12 +22,13 @@ See: .planning/PROJECT.md
 ## Position
 
 **Milestone:** v6.0 — Bug Fixes & Code Quality Hardening + UI Rebuild
-**Current phase:** 5 — Title Screen AAA Rebuild
-**Status:** Phases 1-4 complete (bug fixes + code quality + UI fixes). Starting Phase 5.
+**Current phase:** 5 — Title Screen AAA Rebuild (COMPLETE)
+**Status:** Phases 1-5 complete. Phase 5 AAA title screen rebuild done. Next: Phase 6 (Character Select).
 
 ## What's Done (v6.0)
 
 ### Phase 1: Critical Combat Bug Fixes (DONE - 2026-03-30)
+
 - BattleManager: correct attacker/defender synergy tiers (BUG-A-01, B-01)
 - BrandSystem: fix 3 bidirectional violations (BUG-A-02)
 - CorruptionSystem: add UNTAMED tier 80-100% (BUG-A-03)
@@ -35,6 +36,7 @@ See: .planning/PROJECT.md
 - CharSelectVisualEnhancer: proper hover callback cleanup (BUG-A-05)
 
 ### Phase 2: High-Priority Bug Fixes (DONE - 2026-03-30)
+
 - DEFENSE skill uses skillData not stale loadout (BUG-B-02)
 - Enum.IsDefined guards on all enum casts (BUG-B-03)
 - GameDatabase async init error handling (BUG-B-04)
@@ -45,20 +47,28 @@ See: .planning/PROJECT.md
 - Debug.LogError→ErrorLogger across 40+ files (BUG-B-10)
 
 ### Phase 3: Code Quality Hardening (DONE - 2026-03-30)
+
 - Debug.Log→ErrorLogger migration across all systems (QUAL-01)
 - VERASystem singleton migration (QUAL-03)
 - VB_CodeReviewer expanded rules (QUAL-08)
 - Rarity enum marked [Obsolete] (QUAL-07)
 
 ### Phase 4: Title Screen & CharSelect Bug Fixes (DONE - 2026-03-30)
+
 - MainMenuController: fix stuck button highlights on right-click/overlay close
 - ButtonVFXHelper: FocusOut clears border colors
 - Stored gradient hover callbacks for proper unregistration
 - ResetButtonHoverState helper for complete hover cleanup
 
+### Phase 5: Title Screen AAA Rebuild (DONE - 2026-03-31)
+
+- Plan 01: UITextureRegistry for runtime texture leak tracking
+- Plan 02: FilterFunction.Blur smoke test (inconclusive, texture-based glow confirmed)
+- Plan 03: TitleScreenVFX decomposed from 3146 to 735 lines (5 subsystems)
+- Plan 04: UIVFXContainer z-order management, VERATitleAudio randomized interactions, texture glow
+
 ## Remaining Phases
 
-- Phase 5: Title Screen AAA Rebuild
 - Phase 6: Character Select AAA Rebuild
 - Phase 7: 3D Model Audit & Integration
 - Phase 8: End-to-End Verification
@@ -68,6 +78,10 @@ See: .planning/PROJECT.md
 - Bug fixes committed as single commit (86d6257) — 74 files, 790+/523-
 - Old v5 phase directories archived to .planning/phases/archive-v5/
 - Autonomous mode running from Phase 5 onward
+- FilterFunction.Blur() not used -- test inconclusive, texture-based glow approach documented
+- UIVFXContainer manages 6 named layers (background, atmosphere, particles, lightning, logo, ui)
+- VERA audio uses weighted random with per-pattern cooldowns and history exclusion
+- TitleScreenVFX decomposed to 5 subsystems + slim orchestrator (77% reduction)
 
 ## Blockers / Concerns
 
@@ -75,5 +89,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-03-31
-Resume file: None (use /gsd:resume-work or /gsd:autonomous --from 5)
+Last session: 2026-03-31T13:16:22.745Z
+Resume file: None
+Stopped at: Completed 05-04-PLAN.md
