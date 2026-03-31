@@ -120,8 +120,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 07-01-PLAN.md — Create VB_ModelAuditor + wire hero models (MODEL-01, MODEL-02, MODEL-04)
-- [ ] 07-02-PLAN.md — Wire champion monsters + budget check (MODEL-03, MODEL-05)
+- [x] 07-01-PLAN.md — Create VB_ModelAuditor + wire hero models (MODEL-01, MODEL-02, MODEL-04)
+- [x] 07-02-PLAN.md — Wire champion monsters + budget check (MODEL-03, MODEL-05)
 
 ## Phase 8: End-to-End Verification
 

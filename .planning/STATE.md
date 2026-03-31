@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: milestone
 current_phase: 7
-status: planning
-stopped_at: Completed 06-01-PLAN.md execution (Phase 6 complete)
-last_updated: "2026-03-31T13:53:41.989Z"
+status: completed
+stopped_at: Completed 07-02-PLAN.md execution (Phase 7 complete)
+last_updated: "2026-03-31T14:18:02.100Z"
 progress:
   total_phases: 8
-  completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
+  completed_phases: 3
+  total_plans: 8
+  completed_plans: 8
 ---
 
 # Session State
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md
 
 **Milestone:** v6.0 — Bug Fixes & Code Quality Hardening + UI Rebuild
 **Current phase:** 7
-**Status:** Ready to plan
+**Status:** Phase 7 complete
 
 ## What's Done (v6.0)
 
@@ -82,10 +82,17 @@ Remaining gaps:
 - Plan 01: Per-hero VolumeProfile assets (all 4 HeroThemeConfig.volumeProfile = null) -- DONE (b246eba)
 - Plan 02: Wire VeilDissolveController to shader + Renderer -- DONE (ee413e2)
 
+### Phase 7: 3D Model Audit & Integration (DONE - 2026-03-31)
+
+- Plan 01 + 02 combined: VB_ModelAuditor editor tool with 4 MenuItems
+  - Audit All Models: scans 24 GLB files, reports polycount/UV/normals/rig
+  - Wire Hero Models: assigns v4 hero prefabs to 3/4 HeroDisplayConfig SOs (Vex missing)
+  - Wire Champion Monsters: assigns v4 monster prefabs to championModelPrefab (3/4 wired)
+  - Check Model Budgets: validates against 50K hero / 30K monster tri budgets
+- All editor scripts ready for Unity Editor execution (5e9d8d3)
+
 ## Remaining Phases
 
-- Phase 6: Character Select AAA Rebuild (2 plans, ready to execute)
-- Phase 7: 3D Model Audit & Integration
 - Phase 8: End-to-End Verification
 
 ## Decisions
@@ -102,6 +109,13 @@ Remaining gaps:
 - 06-01: VolumeProfile overrides match VolumeProfileTransitioner.CacheTargetValues reads exactly
 - 06-02: White noise texture default acceptable for VeilDissolvePlaceholder (shader falls back to identity noise)
 - 06-02: SetDissolveController injection pattern for wiring dissolve to model renderer
+- 07-01+02: All 4 MenuItems combined in single file creation (reduces churn, shared data structures)
+- 07: Vex hero model gap -- no Assets/Art/Models/Heroes/Vex/ directory, no skitter_teeth champion model
+- 07: Editor script approach for model wiring (hand-editing .asset YAML for GUID references unreliable)
+- 07: File size as budget proxy with tri-count validation via sharedMesh.GetIndexCount when models imported
+- [Phase 07]: All 4 MenuItems combined in single file creation (shared data structures)
+- [Phase 07]: Vex hero model gap -- no GLB exists, placeholder remains
+- [Phase 07]: Editor script approach for model wiring (GUID YAML editing unreliable)
 
 ## Blockers / Concerns
 
@@ -109,6 +123,6 @@ Remaining gaps:
 
 ## Session Continuity
 
-Last session: 2026-03-31T13:47:26Z
+Last session: 2026-03-31T14:18:02.096Z
 Resume file: None
-Stopped at: Completed 06-01-PLAN.md execution (Phase 6 complete)
+Stopped at: Completed 07-02-PLAN.md execution (Phase 7 complete)
