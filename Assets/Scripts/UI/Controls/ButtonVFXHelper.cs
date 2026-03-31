@@ -1,12 +1,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using VeilBreakers.UI.Core;
 
 namespace VeilBreakers.UI.Controls
 {
     /// <summary>
     /// AAA button VFX helper for adding visual feedback to UI buttons.
     /// Provides hover glow, click ripple, and focus effects.
+    ///
+    /// NOTE: Native FilterFunction.Blur() was tested in v6.0 Phase 5 Plan 02 but did not
+    /// render correctly in all UI Toolkit contexts (test was inconclusive, deleted due to
+    /// compile risk). All glow effects use texture-based approaches. Native blur can be
+    /// re-evaluated in a future phase with a safer test approach.
+    /// Performance rule: small-to-medium glow elements use backgroundColor overlay;
+    /// full-screen vignettes and multi-stop gradients use Texture2D.
     /// </summary>
     public static class ButtonVFXHelper
     {
@@ -78,7 +86,8 @@ namespace VeilBreakers.UI.Controls
         /// <summary>
         /// Apply AAA visual effects to a button element.
         /// </summary>
-        public static void ApplyEffects(Button button, ButtonVFXOptions options = null)
+        /// <param name="registry">Optional texture registry for tracking glow textures (prevents leaks).</param>
+        public static void ApplyEffects(Button button, ButtonVFXOptions options = null, UITextureRegistry registry = null)
         {
             options ??= ButtonVFXOptions.Default;
 
@@ -89,7 +98,7 @@ namespace VeilBreakers.UI.Controls
 
             if (options.EnableHoverGlow)
             {
-                SetupHoverGlow(button);
+                SetupHoverGlow(button, registry);
             }
 
             if (options.EnablePressEffect)
@@ -106,12 +115,13 @@ namespace VeilBreakers.UI.Controls
         /// <summary>
         /// Apply effects to all buttons matching a class name.
         /// </summary>
-        public static void ApplyToAll(VisualElement root, string className = "vb-button", ButtonVFXOptions options = null)
+        /// <param name="registry">Optional texture registry for tracking glow textures (prevents leaks).</param>
+        public static void ApplyToAll(VisualElement root, string className = "vb-button", ButtonVFXOptions options = null, UITextureRegistry registry = null)
         {
             var buttons = root.Query<Button>(className: className).ToList();
             foreach (var button in buttons)
             {
-                ApplyEffects(button, options);
+                ApplyEffects(button, options, registry);
             }
         }
 
@@ -168,9 +178,10 @@ namespace VeilBreakers.UI.Controls
         // HOVER GLOW EFFECT
         // =============================================================================
 
-        private static void SetupHoverGlow(Button button)
+        private static void SetupHoverGlow(Button button, UITextureRegistry registry = null)
         {
-            // Create glow element
+            // Create glow element using texture-based approach
+            // (Native FilterFunction.Blur was tested but inconclusive -- see class NOTE)
             var glow = new VisualElement();
             glow.AddToClassList(kGlowClass);
             glow.style.position = Position.Absolute;
@@ -186,6 +197,19 @@ namespace VeilBreakers.UI.Controls
             glow.style.opacity = 0;
             glow.style.backgroundColor = new Color(0.6f, 0.3f, 0.8f, 0.1f);
             glow.pickingMode = PickingMode.Ignore;
+
+            // If a texture registry is provided, create a glow texture for richer visual
+            if (registry != null)
+            {
+                int w = Mathf.Max(1, (int)button.resolvedStyle.width);
+                int h = Mathf.Max(1, (int)button.resolvedStyle.height);
+                if (w > 0 && h > 0)
+                {
+                    var glowTex = CreateGlowTexture(w, h, new Color(0.6f, 0.3f, 0.8f, 0.15f));
+                    registry.Register(glowTex);
+                    glow.style.backgroundImage = new StyleBackground(glowTex);
+                }
+            }
 
             button.Insert(0, glow);
 
@@ -544,6 +568,91 @@ namespace VeilBreakers.UI.Controls
                 button.style.borderLeftColor = StyleKeyword.Null;
                 button.style.borderRightColor = StyleKeyword.Null;
             });
+        }
+
+        // =============================================================================
+        // TEXTURE-BASED GLOW
+        // =============================================================================
+
+        /// <summary>
+        /// Set up a texture-based glow effect behind a button for hover/focus states.
+        /// Use this for richer glow visuals than the default backgroundColor overlay.
+        /// All textures are tracked via the provided UITextureRegistry to prevent leaks.
+        /// </summary>
+        /// <param name="button">Target button element.</param>
+        /// <param name="glowColor">Color of the glow (alpha controls intensity).</param>
+        /// <param name="registry">Texture registry for leak-free cleanup. REQUIRED.</param>
+        /// <returns>The glow VisualElement for further customization.</returns>
+        public static VisualElement SetupTextureGlow(Button button, Color glowColor, UITextureRegistry registry)
+        {
+            var glow = new VisualElement();
+            glow.name = "texture-glow";
+            glow.pickingMode = PickingMode.Ignore;
+            glow.style.position = Position.Absolute;
+            glow.style.left = -6;
+            glow.style.top = -6;
+            glow.style.right = -6;
+            glow.style.bottom = -6;
+            glow.style.opacity = 0;
+            glow.style.borderTopLeftRadius = button.resolvedStyle.borderTopLeftRadius + 6;
+            glow.style.borderTopRightRadius = button.resolvedStyle.borderTopRightRadius + 6;
+            glow.style.borderBottomLeftRadius = button.resolvedStyle.borderBottomLeftRadius + 6;
+            glow.style.borderBottomRightRadius = button.resolvedStyle.borderBottomRightRadius + 6;
+
+            // Create and register glow texture
+            int w = Mathf.Max(4, (int)button.resolvedStyle.width + 12);
+            int h = Mathf.Max(4, (int)button.resolvedStyle.height + 12);
+            var glowTex = CreateGlowTexture(w, h, glowColor);
+            if (registry != null) registry.Register(glowTex);
+            glow.style.backgroundImage = new StyleBackground(glowTex);
+
+            button.Insert(0, glow);
+
+            button.RegisterCallback<MouseEnterEvent>(evt =>
+            {
+                glow.style.opacity = 1f;
+            });
+
+            button.RegisterCallback<MouseLeaveEvent>(evt =>
+            {
+                glow.style.opacity = 0f;
+            });
+
+            return glow;
+        }
+
+        /// <summary>
+        /// Create a radial gradient glow texture suitable for button hover effects.
+        /// Bright center fading to transparent edges.
+        /// </summary>
+        private static Texture2D CreateGlowTexture(int width, int height, Color glowColor)
+        {
+            width = Mathf.Max(4, width);
+            height = Mathf.Max(4, height);
+            var tex = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            tex.hideFlags = HideFlags.HideAndDontSave;
+
+            float cx = width * 0.5f;
+            float cy = height * 0.5f;
+            float maxDist = Mathf.Max(cx, cy);
+
+            var pixels = new Color[width * height];
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    float dx = (x - cx) / maxDist;
+                    float dy = (y - cy) / maxDist;
+                    float dist = Mathf.Sqrt(dx * dx + dy * dy);
+                    // Smooth falloff from center
+                    float alpha = Mathf.Clamp01(1f - dist) * glowColor.a;
+                    pixels[y * width + x] = new Color(glowColor.r, glowColor.g, glowColor.b, alpha);
+                }
+            }
+
+            tex.SetPixels(pixels);
+            tex.Apply();
+            return tex;
         }
     }
 

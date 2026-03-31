@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
+using VeilBreakers.UI.Core;
 
 namespace VeilBreakers.UI.VFX
 {
@@ -52,6 +53,9 @@ namespace VeilBreakers.UI.VFX
         // Back-reference to particles for smoke burst
         private TitleScreenParticles _particles;
 
+        // Texture registry for leak-free cleanup of any runtime-generated glow textures
+        private UITextureRegistry _textureRegistry;
+
         // =============================================================================
         // PUBLIC API
         // =============================================================================
@@ -59,13 +63,15 @@ namespace VeilBreakers.UI.VFX
         /// <summary>
         /// Initialize logo VFX with references from the host.
         /// </summary>
+        /// <param name="registry">Optional texture registry for tracking runtime glow textures.</param>
         public void Initialize(VisualElement host, VisualElement logoContainer, VisualElement logoImage,
-            TitleScreenParticles particles)
+            TitleScreenParticles particles, UITextureRegistry registry = null)
         {
             _host = host;
             _logoContainer = logoContainer;
             _logoImage = logoImage;
             _particles = particles;
+            _textureRegistry = registry;
 
             if (_logoContainer != null)
             {
@@ -302,6 +308,17 @@ namespace VeilBreakers.UI.VFX
             if (logoIndex >= 0)
             {
                 _logoContainer.Insert(logoIndex, shadow);
+            }
+        }
+
+        /// <summary>
+        /// Destroy tracked runtime textures. Called by the orchestrator during cleanup.
+        /// </summary>
+        public void Cleanup()
+        {
+            if (_textureRegistry != null)
+            {
+                _textureRegistry.DestroyAll();
             }
         }
     }
