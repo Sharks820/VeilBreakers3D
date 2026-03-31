@@ -1,6 +1,8 @@
+using System;
 using UnityEngine;
 using VeilBreakers.Core;
 using VeilBreakers.Data;
+using Random = UnityEngine.Random;
 
 namespace VeilBreakers.Capture
 {

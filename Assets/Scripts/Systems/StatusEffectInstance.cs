@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using VeilBreakers.Core;
 using VeilBreakers.Data;
 
 namespace VeilBreakers.Systems

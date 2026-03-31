@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using VeilBreakers.Core;
@@ -65,10 +66,10 @@ namespace VeilBreakers.UI.Core
             // Blur expects a single float parameter (sigma).
             // IStyle.filter is StyleList<FilterFunction>, not a plain array.
             var blurFilter = new FilterFunction(FilterFunctionType.Blur);
-            blurFilter.AddParameter(kBlurSigma);
+            blurFilter.AddParameter(new FilterParameter(kBlurSigma));
 
             testElement.style.filter = new StyleList<FilterFunction>(
-                new[] { blurFilter }
+                new List<FilterFunction> { blurFilter }
             );
 
             root.Add(testElement);

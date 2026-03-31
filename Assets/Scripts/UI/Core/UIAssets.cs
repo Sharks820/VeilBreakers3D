@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UIElements;
+using VeilBreakers.Core;
 
 namespace VeilBreakers.UI.Core
 {
