@@ -13,10 +13,10 @@
 - [x] **Phase 2: High-Priority Bug Fixes** — Fix 11 high-priority bugs (stability, events, memory)
 - [x] **Phase 3: Code Quality Hardening** — Debug.Log, singletons, Roslyn analyzer, dead code
 - [x] **Phase 4: Title Screen & CharSelect Bug Fixes** — USS consolidation, interaction bugs, gamepad
-- [ ] **Phase 5: Title Screen AAA Rebuild** — VFX, VERA audio, gradients, glow effects
-- [ ] **Phase 6: Character Select AAA Rebuild** — Per-hero theming, gradients, embark polish
-- [ ] **Phase 7: 3D Model Audit & Integration** — Audit 24 GLB models, wire into HeroDisplayConfig
-- [ ] **Phase 8: End-to-End Verification** — Full flow test, code review pass, performance check
+- [x] **Phase 5: Title Screen AAA Rebuild** — VFX, VERA audio, gradients, glow effects
+- [x] **Phase 6: Character Select AAA Rebuild** — Per-hero theming, gradients, embark polish
+- [x] **Phase 7: 3D Model Audit & Integration** — Audit 24 GLB models, wire into HeroDisplayConfig
+- [x] **Phase 8: End-to-End Verification** — Full flow test, code review pass, performance check
 
 ---
 
@@ -135,6 +135,9 @@ Plans:
 4. No GC allocations in hot paths, stable 60fps (VERIFY-04)
 **Plans:** 1-2 plans
 
+Plans:
+- [x] 08-01-PLAN.md — Static verification of all VERIFY requirements (VERIFY-01 through VERIFY-04)
+
 ---
 
 ## Progress
@@ -145,10 +148,10 @@ Plans:
 | 2. High-Priority Bug Fixes | 1/1 | Done | 2026-03-30 |
 | 3. Code Quality Hardening | 1/1 | Done | 2026-03-30 |
 | 4. Title Screen & CharSelect Bug Fixes | 1/1 | Done | 2026-03-30 |
-| 5. Title Screen AAA Rebuild | 0/4 | Planning Complete | - |
-| 6. Character Select AAA Rebuild | 0/2 | Planning Complete | - |
-| 7. 3D Model Audit & Integration | 0/2 | Planning Complete | - |
-| 8. End-to-End Verification | 0/? | Not Started | - |
+| 5. Title Screen AAA Rebuild | 4/4 | Done | 2026-03-31 |
+| 6. Character Select AAA Rebuild | 2/2 | Done | 2026-03-31 |
+| 7. 3D Model Audit & Integration | 2/2 | Done | 2026-03-31 |
+| 8. End-to-End Verification | 1/1 | Done | 2026-03-31 |
 
 ---
-*Roadmap defined: 2026-03-30 — v6.0 Bug Fixes & Code Quality Hardening + UI Rebuild*
+*Milestone v6.0 COMPLETE — 2026-03-31 — 8 phases, 13 plans*
