@@ -60,11 +60,11 @@
 }
 
 .theme-orion {
-    --hero-primary: rgb(100, 70, 220);
-    --hero-secondary: rgb(80, 55, 200);
-    --hero-accent: rgb(140, 110, 255);
-    --hero-glow: rgba(100, 70, 220, 0.25);
-    --hero-dim: rgba(100, 70, 220, 0.10);
+    --hero-primary: rgb(35, 55, 200);
+    --hero-secondary: rgb(25, 40, 170);
+    --hero-accent: rgb(80, 130, 255);
+    --hero-glow: rgba(35, 55, 200, 0.25);
+    --hero-dim: rgba(35, 55, 200, 0.10);
 }
 
 .theme-nyx {
@@ -187,8 +187,8 @@ TemplateContainer {
 }
 
 .theme-orion .veil-panel {
-    border-color: rgba(100, 70, 220, 0.35);
-    border-top-color: rgba(100, 70, 220, 0.6);
+    border-color: rgba(35, 55, 200, 0.35);
+    border-top-color: rgba(35, 55, 200, 0.6);
 }
 
 .theme-nyx .veil-panel {
@@ -1098,7 +1098,7 @@ TemplateContainer {
 /* Per-hero focus ring colors */
 .theme-vex .focus-ring-active { border-color: rgba(220, 68, 34, 0.9); }
 .theme-seraphina .focus-ring-active { border-color: rgba(150, 90, 210, 0.9); }
-.theme-orion .focus-ring-active { border-color: rgba(100, 70, 220, 0.9); }
+.theme-orion .focus-ring-active { border-color: rgba(35, 55, 200, 0.9); }
 .theme-nyx .focus-ring-active { border-color: rgba(180, 25, 30, 0.9); }
 
 /* =============================================================================
