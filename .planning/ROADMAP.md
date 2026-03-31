@@ -97,11 +97,15 @@ Plans:
 **Depends on:** Phase 4 (can overlap with Phase 5 — different scenes)
 **Requirements:** CHARSEL-01 through CHARSEL-07
 **Success Criteria:**
-1. Hero card carousel with gradient/glow effects (CHARSEL-01)
-2. Per-hero VolumeProfile assets created (CHARSEL-04)
-3. VeilDissolveController wired to real shader (CHARSEL-05)
-4. Embark hold has layered visual feedback (CHARSEL-06)
-**Plans:** 3-4 plans
+1. Hero card carousel with gradient/glow effects (CHARSEL-01) — DONE in prior sessions
+2. Per-hero VolumeProfile assets created (CHARSEL-04) — Plan 01
+3. VeilDissolveController wired to real shader (CHARSEL-05) — Plan 02
+4. Embark hold has layered visual feedback (CHARSEL-06) — DONE in prior sessions
+**Plans:** 2 plans (gap analysis showed most work already complete)
+
+Plans:
+- [ ] 06-01-PLAN.md — Create per-hero VolumeProfile assets + assign to HeroThemeConfig SOs (CHARSEL-04)
+- [ ] 06-02-PLAN.md — Wire VeilDissolveController to real shader + Renderer (CHARSEL-05)
 
 ## Phase 7: 3D Model Audit & Integration
 
@@ -138,7 +142,7 @@ Plans:
 | 3. Code Quality Hardening | 1/1 | Done | 2026-03-30 |
 | 4. Title Screen & CharSelect Bug Fixes | 1/1 | Done | 2026-03-30 |
 | 5. Title Screen AAA Rebuild | 0/4 | Planning Complete | - |
-| 6. Character Select AAA Rebuild | 0/? | Not Started | - |
+| 6. Character Select AAA Rebuild | 0/2 | Planning Complete | - |
 | 7. 3D Model Audit & Integration | 0/? | Not Started | - |
 | 8. End-to-End Verification | 0/? | Not Started | - |
 
