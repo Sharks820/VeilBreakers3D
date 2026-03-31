@@ -1,150 +1,140 @@
-# Roadmap: VeilBreakers 3D - Character Select Rebuild
+# Roadmap: VeilBreakers 3D - v6.0 Bug Fixes & Code Quality Hardening + UI Rebuild
 
-## Overview
-
-Rebuild the Character Select screen from a functional-but-buggy state to AAA visual quality, following a strict bottom-up dependency chain: clean the foundation (USS conflicts, dead code, legacy APIs), fix layout, wire controller behavior, layer visual polish, then verify end-to-end game flow. Each phase delivers a coherent, verifiable capability that unblocks the next. The project has 43 v1 requirements across 6 categories mapped to 5 phases.
-
-## Phases
-
-**Phase Numbering:**
-- Integer phases (1, 2, 3): Planned milestone work
-- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
-
-Decimal phases appear between their surrounding integers in numeric order.
-
-- [x] **Phase 1: Foundation Cleanup** - Eliminate dead code, consolidate stylesheets, fix legacy APIs, and harden event safety
-- [x] **Phase 2: Layout & Structure** - Fix all panel sizing, text overlap, and content rendering at target resolution
-- [ ] **Phase 3: Controller Behavior** - Wire all interactions, fix performance, add gamepad support and audio feedback
-- [x] **Phase 4: Visual Amplification** - Install PrimeTween, add cinematic animations, post-processing, and atmospheric effects
-- [x] **Phase 5: Game Flow & Quality** - Verify end-to-end flow, polish title screen, pass full quality audit
-
-## Phase Details
-
-### Phase 1: Foundation Cleanup
-**Goal**: Clean, stable codebase foundation with no dead code, no legacy API conflicts, no stylesheet conflicts, and safe event lifecycle
-**Depends on**: Nothing (first phase)
-**Requirements**: INFRA-01, INFRA-02, INFRA-03, INFRA-04, INFRA-05, INFRA-06, INFRA-07, INFRA-08, INFRA-09
-**Success Criteria** (what must be TRUE):
-  1. Project compiles with zero errors after all infrastructure changes; only 2 USS files remain (global + CharacterSelect) with no duplicate `:root` variables or conflicting `*` selectors
-  2. Character Select screen loads and displays hero data correctly using only New Input System APIs -- no `Input.mousePosition` or other legacy Input calls exist anywhere in CharacterSelect controllers
-  3. Navigating away from Character Select and returning does not leak event subscriptions -- `CharSelectEvents.ClearAll()` fires reliably on scene unload
-  4. All `Q()` element queries are backed by named constants with `Debug.Assert` validation -- a typo in an element name produces an immediate, obvious error instead of silent null
-  5. CarouselController communicates navigation intent through events, not direct Manager references; TransitionController is either functional or deleted; duplicate `AnimatePanel()` logic exists in one shared location
-**Plans**: 3 plans
-
-Plans:
-- [x] 01-01: USS Consolidation (INFRA-01)
-- [x] 01-02: Foundation Cleanup (INFRA-02 through INFRA-09)
-- [x] 01-03: 19-Bug Fix Audit (CLI Reviewer Findings)
-
-### Phase 2: Layout & Structure
-**Goal**: Pixel-correct UI at 1920x1080 with proper panel sizing, readable text, correct content population, and no layout hacks
-**Depends on**: Phase 1 (requires consolidated USS to prevent style conflicts)
-**Requirements**: LAYOUT-01, LAYOUT-02, LAYOUT-03, LAYOUT-04, LAYOUT-05, LAYOUT-06, LAYOUT-07
-**Success Criteria** (what must be TRUE):
-  1. Hero info panel displays name, title, quote, path, and role for all 4 heroes without any text overlapping or clipping at 1920x1080
-  2. Champion/starter monster area shows monster name, brand icon, and role tag correctly for all 4 heroes
-  3. Hero stories text and synergy/brands section populate with correct data for each hero when navigating through all 4 characters
-  4. No panel content overflows or clips at 1920x1080; `EnsureFullScreenLayout()` hack is deleted and UXML root configuration handles full-screen layout natively
-  5. All USS transitions animate only transform and color properties (no width, height, margin, left, top); all animated VisualElements have `UsageHints.DynamicTransform` set at creation time
-**Plans**: 2 plans
-
-Plans:
-- [x] 02-01-PLAN.md -- Fix UXML structure, content population, panel sizing, and remove EnsureFullScreenLayout hack
-- [x] 02-02-PLAN.md -- Rewrite USS transition declarations and set UsageHints.DynamicTransform on animated elements
-
-### Phase 3: Controller Behavior
-**Goal**: Rule-of-thirds layout with tabbed info panel, hold-to-embark replacing confirm popup, zone-based gamepad navigation with visible focus ring, per-hero audio feedback, async embark with timeout and error toast, skeleton loading states, and zero-GC hero switching with pre-baked nebula textures
-**Depends on**: Phase 2 (controllers animate panels -- layout must be correct first)
-**Requirements**: CTRL-01, CTRL-02, CTRL-03, CTRL-04, CTRL-05, CTRL-06, CTRL-07, CTRL-08, CTRL-09
-**Success Criteria** (what must be TRUE):
-  1. All interaction points (Back, Prev, Next, Embark hold, Tab switch, Carousel card click) respond to both mouse click and gamepad input; L1/R1 switches heroes and cycles tabs
-  2. Gamepad navigation shows a visible focus ring highlight on the currently focused zone; during embark hold, navigation is blocked (focus trap)
-  3. Navigation clicks, hero switches, and embark confirmation each play distinct audio feedback (placeholder tones if no audio assets exist)
-  4. Holding Embark for 1.5s initiates an async flow with 10s timeout and user-facing error toast if SaveManager operations fail -- no silent hang, no swallowed exceptions
-  5. Hero switch completes with zero per-frame GC allocations: nebula textures are pre-baked for all 4 heroes at init, all VisualElement queries are cached, and panel transitions use exit-then-enter choreography
-**Plans**: 3 plans
-
-Plans:
-- [ ] 03-01-PLAN.md -- Restructure UXML to rule-of-thirds with tabbed info, veil-torn dark fantasy USS, and extend CharSelectEvents
-- [ ] 03-02-PLAN.md -- Rewrite controllers for async embark, tab management, toast, skeleton loading, remove confirm overlay
-- [ ] 03-03-PLAN.md -- Create CharSelectFocusManager (gamepad zones), HoldToEmbarkController (hold-to-confirm), pre-bake nebula cache, audio feedback
-
-### Phase 4: Visual Amplification
-**Goal**: Cinematic, premium-feeling character select with orchestrated PrimeTween animations, per-hero post-processing, atmospheric overlays, and polished micro-interactions
-**Depends on**: Phase 3 (visual polish amplifies working behavior -- animations on broken interactions are wasted work)
-**Requirements**: VISUAL-01, VISUAL-02, VISUAL-03, VISUAL-04, VISUAL-05, VISUAL-06, VISUAL-07, VISUAL-08, VISUAL-09
-**Success Criteria** (what must be TRUE):
-  1. PrimeTween 1.3.7 is installed and driving coordinated panel transitions: left panel slides from left edge, right panel slides from right edge, with staggered timing that feels intentional
-  2. Switching heroes triggers staggered stat bar fill animations (bars cascade rather than all filling simultaneously) and per-hero URP Volume Profile changes (Bloom, DoF, Vignette, Color Adjustments shift to match the selected hero's visual identity)
-  3. Cinematic overlays (scanlines, vignette, veil glow) are visible and enhance atmosphere; USS filters (blur on inactive panels, tint, contrast) create visual depth hierarchy between active and inactive elements
-  4. Clicking Embark plays a 1-2 second cinematic sequence (animation, effects) before the scene transition begins; the Embark button has a continuous breathing glow animation while idle
-  5. Selecting a different hero crossfades ambient music to the new hero's theme via MusicManager -- no hard audio cuts
-**Plans**: 4 plans
-
-Plans:
-- [x] 04-01-PLAN.md -- Install PrimeTween, update asmdef references, create HeroThemeConfig ScriptableObject, write VeilDissolve shader
-- [x] 04-02-PLAN.md -- Build visual subsystems: VolumeProfileTransitioner, OverlayController, GlitchTextEffect, VeilDissolveController, extend MusicManager
-- [x] 04-03-PLAN.md -- Wire choreography: HeroThemeTransitioner, HeroSwitchAnimator, ScreenEntryAnimator, stat cascade, carousel animations, lighting lerp
-- [x] 04-04-PLAN.md -- Embark cinematic: VeilCrack shader, VeilTransitionController, EmbarkCinematicController, visual verification checkpoint
-
-### Phase 5: Game Flow & Quality
-**Goal**: End-to-end game flow verified from Bootstrap through Overworld, title screen polished to AAA standard, full quality audit with zero errors and clean conventions
-**Depends on**: Phase 4 (final verification after all Character Select changes are complete)
-**Requirements**: FLOW-01, FLOW-02, FLOW-03, FLOW-04, QUAL-01, QUAL-02, QUAL-03, QUAL-04, QUAL-05
-**Success Criteria** (what must be TRUE):
-  1. Game launches to title screen without any flash of battle screen or other scenes; loading order is deterministic and correct
-  2. Settings button on main menu is wired, clickable, and opens a functional settings panel
-  3. Full game flow works end-to-end: Bootstrap initializes managers, MainMenu loads, CharacterSelect works with all Phase 1-4 functionality, selecting Embark transitions to Overworld scene
-  4. Title screen has AAA visual quality (effects, animations, polish) without degrading code architecture or performance
-  5. Full codebase compiles with zero errors, minimized warnings, no security vulnerabilities (injection, unsafe deserialization), zero allocations in Update/hot paths across all modified files, and all code follows VeilBreakers conventions (`_private`, `kConstant`, `PascalProperty`, `OnEvent`)
-**Plans**: TBD
-
-Plans:
-- [x] 05-01-PLAN.md -- Game flow verification: Bootstrap->MainMenu->CharacterSelect->Overworld, settings button wiring, scene flash check
-- [x] 05-02-PLAN.md -- Code quality audit: compilation, conventions, performance, security scan
+**Defined:** 2026-03-30
+**Milestone:** v6.0
+**Core Value:** Fix all combat correctness bugs, stabilize UI, then rebuild title + char select to AAA quality.
+**Prior:** v5.3 complete (5 phases, 14 plans, 2026-03-19)
 
 ---
 
-## Milestone: MCP Blender Server Architecture
+## Phases
 
-### Overview
+- [ ] **Phase 1: Critical Combat Bug Fixes** — Fix 5 verified bugs breaking combat correctness
+- [ ] **Phase 2: High-Priority Bug Fixes** — Fix 11 high-priority bugs (stability, events, memory)
+- [ ] **Phase 3: Code Quality Hardening** — Debug.Log, singletons, Roslyn analyzer, dead code
+- [ ] **Phase 4: Title Screen & CharSelect Bug Fixes** — USS consolidation, interaction bugs, gamepad
+- [ ] **Phase 5: Title Screen AAA Rebuild** — VFX, VERA audio, gradients, glow effects
+- [ ] **Phase 6: Character Select AAA Rebuild** — Per-hero theming, gradients, embark polish
+- [ ] **Phase 7: 3D Model Audit & Integration** — Audit 28 GLB models, wire into HeroDisplayConfig
+- [ ] **Phase 8: End-to-End Verification** — Full flow test, code review pass, performance check
 
-Build a custom MCP Python server + Blender TCP socket bridge for AI-assisted 3D asset pipeline automation. Replaces the third-party blender-mcp with a custom veilbreakers-blender server using compound action tools, mandatory visual verification, and AST-validated code execution.
+---
 
-### Phase 1: Foundation Server Architecture
-**Goal**: End-to-end communication between Claude (MCP host) and Blender: a Python MCP server dispatching validated commands over TCP to a Blender addon, receiving structured responses, capturing viewport screenshots, and composing multi-angle contact sheets
-**Depends on**: Nothing (independent track)
-**Requirements**: ARCH-01, ARCH-02, ARCH-03, ARCH-04, ARCH-05, ARCH-06, ARCH-07, ARCH-08
-**Success Criteria** (what must be TRUE):
-  1. Claude can invoke 6 compound tools (blender_scene, blender_object, blender_material, blender_viewport, blender_execute, blender_export) that dispatch operations to Blender
-  2. Every mutation tool returns a viewport screenshot alongside structured results -- visual verification is non-negotiable
-  3. Malformed or dangerous Python code is rejected by AST validation before reaching Blender -- no raw exec() without security checks
-  4. Contact sheet system renders multi-angle composite images via Pillow grid composition
-  5. Blender addon survives rapid sequential tool calls via queue+timer pattern with zero deadlocks
-  6. TCP socket bridge handles connect/reconnect/timeout with structured error responses
-**Plans**: 3 plans
+## Phase 1: Critical Combat Bug Fixes
 
-Plans:
-- [ ] 01-01-PLAN.md -- Scaffold uv project, TCP socket client, pydantic models, config, MCP server entry point
-- [ ] 01-02-PLAN.md -- Blender addon socket server with queue+timer dispatch, command handlers, AST security validator
-- [ ] 01-03-PLAN.md -- 6 compound MCP tools with visual verification, contact sheet composition, .mcp.json integration
+**Goal:** Fix 5 verified bugs that break combat correctness — brand matrix, synergy, corruption, CharSelect crashes
+**Depends on:** Nothing (first phase)
+**Requirements:** BUG-A-01, BUG-A-02, BUG-A-03, BUG-A-04, BUG-A-05
+**Success Criteria:**
+1. DamageCalculator receives and applies defender synergy tier for damage reduction (BUG-A-01 ✓)
+2. All 40 bidirectional brand relationships are correct — if A is 2x vs B, B is 0.5x vs A (BUG-A-02 ✓)
+3. UNTAMED corruption tier (80-100%) exists in enum, CorruptionSystem, and DamageCalculator (BUG-A-03 ✓)
+4. CharSelectFocusManager _heroCount initialized before use (BUG-A-04 ✓)
+5. CharSelectVisualEnhancer hover lambdas properly unregistered in OnDisable (BUG-A-05 ✓)
+**Plans:** 2-3 plans (combat fixes, corruption tier, UI fixes)
+
+## Phase 2: High-Priority Bug Fixes
+
+**Goal:** Fix 11 high-priority bugs — enemy synergy, unsafe casts, async hangs, memory leaks, static events
+**Depends on:** Phase 1 (correctness before stability)
+**Requirements:** BUG-B-01 through BUG-B-11
+**Success Criteria:**
+1. Enemy attacks use NEUTRAL synergy, not player's tier (BUG-B-01 ✓)
+2. DEFENSE skill uses skillData, not stale loadout (BUG-B-02 ✓)
+3. All enum casts guarded with Enum.IsDefined (BUG-B-03 ✓)
+4. GameDatabase async init has error handling (BUG-B-04 ✓)
+5. Static events subscribed in OnEnable, unsubscribed in OnDisable (BUG-B-10 ✓)
+6. Texture2D/PanelSettings leaks fixed (BUG-B-07 ✓)
+**Plans:** 2-3 plans (combat fixes, data/systems, memory/lifecycle)
+
+## Phase 3: Code Quality Hardening
+
+**Goal:** Install tooling, standardize patterns, classify Debug.Log calls, remove dead code
+**Depends on:** Phase 2 (bug fixes before quality pass)
+**Requirements:** QUAL-01 through QUAL-09
+**Success Criteria:**
+1. All unguarded Debug.Log classified and replaced with ErrorLogger (QUAL-01)
+2. VERASystem and FPSCounter use SingletonMonoBehaviour<T> (QUAL-03)
+3. Microsoft.Unity.Analyzers DLL installed (QUAL-08)
+4. .editorconfig at project root (QUAL-09)
+5. Duplicate Rarity enum marked [Obsolete] (QUAL-07)
+**Plans:** 2-3 plans (tooling, singleton/log migration, dead code)
+
+## Phase 4: Title Screen & CharSelect Bug Fixes
+
+**Goal:** Consolidate USS, fix stuck highlights, ensure gamepad works, wire Settings
+**Depends on:** Phase 3 (quality infrastructure before UI work)
+**Requirements:** UIFIX-01 through UIFIX-09
+**Success Criteria:**
+1. 3 USS files total (global, TitleScreen, CharacterSelect) (UIFIX-01, UIFIX-02 ✓)
+2. Right-click and overlay-close no longer leave stuck highlights (UIFIX-04 ✓)
+3. Title loads without battle screen flash (UIFIX-03)
+4. Settings button wired and functional (UIFIX-07)
+5. Gamepad navigation crash-free (UIFIX-06)
+**Plans:** 2 plans (USS consolidation, interaction fixes)
+
+## Phase 5: Title Screen AAA Rebuild
+
+**Goal:** AAA title screen with VFX, VERA audio, runtime gradients, glow effects
+**Depends on:** Phase 4 (USS cleanup before new styles)
+**Requirements:** TITLE-01 through TITLE-10
+**Success Criteria:**
+1. VERA audio plays randomized interactions with cooldowns, not looping (TITLE-06)
+2. Native filter:blur tested and used for panel glows (TITLE-07)
+3. TitleScreenVFX decomposed from god class (TITLE-04)
+4. Zero Texture2D leaks via UITextureRegistry pattern (TITLE-01)
+**Plans:** 3-4 plans
+
+## Phase 6: Character Select AAA Rebuild
+
+**Goal:** AAA CharSelect with per-hero theming, gradients, glow, embark feedback
+**Depends on:** Phase 4 (can overlap with Phase 5 — different scenes)
+**Requirements:** CHARSEL-01 through CHARSEL-07
+**Success Criteria:**
+1. Hero card carousel with gradient/glow effects (CHARSEL-01)
+2. Per-hero VolumeProfile assets created (CHARSEL-04)
+3. VeilDissolveController wired to real shader (CHARSEL-05)
+4. Embark hold has layered visual feedback (CHARSEL-06)
+**Plans:** 3-4 plans
+
+## Phase 7: 3D Model Audit & Integration
+
+**Goal:** Audit all 28 GLB models, decimate, wire into HeroDisplayConfig
+**Depends on:** Phase 6 (UI done before model integration)
+**Requirements:** MODEL-01 through MODEL-09
+**Success Criteria:**
+1. All 28 models audited (polycount, UVs, normals, rig) (MODEL-01)
+2. All 4 heroes display real 3D models in CharSelect (MODEL-04)
+3. Models within budget: 50K tris hero, 30K tris monster (MODEL-03)
+4. At least 1 champion monster wired (MODEL-05)
+**Plans:** 2-3 plans
+
+## Phase 8: End-to-End Verification
+
+**Goal:** Full flow verified, zero CRIT/HIGH findings, memory stable
+**Depends on:** Phase 7 (everything done before final check)
+**Requirements:** VERIFY-01 through VERIFY-07
+**Success Criteria:**
+1. Full flow: Title -> CharSelect -> Embark -> Overworld (VERIFY-01)
+2. VB Code Reviewer: zero CRITICAL/HIGH in modified files (VERIFY-02)
+3. Texture2D count stable across 10 scene transitions (VERIFY-03)
+4. No GC allocations in hot paths, stable 60fps (VERIFY-04)
+**Plans:** 1-2 plans
+
+---
 
 ## Progress
 
-**Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
-
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation Cleanup | 3/3 | Complete | 2026-02-22 |
-| 2. Layout & Structure | 2/2 | Complete | 2026-02-22 |
-| 3. Controller Behavior | 3/3 | Complete | 2026-03-19 |
-| 4. Visual Amplification | 4/4 | Complete | 2026-03-19 |
-| 5. Game Flow & Quality | 2/2 | Complete | 2026-03-19 |
+| 1. Critical Combat Bug Fixes | 1/1 | Done | 2026-03-30 |
+| 2. High-Priority Bug Fixes | 1/1 | Done | 2026-03-30 |
+| 3. Code Quality Hardening | 1/1 | Done | 2026-03-30 |
+| 4. Title Screen & CharSelect Bug Fixes | 1/1 | Done | 2026-03-30 |
+| 5. Title Screen AAA Rebuild | 0/? | Not Started | - |
+| 6. Character Select AAA Rebuild | 0/? | Not Started | - |
+| 7. 3D Model Audit & Integration | 0/? | Not Started | - |
+| 8. End-to-End Verification | 0/? | Not Started | - |
 
-**MCP Server Architecture:**
-
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Foundation Server Architecture | 0/3 | Not started | - |
+---
+*Roadmap defined: 2026-03-30 — v6.0 Bug Fixes & Code Quality Hardening + UI Rebuild*

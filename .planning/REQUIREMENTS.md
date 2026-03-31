@@ -1,161 +1,153 @@
-# Requirements: VeilBreakers 3D - Character Select Rebuild
+# Requirements: VeilBreakers 3D - v6.0 Bug Fixes & Code Quality Hardening
 
-**Defined:** 2026-02-21
-**Core Value:** The game flow from title screen through character selection to gameplay must work flawlessly with AAA-quality visuals at every step.
-
-## v1 Requirements
-
-Requirements for initial release. Each maps to roadmap phases.
-
-### Infrastructure (INFRA)
-
-- [ ] **INFRA-01**: USS stylesheets consolidated from 6 files to 2 (global + CharacterSelect), eliminating conflicting selectors and duplicate `:root` variables
-- [ ] **INFRA-02**: TransitionController stub deleted or replaced with functional implementation
-- [ ] **INFRA-03**: Unused CharSelectEvents removed (OnHeroDataLoaded, OnHeroSelected if confirmed unused)
-- [ ] **INFRA-04**: Legacy `Input.mousePosition` calls replaced with InputManager in CharSelectEnvironmentController and ParallaxBackground
-- [ ] **INFRA-05**: `SceneManager.sceneUnloaded` safety net added for `CharSelectEvents.ClearAll()` to prevent memory leaks
-- [ ] **INFRA-06**: All `Q()` queries validated with Debug.Assert; element name constants defined to prevent silent null returns
-- [ ] **INFRA-07**: `TemplateContainer` flex-grow set correctly in global USS to prevent layout collapse
-- [ ] **INFRA-08**: CarouselController direct Manager reference removed; OnNavigationRequested event added for decoupling
-- [ ] **INFRA-09**: Duplicate AnimatePanel() logic extracted from both panel controllers into shared utility
-
-### Layout (LAYOUT)
-
-- [x] **LAYOUT-01**: Hero info panel text overlap fixed (name, title, quote, path, role display correctly without collision)
-- [x] **LAYOUT-02**: Champion/starter monster area displays correctly with name, brand, and role tags
-- [x] **LAYOUT-03**: Hero stories and synergy/brands populate correctly for all 4 heroes
-- [x] **LAYOUT-04**: Panel sizing correct at 1920x1080 with no overflow or clipping
-- [x] **LAYOUT-05**: `EnsureFullScreenLayout()` hack removed by fixing UXML root configuration
-- [ ] **LAYOUT-06**: All USS transitions audited to animate only transform/color properties (no width/height/margin)
-- [ ] **LAYOUT-07**: `UsageHints.DynamicTransform` set on all animated VisualElements at creation time
-
-### Controller Behavior (CTRL)
-
-- [x] **CTRL-01**: All 6 buttons functional (Back, Prev, Next, Embark, Confirm, Cancel) with both mouse and gamepad
-- [x] **CTRL-02**: Gamepad focus ring visible with clear highlight on focused element
-- [x] **CTRL-03**: Audio feedback wired for navigation clicks, hero switch, and embark confirmation
-- [x] **CTRL-04**: Embark coroutine-Task bridge replaced with async/await + timeout + user-facing error feedback
-- [x] **CTRL-05**: Nebula texture generation pre-baked (eliminate per-switch `Color[65536]` allocation)
-- [x] **CTRL-06**: All VisualElement Q() queries cached; zero Q() calls in Update/hot paths
-- [x] **CTRL-07**: Panel exit-then-enter choreography implemented (slide-out before slide-in)
-- [x] **CTRL-08**: Confirm overlay focus trap working for gamepad navigation
-- [x] **CTRL-09**: Loading state feedback shown during GameDatabase initialization (skeleton/shimmer)
-
-### Visual Polish (VISUAL)
-
-- [x] **VISUAL-01**: PrimeTween 1.3.7 installed and integrated for orchestrated animation sequences
-- [ ] **VISUAL-02**: Coordinated panel transitions (left slides from left, right from right, staggered timing)
-- [x] **VISUAL-03**: Staggered stat bar fill animations on hero switch
-- [x] **VISUAL-04**: Per-hero URP Volume Profiles configured (Bloom, DoF, Vignette, Color Adjustments)
-- [x] **VISUAL-05**: Cinematic overlays active (scanlines, vignette, veil glow) via USS
-- [ ] **VISUAL-06**: Embark sequence cinematic (1-2s animation before scene transition)
-- [x] **VISUAL-07**: USS filters applied for visual effects (blur on inactive panels, tint, contrast)
-- [ ] **VISUAL-08**: Embark button breathing glow animation
-- [x] **VISUAL-09**: Per-hero ambient music crossfade via MusicManager
-
-### Game Flow (FLOW)
-
-- [ ] **FLOW-01**: Title screen loads first without battle screen flash (loading order fixed)
-- [ ] **FLOW-02**: Settings button wired and functional from main menu
-- [ ] **FLOW-03**: Game flow verified end-to-end: Bootstrap -> MainMenu -> CharacterSelect -> Overworld
-- [ ] **FLOW-04**: Title screen visual amplification (AAA quality without code degradation)
-
-### Code Quality (QUAL)
-
-- [ ] **QUAL-01**: Full codebase debug pass (zero compilation errors)
-- [ ] **QUAL-02**: Warning count minimized (zero warnings where possible)
-- [ ] **QUAL-03**: No security vulnerabilities (no injection vectors, no unsafe deserialization, proper encryption maintained)
-- [ ] **QUAL-04**: No allocations in Update/hot paths across all modified files
-- [ ] **QUAL-05**: All modified code follows VeilBreakers conventions (_private, kConstant, PascalProperty, OnEvent)
-
-## v2 Requirements
-
-Deferred to future release. Tracked but not in current roadmap.
-
-### 3D Art Integration (ART)
-
-- **ART-01**: Placeholder capsules replaced with real hero model prefabs
-- **ART-02**: HeroDisplayConfig per hero configured (camera position, lighting, champion offset/scale)
-- **ART-03**: Champion monster 3D models placed alongside heroes
-- **ART-04**: Hero-specific idle animations via Animator controllers
-- **ART-05**: Per-hero lighting rigs fine-tuned for final models
-
-### Extended Polish (XPOL)
-
-- **XPOL-01**: Particle effects on hero switch (energy burst, color-themed motes)
-- **XPOL-02**: Advanced camera choreography (zoom, pan, dolly on hero switch)
-- **XPOL-03**: Hero lore expansion (backstory text in left panel from hero JSON)
-- **XPOL-04**: Starter monster 2D sprite preview in champion section
-
-## Out of Scope
-
-| Feature | Reason |
-|---------|--------|
-| Character creation/customization | Breaks authored hero identities; 4 heroes are designed characters |
-| Difficulty selection on CharSelect | Clutters flow; belongs in Settings menu |
-| Auto-play/demo mode | RPG context, not arcade; parallax provides ambient interest |
-| Real-time multiplayer hero locking | Single-player game; no server infrastructure |
-| Detailed damage calculator | Overwhelms casual players; belongs in-game strategy guide |
-| Mobile/console ports | Windows standalone is target platform |
-| New hero characters | Focus on polishing existing 4 heroes |
-| New monster species | Existing data sufficient for current milestone |
-| Inventory/MonsterCollection save integration | TODOs exist but not part of this rebuild milestone |
-| Overworld gameplay implementation | Scene exists but out of scope |
-| Combat ability/balance changes | Combat system validated; don't modify |
-
-## Traceability
-
-| Requirement | Phase | Status |
-|-------------|-------|--------|
-| INFRA-01 | Phase 1 | Pending |
-| INFRA-02 | Phase 1 | Pending |
-| INFRA-03 | Phase 1 | Pending |
-| INFRA-04 | Phase 1 | Pending |
-| INFRA-05 | Phase 1 | Pending |
-| INFRA-06 | Phase 1 | Pending |
-| INFRA-07 | Phase 1 | Pending |
-| INFRA-08 | Phase 1 | Pending |
-| INFRA-09 | Phase 1 | Pending |
-| LAYOUT-01 | Phase 2 | Complete |
-| LAYOUT-02 | Phase 2 | Complete |
-| LAYOUT-03 | Phase 2 | Complete |
-| LAYOUT-04 | Phase 2 | Complete |
-| LAYOUT-05 | Phase 2 | Complete |
-| LAYOUT-06 | Phase 2 | Pending |
-| LAYOUT-07 | Phase 2 | Pending |
-| CTRL-01 | Phase 3 | Complete |
-| CTRL-02 | Phase 3 | Complete |
-| CTRL-03 | Phase 3 | Complete |
-| CTRL-04 | Phase 3 | Complete |
-| CTRL-05 | Phase 3 | Complete |
-| CTRL-06 | Phase 3 | Complete |
-| CTRL-07 | Phase 3 | Complete |
-| CTRL-08 | Phase 3 | Complete |
-| CTRL-09 | Phase 3 | Complete |
-| VISUAL-01 | Phase 4 | Complete |
-| VISUAL-02 | Phase 4 | Pending |
-| VISUAL-03 | Phase 4 | Complete |
-| VISUAL-04 | Phase 4 | Complete |
-| VISUAL-05 | Phase 4 | Complete |
-| VISUAL-06 | Phase 4 | Pending |
-| VISUAL-07 | Phase 4 | Complete |
-| VISUAL-08 | Phase 4 | Pending |
-| VISUAL-09 | Phase 4 | Complete |
-| FLOW-01 | Phase 5 | Pending |
-| FLOW-02 | Phase 5 | Pending |
-| FLOW-03 | Phase 5 | Pending |
-| FLOW-04 | Phase 5 | Pending |
-| QUAL-01 | Phase 5 | Pending |
-| QUAL-02 | Phase 5 | Pending |
-| QUAL-03 | Phase 5 | Pending |
-| QUAL-04 | All (verified Phase 5) | Pending |
-| QUAL-05 | All (verified Phase 5) | Pending |
-
-**Coverage:**
-- v1 requirements: 43 total
-- Mapped to phases: 43 (41 phase-specific + 2 cross-cutting)
-- Unmapped: 0
+**Defined:** 2026-03-30
+**Milestone:** v6.0
+**Core Value:** Fix all combat correctness bugs, stabilize UI, then rebuild title + char select to AAA quality.
+**Prior:** v5.3 complete (5 phases, 14 plans, 2026-03-19)
 
 ---
-*Requirements defined: 2026-02-21*
-*Last updated: 2026-02-21 after roadmap creation*
+
+## Verification Key
+- ✓ Verified in source code
+- ⚠ Partially verified / exaggerated claim
+- ? Not yet verified (listed from bug scan, needs Phase A check)
+
+---
+
+## Phase A: Critical Combat & UI Bugs
+
+| ID | Bug | Source File(s) | Status |
+|----|-----|----------------|--------|
+| BUG-A-01 | Defender synergy defense never applied — BattleManager passes only `_currentSynergyTier` for attacker; `defenderSynergyTier` defaults to NEUTRAL | BattleManager.cs:341, DamageCalculator.cs:67-70 | ✓ Verified |
+| BUG-A-02 | Brand matrix 3 bidirectional violations: DREAD↔SAVAGE, DREAD↔GRACE, MEND↔LEECH — attacker gets 2x but defender returns 1x | BrandSystem.cs:31-44 | ✓ Verified |
+| BUG-A-03 | UNTAMED corruption tier (80-100%) missing from enum and logic — 76-100% all treated as ABYSSAL | Enums.cs:68-75, CorruptionSystem.cs:52-54 | ✓ Verified |
+| BUG-A-04 | CharSelectFocusManager `_heroCount` timing risk — field is set via `SetHeroCount()` but if navigation fires before init, guard may not protect all paths | CharSelectFocusManager.cs:85,339 | ⚠ Exaggerated |
+| BUG-A-05 | CharSelectVisualEnhancer hover lambdas leak — MouseEnter/MouseLeave on embark button never unregistered in OnDisable | CharSelectVisualEnhancer.cs:211-218 | ✓ Verified |
+
+**Success criteria:** All 5 fixed, one commit each, compile check after each.
+
+---
+
+## Phase B: High-Priority Bugs
+
+| ID | Bug | Source File(s) | Status |
+|----|-----|----------------|--------|
+| BUG-B-01 | Enemy synergy uses player's tier — `_currentSynergyTier` is player-specific, used in ALL DamageCalculator.Calculate calls regardless of who's attacking | BattleManager.cs:341,545 | ✓ Verified |
+| BUG-B-02 | DEFENSE skill ignores skillData — `case SkillType.DEFENSE` uses `user.Abilities.currentDefenseAction` instead of the skill's action | BattleManager.cs:302-303 | ✓ Verified |
+| BUG-B-03 | Unsafe enum casts without Enum.IsDefined in HeroData, SkillData, ItemData | ? Needs verification | ? |
+| BUG-B-04 | GameDatabase async init fire-and-forget (unawaited Task) | ? Needs verification | ? |
+| BUG-B-05 | SaveData path level clamp [0,1] vs PathSystem [0,100] | ? Needs verification | ? |
+| BUG-B-06 | UIAnimationController DontDestroyOnLoad inconsistency | ? Needs verification | ? |
+| BUG-B-07 | Texture2D leak in MainMenuBootstrap (line 602), runtime PanelSettings never destroyed in MenuBootstrap (lines 86, 138) | MainMenuBootstrap.cs:602, MenuBootstrap.cs:86,138 | ✓ Verified |
+| BUG-B-08 | EmbarkCinematicController event nulling hangs async flow | ? Needs verification | ? |
+| BUG-B-09 | Shared AudioSource conflict (HoldToEmbark vs CharSelectFocusManager) | ? Needs verification | ? |
+| BUG-B-10 | Static event fields persist across scenes — CharSelectEvents has 10 static events; subscribers in Start/Awake instead of OnEnable risk stale delegates | CharSelectEvents.cs, 10+ subscriber files | ✓ Verified |
+| BUG-B-11 | Collection modification during iteration — StatusEffectManager already uses temp lists (line 654); check OTHER managers | StatusEffectManager.cs:654 | ⚠ May be fixed |
+
+**Success criteria:** All verified bugs fixed. Unverified items triaged (fix, defer, or dismiss).
+
+---
+
+## Phase C: Code Quality Hardening
+
+| ID | Item | Rationale | Status |
+|----|------|-----------|--------|
+| QUAL-01 | Classify and replace unguarded Debug.Log (146+ calls) — NOT batch replace, each needs individual severity assessment | Debug.Log is not [Conditional]; ErrorLogger.Log is. Semantic difference matters. | ? |
+| QUAL-02 | Convert closure-based PrimeTween to target-based (StatNumberAnimator, ScreenEntryAnimator) | Avoids GC allocations in hot paths | ? |
+| QUAL-03 | Standardize singletons — VERASystem, FPSCounter use hand-rolled patterns instead of SingletonMonoBehaviour<T> | Inconsistent init, no duplicate checks | ✓ VERASystem confirmed not using base |
+| QUAL-04 | Fix DontDestroyOnLoad without duplicate checks (6 instances) | SingletonMonoBehaviour<T> handles this already | ? |
+| QUAL-05 | Add CancellationToken to MonoBehaviour async methods | Unity 6 destroyCancellationToken for clean async cancellation | ? |
+| QUAL-06 | Cap damage buff compounding in Combatant.ApplyDamageBuff | Prevent unbounded stacking | ? |
+| QUAL-07 | Remove dead code (duplicate Rarity enum, GetRarityModifier returning 0, legacy StatusEffect enum) | Enums.cs has both Rarity and MonsterRarity (lines 331-352), plus [Obsolete] StatusEffect | ✓ Verified |
+| QUAL-08 | Install Microsoft.Unity.Analyzers DLL | Roslyn diagnostics for Unity anti-patterns | Tooling |
+| QUAL-09 | Create .editorconfig at project root | IDE-level convention enforcement | Tooling |
+
+**Success criteria:** All singletons standardized. No unguarded Debug.Log. Dead code removed.
+
+---
+
+## Phase D: Title Screen & CharSelect Bug Fixes
+
+| ID | Item | Status |
+|----|------|--------|
+| UIFIX-01 | Consolidate CharSelect USS from 4+ files to 1 canonical file | ? |
+| UIFIX-02 | Merge VeilBreakersUI.uss into VeilBreakers.uss (global) | ? |
+| UIFIX-03 | Fix title screen loading order (battle screen flash) | ? |
+| UIFIX-04 | Fix button highlight glitch (dual :hover vs C# focus conflict) | ? |
+| UIFIX-05 | Fix readability (font sizes, opacity, spacing) | ? |
+| UIFIX-06 | Gamepad navigation crash-free | ? |
+| UIFIX-07 | Wire Settings button on main menu | ? |
+| UIFIX-08 | Fix SkillSlotController showing '7' instead of 'R' | ? |
+| UIFIX-09 | Fix CaptureBannerController Unity null-conditional bypass | ? |
+
+**Success criteria:** 3 USS files total. Title loads clean. Gamepad works.
+
+---
+
+## Phase E: Title Screen AAA Rebuild
+
+Design-driven phase. Requirements will be defined during planning based on:
+- VERA audio spec (randomized interactions, ambient drone, weighted pool + cooldowns)
+- Title screen visual mockup
+- Existing TitleScreenVFX (3145 lines) decomposition plan
+
+Architecture notes for planning (NOT requirements):
+- May create utility classes (UIGlowOverlay, texture helpers) as needed during implementation
+- Native `filter: blur()` via Unity 6000.3 FilterFunction should be tested early
+- Texture cleanup pattern must be established before adding new textures
+
+---
+
+## Phase F: Character Select AAA Rebuild
+
+Design-driven phase. Requirements will be defined during planning based on:
+- CharSelect visual mockup
+- Per-hero theming (colors, lighting, audio, particles)
+- Embark feedback layer design
+
+Architecture notes for planning (NOT requirements):
+- VolumeProfile assets per hero need Editor authoring
+- VeilDissolveController needs real shader (placeholder active)
+- CharSelect audio (hero-specific drones) if designed
+
+---
+
+## Phase G: 3D Model Audit & Integration
+
+| ID | Item | Status |
+|----|------|--------|
+| MODEL-01 | Audit 28 GLB models (polycount, UVs, normals, rig integrity) | ? |
+| MODEL-02 | Delete stale iterations, keep best variant per character | ? |
+| MODEL-03 | Decimate to budget: 50K tris (hero), 30K tris (monster) | ? |
+| MODEL-04 | Populate HeroDisplayConfig.modelPrefab for all 4 heroes | ? |
+| MODEL-05 | Wire at least 1 champion monster model | ? |
+| MODEL-06 | Integrate basic idle animation | ? |
+
+---
+
+## Phase H: End-to-End Verification
+
+| ID | Item |
+|----|------|
+| VERIFY-01 | Full flow: Title -> CharSelect -> Embark -> Overworld |
+| VERIFY-02 | VB Code Reviewer: zero CRITICAL/HIGH in modified files |
+| VERIFY-03 | Unity Profiler: Texture2D count stable across 10 transitions |
+| VERIFY-04 | Frame time: no GC in hot paths, stable 60fps at 1080p |
+
+---
+
+## What Changed From First Draft
+
+The first REQUIREMENTS.md (67 items) mixed:
+1. **Verified bugs** from source code analysis
+2. **Architecture suggestions** from research agents (UITextureRegistry, UIGlowOverlay, UIVFXContainer, CharSelectAudio — these are planning decisions, not requirements)
+3. **Code reviewer noise** (3378 findings, most LOW/INFO level)
+
+This revision:
+- Keeps only verified bugs with source file references
+- Marks unverified items honestly with `?`
+- Moves architecture decisions to phase planning where they belong
+- Phases E/F are design-driven — requirements defined during planning, not pre-guessed
+
+---
+*Requirements v2 — 2026-03-30 — source-verified, bloat-stripped*
