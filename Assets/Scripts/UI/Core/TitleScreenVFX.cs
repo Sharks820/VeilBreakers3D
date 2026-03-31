@@ -57,6 +57,7 @@ namespace VeilBreakers.UI.Core
         // ORCHESTRATOR STATE
         // =============================================================================
 
+        private UIVFXContainer _layerContainer;
         private VisualElement _vfxContainer;
         private VisualElement _frontVfxContainer;
         private VisualElement _smokeLayer;
@@ -291,6 +292,10 @@ namespace VeilBreakers.UI.Core
 
             InsertBehindMonster(host, _vfxContainer);
 
+            // Create UIVFXContainer for named z-order layer management
+            _layerContainer = new UIVFXContainer(_vfxContainer);
+            _layerContainer.SetLayerOrder("background", "atmosphere", "particles", "lightning", "logo", "ui");
+
             _frontVfxContainer = new VisualElement();
             _frontVfxContainer.name = "title-front-vfx-container";
             _frontVfxContainer.style.position = Position.Absolute;
@@ -322,25 +327,19 @@ namespace VeilBreakers.UI.Core
 
             _atmosphere.CreateTopVignette(host);
 
-            // Atmosphere layers (disabled by Start override, but call anyway)
-            _atmosphere.Initialize(_vfxContainer);
+            // Atmosphere layers — use named layer from UIVFXContainer
+            var atmosphereLayer = _layerContainer.GetOrCreateLayer("atmosphere");
+            _atmosphere.Initialize(atmosphereLayer);
 
-            // Lightning
+            // Lightning — use named layer from UIVFXContainer
             if (_lightning._enableLightning)
             {
-                _lightning.Initialize(_vfxContainer, _screenWidth, _screenHeight);
+                var lightningLayer = _layerContainer.GetOrCreateLayer("lightning");
+                _lightning.Initialize(lightningLayer, _screenWidth, _screenHeight);
             }
 
-            // Smoke layer
-            _smokeLayer = new VisualElement();
-            _smokeLayer.name = "smoke-layer";
-            _smokeLayer.style.position = Position.Absolute;
-            _smokeLayer.style.left = 0;
-            _smokeLayer.style.top = 0;
-            _smokeLayer.style.right = 0;
-            _smokeLayer.style.bottom = 0;
-            _smokeLayer.pickingMode = PickingMode.Ignore;
-            _vfxContainer.Add(_smokeLayer);
+            // Smoke layer — use named "particles" layer
+            _smokeLayer = _layerContainer.GetOrCreateLayer("particles");
 
             // Initialize particles with references
             _particles.Initialize(_vfxContainer, _frontVfxContainer, _smokeLayer, _host, _monsterElement, _screenWidth, _screenHeight);

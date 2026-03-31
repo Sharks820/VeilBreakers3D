@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using VeilBreakers.Audio;
 using VeilBreakers.Managers;
 
 namespace VeilBreakers.UI.Core
@@ -22,10 +23,7 @@ namespace VeilBreakers.UI.Core
         [SerializeField, Range(0f, 1f)] private float _laughVolume = 0.50f;
 
         [Header("VERA Interactions")]
-        [SerializeField] private float _veraIntervalMin = 18f;
-        [SerializeField] private float _veraIntervalMax = 40f;
-        [SerializeField, Range(0f, 1f)] private float _veraVolume = 0.60f;
-        [SerializeField, Range(0f, 1f)] private float _demonBarkVolume = 0.70f;
+        [SerializeField] private VERATitleAudio _veraTitleAudio;
 
         // Audio sources
         private AudioSource _musicSource;
@@ -49,7 +47,6 @@ namespace VeilBreakers.UI.Core
         private AudioClip _demonSilence;
 
         private bool _initialized;
-        private int _interactionIndex;
 
         private void Start()
         {
@@ -70,7 +67,14 @@ namespace VeilBreakers.UI.Core
             StartCoroutine(BellLayer());
             StartCoroutine(RumbleLayer());
             StartCoroutine(RandomDemonLaughs());
-            StartCoroutine(VERAInteractions());
+
+            // Delegate VERA interactions to VERATitleAudio (randomized weighted selection)
+            if (_veraTitleAudio != null)
+            {
+                _veraTitleAudio.SetAudioSources(_voiceSource, _sfxSource);
+                PopulateVERAInteractions();
+                _veraTitleAudio.StartInteractions();
+            }
         }
 
         // =============================================================================
@@ -234,58 +238,31 @@ namespace VeilBreakers.UI.Core
         }
 
         // =============================================================================
-        // VERA INTERACTIONS
+        // VERA INTERACTIONS — Delegated to VERATitleAudio
         // =============================================================================
 
-        private IEnumerator VERAInteractions()
+        /// <summary>
+        /// Populates VERATitleAudio's interaction pool with procedurally generated clips.
+        /// Maps the original 4 interaction patterns to weighted InteractionDefs:
+        ///   - whisper_comment (VERA cry + demon "QUIET!"): weight=1.0, cooldown=25s
+        ///   - demon_cackle (demon-only laugh): weight=0.7, cooldown=35s
+        ///   - mysterious_hint (VERA plea + demon growl): weight=0.5, cooldown=45s
+        ///   - vera_reacts (VERA "help me" only): weight=1.0, cooldown=20s
+        /// </summary>
+        private void PopulateVERAInteractions()
         {
-            yield return new WaitForSecondsRealtime(Random.Range(8f, 14f));
+            if (_veraTitleAudio == null) return;
 
-            while (enabled)
-            {
-                float master = GetMasterVolume();
-                if (master > 0.01f)
-                {
-                    int pattern = _interactionIndex % 4;
-                    _interactionIndex++;
-
-                    switch (pattern)
-                    {
-                        case 0: // VERA cries → Demon "QUIET!"
-                            yield return PlayVERA(_veraCry, master);
-                            yield return new WaitForSecondsRealtime(Random.Range(0.8f, 1.5f));
-                            PlayDemon(_demonQuiet, master);
-                            break;
-                        case 1: // VERA "help me" → silence
-                            yield return PlayVERA(_veraHelpMe, master);
-                            break;
-                        case 2: // VERA plea → Demon growl
-                            yield return PlayVERA(_veraPlease, master);
-                            yield return new WaitForSecondsRealtime(Random.Range(0.4f, 0.9f));
-                            PlayDemon(_demonSilence, master);
-                            break;
-                        case 3: // Just ambient — VERA too afraid
-                            break;
-                    }
-                }
-                yield return new WaitForSecondsRealtime(Random.Range(_veraIntervalMin, _veraIntervalMax));
-            }
-        }
-
-        private IEnumerator PlayVERA(AudioClip clip, float master)
-        {
-            if (_voiceSource == null || clip == null) yield break;
-            _voiceSource.pitch = Random.Range(0.95f, 1.05f);
-            _voiceSource.PlayOneShot(clip, _veraVolume * master);
-            yield return new WaitForSecondsRealtime(clip.length);
-            _voiceSource.pitch = 1f;
-        }
-
-        private void PlayDemon(AudioClip clip, float master)
-        {
-            if (_sfxSource == null || clip == null) return;
-            _sfxSource.pitch = Random.Range(0.7f, 0.85f);
-            _sfxSource.PlayOneShot(clip, _demonBarkVolume * master);
+            // Access the interactions array via reflection-free pattern:
+            // VERATitleAudio's _interactions is configured in the Inspector.
+            // If no interactions are configured, create defaults from generated clips.
+            // The InteractionDef array is serialized, so it can be set in the Inspector.
+            // For runtime population, we use a helper method.
+            _veraTitleAudio.PopulateInteractions(
+                _veraCry, _demonQuiet,
+                _veraHelpMe,
+                _veraPlease, _demonSilence
+            );
         }
 
         // =============================================================================
@@ -630,6 +607,7 @@ namespace VeilBreakers.UI.Core
         private void OnDisable()
         {
             StopAllCoroutines();
+            if (_veraTitleAudio != null) _veraTitleAudio.StopInteractions();
             if (_musicSource != null && _musicSource.isPlaying) _musicSource.Stop();
         }
 
