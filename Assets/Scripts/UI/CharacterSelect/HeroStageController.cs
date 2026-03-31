@@ -52,6 +52,7 @@ namespace VeilBreakers.UI.CharacterSelect
         private VisualElement _renderTarget;
         private Transform _stageRoot;
         private HeroDisplayConfig _currentConfig;
+        private VeilDissolveController _dissolveController;
 
         // Drag / stick rotation
         private bool _isDragging;
@@ -111,6 +112,12 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_currentPlaceholderMat != null) Destroy(_currentPlaceholderMat);
             if (_placeholderMaterial != null) Destroy(_placeholderMaterial);
         }
+
+        /// <summary>
+        /// Receives the dissolve controller from CharacterSelectManager for wiring
+        /// to model renderers during hero swap.
+        /// </summary>
+        public void SetDissolveController(VeilDissolveController ctrl) => _dissolveController = ctrl;
 
         private void Update()
         {
@@ -263,6 +270,16 @@ namespace VeilBreakers.UI.CharacterSelect
             // Cache animator state to avoid per-frame GetComponent
             _currentModelHasAnimator = _currentModel.GetComponent<Animator>() != null;
             _currentModelBaseScale = _currentModel.transform.localScale;
+
+            // Wire dissolve controller to model renderer
+            if (_dissolveController != null)
+            {
+                var renderer = _currentModel.GetComponentInChildren<Renderer>();
+                if (renderer != null)
+                {
+                    _dissolveController.Init(renderer);
+                }
+            }
 
             // Champion model is now displayed in the panel's model viewer, not on the hero stage.
             // _currentChampion field is kept for cleanup compatibility but not instantiated here.
