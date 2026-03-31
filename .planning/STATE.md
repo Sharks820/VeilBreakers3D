@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: milestone
-current_phase: 5 — Title Screen AAA Rebuild (COMPLETE)
-status: completed
+current_phase: 6
+status: planning
 stopped_at: Completed 05-04-PLAN.md
-last_updated: "2026-03-31T13:16:22.749Z"
+last_updated: "2026-03-31T13:25:13.876Z"
 progress:
   total_phases: 8
   completed_phases: 1
@@ -22,8 +22,8 @@ See: .planning/PROJECT.md
 ## Position
 
 **Milestone:** v6.0 — Bug Fixes & Code Quality Hardening + UI Rebuild
-**Current phase:** 5 — Title Screen AAA Rebuild (COMPLETE)
-**Status:** Phases 1-5 complete. Phase 5 AAA title screen rebuild done. Next: Phase 6 (Character Select).
+**Current phase:** 6
+**Status:** Ready to plan
 
 ## What's Done (v6.0)
 
