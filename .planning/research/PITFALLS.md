@@ -1,482 +1,591 @@
-# Domain Pitfalls: AI Game Dev Toolkit (MCP Servers for Blender + Unity)
+# Domain Pitfalls: VeilBreakers v6.0 Bug Fixes, Code Quality Hardening & UI Rebuild
 
-**Domain:** MCP server ecosystem bridging Blender and Unity for AI-assisted 3D game asset creation
-**Researched:** 2026-03-18
-**Confidence:** HIGH (verified against official Blender API docs, MCP specification, blender-mcp issue tracker, and multiple production post-mortems)
+**Domain:** Unity 6 UI Toolkit game -- mass bug fixing, runtime texture generation, 3D model display, logging migration, singleton refactoring
+**Researched:** 2026-03-30
+**Overall confidence:** HIGH (verified against existing codebase, Unity 6 documentation, project history, and community reports)
 
 ---
 
 ## Critical Pitfalls
 
-Mistakes that cause architectural rewrites, data loss, or project abandonment.
+Mistakes that cause rewrites, cascading regressions, or data loss. Each of these has already manifested in this project's history or is highly likely given the v6.0 scope.
 
 ---
 
-### Pitfall 1: Tool Explosion Destroys Token Budget Before Work Begins
+### CRIT-1: Mass Bug Fixing Without Isolation Causes Cascade Regressions
 
 **What goes wrong:**
-Every MCP tool definition is injected into the LLM's context window at conversation start. A Blender MCP server with 40+ tools consumes 15,000-25,000 tokens just in schema definitions. Add a Unity MCP server with another 30+ tools and you burn 30,000-60,000 tokens before the first user message. At that point 25-30% of the context window is metadata, the LLM struggles to select the right tool, and per-session costs balloon. The existing blender-mcp project (ahujasid/blender-mcp) ships 40+ tools and users report 100K+ token sessions for simple tasks.
+Fixing 73+ bugs across combat, capture, UI, and core systems in rapid succession introduces new bugs faster than old ones are resolved. A fix to `DamageCalculator` changes the synergy multiplier order, which breaks `BattleManager` combat flow, which causes `CaptureManager` to see impossible HP values, which crashes the capture QTE. Each "simple fix" touches shared state that other systems depend on. This project has already experienced this -- blind-editing caused regressions that cost entire sessions (documented in CLAUDE.md anti-regression protocol).
 
 **Why it happens:**
-Developers design MCP tools like REST APIs -- one endpoint per operation. `create_cube`, `create_sphere`, `create_cylinder`, `create_cone` become four tools when `create_primitive(shape="cube")` would suffice. Each tool carries a full JSON schema with parameter descriptions, types, and examples. The LLM sees ALL tools regardless of whether it needs them for the current task.
+The codebase has 128 C# scripts with deep cross-system coupling. `EventBus` has 65+ static event fields connecting 20+ files. `BattleManager` interacts with `DamageCalculator`, `SynergySystem`, `BrandSystem`, `StatusEffectManager`, `CombatAI`, and `CaptureManager` through a web of events and direct calls. Changing behavior in one system has non-obvious effects on others. Without test coverage (only 18 test files, RuntimeTests not runnable by Unity Test Runner), regressions are invisible until someone plays the game.
 
 **Consequences:**
-- 25-30% of context window wasted on tool schemas the LLM never uses
-- LLM accuracy degrades as tool count increases -- it picks wrong tools or hallucinates parameters
-- Session costs 5-10x higher than necessary (Speakeasy measured 102,000 tokens for a task that should use 2,000)
-- Users hit context limits mid-task and lose conversation state
+- Fix A breaks system B. Fix B breaks system C. Three sessions later, the codebase is worse than when you started.
+- Loss of confidence in the codebase -- developers stop trusting that anything works.
+- Phase deadlines slip as "simple" fixes spiral into multi-day debugging sessions.
 
 **Prevention:**
-1. **Dynamic toolsets:** Expose 3 meta-tools (`search_tools`, `describe_tool`, `execute_tool`) instead of 40 individual tools. LLM discovers what it needs, loads schemas on demand. Speakeasy achieved 96.7% token reduction with this pattern.
-2. **Intent-based tool design:** Group by user goal, not API operation. `create_character_model` (high-level) instead of 15 mesh/bone/material tools. Anthropic's engineering blog confirms coarse-grained tools outperform fine-grained ones.
-3. **Code execution fallback:** For complex Blender operations, expose a single `execute_blender_code` tool that runs Python. This avoids encoding every bpy operation as an MCP tool. Token cost drops from 150K to 2K per Anthropic's measurements.
-4. **Category gating:** Register tools by workflow context (modeling, rigging, texturing, export). Only load the relevant category for the current task.
+1. **Fix in priority-tier batches, not all at once.** Phase A (5 critical bugs) ships and stabilizes before Phase B (11 high-priority bugs) begins. Never mix tiers.
+2. **Read before every edit.** The CLAUDE.md anti-regression protocol exists because this exact problem happened. Reading a file costs ~500 tokens. Blind-editing then fixing regressions costs ~50,000.
+3. **Compile-check after every 3-5 changes.** Do not accumulate 20 changes before testing. Catch breaks immediately while the cause is obvious.
+4. **Max 2 attempts per approach.** If a fix attempt fails twice, stop. Re-read the context. Try a fundamentally different approach. Do not loop.
+5. **Group fixes by system, not by severity.** Fix all `DamageCalculator` + `BattleManager` issues together, then all `CharSelect` issues together. Cross-system context is expensive to load and easy to lose.
+6. **Each fix gets its own commit.** If a fix introduces a regression, `git revert` undoes exactly that fix and nothing else.
 
 **Warning signs:**
-- Conversation starts consume more than 10,000 tokens before user's first message
-- LLM frequently calls wrong tools or passes incorrect parameters
-- Users report "the AI forgot what I asked" mid-session (context eviction)
+- "I'll just fix this one more thing while I'm here" -- scope creep within a bug fix.
+- Editing a file without reading it first.
+- Fixing file B as a side-effect of fixing file A in the same edit.
+- More than 5 files changed in a single commit labeled "bug fix."
 
 **Detection:**
-Monitor `tools_list` token count at session init. If it exceeds 15% of context window, you have a tool explosion.
+Track the ratio of bugs-fixed to bugs-introduced per session. If it drops below 3:1, the approach is wrong.
 
-**Phase to address:**
-Phase 1 (Architecture) -- tool API design must be decided before any tool implementation. Retrofitting dynamic toolsets onto a static 40-tool server is a rewrite.
+**Phase to address:** Phase A through Phase D. Every phase that touches bug fixes must follow isolation protocol.
 
 ---
 
-### Pitfall 2: Blender Socket Bridge Dies Silently on Long Operations
+### CRIT-2: Texture2D Memory Leaks from Runtime Gradient Generation
 
 **What goes wrong:**
-The standard Blender MCP architecture uses a TCP socket (typically localhost:9876) between the MCP server process and a Blender addon. The MCP server sends JSON commands, Blender executes them, returns JSON results. For quick operations (create cube, move object) this works. For long operations (generate rig, bake textures, boolean operations on complex meshes, Rodin/Hyper3D API polling), the socket times out or Blender's main thread blocks so long that the heartbeat fails. The blender-mcp issue tracker has multiple reports: "Successfully connected to Blender on startup but can't receive answer" (Issue #73), "MCP error -32001: Request Timed out" (Issue #50), and repeated "Server transport closed unexpectedly" errors.
+`UIGradientHelper` creates `Texture2D` objects at runtime for gradients and glow effects. These are native GPU resources -- they are NOT garbage-collected by C#. If the calling code does not explicitly call `Object.Destroy(texture)` when the VisualElement is removed or the screen transitions, the textures leak. This project already has an identified leak: `MainMenuBootstrap` and `MenuBootstrap` have Texture2D memory leaks (Phase B bug list). The `UIGradientHelper.CreateGlowOverlay()` method creates a radial gradient texture and assigns it to a child VisualElement but returns only the VisualElement, not the texture -- the caller has no reference to destroy the texture when done.
 
 **Why it happens:**
-Blender's Python API is single-threaded. While a bpy operation executes, Blender cannot process socket reads. The MCP server's socket has a 180-second timeout (in ahujasid's implementation). Complex operations like rigging, mesh booleans, or subdivision surface baking can exceed this. The socket connection has no keepalive/heartbeat mechanism -- it's blocking send/receive with a fixed timeout. If the MCP transport (stdio or SSE) also has its own timeout, you get cascading timeouts at multiple layers.
+UI Toolkit has no `OnDestroy` callback for VisualElements. Unlike MonoBehaviour (which has `OnDestroy`), a VisualElement can be removed from the tree at any time with no lifecycle notification. When a VisualElement with a runtime `background-image` texture is removed, the texture remains in GPU memory. The `UIGradientHelper` API makes this easy to get wrong -- `ApplyVerticalGradient` returns the texture (good), but `CreateGlowOverlay` and `CreateTopHighlight` do not return the texture they create (bad).
 
 **Consequences:**
-- User's 72-hour rigging session produces nothing because the connection dropped after the first complex operation
-- No way to distinguish "Blender is still working" from "Blender crashed"
-- Partial state: Blender may have completed half the operation when the timeout fires, leaving the scene in an inconsistent state
-- Port conflicts after unclean disconnection require Blender restart
+- Each screen transition that uses gradients leaks 4-20 textures (4x64 bytes for simple gradients, up to 128x128 for radials).
+- Over 10+ screen transitions: 40-200 leaked textures. Not catastrophic for short sessions but accumulates.
+- In the Title Screen UI Rebuild (Phase E), the AAA effects will create 20+ gradient textures per load. If leaked, this becomes a real memory problem.
+- Unity Profiler shows increasing "Texture2D" count that never decreases.
 
 **Prevention:**
-1. **Async command pattern:** Send command, immediately return a job ID. Poll for completion via a separate lightweight status endpoint. Blender addon uses `bpy.app.timers` to check job completion without blocking.
-2. **Progress reporting:** Blender addon writes progress to a shared file or separate status socket. MCP server streams progress events back to client. This solves both timeout and "is it still working?" problems.
-3. **Operation chunking:** Break long operations (e.g., "rig this character") into discrete steps (create armature, add bones, set constraints, bind mesh). Each step is a short socket call. LLM orchestrates the sequence.
-4. **Heartbeat mechanism:** Blender addon sends periodic "still alive" pings on a separate lightweight channel while the main operation runs.
-5. **Graceful timeout recovery:** On timeout, query Blender's state before retrying. Don't blindly re-send the command -- the first one may have partially completed.
+1. **Every method that creates a Texture2D must return it.** Refactor `CreateGlowOverlay` and `CreateTopHighlight` to either return the texture or accept a `List<Texture2D>` disposal bag parameter.
+2. **Track textures in the MonoBehaviour that owns the UI.** Maintain a `List<Texture2D> _runtimeTextures` field. In `OnDisable`/`OnDestroy`, iterate and `Destroy()` each one.
+3. **Call `tex.Apply(false, true)` with `makeNoLongerReadable = true`** on textures that will not be modified after creation. This frees the CPU-side copy, halving memory per texture. The current code passes `false, false` (keeps readable).
+4. **Use the 8-texture batch limit wisely.** UI Toolkit batches up to 8 textures per draw call. If every gradient is a unique texture, you blow the batch limit and increase draw calls. Consider a shared gradient atlas texture with UV-mapped regions.
+5. **Disable mipmaps (already done) and use smallest viable resolution.** Current defaults (4x64 for linear, 128x128 for radial) are appropriate. Do not increase without profiling.
 
 **Warning signs:**
-- Operations that take more than 30 seconds in Blender fail when triggered via MCP
-- "Socket timeout during chunked receive" warnings in server logs
-- Users must restart Blender after failed operations due to port binding issues
+- `Texture2D.Apply()` called with `(false, false)` on textures that never change.
+- No `Destroy()` call matching a `new Texture2D()` in the same class.
+- `UIGradientHelper.CreateGlowOverlay()` called without tracking the returned VisualElement's internal texture.
 
 **Detection:**
-Log operation start time and completion time. Any operation exceeding 60 seconds without progress callback is at risk.
+Unity Profiler > Memory > Texture2D count. Take a snapshot at startup, transition screens 5 times, take another snapshot. If Texture2D count increased, you have a leak.
 
-**Phase to address:**
-Phase 1 (Architecture) -- the socket communication protocol must support async operations from day one. You cannot bolt async onto a synchronous request-response protocol without rewriting the addon.
+**Phase to address:** Phase E (Title Screen Rebuild) and Phase F (Character Select Rebuild). Fix the API in Phase C (Code Quality) to prevent leaks in the rebuild phases.
 
 ---
 
-### Pitfall 3: Blind Execution Without Visual Verification Loops
+### CRIT-3: RenderTexture Display in UI Toolkit Has Race Conditions on Cleanup
 
 **What goes wrong:**
-The LLM generates Blender Python code, sends it through the MCP bridge, receives a text response ("mesh created successfully"), and moves on. It never sees what it actually created. A "humanoid rig" might have bones pointing in wrong directions, inverted normals, intersecting geometry, or textures mapped to the wrong UV islands. The LLM optimistically reports success based on the absence of Python exceptions, not on visual correctness. The user's experience of "72 hours of rigging that was still broken" stems directly from this pattern.
+`HeroStageController` correctly creates a `RenderTexture`, binds it to a VisualElement via `Background.FromRenderTexture(_renderTexture)`, and releases it in `CleanupStage()`. But the cleanup order matters critically: if you destroy the RenderTexture while the UI is still rendering from it, you get a one-frame pink/black flash, or worse, a crash. The existing code already handles this by clearing the background-image BEFORE releasing the texture and calling `MarkDirtyRepaint()`. This pattern must be followed everywhere.
+
+The deeper risk is in Phase G (3D Model Integration) where multiple models may need RenderTexture displays (hero preview + champion monster + monster collection cards). Each additional RenderTexture consumes significant GPU memory (1024x1536x4 bytes x MSAA = ~24MB per texture with 4x MSAA).
 
 **Why it happens:**
-MCP's default response format is text/JSON. Rendering a viewport screenshot, transmitting it as base64, and having the LLM evaluate it adds latency and token cost. Most MCP server implementations skip this because it's hard and expensive. But 3D modeling is inherently visual -- text confirmation of geometric correctness is unreliable.
+UI Toolkit renders asynchronously from the main thread in some configurations. The render pass reads the RenderTexture reference stored in the VisualElement's resolved style. If you destroy the RT between the moment the UI reads the reference and the moment it samples the texture, you get undefined behavior. Unity 6's UI Toolkit has improved this (the internal texture binding is more robust), but the timing window still exists during scene transitions.
 
 **Consequences:**
-- Hours of LLM iterations produce geometrically invalid output
-- Errors compound: wrong bone orientation in step 3 makes steps 4-20 worthless
-- User doesn't discover problems until they inspect manually, at which point recovery requires starting over
-- Trust erosion: users stop using the tool after one bad experience
+- One-frame black/pink flash during character select transitions (cosmetic but unprofessional).
+- Potential editor crash in development if RenderTexture is released mid-render.
+- GPU memory exhaustion if multiple 24MB RenderTextures accumulate.
 
 **Prevention:**
-1. **Mandatory viewport capture after mutations:** After every operation that changes geometry, materials, or armature, render a viewport screenshot and return it as part of the tool response. The LLM can then evaluate visual correctness before proceeding.
-2. **Multi-angle verification:** For 3D operations, capture front + side + top views (3 screenshots). A single perspective hides problems on other axes.
-3. **Automated validation checks:** Before returning "success," run programmatic checks:
-   - Mesh: `bpy.ops.mesh.normals_check()`, vertex count, face count, non-manifold edges
-   - Armature: bone count, chain connectivity, symmetry validation
-   - UV: island count, overlap detection, coverage percentage
-   - Materials: slot assignment verification, texture path validation
-4. **Checkpoint/rollback system:** Before each major operation, save a `.blend` checkpoint. If the LLM determines the result is wrong, roll back to the checkpoint instead of trying to fix broken geometry.
-5. **Diff visualization:** Show before/after comparisons for modifications, not just the final state.
+1. **Always clear the VisualElement's background-image BEFORE releasing the RenderTexture.** The existing `HeroStageController.CleanupStage()` pattern is correct -- replicate it everywhere:
+   ```csharp
+   _renderTarget.style.backgroundImage = new StyleBackground(StyleKeyword.None);
+   _renderTarget.MarkDirtyRepaint();
+   // Now safe to release
+   _renderTexture.Release();
+   Object.Destroy(_renderTexture);
+   ```
+2. **Detach the camera from the RenderTexture BEFORE destroying it.** Set `_previewCamera.targetTexture = null` first. The existing code does this correctly.
+3. **Budget RenderTextures.** At 1024x1536 with 4x MSAA, each RT is ~24MB. Budget maximum 3 active RenderTextures (hero preview, one monster card, one particle target). Total: ~72MB, acceptable for a 1920x1080 desktop target.
+4. **Use a lower resolution for secondary RTs.** Monster collection card previews do not need 1024x1536. Use 512x768 (6MB each).
+5. **Pool RenderTextures instead of creating/destroying.** If character select swaps models frequently, reuse the same RT instead of creating a new one each swap.
 
 **Warning signs:**
-- Tool responses contain only text like "Object created" with no visual data
-- User reports "it said it worked but when I looked in Blender it was wrong"
-- LLM confidently proceeds through a 20-step workflow without any visual checkpoints
+- `RenderTexture.Release()` or `Destroy(renderTexture)` called WITHOUT first clearing the VisualElement's `backgroundImage`.
+- Multiple `new RenderTexture(...)` calls without corresponding `Release()` + `Destroy()` calls.
+- RenderTexture resolution matches display resolution (1920x1080) instead of the VisualElement's actual size.
 
 **Detection:**
-Count tool responses that include image data vs. text-only. If less than 50% of mutation operations include visual verification, the feedback loop is broken.
+Unity Profiler > Memory > RenderTexture count and total size. Should never exceed 3 active RTs outside of rendering pipeline internals.
 
-**Phase to address:**
-Phase 2 (Core Tools) -- every tool that mutates scene state must include a viewport capture in its response. This is not a "nice to have" -- it is the single most important differentiator from existing broken implementations.
+**Phase to address:** Phase G (3D Model Integration). The pattern exists in HeroStageController -- enforce it as a standard for all new RT-based UI.
 
 ---
 
-### Pitfall 4: Arbitrary Code Execution Creates an Unrestricted Shell
+### CRIT-4: USS background-color Overrides Runtime Texture2D Silently
 
 **What goes wrong:**
-The most powerful MCP tool for Blender is `execute_blender_code` -- it takes a Python string and passes it to `exec()` inside Blender. This gives the LLM (and by extension, any prompt injection) full access to the host machine's filesystem, network, and processes. A malicious prompt or confused LLM can run `import subprocess; subprocess.run(["rm", "-rf", "/"])` through the Blender Python interpreter. The existing blender-mcp project does exactly this: accepts arbitrary Python, passes it to `exec()` with no restriction.
+This is a learned-the-hard-way rule documented in the project's `.claude/rules/ui/toolkit.md`: if a USS stylesheet sets `background-color` on an element, it OVERRIDES the runtime `Texture2D` applied via C#. The gradient becomes invisible. The developer sees a flat color and assumes the gradient code is broken, spends hours debugging C# texture generation, when the fix is removing one line of USS.
 
 **Why it happens:**
-Blender's Python API (`bpy`) is so vast that encoding every operation as a typed MCP tool is impractical. The escape hatch is "just run Python." But Python's `exec()` has no sandbox -- it's a full interpreter with OS access. Developers assume the MCP server runs locally and is therefore "trusted," but MCP connections can be established remotely, and prompt injection can weaponize even local execution.
+USS `background-color` and C# `style.backgroundImage` are different properties, but `background-color` paints over the background image in Unity's UI Toolkit rendering pipeline. Unlike web CSS where `background-image` layers on top of `background-color`, Unity's implementation treats `background-color` as an opaque fill that obscures the image. This is not documented in Unity's official USS property reference -- it was discovered empirically.
 
 **Consequences:**
-- Full filesystem access: read SSH keys, credentials, environment variables
-- Network access: exfiltrate data, download malware
-- Process execution: launch arbitrary binaries
-- Blender state corruption: malicious scripts can corrupt the scene file
+- Hours of debugging gradient generation code that is actually working correctly.
+- Regression during UI rebuild: a new USS class added for layout accidentally includes `background-color`, killing all gradients on that element.
+- The failure is silent -- no error, no warning. The element just shows the wrong color.
 
 **Prevention:**
-1. **Allowlist-based execution:** Instead of raw `exec()`, parse the Python AST and reject any code that imports modules outside a whitelist (`bpy`, `mathutils`, `bmesh`, `math`, `random`). Block `subprocess`, `os`, `sys`, `socket`, `http`, `shutil`, `ctypes`.
-2. **Code review before execution:** Return generated code to the user for approval before running it. Add a `--auto-approve` flag for trusted workflows, but default to manual review.
-3. **Scoped API surface:** Prefer typed MCP tools for common operations. Reserve `execute_blender_code` for edge cases and require explicit user opt-in.
-4. **Filesystem isolation:** Run Blender in a container or with restricted filesystem permissions. Mount only the project directory, not the home folder.
-5. **Execution logging:** Log every Python string sent to `exec()` with timestamp, source, and result. Enable audit trail for security review.
+1. **Audit all USS files for `background-color` on elements that will receive runtime gradients.** Search for `background-color` in all `.uss` files and cross-reference against elements targeted by `UIGradientHelper`.
+2. **When applying a gradient, explicitly clear `background-color`:**
+   ```csharp
+   element.style.backgroundColor = new StyleColor(StyleKeyword.None);
+   UIGradientHelper.ApplyGradient(element, gradientTexture);
+   ```
+3. **Add this to `UIGradientHelper.ApplyGradient()` itself** so it is impossible to forget.
+4. **Document in USS files:** Add comments above any element that receives runtime textures: `/* NOTE: No background-color -- runtime gradient applied via C# */`
 
 **Warning signs:**
-- MCP tool accepts arbitrary string and passes to `exec()` without validation
-- No import restrictions on executed code
-- No user confirmation step before code execution
-- Server documentation doesn't mention security implications
+- Gradient code runs without error but the element shows a flat color.
+- Adding a new USS class to a gradient element "breaks" the gradient.
+- Developer says "gradients stopped working after I changed the styling."
 
 **Detection:**
-Search for `exec(` and `eval(` in the server codebase. If they accept user/LLM-provided strings without AST validation, you have an unrestricted shell.
+After applying gradients, take a Unity screenshot and verify visually. If automated, compare expected gradient colors at top/bottom of element.
 
-**Phase to address:**
-Phase 1 (Architecture) -- security model must be designed before any `execute_code` tool is implemented. Retrofitting sandboxing onto an existing unrestricted system requires rewriting the execution layer.
+**Phase to address:** Phase E and Phase F (UI Rebuilds). Must be enforced from the first gradient application.
 
 ---
 
-### Pitfall 5: Blender Python Threading Prohibition Causes Deadlocks and Crashes
+### CRIT-5: Static Event Fields Persist Across Scene Loads (17 Known Instances)
 
 **What goes wrong:**
-Blender's Python integration is explicitly not thread-safe. The official documentation states: "Python Threads are Not Supported." Attempting to call any `bpy` API from a background thread causes crashes, data corruption, or silent incorrect behavior. The MCP bridge naturally wants to handle socket I/O on a background thread and dispatch bpy calls on the main thread, but getting this wrong is trivial and the failure modes are catastrophic (Blender segfault, corrupted .blend file).
+`EventBus` has 65+ `static event Action<...>` fields. `CharSelectEvents` has 11 more. Static events survive scene loads and `DontDestroyOnLoad` boundaries. If a MonoBehaviour subscribes in `OnEnable` but the scene is unloaded (destroying the MonoBehaviour) before `OnDisable` fires, the static event holds a reference to the destroyed object. Next time the event fires, it invokes a delegate on a destroyed MonoBehaviour, causing a `MissingReferenceException` or silent null behavior. The CONCERNS.md identifies 17 instances of this pattern.
 
 **Why it happens:**
-The socket server in the Blender addon must listen for incoming connections without blocking Blender's UI. The obvious solution is a background thread for socket I/O. But developers then call `bpy.ops` or modify `bpy.data` directly from that thread, causing crashes. The correct pattern (thread-safe queue + `bpy.app.timers` dispatch) is non-obvious and poorly documented.
+Unity's scene unload destroys GameObjects but does NOT call `OnDisable` on MonoBehaviours that are destroyed as part of scene unload in all circumstances (particularly during `LoadSceneMode.Single` which destroys the old scene). The static event delegate still holds a reference. When `EventBus.ClearAllListeners()` exists but is not called at the right time, leaked delegates accumulate.
 
 **Consequences:**
-- Random Blender crashes with no Python traceback (segfault in C code)
-- Corrupted scene data that only manifests when saving
-- Race conditions where two MCP commands interleave their bpy modifications
-- Crashes that only occur under load (multiple rapid commands), making them hard to reproduce
+- `MissingReferenceException` in production after scene transitions.
+- Silent logic bugs: an event fires, the old subscriber "handles" it on a destroyed object, the new subscriber in the current scene never gets the event.
+- Memory leaks: destroyed MonoBehaviours cannot be GC'd because static events hold references.
+- Intermittent -- depends on exact timing of scene load vs. object destruction.
 
 **Prevention:**
-1. **Queue + Timer pattern:** Socket listener thread puts commands on a `queue.Queue()`. A `bpy.app.timers.register()` callback polls the queue every 0.05-0.1 seconds and executes commands on Blender's main thread. This is the ONLY safe pattern.
-2. **Single-command serialization:** Process one MCP command at a time. Do not allow concurrent bpy operations even if they appear independent. Blender's internal state is globally mutable.
-3. **No `bpy` imports in thread context:** The socket handler module should not import `bpy` at the module level. Only the timer callback (which runs on the main thread) should access `bpy`.
-4. **Crash recovery:** Implement auto-save before each MCP command. If Blender crashes, the addon can recover from the auto-save on restart.
-5. **Test under load:** Send 10 rapid MCP commands in sequence and verify no crash. This is the minimum reliability test.
+1. **Call `EventBus.ClearAllListeners()` at the START of every scene load**, not just at specific transition points. The `VBSceneManager` scene loading flow must include this.
+2. **Every MonoBehaviour that subscribes to static events must unsubscribe in `OnDisable`, not `OnDestroy`.** `OnDisable` is called before the object is destroyed. `OnDestroy` may be too late for scene-unload scenarios.
+3. **Use weak references or a subscriber registry** that automatically prunes dead subscribers. This is a larger refactor but eliminates the class of bugs entirely.
+4. **Add a domain-reload reset** (already present on `SingletonMonoBehaviour` via `SingletonResetHelper`) -- extend to `EventBus` and `CharSelectEvents`.
 
 **Warning signs:**
-- Blender crashes with no Python error message (segfault)
-- Operations work individually but fail when combined rapidly
-- `bpy` calls appear in any code path that could execute off the main thread
-- Threading module imported alongside bpy in the same file
+- Subscribe in `Awake` or `Start` instead of `OnEnable`.
+- Unsubscribe in `OnDestroy` instead of `OnDisable`.
+- No `ClearAllListeners()` call in scene transition flow.
+- `MissingReferenceException` in console after scene transitions.
 
 **Detection:**
-Grep for `import threading` or `Thread(` in addon code. Trace all code paths from thread entry points to verify no `bpy` access occurs.
+After every scene transition in play mode, check the Unity Console for `MissingReferenceException`. If any appear with `EventBus` in the stack trace, you have leaked subscribers.
 
-**Phase to address:**
-Phase 1 (Architecture) -- the Blender addon's threading model is foundational. Getting it wrong corrupts everything built on top. The queue+timer pattern must be the first thing implemented and tested.
+**Phase to address:** Phase B (fix static event persistence) and Phase C (standardize subscribe/unsubscribe patterns). Must be done BEFORE Phase E/F UI rebuilds add new subscribers.
 
 ---
 
-### Pitfall 6: FBX Pipeline Between Blender and Unity Silently Corrupts Assets
+## High Pitfalls
+
+Mistakes that cause significant debugging time or feature regression.
+
+---
+
+### HIGH-1: Debug.Log Replacement Changes Semantic Behavior
 
 **What goes wrong:**
-The Blender-to-Unity asset pipeline via FBX is riddled with silent data loss. Per-vertex normals exported with `IndexToDirect` reference mode are misinterpreted by Unity (Blender bug #123088). Materials and textures are not embedded in FBX files -- they must be manually reassigned in Unity. Unity's FBX importer applies a 0.01 scale factor (Blender uses meters, Unity uses... also meters, but the importer scales anyway). Blender-specific modifiers (boolean, subdivision, mirror) don't export -- they must be applied first. Armature bone orientations differ between Blender and Unity conventions. An automated pipeline that doesn't account for ALL of these produces assets that look correct in Blender but are broken in Unity.
+Replacing `Debug.Log(message)` with `ErrorLogger.Log(message)` seems like a simple find-and-replace. But `ErrorLogger.Log` is decorated with `[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]`, which means the **entire call is compiled out** in release builds -- including the evaluation of its arguments. If a `Debug.Log` call has side effects in its argument (unlikely but possible: `Debug.Log($"Count: {list.Count}")` where `list.Count` triggers lazy initialization), removing the call changes runtime behavior.
+
+More commonly, the issue is that `Debug.LogWarning` and `Debug.LogError` are used in production-critical paths. Replacing a `Debug.LogError("Save failed!")` with `ErrorLogger.Error("Save failed!")` is safe because `ErrorLogger.Error` is NOT conditional -- it always executes. But replacing a `Debug.LogWarning` used as a user-facing indicator with `ErrorLogger.Warn` (also not conditional) changes nothing. The real risk is accidentally replacing a `Debug.Log` that should have been `Debug.LogWarning` with `ErrorLogger.Log` (conditional), silently removing a warning the developer intended to keep.
 
 **Why it happens:**
-FBX is a proprietary Autodesk format. Blender's FBX exporter is a reverse-engineered Python implementation, not an official SDK integration. Unity's FBX importer makes assumptions about authoring tools (primarily Maya/Max). The format itself cannot represent all Blender features (geometry nodes, EEVEE materials, Cycles shader trees). Every translation step is lossy.
+Batch find-and-replace treats all `Debug.Log*` calls as equivalent. They are not:
+- `Debug.Log` -> `ErrorLogger.Log` (conditional -- stripped in release)
+- `Debug.LogWarning` -> `ErrorLogger.Warn` (NOT conditional -- always runs)
+- `Debug.LogError` -> `ErrorLogger.Error` (NOT conditional -- always runs)
+- `Debug.LogException` -> `ErrorLogger.Exception` (NOT conditional -- always runs)
+
+The developer needs to decide, for each of the 146+ `Debug.Log` calls across 30+ files, whether the message is:
+- A development-only debug trace (use conditional `ErrorLogger.Log`/subsystem methods)
+- A warning about unexpected but recoverable state (use `ErrorLogger.Warn`)
+- An error that indicates a bug (use `ErrorLogger.Error`)
 
 **Consequences:**
-- Models appear inside-out in Unity (inverted normals)
-- Materials show as pink (missing references)
-- Characters are 100x too small or too large
-- Animations play at wrong speed (different FPS assumptions)
-- Rigs don't deform correctly (bone roll/orientation mismatch)
+- Important warnings silently disappear in release builds.
+- Release builds behave differently from editor builds in subtle ways.
+- Error messages that developers relied on for diagnosing player-reported bugs are gone.
 
 **Prevention:**
-1. **Standardized export preset:** Create a Blender FBX export preset that matches Unity's expectations: Apply Modifiers ON, Forward -Z, Up Y, Apply Unit ON, Apply Transform ON, Mesh > Smoothing: Face. Store this preset in version control.
-2. **Pre-export validation:** Before FBX export, run automated checks: all modifiers applied, no n-gons, no zero-area faces, UV maps present, materials assigned, armature in rest pose.
-3. **Post-import validation:** After Unity import, verify: correct scale (compare bounding box), material count matches, bone hierarchy intact, animation clip count/duration correct.
-4. **Use glTF instead:** glTF 2.0 is an open standard with better Blender support (official exporter) and Unity support (via UnityGLTF package). It embeds textures, preserves PBR materials, and has fewer conversion gotchas than FBX.
-5. **Round-trip test:** Part of CI: export from Blender, import to Unity, compare metrics (vertex count, bone count, material count, bounding box dimensions). Flag any deviation.
+1. **Classify each Debug.Log call individually.** Do NOT batch-replace. Read the context of each call and decide the appropriate severity level.
+2. **Use subsystem-specific methods for traces:** `ErrorLogger.Combat()`, `ErrorLogger.Save()`, `ErrorLogger.UI()`, etc. These are all conditional and include subsystem prefixes.
+3. **Keep `Debug.LogWarning` calls as `ErrorLogger.Warn`** (not conditional) unless the warning is purely development-time.
+4. **Keep `Debug.LogError` calls as `ErrorLogger.Error`** (not conditional) always.
+5. **Never replace a log call in a catch block with a conditional method.** Error handling logs must survive release builds.
 
 **Warning signs:**
-- Models in Unity look different from Blender viewport
-- Pink/missing materials after import
-- Character is tiny or enormous
-- Bones are rotated 90 degrees from expected orientation
+- A PR that replaces 30 `Debug.Log` calls in one commit with no per-call analysis.
+- `ErrorLogger.Log()` used inside a `catch` block.
+- `ErrorLogger.Combat()` used for a message that should be a warning.
 
 **Detection:**
-Automated comparison script that exports from Blender, imports to Unity, and diffs key metrics.
+After replacement, build in release mode and verify that important log messages still appear. Specifically test: save failure, missing asset, null reference recovery paths.
 
-**Phase to address:**
-Phase 2 (Asset Pipeline) -- export/import validation must be built into every pipeline tool, not treated as a post-hoc check.
+**Phase to address:** Phase C (Code Quality Hardening).
+
+---
+
+### HIGH-2: Singleton Migration Breaks Initialization Order
+
+**What goes wrong:**
+Converting `VERASystem`, `FPSCounter`, and others from hand-rolled singletons to `SingletonMonoBehaviour<T>` changes the `Awake` behavior. The existing `VERASystem.Awake()` sets `_instance` and calls `DontDestroyOnLoad` with custom logic. `SingletonMonoBehaviour<T>.Awake()` does the same but also calls `OnSingletonAwake()`. If the migrated class still has its own `Awake()` and forgets to call `base.Awake()`, the singleton infrastructure breaks silently -- `Instance` returns null, `HasInstance` returns false, and all callers that depend on the singleton get `NullReferenceException`.
+
+**Why it happens:**
+C# method hiding. If the subclass declares `private void Awake()` instead of `protected override void Awake()`, it hides the base class `Awake` -- Unity calls the subclass version, the base version never runs, and the singleton is never registered. This is not a compile error. C# emits a warning (CS0114) but many Unity projects suppress it or miss it in the noise.
+
+**Consequences:**
+- `VERASystem.Instance` returns null after migration.
+- `GameBootstrap` which creates singletons in sequence fails silently.
+- 13+ downstream managers that depend on singleton ordering may break.
+- Symptom appears as `NullReferenceException` far from the actual bug, making diagnosis difficult.
+
+**Prevention:**
+1. **Migrate one singleton at a time.** Do VERASystem first (simplest, least dependencies). Verify in play mode. Then FPSCounter. Then others. Never batch.
+2. **Follow a strict migration checklist per class:**
+   - Change `class X : MonoBehaviour` to `class X : SingletonMonoBehaviour<X>`
+   - Remove the private `_instance` field and `Instance` property
+   - Remove the `_isQuitting` field and `OnApplicationQuit` handler
+   - Remove the `ResetStatics` method
+   - Remove `DontDestroyOnLoad(gameObject)` call
+   - Rename `Awake()` to `protected override void OnSingletonAwake()`
+   - Remove the duplicate-instance check (base class handles it)
+   - Verify `OnDestroy` calls `base.OnDestroy()` if overridden
+3. **Verify compilation with warnings-as-errors** for CS0114 (method hides inherited member).
+4. **Test in play mode after each migration:** enter play mode, check that `X.Instance` is not null, check that `X.HasInstance` is true.
+
+**Warning signs:**
+- `Awake()` exists on a class that inherits from `SingletonMonoBehaviour<T>` without `override` keyword.
+- `DontDestroyOnLoad` called in a subclass of `SingletonMonoBehaviour<T>` (the base already handles this).
+- `_instance` field still present after migration (shadows the base class field).
+
+**Detection:**
+Grep for `void Awake()` in any file that inherits `SingletonMonoBehaviour`. If found without `override`, it is hiding the base.
+
+**Phase to address:** Phase C (Code Quality Hardening). Must be done carefully and one-at-a-time.
+
+---
+
+### HIGH-3: Collection Modification During Iteration (10 Known Instances)
+
+**What goes wrong:**
+The CONCERNS.md identifies 10 instances across 20 files where collections are modified during iteration. A `foreach` loop over a list, combined with an event callback that removes from that list, throws `InvalidOperationException` in the best case or silently skips/double-processes elements in the worst case. The `StatusEffectManager` is the highest-risk: removing status effects during iteration can skip effects or cause the `_tempEffectList` shared buffer to produce incorrect results if a removal triggers a callback that re-enters the manager.
+
+**Why it happens:**
+Event-driven architecture. A `foreach` loop processes a collection and fires an event for each element. A subscriber to that event modifies the same collection. The loop iterator is now invalid. This is especially common with:
+- `BattleManager` processing combatants and removing dead ones mid-loop.
+- `StatusEffectManager` applying tick damage and removing expired effects.
+- `CharSelectEvents` firing change events that modify subscriber lists.
+
+**Consequences:**
+- `InvalidOperationException: Collection was modified; enumeration operation may not complete.`
+- Skipped elements: removing item at index 3 causes item 4 to shift to index 3, the iterator advances to index 4, and the original item 4 is never processed.
+- Combat logic errors: a status effect tick kills a combatant, the combatant is removed, remaining effects on that combatant are not processed (or worse, are processed on the wrong target).
+
+**Prevention:**
+1. **Iterate over a snapshot.** Before the loop, copy to a temporary array: `var snapshot = myList.ToArray();` then iterate `snapshot`. Modifications to the original list are safe.
+2. **Use reverse iteration for removal.** `for (int i = list.Count - 1; i >= 0; i--)` with `list.RemoveAt(i)` is safe because removals only affect indices below the current position.
+3. **Defer modifications.** Collect items to remove in a separate list during iteration, then process removals after the loop completes.
+4. **For `StatusEffectManager` specifically:** The `_tempEffectList` shared buffer pattern is already a deferred-snapshot approach, but re-entrance corrupts it. Add a re-entrance guard flag: `if (_isProcessingEffects) throw new InvalidOperationException("Re-entrant status effect modification");`
+
+**Warning signs:**
+- `foreach` loop over a collection that is also exposed to event callbacks.
+- `list.Remove()` or `list.Add()` inside a `foreach` over the same list.
+- A method that iterates a collection AND fires events that might modify it.
+
+**Detection:**
+Static analysis: search for `foreach.*_` patterns where the iterated field is also passed to or accessible by event handlers. In play mode, run extended combat sessions and check console for `InvalidOperationException`.
+
+**Phase to address:** Phase A and Phase B (bug fixes). Fix the combat-critical instances first.
+
+---
+
+### HIGH-4: UIAnimationController DontDestroyOnLoad Without SingletonMonoBehaviour
+
+**What goes wrong:**
+`UIAnimationController` uses a manual `DontDestroyOnLoad` pattern (identified in Phase B bug list) without proper duplicate checking. If the Bootstrap scene creates one instance and a direct-entry scene creates another, two instances persist and fight over animation control, causing double-speed animations, cancelled tweens, or visual artifacts. Six instances of this pattern exist across the codebase.
+
+**Why it happens:**
+Each developer who needed persistence implemented their own variant of the singleton pattern. `SingletonMonoBehaviour<T>` exists and handles all edge cases (duplicate detection, domain reload, DontDestroyOnLoad, quitting flag), but older code predates it. The manual implementations miss at least one edge case each:
+- `VERASystem`: No `HasInstance` check. No `IsPersistent` override option.
+- `FPSCounter`: Uses `[DisallowMultipleComponent]` but does not prevent cross-scene duplicates.
+- `ThemeManager`: Creates via `new GameObject()` -- if called twice, two GameObjects exist before duplicate check.
+- `UIAnimationController`: Creates via `new GameObject()` with same race condition.
+
+**Prevention:**
+- Addressed by the singleton migration (HIGH-2). But the migration itself is risky. Do them one at a time.
+
+**Phase to address:** Phase C (Code Quality Hardening).
+
+---
+
+### HIGH-5: Character Select Has 4 Duplicate/Stale USS Stylesheets
+
+**What goes wrong:**
+The PROJECT.md documents "4 duplicate/stale CharacterSelect USS stylesheets causing confusion" and "2 overlapping global USS files (VeilBreakers.uss vs VeilBreakersUI.uss)." During the UI Rebuild (Phases E and F), adding new styles to the wrong stylesheet or duplicating a selector across stylesheets produces CSS-like specificity conflicts. A style defined in file A is overridden by a more specific rule in file B, but the developer is editing file C and cannot understand why their changes have no effect.
+
+**Why it happens:**
+Multiple development sessions, each creating their own USS file for the same screen. No cleanup between sessions. Unity UI Toolkit loads all USS files attached to a UXML document and merges them with cascading specificity rules. Unlike web CSS, there is no browser dev-tools inspector to show which USS rule won -- the only way to debug is to remove stylesheets one by one.
+
+**Consequences:**
+- Styles that work in one context but not another.
+- "I changed this style but nothing happened" -- because a higher-specificity rule in another file overrides it.
+- Merge conflicts when multiple developers edit different copies of what should be the same stylesheet.
+
+**Prevention:**
+1. **Consolidate USS files BEFORE the UI rebuild.** Identify the canonical stylesheet per screen, merge rules from duplicates, delete the duplicates. This is Phase D cleanup work.
+2. **Naming convention:** One USS per screen: `TitleScreen.uss`, `CharacterSelect.uss`, `Inventory.uss`. One global `VeilBreakers.uss` for shared styles. Delete `VeilBreakersUI.uss` after merging its unique rules.
+3. **Comment USS sections:** Group rules by component within the file. Mark overrides with `/* OVERRIDE: reason */`.
+
+**Phase to address:** Phase D (before UI rebuild begins).
 
 ---
 
 ## Moderate Pitfalls
 
-Mistakes that cause significant debugging time or feature regression but not complete rewrites.
+Issues that cause friction, debugging time, or suboptimal results.
 
 ---
 
-### Pitfall 7: Blender Operator Context Requirements Break Automation
+### MOD-1: UI Toolkit Has No CSS Gradients, Box-Shadow, or Blur
 
 **What goes wrong:**
-Many `bpy.ops` functions require specific UI context to execute: the correct area type, an active object, a specific mode (Edit/Object/Pose), or a selected object. In interactive Blender, this context is naturally set by the user's workflow. In automated/headless mode, context is often wrong. `bpy.ops.mesh.subdivide()` fails silently if no mesh is selected. `bpy.ops.object.modifier_apply()` requires the object to be active AND in Object mode. `bpy.ops.armature.bone_primitive_add()` requires Edit mode on an armature. The error messages are often just `RuntimeError: Operator bpy.ops.mesh.subdivide.poll() failed`.
+Developers accustomed to web CSS attempt to use `linear-gradient()`, `box-shadow`, or `backdrop-filter: blur()` in USS files. These do not exist in Unity's USS. The USS parser silently ignores unknown properties -- no error, no warning. The developer writes a full USS rule, it compiles without error, and nothing renders.
 
-**What to do instead:**
-- Prefer `bpy.data` API (low-level data manipulation) over `bpy.ops` (operator calls) wherever possible. Data API doesn't require context.
-- When operators are unavoidable, use `bpy.context.temp_override()` to explicitly set the required context.
-- For mode switches, always verify current mode before switching: `if obj.mode != 'EDIT': bpy.ops.object.mode_set(mode='EDIT')`.
-- Wrap every operator call in try/except and return meaningful error messages that include what context was expected.
+This project learned this the hard way: "USS-only approach failed" is documented as a project lesson. The entire `UIGradientHelper.cs` system exists because USS gradients do not work.
 
-**Warning signs:**
-- `poll() failed` errors with no additional context
-- Operations that work in Blender UI but fail when scripted
-- Mode-dependent tools that only work sometimes
+**Why it happens:**
+USS looks like CSS but is NOT CSS. Only a subset of CSS properties are supported. Unity's documentation lists supported properties but does not list unsupported ones. Developers (including AI assistants) assume CSS knowledge transfers.
 
-**Phase to address:**
-Phase 2 (Core Tools) -- every Blender tool implementation must handle context setup explicitly.
+**Prevention:**
+1. **Never use USS for visual effects.** USS for layout (flexbox, position, margin, padding, display, flex-grow). C# for visuals (gradients, glows, shadows, animations).
+2. **Do not use `style.gap`** -- it does not exist on `IStyle` in Unity 6. Use child margins instead.
+3. **For shadows:** Create a separate VisualElement behind the target with a blurred radial gradient texture (via `UIGradientHelper.CreateRadialGradient`).
+4. **For blur:** Not possible in UI Toolkit without custom shader. Accept this limitation or use a pre-blurred background texture.
+5. **Verify every USS property against Context7** (`/needle-mirror/com.unity.ui`) before using it.
+
+**Phase to address:** Phase E and Phase F (UI Rebuilds). Enforce from session start.
 
 ---
 
-### Pitfall 8: Blender Undo System Corrupts State During Automated Sequences
+### MOD-2: PrimeTween API Hallucination
 
 **What goes wrong:**
-Every `bpy.ops` call pushes an undo step. In a 50-step automated rigging sequence, this creates 50 undo snapshots consuming gigabytes of memory. Worse, if a step fails mid-sequence and the user (or recovery code) calls undo, it may undo to an intermediate state that was never meant to be standalone. The undo system can also crash Blender in background mode when called programmatically (Blender bug T60934). Memory from undo snapshots is NOT released until the file is saved, closed, and reopened.
+AI assistants (and developers working from memory) write PrimeTween API calls that do not exist. The existing `HeroStageController` correctly uses `Tween.Custom(this, ...)` with the target-based overload. But it is easy to write closure-based overloads (which allocate GC) or non-existent method signatures. Phase C explicitly calls out "Convert closure-based PrimeTween to target-based" for `StatNumberAnimator` and `ScreenEntryAnimator`.
 
-**What to do instead:**
-- Disable undo for automated sequences: `bpy.context.preferences.edit.use_global_undo = False` before the sequence, restore after.
-- For recovery, use file-level checkpoints (save .blend before the sequence) instead of undo steps.
-- After long automated sequences, use `bpy.ops.outliner.orphans_purge(do_recursive=True)` to clean up orphaned data blocks.
-- Never call `bpy.ops.ed.undo()` or `bpy.ops.ed.undo_history()` in automated/background mode.
+**Why it happens:**
+PrimeTween's API has changed across versions. The closure-based `Tween.Custom(0f, 1f, 1f, val => { })` exists but allocates. The target-based `Tween.Custom(target, 0f, 1f, 1f, (tgt, val) => { })` is allocation-free but has a different signature. AI assistants frequently hallucinate non-existent overloads.
 
-**Warning signs:**
-- Memory usage grows continuously during long MCP sessions
-- Blender crashes during automated sequences with no Python error
-- Undo after a failed automation puts scene in unexpected state
+**Prevention:**
+1. **ALWAYS check Context7 (`/kyrylokuzyk/primetween`) before writing ANY PrimeTween code.** This is a CLAUDE.md HARD RULE.
+2. **Use target-based overloads exclusively.** The pattern from `HeroStageController` is the canonical reference:
+   ```csharp
+   Tween.Custom(this, startValue, endValue, duration,
+       onValueChange: (ctrl, val) => ctrl.DoSomething(val));
+   ```
+3. **Never use closure captures for MonoBehaviour fields** in tween callbacks. The MonoBehaviour may be destroyed during the tween's lifetime.
 
-**Phase to address:**
-Phase 2 (Core Tools) -- undo management must be explicitly handled in the Blender addon, not left to Blender's defaults.
+**Phase to address:** Phase C (Code Quality) and Phase E/F (UI Rebuilds).
 
 ---
 
-### Pitfall 9: MCP Error Responses That Kill the Conversation
+### MOD-3: CancellationToken Missing from Async Methods
 
 **What goes wrong:**
-When a tool fails, returning a bare error string ("Error: operation failed") gives the LLM no information to recover. It either retries blindly (same error, same result, wasting tokens) or gives up and tells the user it cannot proceed. Conversely, returning a massive stack trace (500+ tokens of Python traceback) wastes context and confuses the LLM. The sweet spot -- actionable error information that enables recovery -- is rarely implemented.
+Phase C includes "Add CancellationToken to MonoBehaviour async methods." Unity's `async void Start()` and `async Task` methods on MonoBehaviours continue executing after the MonoBehaviour is destroyed. Without a `CancellationToken` tied to the MonoBehaviour's lifecycle, `await` operations resume on a destroyed object, causing `MissingReferenceException` or operating on stale state.
 
-**What to do instead:**
-- Return errors using MCP's `isError: true` flag in the tool response (NOT as a protocol-level JSON-RPC error). This tells the LLM "the tool ran but the operation failed" vs. "the tool itself is broken."
-- Structure error responses: `{ error_type, message, suggestion, can_retry }`. Example: `{ "error_type": "context_error", "message": "No active mesh object", "suggestion": "Select a mesh object first using select_object tool", "can_retry": true }`.
-- Include recovery instructions that reference other available tools.
-- Limit error detail to 200 tokens maximum. Log full details server-side.
-- For Blender-specific errors, translate bpy error codes into actionable messages: `poll() failed, context is incorrect` becomes "The armature must be in Edit Mode. Call set_mode('EDIT') first."
+The `EmbarkCinematicController` is a known example: it has an event-nulling bug that "hangs async flow" (Phase B bug list) -- likely because an async method is awaiting a Task and the event it depends on is nulled during scene transition.
 
-**Warning signs:**
-- LLM retries the same failing operation 3+ times
-- Error messages contain raw Python tracebacks
-- Errors say "operation failed" without saying why or how to fix it
+**Prevention:**
+1. **Use `destroyCancellationToken`** (available in Unity 6 on MonoBehaviour). This token is automatically cancelled when the MonoBehaviour is destroyed.
+2. **Pass the token to all awaitable operations:**
+   ```csharp
+   await Task.Delay(1000, destroyCancellationToken);
+   ```
+3. **Wrap async methods with try/catch for `OperationCanceledException`:**
+   ```csharp
+   try { await DoWork(destroyCancellationToken); }
+   catch (OperationCanceledException) { /* Expected on destroy */ }
+   ```
 
-**Phase to address:**
-Phase 2 (Core Tools) -- error handling format should be standardized before individual tools are implemented.
+**Phase to address:** Phase C (Code Quality Hardening).
 
 ---
 
-### Pitfall 10: Blender Data Block References Invalidated by Operations
+### MOD-4: 3D Model Import Quality Varies Wildly Across 28 GLBs
 
 **What goes wrong:**
-Python objects that reference Blender data (`mesh = bpy.data.meshes["MyMesh"]`) can become dangling pointers when Blender operations reallocate internal memory. Adding items to a collection can trigger reallocation that invalidates all existing Python references to items in that collection. Accessing invalidated references causes crashes (not Python exceptions -- actual segfaults). The official docs warn: "When removing data, be sure not to hold references to it."
+Phase G requires auditing 28 GLB models. The models were generated by AI (Tripo/Hyper3D) and have varying quality: some may have inverted normals, non-manifold geometry, missing UVs, excessive polycount, or broken rigs. Importing them into Unity without validation will surface problems late -- materials show pink, meshes appear inside-out, animations do not play, or performance drops due to 500K-poly models in a UI preview.
 
-**What to do instead:**
-- Never cache `bpy.data` references across MCP tool calls. Resolve references fresh at the start of each tool execution by name/index.
-- After any operation that adds or removes objects, meshes, or materials, re-resolve all references.
-- Use object names (strings) as stable identifiers passed between MCP calls, not Python object references.
-- Implement a naming convention for MCP-created objects (e.g., `mcp_char_arm_01`) to enable reliable re-resolution.
+**Prevention:**
+1. **Run a quality check on each GLB before importing to Unity.** Use `blender_mesh action=game_check` from VB-Toolkit.
+2. **Set polycount budgets:** Hero models max 50K tris, monster models max 30K tris. Models exceeding these need decimation.
+3. **Validate in Unity after import:** Check material assignment, normal orientation (no inside-out faces), UV coverage.
+4. **Delete old model versions first** (CRIT-02 in CONCERNS.md: ~500MB of dead model iterations).
 
-**Warning signs:**
-- Blender crashes when accessing objects after other operations modified the scene
-- `ReferenceError: StructRNA of type Object has been removed` in Python console
-- Crashes that only occur when operations are sequenced (not when run individually)
-
-**Phase to address:**
-Phase 1 (Architecture) -- the Blender addon must use name-based resolution, never cached references. This is a design principle, not a per-tool fix.
+**Phase to address:** Phase G (3D Model Quality Audit). Must be completed before Phase F integration.
 
 ---
 
-### Pitfall 11: MCP Transport Choice Locks You Into Architecture
+### MOD-5: TitleScreenVFX God Class (3,145 Lines) Resists Incremental Fixes
 
 **What goes wrong:**
-Choosing the wrong MCP transport (stdio vs. Streamable HTTP vs. SSE) at the start constrains deployment options later. stdio is simplest but requires the server to run as a subprocess of the client -- no remote operation, no multi-client support. SSE was the original HTTP transport but is now deprecated (as of MCP spec 2025-03-26). Streamable HTTP is the current standard for remote/production servers but adds complexity. Building on stdio and discovering later that you need remote operation means rewriting the transport layer.
+`TitleScreenVFX.cs` is 3,145 lines with 140+ embers, 40 micro-sparks, 16 ash particles, 11+ `Resources.Load` calls, and 196+ VisualElements created on scene load. Any Phase E change to the title screen's visual effects requires editing this file, and any edit risks breaking unrelated effects. The class has no test coverage and is fragile by nature.
 
-**What to do instead:**
-- **Local-only tool (user runs Blender on their machine):** Use stdio. It's simpler, faster, and has zero network overhead. This is the right choice for a dev tool.
-- **Design the server to be transport-agnostic:** Use a framework like FastMCP that abstracts transport. Switching from stdio to Streamable HTTP should be a configuration change, not a code change.
-- **Never build on SSE for new projects.** It is deprecated and will be removed.
-- If you must support remote operation (e.g., cloud rendering), plan for Streamable HTTP from the start.
+**Prevention:**
+1. **Phase E should start by decomposing this file**, not by adding more effects to it.
+2. **Extract subsystems:** `EmberParticleSystem`, `SmokeWispSystem`, `PortalBackgroundSystem`, `LightningSystem`, `ButtonVFXSystem`.
+3. **Pool VisualElements** instead of creating 196 new ones on load.
+4. **Replace `Resources.Load` with UIAssets ScriptableObject** references (HIGH-02 in CONCERNS.md).
+5. **Cap total element count** per quality tier.
 
-**Warning signs:**
-- Server code directly handles stdin/stdout parsing instead of using a transport abstraction
-- SSE-specific code in a new project
-- "We'll add remote support later" without transport abstraction
-
-**Phase to address:**
-Phase 1 (Architecture) -- transport abstraction is a one-time decision with long-lasting consequences.
+**Phase to address:** Phase E (Title Screen Rebuild). Decompose first, enhance second.
 
 ---
 
 ## Minor Pitfalls
 
-Issues that cause friction or minor bugs but are easily fixable.
+Issues that cause friction but are easily fixable once identified.
 
 ---
 
-### Pitfall 12: Blender File Path Encoding Breaks Cross-Platform
+### MIN-1: SharedAudioSource Conflict Between Components
 
 **What goes wrong:**
-Blender internally uses UTF-8 for file paths, but Windows uses UTF-16. Paths with non-ASCII characters (accented usernames, CJK characters in project names) can cause silent failures in file operations. The `//` relative path prefix in Blender (relative to .blend file) doesn't translate to absolute paths correctly in all contexts.
+`HoldToEmbark` and `CharSelectFocusManager` both try to play audio through the same `AudioSource` on the same frame. One clip cuts off the other. This is a Phase B bug (already identified) but representative of a pattern: multiple components assuming they have exclusive access to a shared resource.
 
-**What to do instead:**
-- Always use `bpy.path.abspath()` to resolve Blender relative paths before passing them to Python `os` functions.
-- Use `pathlib.Path` instead of string concatenation for path operations.
-- Test with a project path containing spaces and non-ASCII characters.
+**Prevention:**
+- Give each component its own `AudioSource` or use `AudioManager` to mediate.
 
-**Phase to address:**
-Phase 3 (Polish) -- edge case that should be tested but doesn't block core functionality.
+**Phase to address:** Phase B.
 
 ---
 
-### Pitfall 13: Blender Version Skew Between Addon and Server
+### MIN-2: Enum.IsDefined Guards Missing on JSON Deserialization
 
 **What goes wrong:**
-Blender 4.x/5.x changed numerous Python APIs: `bpy.props` dictionary-style access removed, `BGL` module removed entirely, new `temp_override()` syntax. If the MCP addon is developed against Blender 4.2 but the user runs Blender 5.0, scripts silently fail or crash. Blender has no built-in addon version compatibility checking.
+`HeroData`, `SkillData`, and `ItemData` cast raw integers from JSON to enum types without validation. Invalid values create enum instances with no matching case in switch statements, falling through to default cases (or throwing if no default exists).
 
-**What to do instead:**
-- Check `bpy.app.version` at addon startup and warn/block on unsupported versions.
-- Document minimum and maximum supported Blender versions explicitly.
-- Use `hasattr()` checks before accessing APIs that changed between versions.
-- Test against the 2-3 most recent Blender stable releases.
+**Prevention:**
+- Wrap every `(EnumType)intValue` cast with `Enum.IsDefined(typeof(EnumType), intValue)`.
+- Return a safe default (`Brand.IRON`, `SkillType.ATTACK`) for invalid values.
+- Log a warning via `ErrorLogger.Warn` for invalid values to catch bad data.
 
-**Phase to address:**
-Phase 3 (Polish) -- version compatibility is important but can be handled after core functionality works on the primary target version.
+**Phase to address:** Phase B.
 
 ---
 
-### Pitfall 14: Node Wrangler and Addon Conflicts
+### MIN-3: FPSCounter Uses IMGUI (OnGUI) Instead of UI Toolkit
 
 **What goes wrong:**
-Many Blender users have third-party addons installed (Node Wrangler, Auto Rig Pro, Hard Ops). These addons register custom operators, modify keymap, and can intercept or conflict with MCP tool operations. Auto Rig Pro, for example, has known syntax errors in certain Blender versions (bug #74319). If the MCP addon assumes a vanilla Blender installation, operations may fail due to addon conflicts.
+`FPSCounter` uses `OnGUI()` for rendering, which is the legacy immediate-mode GUI system. In a project that exclusively uses UI Toolkit, this is inconsistent and may conflict with UI Toolkit's event system. Not a bug per se, but a code quality issue that becomes relevant if FPSCounter is migrated to `SingletonMonoBehaviour<T>`.
 
-**What to do instead:**
-- Don't depend on any third-party addon being installed.
-- Catch and handle errors from addon conflicts gracefully.
-- For rigging, implement your own tools rather than depending on Auto Rig Pro being available.
-- Document known addon conflicts.
+**Prevention:**
+- Accept IMGUI for FPSCounter (it is lightweight and always-visible, which IMGUI handles well).
+- Do NOT attempt to convert to UI Toolkit unless specifically requested -- the IMGUI implementation is simpler and more performant for this use case.
 
-**Phase to address:**
-Phase 3 (Polish) -- addon conflicts are edge cases but should be documented.
+**Phase to address:** Phase C (acknowledge as acceptable tech debt).
 
 ---
 
 ## Phase-Specific Warnings
 
-| Phase Topic | Likely Pitfall | Mitigation |
-|-------------|---------------|------------|
-| Architecture & Protocol Design | Tool explosion (#1), transport lock-in (#11), threading model (#5) | Design dynamic toolset API, use transport abstraction, implement queue+timer pattern from day one |
-| Blender Addon Core | Silent socket death (#2), threading crashes (#5), data block invalidation (#10) | Async command pattern with job IDs, main-thread-only bpy access, name-based resolution |
-| Core Tool Implementation | Blind execution (#3), operator context failures (#7), undo corruption (#8) | Mandatory viewport capture, explicit context setup, disable undo for sequences |
-| Security Layer | Arbitrary code execution (#4) | AST-validated code execution, import whitelist, user approval flow |
-| Asset Pipeline (FBX/glTF) | Silent corruption (#6) | Standardized export presets, pre/post validation, prefer glTF |
-| Error Handling | Conversation-killing errors (#9) | Structured error responses with recovery suggestions |
-| Cross-Platform & Compatibility | Path encoding (#12), version skew (#13), addon conflicts (#14) | pathlib usage, version checking, graceful addon conflict handling |
+| Phase | Likely Pitfall | Mitigation |
+|-------|---------------|------------|
+| **A: Critical Bug Fixes** | Cascade regressions from combat system fixes (CRIT-1) | Fix in isolation, one commit per fix, compile-check after each |
+| **A: Critical Bug Fixes** | Brand matrix fix breaks existing tests (CRIT-05 in CONCERNS.md) | Run `BrandSystem_EditModeTests.cs` after every matrix change |
+| **B: High-Priority Bug Fixes** | Static event leaks (CRIT-5) cause MissingReferenceException | Standardize subscribe in OnEnable, unsubscribe in OnDisable |
+| **B: High-Priority Bug Fixes** | Collection modification crashes in StatusEffectManager (HIGH-3) | Iterate snapshots, add re-entrance guard |
+| **C: Code Quality** | Debug.Log replacement changes behavior (HIGH-1) | Classify each call individually, not batch replace |
+| **C: Code Quality** | Singleton migration breaks initialization (HIGH-2) | Migrate one at a time, test after each |
+| **C: Code Quality** | Missing CancellationToken on async methods (MOD-3) | Use `destroyCancellationToken` on Unity 6 MonoBehaviours |
+| **D: Title/CharSelect Bug Fixes** | USS stylesheet conflicts (HIGH-5) | Consolidate to one USS per screen before editing |
+| **E: Title Screen Rebuild** | Texture2D leaks (CRIT-2), USS override kills gradients (CRIT-4) | Track all textures in disposal list, clear background-color before applying gradients |
+| **E: Title Screen Rebuild** | TitleScreenVFX god class (MOD-5) | Decompose before enhancing |
+| **F: CharSelect Rebuild** | RenderTexture race condition on cleanup (CRIT-3) | Follow HeroStageController's cleanup pattern exactly |
+| **F: CharSelect Rebuild** | PrimeTween API hallucination (MOD-2) | Always verify via Context7 before writing |
+| **G: 3D Model Integration** | Bad geometry/materials from AI-generated GLBs (MOD-4) | Run quality check per model before import |
+| **G: 3D Model Integration** | GPU memory exhaustion from multiple RenderTextures (CRIT-3) | Budget max 3 active RTs, use lower resolution for secondary previews |
+| **H: End-to-End Verification** | Regression in a system fixed in Phase A/B discovered late | Run full flow test after each phase, not just at the end |
 
 ## Domain-Specific Anti-Patterns
 
-Patterns that seem reasonable but are consistently wrong in this domain.
-
 | Anti-Pattern | Why It Seems Right | Why It Fails | Instead |
 |-------------|-------------------|--------------|---------|
-| One MCP tool per bpy operator | Clean API mapping | Tool explosion, 500+ tools, unusable token budget | Intent-based tools or code execution |
-| Raw `exec()` for flexibility | Covers all Blender operations | Security nightmare, no validation | AST-checked execution with import whitelist |
-| Synchronous socket protocol | Simple request/response | Long operations timeout, no progress feedback | Async jobs with status polling |
-| Cached bpy.data references | Performance optimization | Dangling pointers cause crashes | Name-based resolution per-call |
-| Relying on operator `poll()` | Let Blender validate context | Unhelpful error messages, silent failures | Explicit context setup with meaningful errors |
-| FBX as universal interchange | Industry standard format | Lossy, proprietary, convention mismatches | glTF 2.0 or validated FBX presets |
-| Text-only tool responses for 3D | Lower bandwidth/tokens | LLM cannot verify visual correctness | Viewport screenshots after mutations |
-| Global undo during automation | Safety net for recovery | Memory explosion, state corruption | File-level checkpoints, disable global undo |
+| Batch find-and-replace Debug.Log | Efficient, 30 files done in 5 minutes | Changes semantic behavior, strips important warnings | Classify each call individually |
+| Fix all 73 bugs in one long session | Get it all done at once | Cascade regressions, context loss, fatigue errors | Fix in tier batches (A->B->C->D) |
+| USS gradients/shadows | Works in CSS, USS looks like CSS | USS is not CSS, properties silently ignored | C# runtime Texture2D generation |
+| Large RenderTexture matching screen resolution | "Maximum quality" | 24MB+ per RT, GPU memory exhaustion | Match VisualElement size, not screen size |
+| Singleton migration in one PR | "Same pattern everywhere" | One broken migration breaks the entire boot chain | One singleton per commit, test after each |
+| Creating Texture2D without tracking for disposal | "It's a small texture" | No GC for native resources, leaks accumulate | Maintain `List<Texture2D>` per MonoBehaviour for cleanup |
+| Keeping readable textures (`Apply(false, false)`) | "Might need it later" | Doubles CPU memory per texture | `Apply(false, true)` for textures that never change |
 
 ## "Looks Working But Isn't" Checklist
 
-Things that pass basic testing but fail in real workflows.
+Verification items that pass basic testing but fail in real workflows.
 
-- [ ] **Socket recovery:** Kill and restart the MCP server mid-session. Does Blender addon recover the connection without restarting Blender?
-- [ ] **Long operation:** Trigger a 2-minute Blender operation (subdivide a 1M-poly mesh). Does the MCP connection survive?
-- [ ] **Rapid fire:** Send 10 MCP commands in 2 seconds. Do all execute correctly without crashes?
-- [ ] **Error recovery:** Cause a tool to fail (e.g., operate on deleted object). Does the next tool call work correctly?
-- [ ] **Memory stability:** Run 50 create/delete cycles. Does Blender memory return to baseline?
-- [ ] **Visual accuracy:** Create a rigged character via MCP. Compare viewport screenshot with expected result. Are bones oriented correctly?
-- [ ] **FBX round-trip:** Export from Blender, import to Unity, compare vertex count, bone count, and bounding box. All match within 1%?
-- [ ] **Code execution safety:** Submit code with `import os; os.listdir("/")` through execute_code tool. Is it blocked?
-- [ ] **Context handling:** Call a mesh operation when an armature is selected. Does it return a meaningful error, not `poll() failed`?
-- [ ] **Token budget:** Start a new session with all tools loaded. How many tokens are consumed before the first user message? Under 10K?
+- [ ] **Texture leak test:** Load title screen, go to character select, go back to title, repeat 10 times. Check Profiler for Texture2D count growth.
+- [ ] **RenderTexture cleanup:** Switch heroes in character select 20 times rapidly. No pink flashes. RenderTexture count stable.
+- [ ] **Scene transition events:** Go Title -> CharSelect -> back to Title -> CharSelect. No `MissingReferenceException` in console.
+- [ ] **Singleton persistence:** Enter play mode, load Bootstrap scene, transition to CharSelect. Verify all 13+ singletons have non-null `Instance`.
+- [ ] **Debug.Log in release:** Build standalone player. Trigger save failure. Verify error message appears in Player.log.
+- [ ] **Brand matrix symmetry:** Run `BrandSystem_EditModeTests`. All 100 matchups pass. Add a bidirectionality test.
+- [ ] **Combat flow after fixes:** Start combat, use all 10 brands, apply status effects, capture a monster. No crashes, correct damage numbers.
+- [ ] **Async cancellation:** Start embark cinematic, interrupt by pressing back. No hanging coroutines, no orphaned Tasks.
+- [ ] **USS override check:** Apply gradient to an element, add a USS class with background-color. Verify the gradient is still visible (it should not be -- this tests that the prevention is in place).
+- [ ] **Collection iteration safety:** Run 50 combat rounds with status effects. No `InvalidOperationException`.
 
 ## Recovery Strategies
 
 | Pitfall | Recovery Cost | Recovery Steps |
 |---------|--------------|----------------|
-| Tool explosion (100K+ tokens/session) | HIGH | Redesign to dynamic toolsets. Requires rewriting tool registration and adding discovery/describe meta-tools. |
-| Socket timeout on long operations | MEDIUM | Add job queue and status polling to addon. Keep existing sync path for quick operations. |
-| No visual verification | MEDIUM | Add viewport capture to existing tool responses. Requires adding screenshot capability to Blender addon. |
-| Security hole via exec() | HIGH | Implement AST parser and import whitelist. Existing code paths must be audited and restricted. |
-| Threading crash | HIGH | Rewrite addon to use queue+timer pattern. All existing bpy calls in thread context must be moved. |
-| FBX corruption | LOW | Create and distribute standardized export preset. Add validation scripts. |
-| Operator context failures | LOW | Add context setup wrapper around each bpy.ops call. Per-tool fix. |
-| Undo memory explosion | LOW | Add undo disable/enable wrapper around automated sequences. |
-| Unhelpful error responses | MEDIUM | Standardize error format across all tools. Add bpy error code translation. |
-| Data block reference crash | MEDIUM | Refactor all cached references to name-based resolution. Requires auditing all addon code. |
+| Cascade regressions (CRIT-1) | HIGH | `git log --oneline` to find last good commit, `git revert` bad commits one by one |
+| Texture2D leaks (CRIT-2) | LOW | Add disposal tracking to UIGradientHelper, audit all callers, add Destroy() in OnDisable |
+| RenderTexture race condition (CRIT-3) | LOW | Follow existing HeroStageController cleanup pattern, add to code review checklist |
+| USS overrides gradients (CRIT-4) | LOW | Add `backgroundColor = StyleKeyword.None` to UIGradientHelper.ApplyGradient |
+| Static event leaks (CRIT-5) | MEDIUM | Add ClearAllListeners to scene transition, audit all subscribe/unsubscribe pairs |
+| Debug.Log semantic change (HIGH-1) | MEDIUM | Re-audit all replacements, compare against original severity intent |
+| Singleton migration break (HIGH-2) | HIGH | Revert the broken migration commit, re-do with checklist |
+| Collection modification crash (HIGH-3) | LOW | Add `.ToArray()` snapshot before foreach, per-instance fix |
+| TitleScreenVFX decomposition (MOD-5) | HIGH | Multi-session refactor, extract one subsystem at a time, test after each extraction |
 
 ## Sources
 
-### Official Documentation (HIGH confidence)
-- [Blender Python API: Gotchas](https://docs.blender.org/api/current/info_gotcha.html) -- Threading prohibition, operator context, data block references
-- [Blender Python API: Best Practice](https://docs.blender.org/api/current/info_best_practice.html) -- Data API vs operators, context handling
-- [Blender Python API: Application Timers](https://docs.blender.org/api/current/bpy.app.timers.html) -- Timer-based main thread dispatch
-- [MCP Specification: Transports](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports) -- stdio vs SSE vs Streamable HTTP
-- [MCP Error Handling Guide](https://mcpcat.io/guides/error-handling-custom-mcp-servers/) -- Three-tier error model, JSON-RPC codes
-- [Anthropic Engineering: Code Execution with MCP](https://www.anthropic.com/engineering/code-execution-with-mcp) -- 98.7% token reduction via code execution pattern
+### Project-Specific (HIGH confidence)
+- `.planning/PROJECT.md` -- v6.0 milestone definition, 8 phases, 73+ bugs
+- `.planning/codebase/CONCERNS.md` -- 128 C# scripts, 154+ identified issues, fix priority matrix
+- `.claude/rules/ui/toolkit.md` -- Learned USS limitations, Context7 mandate, PrimeTween rules
+- `CLAUDE.md` -- Anti-regression protocol, read-before-edit mandate, loop detection
+- `Assets/Scripts/UI/Core/UIGradientHelper.cs` -- Runtime Texture2D gradient generation (current implementation)
+- `Assets/Scripts/UI/CharacterSelect/HeroStageController.cs` -- RenderTexture-to-UI-Toolkit pattern (reference implementation)
+- `Assets/Scripts/Core/SingletonMonoBehaviour.cs` -- Canonical singleton base class
+- `Assets/Scripts/Core/ErrorLogger.cs` -- Conditional logging system (target for Debug.Log migration)
+- `Assets/Scripts/Systems/VERASystem.cs` -- Hand-rolled singleton to be migrated
 
-### Issue Trackers & Project Analysis (HIGH confidence)
-- [blender-mcp Issue #50: Request Timed Out](https://github.com/ahujasid/blender-mcp/issues/50) -- Socket timeout failures
-- [blender-mcp Issue #73: Connected but no response](https://github.com/ahujasid/blender-mcp/issues/73) -- Silent connection failures
-- [blender-mcp Issue #137: Connection failing](https://github.com/ahujasid/blender-mcp/issues/137) -- Recurring connection reliability problems
-- [Blender Bug #123088: FBX Normals export issue](https://projects.blender.org/blender/blender/issues/123088) -- IndexToDirect normals misinterpreted by Unity
-- [Blender Bug T60934: Undo crashes in background mode](https://developer.blender.org/T60934) -- Undo system unreliable for automation
+### Unity Documentation (HIGH confidence)
+- [Unity 6 UI Toolkit Performance Optimization](https://docs.unity3d.com/6000.3/Documentation/Manual/best-practice-guides/ui-toolkit-for-advanced-unity-developers/optimizing-performance.html) -- 8-texture batch limit, dynamic atlas, vertex budget
+- [Unity Debug Class Manual](https://docs.unity3d.com/6000.3/Documentation/Manual/class-Debug.html) -- Debug.Log behavior in release builds
+- [Unity Memory Management](https://learn.unity.com/tutorial/memory-management-in-unity) -- Native resource lifecycle, Destroy() requirements
 
-### Industry Analysis (MEDIUM confidence)
-- [Speakeasy: Reducing MCP token usage by 100x](https://www.speakeasy.com/blog/how-we-reduced-token-usage-by-100x-dynamic-toolsets-v2) -- Dynamic toolsets achieving 96.7% token reduction
-- [a16z: Deep Dive Into MCP and AI Tooling](https://a16z.com/a-deep-dive-into-mcp-and-the-future-of-ai-tooling/) -- Tool granularity analysis
-- [Jenova.ai: MCP Context Overload](https://www.jenova.ai/en/resources/mcp-tool-scalability-problem) -- Performance degradation with tool count
-- [Eclipse Source: MCP and Context Overload](https://eclipsesource.com/blogs/2026/01/22/mcp-context-overload/) -- 25-30% context window consumed by tool schemas
-- [Socket communication with Blender](https://ciesie.com/post/blender_sockets/) -- Timer-based socket architecture for Blender addon
-
-### Community & Practical Reports (MEDIUM confidence)
-- [Blender Developer Forum: Thread/socket issue](https://devtalk.blender.org/t/blender-thread-socket-issue/17273) -- Threading crash patterns
-- [Blender Developer Forum: Application timers usage](https://devtalk.blender.org/t/about-using-application-timers-bpy-app-timers/9593) -- Timer best practices
-- [Unity Discussions: FBX import problems in 2025](https://discussions.unity.com/t/fbx-import-problems-in-2025/1576069) -- Ongoing FBX import issues
-- [MCP Server Security Report (Astrix)](https://astrix.security/learn/blog/state-of-mcp-server-security-2025/) -- 53% of servers use static API keys
-- [MCP Vulnerabilities (Composio)](https://composio.dev/content/mcp-vulnerabilities-every-developer-should-know) -- Confused deputy problem, prompt injection
+### Community & Technical References (MEDIUM confidence)
+- [Debug.Log Performance Impact](https://unity3dperformance.com/index.php/2024/10/02/debug-log-performance-optimization/) -- 10-30% FPS drop from unguarded Debug.Log
+- [Conditional Attribute for Logging](https://gamedevbeginner.com/how-to-use-debug-log-in-unity-without-affecting-performance/) -- [Conditional] strips call AND argument evaluation
+- [RenderTexture Memory Leaks](https://discussions.unity.com/t/in-62760-graphics-memory-leak-related-to-rendertextures/318747) -- Known Unity issue tracker entries
+- [Singleton Migration Best Practices](https://gamedevbeginner.com/singletons-in-unity-the-right-way/) -- DontDestroyOnLoad patterns, duplicate detection
+- [JetBrains Unity Debug.Log Guidance](https://github.com/JetBrains/resharper-unity/wiki/Avoid-usage-of-Debug.Log-methods-in-performance-critical-context) -- Performance-critical context avoidance
 
 ---
-*Pitfalls research for: AI Game Dev Toolkit (MCP Servers for Blender + Unity)*
-*Researched: 2026-03-18*
-*Confidence: HIGH overall -- critical pitfalls verified against official docs and real-world failure reports*
+*Pitfalls research for: VeilBreakers v6.0 Bug Fixes, Code Quality Hardening & UI Rebuild*
+*Researched: 2026-03-30*
+*Confidence: HIGH overall -- critical pitfalls verified against existing codebase patterns, project history, and Unity documentation*

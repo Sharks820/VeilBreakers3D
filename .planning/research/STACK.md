@@ -1,445 +1,363 @@
-# Technology Stack: AI Game Development MCP Toolkit
+# Technology Stack: VeilBreakers v6.0 -- AAA UI Rebuild, 3D Model Integration, Code Quality Hardening
 
-**Project:** VeilBreakers 3D - Custom MCP Server Toolkit (Blender + Unity + AI Generation APIs)
-**Researched:** 2026-03-18
-**Overall Confidence:** HIGH (verified against official PyPI, MCP spec, GitHub repos, and vendor docs)
+**Project:** VeilBreakers 3D v6.0 Milestone
+**Researched:** 2026-03-30
+**Overall Confidence:** HIGH (verified against existing codebase, Unity 6 docs, and community patterns)
 
 ## Context
 
-This stack research covers building custom MCP servers that bridge three domains into a unified AI-assisted game development toolkit:
+This research covers stack additions/changes needed for three domains in the v6.0 milestone:
 
-1. **Blender** (Python bpy API) -- 3D modeling, materials, scene composition
-2. **Unity** (C# Editor scripting) -- game engine integration, asset import, scene management
-3. **AI Generation APIs** (REST/Python SDK) -- image generation, 3D model generation, texture synthesis
+1. **AAA UI Effects** -- Runtime Texture2D gradients, layered glow VisualElements, procedural audio synthesis
+2. **3D Model Display in UI** -- RenderTexture pipeline for character previews in UI Toolkit
+3. **Code Quality Tooling** -- Static analysis, Roslyn analyzers, test coverage enforcement
 
-The project already uses `blender-mcp` (ahujasid) and `mcp-unity` (CoderGamester) as reference implementations. This research informs building custom MCP servers that extend beyond their capabilities, specifically for VeilBreakers' monster/hero asset pipeline.
-
----
-
-## Recommended Stack
-
-### MCP Server Framework (Python)
-
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| Python | 3.12 | Runtime for all custom MCP servers | 3.12 is the sweet spot: fully supported by MCP SDK (>=3.10), supported by Blender 4.x bpy, and has the best performance of the 3.10-3.12 range. Avoid 3.13 for now -- Blender addon compatibility is unverified. | HIGH |
-| mcp (official SDK) | 1.26.0 | MCP protocol implementation, transport, lifecycle | The official Python SDK from Anthropic. Includes FastMCP high-level decorator API (`@mcp.tool()`, `@mcp.resource()`), stdio and Streamable HTTP transports, JSON-RPC message handling, and OAuth support. This IS the protocol implementation -- no alternatives exist. | HIGH |
-| FastMCP (standalone) | 3.1.1 | Higher-level MCP server framework | FastMCP was originally integrated into the MCP SDK as the `@mcp.tool()` decorator API. The standalone FastMCP 3.x adds composition, proxying, and middleware beyond the built-in SDK FastMCP. Use the built-in SDK FastMCP for simple servers; reach for standalone FastMCP 3.x only if you need server composition (chaining multiple MCP servers). Start with the SDK's built-in FastMCP. | MEDIUM |
-| uv | latest | Python package management and virtual environments | The MCP Python SDK officially uses uv. 10-100x faster than pip for dependency resolution. Use `uv init`, `uv add`, `uv sync` for all project setup. Lock files (`uv.lock`) go into version control. This is not optional -- the MCP ecosystem standardized on uv. | HIGH |
-
-**Why Python over TypeScript for custom servers:** The primary integration targets are Blender (Python-only bpy API) and AI generation APIs (Python SDKs are first-class for fal.ai, Replicate, Stability AI, OpenAI). TypeScript SDK exists and is used by mcp-unity's Node.js bridge, but writing Blender integration in TypeScript would require a Python subprocess bridge anyway. Python is the single language that touches all three domains natively.
-
-**Why NOT TypeScript:** The TypeScript MCP SDK v2 is still in pre-alpha (stable v2 anticipated Q1 2026 but not yet released). The v1.x is stable but Python is the better fit for this specific toolkit given Blender's Python API and the AI SDK ecosystem.
-
-### Communication & Transport
-
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| stdio transport | MCP spec 2025-03-26 | Primary transport for Claude Code / Cursor integration | stdio is the simplest, lowest-latency transport. Claude Code, Cursor, and Codex all launch MCP servers as subprocesses communicating over stdin/stdout. No network stack overhead. Microsecond-level response times. Use this for all local development servers. | HIGH |
-| TCP sockets (JSON-RPC) | Python `asyncio` stdlib | Communication between MCP server and Blender addon | Proven pattern from ahujasid/blender-mcp: Blender runs a socket server on localhost:9876, MCP server connects as a client, sends JSON commands, receives JSON responses. Keep this exact pattern -- it works and Blender's Python environment cannot run an MCP server directly (GIL + bpy threading constraints). | HIGH |
-| WebSocket (JSON-RPC) | websockets 14.x | Communication between MCP server and Unity Editor | Proven pattern from CoderGamester/mcp-unity: Unity runs a WebSocket server on port 8090, Node.js MCP server connects as client. For a Python MCP server talking to Unity, use the `websockets` library instead of Node.js. Same protocol, different client language. | HIGH |
-| Streamable HTTP | MCP spec 2025-03-26 | Future: remote/multi-user MCP server deployment | Only needed if you want to deploy MCP servers as remote services (e.g., team-shared AI generation endpoint). Not needed for local single-developer workflow. Defer implementation until there is a real multi-user requirement. | LOW (defer) |
-
-**Architecture pattern:**
-
-```
-Claude Code / Cursor (MCP Client)
-       |
-       | stdio (JSON-RPC over stdin/stdout)
-       |
-  [Python MCP Server]  <-- Your custom code lives here
-       |          |
-       |          +-- TCP socket (JSON) --> [Blender Addon] (bpy API)
-       |          |                          localhost:9876
-       |          +-- WebSocket (JSON) ---> [Unity Editor] (C# McpUnityServer)
-       |          |                          localhost:8090
-       |          +-- HTTPS REST ---------> [AI Generation APIs]
-       |                                    fal.ai / Replicate / OpenAI / ComfyUI
-```
-
-### HTTP Client & Async Runtime
-
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| httpx | >=0.27.1 | HTTP client for AI API calls | Already a core dependency of the MCP SDK -- do not add a second HTTP library. httpx supports both sync and async, HTTP/1.1 and HTTP/2, and is the MCP team's choice. Use `httpx.AsyncClient` for all outbound API calls. | HIGH |
-| anyio | >=4.5 | Async I/O abstraction | Already a core dependency of the MCP SDK. Provides structured concurrency (`anyio.create_task_group`) that works with both asyncio and trio. Use anyio primitives instead of raw asyncio for compatibility with the MCP runtime. | HIGH |
-| websockets | 14.x | WebSocket client for Unity bridge | Lightweight, well-maintained, async-native WebSocket library. Used for connecting to Unity's WebSocket server. Do NOT use aiohttp for this -- websockets is purpose-built and simpler. | HIGH |
-
-**Why NOT aiohttp:** aiohttp is async-only and optimized for high-concurrency server workloads. For an MCP server making a handful of concurrent API calls, httpx (already bundled) is sufficient. Adding aiohttp would be a redundant dependency.
-
-**Why NOT requests:** Synchronous-only. The MCP server runtime is async (anyio). Using `requests` would block the event loop. httpx is the async-capable equivalent and is already installed.
-
-### AI Generation APIs
-
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| fal-client | 0.13.x | Image generation (Stable Diffusion, Flux), 3D model generation (Hunyuan3D v3, Trellis) | fal.ai is the best unified platform for game asset generation in 2026. Single SDK covers both 2D (SDXL, Flux, SD3.5) and 3D (Hunyuan3D v3 with PBR materials, Trellis). Async-native with `subscribe_async`. Pay-per-use, no GPU required locally. Hunyuan3D v3 outputs glTF with PBR textures directly. | HIGH |
-| replicate | latest | Fallback/alternative for 3D generation (TripoSR, Hunyuan3D 2) | Replicate hosts the same models as fal.ai but with broader selection. Use as fallback when fal.ai models are unavailable or for models not yet on fal.ai. Python SDK is well-maintained. TripoSR on Replicate is $0.07/generation. | MEDIUM |
-| openai | latest | GPT Image (gpt-image-1, gpt-image-1.5) for concept art, reference sheets | OpenAI's GPT Image models replaced DALL-E (deprecated May 2026). Best for high-fidelity concept art, character reference sheets, and UI art. NOT for textures (use Stable Diffusion for that). Use for creative direction and reference image generation. | HIGH |
-| Direct REST (via httpx) | N/A | ComfyUI local server API, Stability AI API, any future API | For APIs without a Python SDK or when you want to avoid SDK dependency bloat, use httpx directly with the REST endpoint. ComfyUI exposes a JSON workflow API on localhost -- call it directly rather than adding a ComfyUI Python SDK. | HIGH |
-
-**AI API Strategy:**
-
-| Use Case | Recommended API | Model | Output Format |
-|----------|----------------|-------|---------------|
-| Monster concept art | OpenAI GPT Image | gpt-image-1.5 | PNG |
-| Texture generation (diffuse, normal) | fal.ai | SD3.5 or Flux | PNG |
-| Seamless tileable textures | ComfyUI (local) | SD3.5 + ControlNet Tile | PNG |
-| 3D monster model (hero quality) | fal.ai | Hunyuan3D v3 | glTF/GLB with PBR |
-| 3D prop model (fast iteration) | fal.ai | Trellis | glTF/GLB |
-| 3D character (clean topology for rigging) | Tripo3D API | Tripo v3.0 | glTF with quad topology |
-| Multi-view reference sheets | OpenAI GPT Image | gpt-image-1 | PNG |
-
-**Why NOT run Stable Diffusion locally:** Running SD locally requires a dedicated GPU, VRAM management, model downloads, and CUDA setup. For a development toolkit, cloud APIs are faster to integrate, always have the latest models, and cost cents per generation. ComfyUI local is the exception -- use it when you need custom pipelines (e.g., ControlNet-guided texture generation) that cloud APIs don't support.
-
-### Image Processing
-
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| Pillow | 12.1.x | Image format conversion, texture atlas composition, DDS read/write, resizing, channel manipulation | The standard Python image library. Pillow 12.x reads/writes DDS (DirectX textures), PNG, JPEG, TGA, BMP, EXR (with OpenEXR), and more. Use for: AI output post-processing, texture atlas packing, normal map channel manipulation, format conversion for Unity import. | HIGH |
-| numpy | >=1.26 | Pixel-level image manipulation, normal map computation, batch operations | Already a transitive dependency (via Pillow and trimesh). Use for fast pixel operations: normal map generation from height maps, channel splitting/merging, batch color corrections. Avoid Pillow's per-pixel loops -- use numpy arrays. | HIGH |
-
-**Why NOT OpenCV (cv2):** OpenCV is massive (100+ MB), mostly for computer vision tasks (object detection, camera calibration). For game texture processing, Pillow + numpy covers 95% of needs. The remaining 5% (edge detection for normal maps) can use scipy.ndimage which is much lighter. Do not add cv2 unless you need actual computer vision features.
-
-**Why NOT sharp (Node.js):** sharp is excellent but is a Node.js library. All MCP servers are Python. Do not introduce a Node.js subprocess for image processing.
-
-### 3D Mesh Processing
-
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| trimesh | 4.11.x | Mesh loading, format conversion, analysis, simplification | The best Python mesh library. Pure Python core with only numpy as hard dependency. Loads/exports OBJ, glTF/GLB, STL, PLY, 3MF, COLLADA. Has mesh simplification, boolean operations, convex hull, ray casting. Use for: validating AI-generated meshes, format conversion (GLB to FBX via intermediate), polygon count analysis, mesh repair. | HIGH |
-| pygltflib | 1.16.x | Direct glTF 2.0 manipulation, PBR material editing, texture embedding | Low-level glTF library for precise control over glTF files. Use when trimesh's glTF support is too abstracted -- e.g., editing PBR material properties, swapping textures in an existing GLB, reading/writing glTF extensions. Complements trimesh, does not replace it. | MEDIUM |
-| pymeshlab | 2025.07 | Advanced mesh operations: remeshing, decimation, topology optimization | PyMeshLab wraps the full MeshLab engine. Use for operations trimesh cannot do: isotropic remeshing, Quadric Edge Collapse decimation (better quality than trimesh's simplify), Poisson surface reconstruction, texture parameterization. Heavy dependency (C++ binaries) -- only install in the mesh-processing MCP server, not in all servers. | MEDIUM |
-
-**Mesh processing pipeline for AI-generated assets:**
-
-```
-AI API output (GLB/OBJ)
-    |
-    v
-[trimesh] -- Load, validate, inspect polygon count
-    |
-    v
-[pymeshlab] -- Remesh/decimate if needed (target poly budget)
-    |
-    v
-[pygltflib] -- Assign/edit PBR materials, embed textures
-    |
-    v
-[trimesh] -- Export to format Unity can import (FBX via assimp, or GLB)
-    |
-    v
-Unity import via MCP tool call
-```
-
-**Why NOT Open3D:** Open3D is focused on point cloud processing and 3D reconstruction (SLAM, depth cameras). It CAN process meshes but is optimized for a different use case. Trimesh + PyMeshLab covers game asset processing better with lighter weight.
-
-**Why NOT Aspose.3D:** Commercial license, expensive, overkill for this use case. Trimesh is MIT-licensed and sufficient.
-
-### Data Validation & Configuration
-
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| pydantic | >=2.12.0 | Tool input/output validation, config schemas, API response models | Already a core MCP SDK dependency. Use Pydantic models for ALL tool parameters and return types. The MCP SDK uses Pydantic for JSON Schema generation (tool descriptions sent to LLMs). Defining tool inputs as Pydantic models automatically generates correct schemas. | HIGH |
-| pydantic-settings | >=2.5.2 | Environment variable and .env file configuration | Already a core MCP SDK dependency. Use for API keys (FAL_KEY, OPENAI_API_KEY, REPLICATE_API_TOKEN), port configuration, file paths. Reads from environment variables and .env files. | HIGH |
-| python-dotenv | 1.x | .env file loading for local development | Lightweight .env file loader. pydantic-settings can use it as a backend. Keep API keys in `.env` files, never in code or config committed to git. | HIGH |
-
-### Project Structure & Tooling
-
-| Technology | Version | Purpose | Why | Confidence |
-|------------|---------|---------|-----|------------|
-| uv | latest | Package management, virtual environments, project scaffolding | Official MCP ecosystem tool. Replaces pip, pip-tools, poetry, pipenv. 10-100x faster. `uv init` for project setup, `uv add` for dependencies, `uv sync` for reproducible installs. Lock file (`uv.lock`) committed to git. | HIGH |
-| pyproject.toml | PEP 621 | Project metadata, dependencies, scripts | Standard Python project configuration. Define MCP server entry points as `[project.scripts]` for `uvx` execution. | HIGH |
-| ruff | latest | Linting and formatting | Replaces flake8, black, isort, pylint. Single tool, 10-100x faster (written in Rust). Configure in `pyproject.toml` under `[tool.ruff]`. | HIGH |
-| mypy | latest | Static type checking | Critical for MCP tool parameter correctness. Pydantic models + mypy catches type mismatches before runtime. Use strict mode. | MEDIUM |
-| pytest | 8.x | Testing | Standard Python testing. Use `pytest-asyncio` for testing async MCP tool handlers. Mock AI API calls with `respx` (httpx mock). | MEDIUM |
-| pytest-asyncio | 0.24.x | Async test support | MCP tool handlers are async functions. pytest-asyncio enables `async def test_*()`. | MEDIUM |
-
-### Project Layout (Recommended)
-
-```
-Tools/
-  mcp-toolkit/                    # Root of the custom MCP toolkit
-    pyproject.toml                # uv project config, dependencies, entry points
-    uv.lock                       # Locked dependencies (committed to git)
-    .env                          # API keys (NOT committed to git)
-    .env.example                  # Template for API keys (committed)
-    src/
-      veilbreakers_mcp/
-        __init__.py
-        blender_server.py         # MCP server: Blender bridge tools
-        unity_server.py           # MCP server: Unity bridge tools
-        asset_gen_server.py       # MCP server: AI generation tools
-        mesh_pipeline.py          # MCP server: mesh processing tools
-        shared/
-          __init__.py
-          blender_client.py       # TCP socket client for Blender addon
-          unity_client.py         # WebSocket client for Unity Editor
-          ai_clients.py           # httpx wrappers for AI APIs
-          image_utils.py          # Pillow/numpy image processing
-          mesh_utils.py           # trimesh/pygltflib utilities
-          models.py               # Pydantic models for tool I/O
-          config.py               # pydantic-settings configuration
-    tests/
-      test_blender_tools.py
-      test_unity_tools.py
-      test_asset_gen.py
-      test_mesh_pipeline.py
-    blender_addon/
-      __init__.py                 # Blender addon registration
-      socket_server.py            # TCP socket server running inside Blender
-      operators.py                # Blender operators exposed to MCP
-```
-
-**Why monorepo (single `Tools/mcp-toolkit/`) over separate repos per server:** All servers share common utilities (clients, image processing, mesh processing, config). Separate repos would duplicate shared code or require a private PyPI package. A monorepo with multiple entry points (`[project.scripts]` in pyproject.toml) is the pragmatic choice for a single-developer project. Each server is a separate entry point but shares the same codebase.
-
-**Why `Tools/mcp-toolkit/` inside the Unity project:** Keeps the MCP toolkit co-located with the game project it serves. The `.mcp.json` can reference it directly. Unity ignores non-Assets directories. If the toolkit grows, it can be extracted to a separate repo later.
+This is a **brownfield** analysis. The project already has a validated stack (Unity 6000.3.6f1, URP 17.3, UI Toolkit, PrimeTween 1.3.8, Cinemachine, glTFast 6.14.1, etc.). The goal is to identify what new capabilities are needed and what already exists that can be extended.
 
 ---
 
-## Alternatives Considered
+## Existing Stack (DO NOT CHANGE)
 
-| Category | Recommended | Alternative | Why Not |
-|----------|-------------|-------------|---------|
-| MCP SDK Language | Python (mcp 1.26.0) | TypeScript (MCP SDK v1.x) | Blender API is Python-only. AI SDKs are Python-first. TypeScript SDK v2 is pre-alpha. Would require Python subprocess bridge for Blender anyway. |
-| MCP Framework | Built-in SDK FastMCP | FastMCP 3.1.1 standalone | Standalone FastMCP adds complexity (composition, proxying) not needed for first iteration. Built-in decorator API is sufficient. Upgrade later if needed. |
-| HTTP Client | httpx (bundled with MCP) | aiohttp | aiohttp is async-only, heavier, and redundant with httpx already installed. httpx handles both sync and async. |
-| HTTP Client | httpx (bundled with MCP) | requests | Synchronous-only. Blocks the async MCP event loop. httpx is the async-capable replacement. |
-| WebSocket | websockets 14.x | aiohttp WebSocket client | aiohttp's WebSocket client is part of a larger server framework. websockets is focused, lighter, better documented for client-only use. |
-| Image Processing | Pillow 12.x + numpy | OpenCV (cv2) | 100+ MB dependency for features not needed. Pillow + numpy handles texture processing without computer vision overhead. |
-| Image Processing | Pillow 12.x + numpy | Wand (ImageMagick binding) | ImageMagick is an external system dependency. Pillow is pure Python. Simpler deployment. |
-| Mesh Processing | trimesh 4.11.x | Open3D | Open3D focuses on point clouds and reconstruction. Heavier (C++ binaries for features we don't need). Trimesh is focused on triangle mesh operations. |
-| Mesh Processing | trimesh + pymeshlab | pyvista | pyvista is a VTK wrapper for scientific visualization. Not optimized for game asset pipelines. |
-| 3D API (primary) | fal.ai (fal-client) | Meshy API | Meshy is good but fal.ai has broader model selection (Hunyuan3D v3, Trellis, Flux) under one SDK. Meshy is a fallback option. |
-| 3D API (primary) | fal.ai | Replicate | Replicate is the fallback. fal.ai is faster for image/3D gen with better pricing. Replicate has broader model catalog for edge cases. |
-| Project management | uv | poetry / pip-tools | MCP ecosystem standardized on uv. 10-100x faster. Better lock file format. Official recommendation from MCP SDK team. |
-| Linting | ruff | flake8 + black + isort | Ruff replaces all three in a single tool. 10-100x faster. One config section in pyproject.toml. |
-| Package manager | uv | pip | pip is slow, has no lock file, and uv is a drop-in replacement with massive speed improvements. |
+These are locked. Documented here as integration context for new additions.
 
----
-
-## Installation
-
-```bash
-# Prerequisites: Python 3.12, uv installed
-# On Windows:
-# pip install uv   (or)   winget install astral-sh.uv
-
-# Initialize project
-cd Tools/mcp-toolkit
-uv init --python 3.12
-
-# Core MCP SDK
-uv add "mcp[cli]>=1.26.0"
-
-# Communication
-uv add "websockets>=14.0"
-
-# AI Generation APIs
-uv add "fal-client>=0.13.0"
-uv add "openai>=1.60.0"
-uv add "replicate>=1.0.0"
-
-# Image Processing
-uv add "Pillow>=12.1.0"
-uv add "numpy>=1.26.0"
-
-# 3D Mesh Processing
-uv add "trimesh[easy]>=4.11.0"
-uv add "pygltflib>=1.16.0"
-
-# Optional: heavy mesh processing (install only when needed)
-uv add "pymeshlab>=2025.7"
-
-# Configuration
-uv add "python-dotenv>=1.0.0"
-
-# Dev dependencies
-uv add --dev "pytest>=8.0"
-uv add --dev "pytest-asyncio>=0.24.0"
-uv add --dev "respx>=0.22.0"
-uv add --dev "ruff>=0.8.0"
-uv add --dev "mypy>=1.13.0"
-```
-
-### Entry Points (pyproject.toml)
-
-```toml
-[project.scripts]
-vb-blender-mcp = "veilbreakers_mcp.blender_server:main"
-vb-unity-mcp = "veilbreakers_mcp.unity_server:main"
-vb-assetgen-mcp = "veilbreakers_mcp.asset_gen_server:main"
-vb-mesh-mcp = "veilbreakers_mcp.mesh_pipeline:main"
-```
-
-### .mcp.json Integration
-
-```json
-{
-  "mcpServers": {
-    "vb-blender": {
-      "type": "stdio",
-      "command": "uv",
-      "args": ["--directory", "Tools/mcp-toolkit", "run", "vb-blender-mcp"],
-      "env": { "BLENDER_PORT": "9876" }
-    },
-    "vb-assetgen": {
-      "type": "stdio",
-      "command": "uv",
-      "args": ["--directory", "Tools/mcp-toolkit", "run", "vb-assetgen-mcp"],
-      "env": { "FAL_KEY": "${FAL_KEY}", "OPENAI_API_KEY": "${OPENAI_API_KEY}" }
-    },
-    "vb-mesh": {
-      "type": "stdio",
-      "command": "uv",
-      "args": ["--directory", "Tools/mcp-toolkit", "run", "vb-mesh-mcp"],
-      "description": "3D mesh processing, format conversion, validation"
-    }
-  }
-}
-```
+| Technology | Version | Role |
+|------------|---------|------|
+| Unity | 6000.3.6f1 | Engine (locked) |
+| URP | 17.3.0 | Rendering pipeline |
+| UI Toolkit (com.unity.modules.uielements) | Built-in | All UI screens |
+| PrimeTween | 1.3.8 | Animation/tweening |
+| Input System | 1.18.0 | Input handling |
+| glTFast | 6.14.1 | GLB/glTF model loading |
+| Addressables | 2.8.1 | Asset management |
+| Unity Test Framework | 1.6.0 | EditMode + PlayMode tests |
+| Code Coverage | 1.2.7 | Test coverage reporting |
+| Memory Profiler | 1.1.12 | Memory leak detection |
+| Profile Analyzer | 1.3.3 | Performance profiling |
+| Burst | 1.8.27 (transitive) | Compute acceleration |
+| Mathematics | 1.3.3 (transitive) | Fast math |
 
 ---
 
-## What NOT to Use
+## New Stack Additions
 
-| Technology | Why Not |
-|------------|---------|
-| TypeScript for Blender integration | Blender's API is Python-only (bpy). A TypeScript server would need to shell out to Python, adding latency and complexity for zero benefit. |
-| aiohttp | Redundant with httpx (already in MCP SDK). Adds ~15MB of dependencies for zero additional capability in this context. |
-| requests | Synchronous-only. Blocks the async MCP event loop. Use httpx instead. |
-| OpenCV (cv2) | 100+ MB. Designed for computer vision, not texture processing. Pillow + numpy is sufficient and 10x lighter. |
-| gRPC | Over-engineered for local IPC. MCP already defines JSON-RPC over stdio. Blender/Unity bridges use TCP/WebSocket JSON. Adding gRPC would be a fourth protocol for no benefit. |
-| Docker for local development | MCP servers run as local subprocesses. Docker adds startup latency (seconds vs milliseconds) and complicates GPU passthrough for local ComfyUI. Use Docker only if deploying remote Streamable HTTP servers. |
-| Flask / Django | The MCP SDK includes Starlette/uvicorn for HTTP transport. Adding another web framework is redundant and creates conflicts. |
-| FastAPI | Same issue as Flask/Django. FastAPI is built on Starlette, which is already in the MCP SDK. If you need HTTP endpoints beyond MCP, use Starlette directly from the SDK's dependencies. |
-| Poetry / Pipenv | uv is the MCP ecosystem standard. Mixing package managers causes lock file conflicts and confuses contributors. |
-| SSE transport (legacy) | SSE transport was deprecated in MCP spec 2025-03-26, replaced by Streamable HTTP. Do not implement SSE servers. |
-| Aspose.3D | Commercial license ($999+/year). Trimesh + PyMeshLab covers all game asset mesh operations for free. |
-| numpy-stl | Trimesh handles STL plus dozens of other formats. numpy-stl is STL-only. Use trimesh. |
+### Domain 1: AAA UI Effects
+
+**Key finding: No new packages needed.** The project already has the correct approach and implementation. What is needed is hardening and extension of existing custom C# utilities.
+
+#### UIGradientHelper (EXISTS -- extend, do not replace)
+
+| Component | Status | Location | Action |
+|-----------|--------|----------|--------|
+| `UIGradientHelper.CreateVerticalGradient()` | Implemented | `Assets/Scripts/UI/Core/UIGradientHelper.cs` | Harden: add `makeNoLongerReadable: true` to `Apply()` for production to free CPU-side memory |
+| `UIGradientHelper.CreateVerticalGradient3()` | Implemented | Same | Good as-is |
+| `UIGradientHelper.CreateRadialGradient()` | Implemented | Same | Good as-is |
+| `UIGradientHelper.CreateGlowOverlay()` | Implemented | Same | Harden: texture cleanup on parent removal |
+| `UIGradientHelper.CreateTopHighlight()` | Implemented | Same | Fix: leaks unused vertical texture (creates then destroys, but allocation is wasteful) |
+| Multi-stop gradient (N stops) | MISSING | -- | Add: `CreateGradient(GradientStop[] stops)` for complex gradients |
+| Horizontal gradient | MISSING | -- | Add: `CreateHorizontalGradient()` for button effects |
+| Texture pool/cache | MISSING | -- | Add: avoid regenerating identical gradients; cache by color+size key |
+
+**Why no external library:** USS has no gradient support (confirmed via Unity forums, still true in Unity 6000.3.x). The Texture2D approach used by UIGradientHelper is the canonical workaround endorsed by the Unity community. No third-party package exists that does this better -- it is 30 lines of SetPixels/Apply. Adding a package would add dependency weight for trivial functionality.
+
+**Confidence:** HIGH -- verified against [Unity forum discussions](https://discussions.unity.com/t/background-gradients/810125) and [USS gradient limitations](https://discussions.unity.com/t/uss-gradients-linear-gradient-and-image-gradients/934218).
+
+#### UIGlowOverlay (NEW utility class)
+
+The existing `CreateGlowOverlay()` in UIGradientHelper creates a single glow element. The v6.0 UI rebuild requires a more structured overlay system.
+
+| Component | Status | Purpose |
+|-----------|--------|---------|
+| `UIGlowOverlay` class | NEEDS CREATION | Dedicated class for managing layered glow effects with PrimeTween animation |
+| Inner glow layer | NEEDS CREATION | Tight glow around element border (small spread) |
+| Outer glow layer | NEEDS CREATION | Wider ambient glow (large spread, low opacity) |
+| Pulse animation | NEEDS CREATION | PrimeTween-driven opacity cycling on glow layers |
+| Color transition | NEEDS CREATION | Smooth glow color changes on hero selection |
+
+**Implementation approach:** Pure C# VisualElement manipulation + PrimeTween (target-based, no closures). No shaders, no custom render passes. This keeps everything in UI Toolkit's retained-mode renderer.
+
+**Why not a URP shader-based glow:** UI Toolkit VisualElements do not participate in the 3D rendering pipeline. You cannot apply post-processing bloom to a VisualElement. The layered-element approach (radial gradient Texture2D on an oversized child element) is the correct technique for UI Toolkit glow effects.
+
+**Confidence:** HIGH -- this is the pattern already used in `MoltenVeinVFX.cs` and `ButtonVFXHelper.cs` in the existing codebase.
+
+#### Procedural Audio (EXISTS -- extend, do not replace)
+
+| Component | Status | Location | Action |
+|-----------|--------|----------|--------|
+| `TitleScreenAudio` | Implemented (655 lines) | `Assets/Scripts/UI/Core/TitleScreenAudio.cs` | Already generates all audio procedurally via `AudioClip.Create` + `SetData`. Complete system. |
+| Dark drone generation | Implemented | `GenerateDarkDrone()` | Stereo, 30s loop, crossfade, LFO modulation -- production quality |
+| Wind texture generation | Implemented | `GenerateWindTexture()` | Low-pass filtered noise, breathing LFO |
+| Bell/rumble generation | Implemented | `GenerateDistantBell()`, `GenerateLowRumble()` | Inharmonic partials, FM synthesis |
+| Demon laugh generation | Implemented | `GenerateDemonLaugh()` | Pulsed envelope, harmonic distortion |
+| VERA whisper generation | Implemented | `GenerateWhisper()` | Tremolo + formant approximation |
+| Character select audio | MISSING | -- | Needs new `CharSelectAudio` class with hero-themed ambient layers |
+| Audio generation thread safety | CONCERN | Uses `Random.value` in generation | `Random.value` uses Unity's PRNG, which is not thread-safe. For AudioClip generation this is fine (runs on main thread during Start), but flag if anyone moves generation to a background thread. |
+
+**AudioClip.Create vs OnAudioFilterRead decision:**
+
+The existing `TitleScreenAudio` uses `AudioClip.Create` + `SetData` (pre-generate all audio upfront, then play). This is the correct choice because:
+- Audio is generated once during scene load, not every frame
+- No audio thread concerns (all generation happens on main thread in `Start`)
+- Clips are finite duration, looped via AudioSource
+- `OnAudioFilterRead` would be better for real-time synthesis that responds to gameplay (not needed here)
+
+**Do NOT switch to OnAudioFilterRead.** The pre-generation pattern is simpler, more predictable, and sufficient for ambient/atmospheric audio.
+
+**Confidence:** HIGH -- verified against existing 655-line implementation.
+
+### Domain 2: 3D Model Display in UI
+
+**Key finding: Already implemented.** `HeroStageController.cs` is a complete RenderTexture-to-UI-Toolkit pipeline.
+
+| Component | Status | Location | Action |
+|-----------|--------|----------|--------|
+| RenderTexture creation | Implemented | `HeroStageController.InitializeStage()` | 1024x1536, 4x MSAA, ARGB32 |
+| Camera setup | Implemented | Same | Dedicated layer 31 "CharacterPreview", FOV 30, clear to transparent |
+| 5-point lighting rig | Implemented | `CreateLightingRig()` | Key + Fill + Rim + Face + Ground lights with hero-themed colors |
+| UI binding | Implemented | `BindRenderTextureToUI()` | `Background.FromRenderTexture()` on "hero-render-target" element |
+| Drag-to-rotate | Implemented | Pointer events on render target | Mouse + gamepad stick rotation |
+| Hero model swapping | Implemented | `SwapHeroModel()` (coroutine) | Fade-out, destroy, instantiate, fade-in |
+| Lighting color transitions | Implemented | PrimeTween-driven lerp | Fill, rim, and ambient color transitions per hero |
+| Placeholder fallback | Implemented | `CreatePlaceholderModel()` | Procedural capsule with emission when GLB unavailable |
+
+**What needs fixing (not new stack):**
+- `HeroDisplayConfig.modelPrefab` is null for all 4 heroes (placeholder active). This is a data issue, not a stack issue.
+- 28 GLB models exist but need decimation (500k-1M tris down to 10k-50k) before they can be assigned as prefabs.
+- glTFast 6.14.1 is already installed for runtime GLB loading. No additional packages needed.
+
+**RenderTexture performance note:** The 1024x1536 @ 4x MSAA RenderTexture costs ~24 MB VRAM. This is acceptable for a single character preview. If multiple previews are needed simultaneously (e.g., party display), reduce to 512x768 or share a single RT with sequential rendering.
+
+**Confidence:** HIGH -- verified against existing 400+ line implementation.
+
+### Domain 3: Code Quality Tooling
+
+This is the domain that requires the most new additions.
+
+#### Roslyn Analyzers (NEW)
+
+| Technology | Version | Purpose | How to Install | Confidence |
+|------------|---------|---------|----------------|------------|
+| Microsoft.Unity.Analyzers | 1.26.0 | Unity-specific C# diagnostics (UNT0001-UNT0026) | Download DLL from NuGet, place in `Assets/Plugins/Analyzers/`, label as `RoslynAnalyzer` | HIGH |
+
+**Installation procedure (Unity-specific, not NuGet install):**
+
+1. Download `Microsoft.Unity.Analyzers.1.26.0.nupkg` from [NuGet](https://www.nuget.org/packages/Microsoft.Unity.Analyzers)
+2. Rename `.nupkg` to `.zip`, extract
+3. Copy `analyzers/dotnet/cs/Microsoft.Unity.Analyzers.dll` to `Assets/Plugins/Analyzers/`
+4. In Unity Inspector: select DLL, disable "Any Platform", disable "Editor", disable "Standalone"
+5. Add Asset Label: `RoslynAnalyzer` (case-sensitive)
+6. Unity regenerates .csproj files with analyzer reference
+
+**Key rules this enables:**
+- UNT0001: Empty Unity message (e.g., empty `Update()`)
+- UNT0002: Inefficient tag comparison (use `CompareTag`)
+- UNT0003: Usage of non-generic `GetComponent`
+- UNT0005: Wrong `Time.time` usage
+- UNT0006: Incorrect message signature
+- UNT0010: `MonoBehaviour` type should not be abstract
+- UNT0014: Invalid type for `SetPixels`
+- UNT0017: `SetPixels` invocation is slow
+- UNT0022: Inefficient `Material` property access
+- UNT0026: Avoid using `GetComponent` in hot paths
+
+**Why this specific analyzer:** Microsoft maintains it, it is the only Roslyn analyzer specifically designed for Unity projects. It understands Unity's execution model (Update/LateUpdate as hot paths, MonoBehaviour lifecycle, SerializeField semantics). Generic C# analyzers would generate false positives on Unity patterns.
+
+**Confidence:** HIGH -- [Unity 6 official documentation](https://docs.unity3d.com/6000.3/Documentation/Manual/roslyn-analyzers.html) confirms this installation method. [NuGet confirms v1.26.0](https://www.nuget.org/packages/Microsoft.Unity.Analyzers) (published 2026-02-03).
+
+#### .editorconfig (NEW)
+
+| Technology | Purpose | Confidence |
+|------------|---------|------------|
+| `.editorconfig` file at project root | Enforce naming conventions, formatting, analyzer severity | HIGH |
+
+The project currently has NO `.editorconfig`. Adding one enforces the conventions documented in `.planning/codebase/CONVENTIONS.md` at the IDE level (Visual Studio, Rider).
+
+**Key rules to configure:**
+
+```ini
+# Enforce VeilBreakers naming conventions
+dotnet_naming_rule.private_fields_should_be_underscore_prefixed.severity = warning
+dotnet_naming_rule.private_fields_should_be_underscore_prefixed.symbols = private_fields
+dotnet_naming_rule.private_fields_should_be_underscore_prefixed.style = underscore_prefix
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+dotnet_naming_style.underscore_prefix.required_prefix = _
+dotnet_naming_style.underscore_prefix.capitalization = camel_case
+
+# Constants with k prefix (enforced via code review, not .editorconfig -- regex needed)
+# .editorconfig cannot enforce k-prefix; rely on VB_CodeReviewer for this
+```
+
+**Confidence:** HIGH -- .editorconfig is a standard mechanism supported by Visual Studio, Rider, and Unity's project generation.
+
+#### VB_CodeReviewer (EXISTS -- extend)
+
+| Component | Status | Location | Action |
+|-----------|--------|----------|--------|
+| Regex-based code review | Implemented (4006 lines, 60+ rules) | `Assets/Editor/VeilBreakers/VB_CodeReviewer.cs` | Already covers CRITICAL/HIGH/MEDIUM/LOW findings |
+| Hot path detection | Implemented | `LineClassifier.HotMethodSig` | Detects Update/LateUpdate/FixedUpdate |
+| Anti-pattern suppression | Implemented | `AntiPatterns` + `AntiPatternRadius` | Reduces false positives |
+| FindingType classification | Implemented | `Error/Bug/Optimization/Strengthening` | Categorized findings |
+| GUI reviewer window | Implemented | `MenuItem("VeilBreakers/Code Review/Open Reviewer")` | Interactive UI |
+| Headless mode | Implemented | `RunHeadless()` | Console output for CI/automation |
+
+**What to add for v6.0:**
+- New rules for the bugs identified in Phase A-C (defender synergy, brand matrix violations, etc.)
+- Rule for `Texture2D` without `Destroy()` (memory leak detection)
+- Rule for `RenderTexture` without `Release()` + `Destroy()`
+- Rule for `AudioClip.Create` without matching `Destroy()` in OnDestroy
+- Rule for `style.backgroundImage` set without corresponding cleanup
+
+**Why not add SonarQube/SonarAnalyzer:** The VB_CodeReviewer is already a comprehensive, Unity-aware static analyzer with 60+ rules, hot-path awareness, and confidence scoring. Adding SonarAnalyzer would duplicate effort and generate noise from rules that don't understand Unity patterns. Extend the existing reviewer instead.
+
+**Confidence:** HIGH -- verified against the existing 4006-line implementation.
+
+#### Test Infrastructure (EXISTS -- extend)
+
+| Component | Status | Count | Action |
+|-----------|--------|-------|--------|
+| EditMode tests | Implemented | 10 test files | Covers: Brand, Corruption, Synergy, Damage, Capture, MainMenu, Scene, PrimeTween, HeroTheme |
+| PlayMode tests | Implemented | 2 test files | Covers: CharacterSelect, MainMenuOverlay |
+| RuntimeTests | Implemented | 8 test files | Covers: Audio, Capture, Combat, CombatUI, Gambit, QuickCommand, SaveSystem, StatusEffect |
+| Code Coverage package | Installed | 1.2.7 | Already in packages-lock.json |
+
+**What to add for v6.0:**
+- EditMode tests for `UIGradientHelper` (verify pixel colors, texture dimensions, cleanup)
+- EditMode tests for `DamageCalculator` bug fixes (defender synergy)
+- EditMode tests for `BrandSystem` matrix corrections
+- PlayMode test for title screen audio initialization (verify AudioClip generation does not throw)
+- Use `com.unity.testtools.codecoverage` to track coverage percentage in CI
+
+**No new test packages needed.** Unity Test Framework 1.6.0 + Code Coverage 1.2.7 are already installed.
+
+**Confidence:** HIGH -- verified against existing test files.
+
+---
+
+## What NOT to Add
+
+| Technology | Why Not | Confidence |
+|------------|---------|------------|
+| Shader Graph custom UI effects | UI Toolkit elements do not participate in URP rendering. Cannot apply bloom/post-processing to VisualElements. Use Texture2D gradients instead. | HIGH |
+| Custom Render Passes for UI glow | Same reason. UI Toolkit has its own rendering backend, separate from URP's ScriptableRenderPass system. | HIGH |
+| TextMeshPro | UI Toolkit uses its own text rendering (not TMP). Adding TMP would create two text systems. All text stays in UI Toolkit. | HIGH |
+| DOTween / LeanTween | PrimeTween 1.3.8 is already installed and used throughout. Adding a second tweening library would cause API confusion and increase bundle size. | HIGH |
+| FMOD / Wwise | Overkill for procedural audio. The project already generates all audio via `AudioClip.Create` + math. External audio middleware would add massive SDK overhead for features not needed (spatial audio authoring, middleware bus routing). | HIGH |
+| NaughtyAttributes / Odin Inspector | Nice-to-have editor QoL, but adds dependency weight. The project uses custom ScriptableObjects and SerializeField patterns that work without editor extensions. Defer unless the team grows. | MEDIUM |
+| UniRx / R3 / UniTask | The project uses C# events + EventBus + coroutines. Introducing reactive programming would require rewriting the event system. UniTask could help with async, but the existing coroutine-Task bridge works (flagged as "Revisit" in PROJECT.md, not "Replace"). | MEDIUM |
+| SonarAnalyzer.CSharp | VB_CodeReviewer is a 4000-line Unity-aware analyzer already. Adding SonarAnalyzer would generate noise from non-Unity-aware rules and create duplicate findings. | MEDIUM |
+| StyleCop.Analyzers | Overlaps with .editorconfig naming rules and VB_CodeReviewer quality rules. Would generate false positives on Unity patterns (e.g., SerializeField without documentation). | MEDIUM |
+| Any new Unity packages | The packages-lock.json already has everything needed. Adaptive Performance, Memory Profiler, Profile Analyzer, and Code Coverage cover the tooling gap. No new packages to install. | HIGH |
+
+---
+
+## Integration Points
+
+### How New Code Integrates with Existing Stack
+
+```
+UIGradientHelper (extended)
+    |-- Used by: TitleScreenVFX, CharSelectVisualEnhancer, MoltenButtonVFX
+    |-- Uses: Texture2D (Unity built-in)
+    |-- Animated by: PrimeTween 1.3.8 (target-based opacity/color tweens)
+
+UIGlowOverlay (new)
+    |-- Used by: ButtonVFXHelper, CharSelectVisualEnhancer, TitleScreenVFX
+    |-- Uses: UIGradientHelper.CreateRadialGradient()
+    |-- Animated by: PrimeTween 1.3.8
+
+TitleScreenAudio (extended)
+    |-- Uses: AudioClip.Create (Unity built-in)
+    |-- Respects: SettingsManager.Instance.Settings (volume, mute)
+    |-- Pattern: Pre-generate in Start(), play via AudioSource
+
+CharSelectAudio (new, follows TitleScreenAudio pattern)
+    |-- Uses: AudioClip.Create (Unity built-in)
+    |-- Subscribes: CharSelectEvents (hero change -> ambient color change)
+    |-- Pattern: Same pre-generation approach as TitleScreenAudio
+
+HeroStageController (fix data, not code)
+    |-- Uses: RenderTexture, Camera, Background.FromRenderTexture() (all Unity built-in)
+    |-- Needs: Decimated GLB models assigned to HeroDisplayConfig.modelPrefab
+    |-- Loads via: glTFast 6.14.1 (already installed)
+
+Microsoft.Unity.Analyzers (new)
+    |-- Installed as: DLL in Assets/Plugins/Analyzers/ with RoslynAnalyzer label
+    |-- Integrates with: Visual Studio / Rider IDE
+    |-- Complements: VB_CodeReviewer (runtime regex) + .editorconfig (IDE enforcement)
+
+.editorconfig (new)
+    |-- Placed at: Project root
+    |-- Enforces: _prefix naming, PascalCase properties, indentation
+    |-- Integrates with: Visual Studio / Rider auto-format
+```
+
+### Dependency Chain
+
+```
+No new Unity packages
+No new NuGet packages (Roslyn analyzer is a DLL drop, not a NuGet reference)
+No new npm packages
+No new Python packages
+
+The only new FILES added to the project:
+1. Assets/Plugins/Analyzers/Microsoft.Unity.Analyzers.dll (~200 KB)
+2. .editorconfig (~2 KB)
+3. Assets/Scripts/UI/Core/UIGlowOverlay.cs (new utility class)
+4. Assets/Scripts/UI/CharacterSelect/CharSelectAudio.cs (new audio class)
+```
 
 ---
 
 ## Version Compatibility Matrix
 
-| Component | Required Version | Rationale | Status |
-|-----------|-----------------|-----------|--------|
-| Python | 3.12.x | MCP SDK >=3.10, Blender 4.x uses 3.11-3.12, best perf/compat balance | INSTALL |
-| mcp SDK | >=1.26.0 | Latest stable with Streamable HTTP, OAuth, all transports | INSTALL |
-| Blender | 4.x (4.2+ preferred) | bpy API stability, Python 3.11-3.12 embedded | EXTERNAL (user installed) |
-| Unity | 6000.3.6f1 | Locked per PROJECT.md constraint. mcp-unity package required in project | EXISTING |
-| Node.js | 18+ | Only for mcp-unity bridge server (existing). Not used for custom Python servers | EXISTING |
-| fal.ai | Account + FAL_KEY | Pay-per-use API. No local GPU needed | EXTERNAL |
-| OpenAI | Account + API key | Pay-per-use API | EXTERNAL |
-| ComfyUI | Local install (optional) | Only needed for custom SD pipelines. Not required for cloud-only workflow | OPTIONAL |
+| Component | Required | Current | Status |
+|-----------|----------|---------|--------|
+| Unity | 6000.3.6f1 | 6000.3.6f1 | LOCKED |
+| URP | 17.3.0 | 17.3.0 | LOCKED |
+| PrimeTween | 1.3.8 | 1.3.8 | LOCKED |
+| glTFast | 6.14.1 | 6.14.1 | LOCKED |
+| Unity Test Framework | 1.6.0 | 1.6.0 | EXISTING |
+| Code Coverage | 1.2.7 | 1.2.7 | EXISTING |
+| Microsoft.Unity.Analyzers | 1.26.0 | Not installed | NEW -- DLL drop |
+| .editorconfig | N/A | Not present | NEW -- file creation |
 
 ---
 
-## MCP Server Minimal Example
+## Implementation Priority
 
-```python
-"""Minimal MCP server showing the SDK pattern."""
-from mcp.server.fastmcp import FastMCP
+Based on the v6.0 milestone phases (A through H), here is the order in which stack-related work should happen:
 
-mcp = FastMCP("veilbreakers-assetgen")
+1. **Phase A-C (Bug Fixes + Hardening):** Add Microsoft.Unity.Analyzers + .editorconfig first. These catch issues while fixing bugs. Extend VB_CodeReviewer rules for Texture2D/RenderTexture leaks.
 
-@mcp.tool()
-async def generate_monster_concept(
-    description: str,
-    style: str = "dark fantasy",
-    width: int = 1024,
-    height: int = 1024,
-) -> str:
-    """Generate concept art for a VeilBreakers monster.
+2. **Phase D (Title/CharSelect Bug Fixes):** No new stack. Use existing tools.
 
-    Args:
-        description: Monster description (e.g., 'corrupted wolf with void crystals')
-        style: Art style directive
-        width: Image width in pixels
-        height: Image height in pixels
+3. **Phase E (Title Screen UI Rebuild):** Extend UIGradientHelper (multi-stop, horizontal, texture cache). Create UIGlowOverlay. Harden TitleScreenAudio (already complete, just fix edge cases).
 
-    Returns:
-        Path to the generated image file
-    """
-    import httpx
-    # Use httpx (already in MCP SDK deps) to call fal.ai
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            "https://fal.run/fal-ai/flux/schnell",
-            headers={"Authorization": f"Key {get_fal_key()}"},
-            json={
-                "prompt": f"{description}, {style}, game character concept art",
-                "image_size": {"width": width, "height": height},
-            },
-        )
-        result = response.json()
-        # Download and save image...
-        return f"Generated monster concept: {result['images'][0]['url']}"
+4. **Phase F (CharSelect UI Rebuild):** Create CharSelectAudio. Use extended UIGradientHelper + UIGlowOverlay.
 
-@mcp.resource("monsters://brands")
-async def get_brand_list() -> str:
-    """List all VeilBreakers monster brands."""
-    return "IRON, SAVAGE, SURGE, VENOM, DREAD, LEECH, GRACE, MEND, RUIN, VOID"
+5. **Phase G (3D Model Integration):** No new stack. HeroStageController already works. Work is model decimation + data assignment, not code.
 
-if __name__ == "__main__":
-    mcp.run(transport="stdio")
-```
-
----
-
-## Key Architectural Decisions
-
-### Decision 1: Separate MCP Servers per Domain (Not One Monolith)
-
-**Decision:** Four separate MCP server entry points (blender, unity, asset-gen, mesh), sharing a common Python package.
-
-**Rationale:** MCP clients (Claude Code) load each server as a separate subprocess. A monolith with 40+ tools would overwhelm the tool selection heuristic. Separate servers allow:
-- Loading only what is needed (e.g., asset-gen without Blender running)
-- Independent failure (Blender crash does not kill the mesh processor)
-- Clearer tool namespacing in the LLM's tool list
-
-### Decision 2: TCP Sockets for Blender, WebSocket for Unity
-
-**Decision:** Keep the same IPC patterns as the reference implementations (ahujasid/blender-mcp, CoderGamester/mcp-unity).
-
-**Rationale:** These patterns are battle-tested. Blender's bpy API has GIL constraints that make embedding an MCP server inside Blender impractical. The socket server addon pattern works around this. Unity's WebSocket server is already integrated via the mcp-unity package. Changing protocols would break compatibility with the existing Unity package.
-
-### Decision 3: Cloud APIs First, Local ComfyUI as Escape Hatch
-
-**Decision:** Default to fal.ai/OpenAI cloud APIs. ComfyUI local only for custom pipelines.
-
-**Rationale:** Cloud APIs have the latest models (Hunyuan3D v3, GPT Image 1.5, Flux), require no GPU, and cost cents per generation. Local ComfyUI is kept as an option for ControlNet-guided texture generation pipelines that cloud APIs cannot replicate. This avoids forcing GPU requirements on the development setup.
+6. **Phase H (E2E Verification):** Add new tests. Use Code Coverage to validate.
 
 ---
 
 ## Sources
 
-### Official Documentation (HIGH confidence)
-- [MCP Python SDK - GitHub](https://github.com/modelcontextprotocol/python-sdk) -- v1.26.0, FastMCP API, transport details
-- [MCP Python SDK - PyPI](https://pypi.org/project/mcp/) -- Version 1.26.0, Python >=3.10
-- [MCP Specification - Transports](https://modelcontextprotocol.io/specification/2025-03-26/basic/transports) -- stdio and Streamable HTTP spec
-- [MCP TypeScript SDK - GitHub](https://github.com/modelcontextprotocol/typescript-sdk) -- v2 pre-alpha, v1.x stable
-- [FastMCP - PyPI](https://pypi.org/project/fastmcp/) -- v3.1.1 standalone
-- [MCP SDK Dependencies - DeepWiki](https://deepwiki.com/modelcontextprotocol/python-sdk/1.1-installation-and-dependencies) -- Full dependency list with version constraints
-- [MCP Transport Comparison - AWS Builder](https://builder.aws.com/content/35A0IphCeLvYzly9Sw40G1dVNzc/mcp-transport-mechanisms-stdio-vs-streamable-http) -- stdio vs Streamable HTTP analysis
-- [trimesh - PyPI](https://pypi.org/project/trimesh/) -- v4.11.4, format support, dependencies
-- [Pillow - PyPI](https://pypi.org/project/pillow/) -- v12.1.1, DDS support details
-- [Pillow DDS Format](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html) -- DDS read/write capabilities
-- [fal.ai 3D Models](https://fal.ai/3d-models) -- Hunyuan3D v3, Trellis API
-- [fal-client PyPI](https://pypi.org/project/fal-client/) -- v0.13.x
-- [OpenAI Image Generation](https://platform.openai.com/docs/guides/image-generation) -- GPT Image models, DALL-E deprecation
-- [pygltflib - PyPI](https://pypi.org/project/pygltflib/) -- glTF 2.0 manipulation
-- [uv Documentation](https://docs.astral.sh/uv/guides/projects/) -- Project setup, dependency management
+### Verified (HIGH confidence)
+- Existing codebase analysis: `UIGradientHelper.cs`, `TitleScreenVFX.cs`, `TitleScreenAudio.cs`, `HeroStageController.cs`, `VB_CodeReviewer.cs`, `ButtonVFXHelper.cs`, `MoltenVeinVFX.cs`
+- [Unity 6 Roslyn Analyzers Manual](https://docs.unity3d.com/6000.3/Documentation/Manual/roslyn-analyzers.html) -- Installation procedure
+- [Unity 6 Install Existing Analyzer](https://docs.unity3d.com/6000.2/Documentation/Manual/install-existing-analyzer.html) -- DLL placement, RoslynAnalyzer label
+- [Microsoft.Unity.Analyzers v1.26.0 on NuGet](https://www.nuget.org/packages/Microsoft.Unity.Analyzers) -- Latest version, published 2026-02-03
+- [Microsoft.Unity.Analyzers GitHub](https://github.com/microsoft/Microsoft.Unity.Analyzers) -- Rule documentation
+- [Unity Forum: Background Gradients](https://discussions.unity.com/t/background-gradients/810125) -- Confirms USS has no gradient support
+- [Unity Forum: USS Gradients](https://discussions.unity.com/t/uss-gradients-linear-gradient-and-image-gradients/934218) -- Community confirms Texture2D workaround
+- [Unity Forum: RenderTexture in VisualElement](https://discussions.unity.com/t/how-to-set-a-rendertexture-as-a-background-image-at-runtime/906830) -- Background.FromRenderTexture pattern
+- [Unity AudioClip.Create API](https://docs.unity3d.com/ScriptReference/AudioClip.Create.html) -- Official API docs
+- Unity `packages-lock.json` (local file) -- All package versions verified
 
-### Reference Implementations (HIGH confidence)
-- [blender-mcp (ahujasid)](https://github.com/ahujasid/blender-mcp) -- TCP socket architecture, Blender addon pattern
-- [mcp-unity (CoderGamester)](https://github.com/CoderGamester/mcp-unity) -- WebSocket bridge, Unity C# server, Node.js MCP client
-- [mcp-game-asset-gen (Flux159)](https://github.com/Flux159/mcp-game-asset-gen) -- TypeScript game asset generation MCP, fal.ai/OpenAI integration
-
-### Ecosystem Research (MEDIUM confidence)
-- [MCP Transport Future - Blog](https://blog.modelcontextprotocol.io/posts/2025-12-19-mcp-transport-future/) -- Transport evolution direction
-- [PyMeshLab - GitHub](https://github.com/cnr-isti-vclab/PyMeshLab) -- v2025.07 release
-- [3D API Comparison 2026](https://www.3daistudio.com/blog/best-3d-model-generation-apis-2026) -- Meshy, Tripo, Rodin, fal.ai comparison
-- [httpx vs aiohttp vs requests](https://www.speakeasy.com/blog/python-http-clients-requests-vs-httpx-vs-aiohttp) -- HTTP client comparison
-- [MCP Game Development Servers](https://mcpmarket.com/categories/game-development) -- Ecosystem overview
-- [ComfyUI API Guide](https://comfyui.org/en/programmatic-image-generation-api-workflow) -- Programmatic workflow execution
+### Community Research (MEDIUM confidence)
+- [Unity How-To: Roslyn Analyzers](https://unity.com/how-to/debugging-with-rosyln-analyzers) -- Setup guide
+- [Procedural Audio in Unity (Gamasutra)](https://www.gamedeveloper.com/audio/procedural-audio-in-unity) -- AudioClip.Create patterns
+- [Procedural Audio in Unity (PixelEuphoria)](https://pixeleuphoria.com/blog/index.php/2021/01/23/synthesizing-procedural-audio/) -- Synthesis techniques
