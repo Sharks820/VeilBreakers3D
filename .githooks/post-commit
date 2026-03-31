@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+# Git LFS post-commit
+command -v git-lfs >/dev/null 2>&1 && git lfs post-commit "$@"
+
+# Sync backup
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 if command -v cygpath >/dev/null 2>&1; then
   ROOT_DIR_WIN="$(cygpath -w "$ROOT_DIR")"
