@@ -37,22 +37,51 @@ The game flow from title screen through character selection to gameplay must wor
 - [x] Save migration framework with versioning — `MigrationRunner.cs`
 - [x] Error logging with subsystem prefixes and conditional compilation — `ErrorLogger.cs`
 
-### Active
+### Active — Milestone v6.0: Bug Fixes & Code Quality Hardening + UI Rebuild
 
 <!-- Current scope. Building toward these. -->
 
-- [ ] Character Select screen rebuilt with AAA visuals (layout, animations, effects)
-- [ ] Character Select buttons functional (Back, Prev, Next, Embark, Confirm, Cancel)
-- [ ] Character Select layout fixed (text overlap, monster area, hero stories, synergy/brands display)
-- [ ] Character Select performance optimized (no GC pressure, cached references, no per-frame allocations)
-- [ ] Title screen loading order fixed (title loads first, no battle screen flash)
-- [ ] Settings button wired and functional from main menu
-- [ ] Full codebase debug pass (zero errors, zero warnings where possible)
-- [ ] Security audit pass (no injection vectors, no unsafe patterns, proper encryption)
-- [ ] Visual amplification of title screen (AAA quality without code degradation)
-- [ ] Visual amplification of character select (AAA quality effects and animations)
-- [ ] Tech debt cleanup (duplicate USS files, stale backups, deprecated events, stub components)
-- [ ] Game flow verified end-to-end: Bootstrap → MainMenu → CharacterSelect → Overworld
+**Phase A: Critical Bug Fixes**
+- [ ] Fix defender synergy defense (never applied — DamageCalculator + BattleManager)
+- [ ] Fix brand effectiveness matrix (3 bidirectional violations in BrandSystem.cs)
+- [ ] Implement UNTAMED corruption tier (80-100% = uncontrollable, CorruptionSystem + Enums)
+- [ ] Fix CharSelectFocusManager div-by-zero (_heroCount never set)
+- [ ] Fix CharSelectVisualEnhancer callback leak (embark hover lambdas)
+
+**Phase B: High-Priority Bug Fixes**
+- [ ] Fix enemy synergy computation (player synergy used for enemy attacks)
+- [ ] Fix DEFENSE skill ignoring skillData (reads stale loadout state)
+- [ ] Add Enum.IsDefined guards (HeroData, SkillData, ItemData — unsafe casts)
+- [ ] Fix GameDatabase async fire-and-forget (unawaited init Task)
+- [ ] Fix SaveData path level clamp [0,1] vs PathSystem [0,100]
+- [ ] Fix UIAnimationController DontDestroyOnLoad inconsistency
+- [ ] Fix Texture2D and PanelSettings memory leaks (MainMenuBootstrap, MenuBootstrap)
+- [ ] Fix EmbarkCinematicController event nulling (hangs async flow)
+- [ ] Fix shared AudioSource conflict (HoldToEmbark vs CharSelectFocusManager)
+- [ ] Fix static event field persistence across scene loads (17 instances)
+- [ ] Fix collection modification during iteration (10 instances)
+
+**Phase C: Code Quality Hardening**
+- [ ] Replace all unguarded Debug.Log with ErrorLogger (30+ instances)
+- [ ] Convert closure-based PrimeTween to target-based (StatNumberAnimator, ScreenEntryAnimator)
+- [ ] Standardize singleton pattern (VERASystem, FPSCounter → SingletonMonoBehaviour<T>)
+- [ ] Fix DontDestroyOnLoad without duplicate checks (6 instances)
+- [ ] Add CancellationToken to MonoBehaviour async methods
+- [ ] Cap damage buff compounding (Combatant.ApplyDamageBuff)
+- [ ] Remove dead code (duplicate data classes, unused rarity enum, GetRarityModifier returning 0)
+
+**Phase D: Title Screen & Character Selection Fixes**
+- [ ] Fix title screen visual bugs and polish issues
+- [ ] Fix character selection interaction bugs (focus, navigation, hover states)
+- [ ] Fix button highlight glitch (dual-system conflict)
+- [ ] Fix readability issues (font sizes, opacity, spacing)
+- [ ] Ensure gamepad navigation works without crashes
+- [ ] Verify end-to-end flow: Title → CharSelect → Embark
+
+**Phase E: 3D Model Quality Audit**
+- [ ] Audit all 28 GLB models (polycount, UVs, normals, rig integrity)
+- [ ] Fix any models that fail quality checks before integration
+- [ ] Verify models display correctly in Unity with proper materials
 
 ### Out of Scope
 
@@ -113,5 +142,26 @@ The game flow from title screen through character selection to gameplay must wor
 | CharSelectEvents scoped bus | Prevents character select controllers from polluting global EventBus | [x] Good |
 | 4 parallel codebase mapper agents | Faster analysis, each agent writes directly to reduce context load | [x] Good |
 
+## Current Milestone: v6.0 Bug Fixes & Code Quality Hardening
+
+**Goal:** Fix all CRITICAL/HIGH bugs, harden code quality, then tweak title screen and character selection UIs. Audit 3D models before integration.
+
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd:transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd:complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
 ---
-*Last updated: 2026-02-21 after GSD project initialization (brownfield)*
+*Last updated: 2026-03-30 — Milestone v6.0 started*

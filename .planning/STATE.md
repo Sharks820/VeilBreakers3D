@@ -1,10 +1,10 @@
 ---
 gsd_state_version: 1.0
 milestone: v6.0
-milestone_name: VeilBreakers v6 Foundation
-current_phase: setup
+milestone_name: Bug Fixes & Code Quality Hardening
+current_phase: not_started
 current_plan: 0 of 0
-status: In Progress — Foundation Setup
+status: Defining requirements
 last_updated: "2026-03-30T00:00:00.000Z"
 progress:
   total_phases: 0
