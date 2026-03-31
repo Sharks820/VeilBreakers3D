@@ -353,11 +353,11 @@ TemplateContainer {
     background-color: rgba(255, 255, 255, 0.02);
 }
 
-/* Per-hero active tab underline */
-.theme-vex .tab-btn-active { border-bottom-color: rgba(220, 68, 34, 0.9); color: rgb(255, 120, 60); }
-.theme-seraphina .tab-btn-active { border-bottom-color: rgba(150, 90, 210, 0.9); color: rgb(200, 150, 255); }
-.theme-orion .tab-btn-active { border-bottom-color: rgba(100, 70, 220, 0.9); color: rgb(140, 110, 255); }
-.theme-nyx .tab-btn-active { border-bottom-color: rgba(180, 25, 30, 0.9); color: rgb(240, 50, 55); }
+/* Per-hero active tab underline + glow text */
+.theme-vex .tab-btn-active { border-bottom-color: rgba(220, 68, 34, 0.9); color: rgb(255, 120, 60); text-shadow: 0 0 12px rgba(220, 68, 34, 0.5); }
+.theme-seraphina .tab-btn-active { border-bottom-color: rgba(150, 90, 210, 0.9); color: rgb(200, 150, 255); text-shadow: 0 0 12px rgba(150, 90, 210, 0.5); }
+.theme-orion .tab-btn-active { border-bottom-color: rgba(35, 55, 200, 0.9); color: rgb(80, 130, 255); text-shadow: 0 0 12px rgba(35, 55, 200, 0.5); }
+.theme-nyx .tab-btn-active { border-bottom-color: rgba(180, 25, 30, 0.9); color: rgb(240, 50, 55); text-shadow: 0 0 12px rgba(180, 25, 30, 0.5); }
 
 .tab-content {
     flex-grow: 1;
@@ -855,39 +855,39 @@ TemplateContainer {
 .ability-card {
     flex-direction: row;
     align-items: flex-start;
-    padding: 10px 12px;
-    margin-bottom: 6px;
-    background-color: rgba(8, 6, 16, 0.65);
-    border-radius: 6px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    background-color: rgba(10, 8, 20, 0.75);
+    border-radius: 8px;
     border-width: 1px;
-    border-color: rgba(80, 65, 100, 0.12);
-    border-left-width: 3px;
+    border-color: rgba(80, 65, 100, 0.15);
+    border-left-width: 4px;
     border-left-color: var(--hero-primary, rgba(180, 60, 50, 0.5));
     translate: 0 0;
     transition-property: translate, background-color, border-color, border-left-color;
-    transition-duration: 0.2s, 0.2s, 0.2s, 0.2s;
+    transition-duration: 0.25s, 0.25s, 0.25s, 0.25s;
     transition-timing-function: ease-out, ease-out, ease-out, ease-out;
     overflow: hidden;
     position: relative;
 }
 
 .ability-card:hover {
-    background-color: rgba(12, 10, 24, 0.85);
-    translate: 3px 0;
-    border-left-color: var(--hero-accent, rgba(240, 100, 80, 0.9));
-    border-color: rgba(80, 65, 100, 0.25);
+    background-color: rgba(16, 12, 30, 0.9);
+    translate: 4px 0;
+    border-left-color: var(--hero-accent, rgba(240, 100, 80, 0.95));
+    border-color: rgba(100, 80, 140, 0.3);
 }
 
 /* Brand color dot — glowing orb indicator */
 .ability-brand-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 5px;
-    margin-right: 10px;
+    width: 12px;
+    height: 12px;
+    border-radius: 6px;
+    margin-right: 12px;
     margin-top: 3px;
     flex-shrink: 0;
     border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Ability info column */
@@ -901,14 +901,14 @@ TemplateContainer {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 4px;
+    margin-bottom: 5px;
 }
 
 .ability-name {
-    font-size: 12px;
+    font-size: 13px;
     -unity-font-style: bold;
-    color: rgba(240, 235, 250, 0.95);
-    letter-spacing: 1px;
+    color: rgba(245, 240, 255, 0.95);
+    letter-spacing: 1.5px;
 }
 
 /* Tag row: damage type, cost, cooldown — pill badges */
@@ -923,12 +923,12 @@ TemplateContainer {
     letter-spacing: 1px;
     -unity-font-style: bold;
     color: rgba(200, 190, 220, 0.9);
-    background-color: rgba(80, 65, 100, 0.2);
-    border-radius: 8px;
-    padding: 3px 8px;
+    background-color: rgba(80, 65, 100, 0.25);
+    border-radius: 10px;
+    padding: 3px 10px;
     margin-left: 4px;
     border-width: 1px;
-    border-color: rgba(100, 80, 130, 0.2);
+    border-color: rgba(100, 80, 130, 0.25);
 }
 
 /* Power/damage display — warm accent pill */
@@ -936,35 +936,36 @@ TemplateContainer {
     font-size: 10px;
     letter-spacing: 1px;
     -unity-font-style: bold;
-    color: rgba(255, 190, 110, 1.0);
-    background-color: rgba(255, 140, 40, 0.15);
-    border-radius: 8px;
-    padding: 3px 8px;
+    color: rgba(255, 200, 120, 1.0);
+    background-color: rgba(255, 140, 40, 0.2);
+    border-radius: 10px;
+    padding: 3px 10px;
     margin-left: 4px;
     border-width: 1px;
-    border-color: rgba(255, 140, 40, 0.2);
+    border-color: rgba(255, 140, 40, 0.3);
 }
 
 /* Skill description text */
 .ability-desc {
     font-size: 12px;
-    color: rgba(210, 200, 230, 0.8);
+    color: rgba(210, 200, 230, 0.85);
     white-space: normal;
     -unity-font-style: italic;
-    margin-top: 2px;
+    margin-top: 3px;
     padding-right: 4px;
+    line-height: 16px;
 }
 
 .ability-card:hover .ability-desc {
-    color: rgba(195, 185, 215, 0.8);
+    color: rgba(200, 190, 225, 0.9);
 }
 
 .ability-card:hover .ability-name {
-    color: rgba(255, 250, 240, 1);
+    color: rgba(255, 252, 245, 1);
 }
 
 .ability-card:hover .ability-brand-dot {
-    border-color: rgba(255, 255, 255, 0.35);
+    border-color: rgba(255, 255, 255, 0.4);
 }
 
 /* =============================================================================
@@ -973,64 +974,64 @@ TemplateContainer {
 
 /* Lore section — AAA immersive card with atmospheric depth */
 .hero-lore-section {
-    margin-bottom: 14px;
-    padding: 12px 10px;
-    background-color: rgba(8, 6, 16, 0.5);
-    border-radius: 6px;
+    margin-bottom: 16px;
+    padding: 14px 14px;
+    background-color: rgba(10, 8, 20, 0.7);
+    border-radius: 8px;
     border-width: 1px;
-    border-color: rgba(80, 65, 100, 0.1);
-    border-left-width: 3px;
-    border-left-color: var(--hero-primary, rgba(180, 60, 50, 0.3));
+    border-color: rgba(80, 65, 100, 0.15);
+    border-left-width: 4px;
+    border-left-color: var(--hero-primary, rgba(180, 60, 50, 0.4));
 }
 
 .hero-backstory {
     font-size: 14px;
-    color: rgba(210, 200, 230, 0.9);
+    color: rgba(215, 205, 235, 0.92);
     white-space: normal;
     -unity-font-style: italic;
     padding: 0 4px;
-    line-height: 20px;
+    line-height: 22px;
 }
 
 /* Drop-cap first letter element (created in C#) */
 .lore-drop-cap {
-    font-size: 32px;
+    font-size: 36px;
     -unity-font-style: bold;
-    color: var(--hero-accent, rgba(240, 100, 80, 0.9));
+    color: var(--hero-accent, rgba(240, 100, 80, 0.95));
     float: left;
-    margin-right: 4px;
+    margin-right: 6px;
     margin-top: -2px;
 }
 
 /* Section headers in lore tab */
 .lore-section-divider {
     height: 1px;
-    background-color: var(--hero-dim, rgba(180, 60, 50, 0.12));
-    margin-top: 14px;
-    margin-bottom: 10px;
+    background-color: var(--hero-dim, rgba(180, 60, 50, 0.18));
+    margin-top: 16px;
+    margin-bottom: 12px;
 }
 
 /* Synergy detail card — deeper layered card with accent header */
 .synergy-detail-section {
-    margin-top: 8px;
-    padding: 10px 12px;
-    background-color: rgba(8, 6, 16, 0.5);
-    border-radius: 6px;
+    margin-top: 10px;
+    padding: 12px 14px;
+    background-color: rgba(10, 8, 20, 0.65);
+    border-radius: 8px;
     border-width: 1px;
-    border-color: rgba(80, 65, 100, 0.1);
-    border-left-width: 3px;
-    border-left-color: var(--hero-primary, rgba(180, 60, 50, 0.3));
+    border-color: rgba(80, 65, 100, 0.15);
+    border-left-width: 4px;
+    border-left-color: var(--hero-primary, rgba(180, 60, 50, 0.35));
 }
 
 .synergy-detail-section .section-header {
-    font-size: 12px;
+    font-size: 13px;
     letter-spacing: 3px;
     -unity-font-style: bold;
-    color: var(--hero-primary, rgba(180, 60, 50, 0.9));
-    margin-bottom: 8px;
-    padding-bottom: 6px;
+    color: var(--hero-primary, rgba(180, 60, 50, 0.95));
+    margin-bottom: 10px;
+    padding-bottom: 8px;
     border-bottom-width: 1px;
-    border-bottom-color: var(--hero-dim, rgba(180, 60, 50, 0.15));
+    border-bottom-color: var(--hero-dim, rgba(180, 60, 50, 0.2));
 }
 
 .hero-synergy-detail {
@@ -1042,32 +1043,32 @@ TemplateContainer {
 
 /* Brands detail card */
 .brands-section {
-    margin-top: 8px;
-    padding: 10px 12px;
-    background-color: rgba(8, 6, 16, 0.5);
-    border-radius: 6px;
+    margin-top: 10px;
+    padding: 12px 14px;
+    background-color: rgba(10, 8, 20, 0.65);
+    border-radius: 8px;
     border-width: 1px;
-    border-color: rgba(80, 65, 100, 0.1);
-    border-left-width: 3px;
-    border-left-color: var(--hero-primary, rgba(180, 60, 50, 0.3));
+    border-color: rgba(80, 65, 100, 0.15);
+    border-left-width: 4px;
+    border-left-color: var(--hero-primary, rgba(180, 60, 50, 0.35));
 }
 
 .brands-section .section-header {
-    font-size: 12px;
+    font-size: 13px;
     letter-spacing: 3px;
     -unity-font-style: bold;
-    color: var(--hero-primary, rgba(180, 60, 50, 0.9));
-    margin-bottom: 8px;
-    padding-bottom: 6px;
+    color: var(--hero-primary, rgba(180, 60, 50, 0.95));
+    margin-bottom: 10px;
+    padding-bottom: 8px;
     border-bottom-width: 1px;
-    border-bottom-color: var(--hero-dim, rgba(180, 60, 50, 0.15));
+    border-bottom-color: var(--hero-dim, rgba(180, 60, 50, 0.2));
 }
 
 .hero-brands-detail {
     font-size: 14px;
-    color: rgba(210, 200, 230, 0.85);
+    color: rgba(215, 205, 235, 0.88);
     white-space: normal;
-    line-height: 19px;
+    line-height: 20px;
 }
 
 /* =============================================================================

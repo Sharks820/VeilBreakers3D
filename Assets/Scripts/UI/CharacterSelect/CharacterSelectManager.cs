@@ -306,9 +306,9 @@ namespace VeilBreakers.UI.CharacterSelect
                 new Color(0.78f, 0.59f, 1f, 0.30f),
                 new Color(0.14f, 0.08f, 0.2f));
             configs[2] = CreateDefaultTheme("orion", "Orion",
-                new Color(100f/255f, 70f/255f, 220f/255f), // Purplish blue
-                new Color(0.55f, 0.43f, 1f, 0.30f),
-                new Color(0.08f, 0.06f, 0.2f));
+                new Color(35f/255f, 55f/255f, 200f/255f), // Deep dark blue
+                new Color(0.31f, 0.51f, 1f, 0.30f),
+                new Color(0.05f, 0.07f, 0.22f));
             configs[3] = CreateDefaultTheme("nyx", "Nyx",
                 new Color(180f/255f, 25f/255f, 30f/255f), // Blood red
                 new Color(0.94f, 0.20f, 0.22f, 0.30f),
@@ -680,6 +680,7 @@ namespace VeilBreakers.UI.CharacterSelect
             ApplyThemeClass(_heroList[_currentIndex].hero_id);
             CharSelectEvents.RaiseHeroChanged(_currentIndex, _heroList[_currentIndex], CurrentConfig);
             UpdateEmbarkText();
+            RefreshTabColors(); // Update tab accent to new hero color
             StartCoroutine(EndTransitionAfterDelay());
         }
 
@@ -746,6 +747,25 @@ namespace VeilBreakers.UI.CharacterSelect
             if (content == null) return;
             if (active) content.AddToClassList("tab-active");
             else content.RemoveFromClassList("tab-active");
+        }
+
+        private static void SetTabContentActive(VisualElement content, bool active)
+        {
+            if (content == null) return;
+            if (active) content.AddToClassList("tab-active");
+            else content.RemoveFromClassList("tab-active");
+        }
+
+        /// <summary>
+        /// Re-applies hero accent color to the currently active tab button.
+        /// Called on hero navigation to update tab colors without changing the active tab.
+        /// </summary>
+        private void RefreshTabColors()
+        {
+            // USS handles per-hero tab colors via .theme-* classes — just re-toggle the active class
+            SetTabButtonActive(_tabBtnOverview, _currentTab == kTabOverview);
+            SetTabButtonActive(_tabBtnAbilities, _currentTab == kTabAbilities);
+            SetTabButtonActive(_tabBtnLore, _currentTab == kTabLore);
         }
 
         // =============================================================================
@@ -827,6 +847,9 @@ namespace VeilBreakers.UI.CharacterSelect
             finally
             {
                 _isEmbarking = false;
+                // Reset HoldToEmbarkController so it can accept new hold interactions
+                var holdCtrl = GetComponent<HoldToEmbarkController>();
+                if (holdCtrl != null) holdCtrl.ResetEmbarkState();
             }
         }
 

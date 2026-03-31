@@ -181,8 +181,14 @@ namespace VeilBreakers.UI.VFX
         // INTERNAL
         // =============================================================================
 
+        private float _lastPulseTime;
+        private const float kPulseCooldown = 0.35f; // Debounce rapid clicks
+
         private void TriggerLogoPulse()
         {
+            // Debounce: don't restart pulse if one is still finishing or cooldown hasn't elapsed
+            if (_logoPulseRemaining > 0f || Time.unscaledTime - _lastPulseTime < kPulseCooldown) return;
+            _lastPulseTime = Time.unscaledTime;
             _logoPulseRemaining = Mathf.Max(0.05f, _logoPulseDuration);
             _logoPulseStrength = 1f;
         }

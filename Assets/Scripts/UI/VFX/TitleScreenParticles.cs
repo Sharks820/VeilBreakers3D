@@ -161,6 +161,8 @@ namespace VeilBreakers.UI.VFX
         public void CreateSparkBatch()
         {
             for (int i = 0; i < _sparkCount; i++) CreateSpark();
+            // All initial batches created — subsequent resets use random ages for variety
+            _isInitialSpawn = false;
         }
 
         /// <summary>
@@ -707,13 +709,17 @@ namespace VeilBreakers.UI.VFX
         // POSITION RESET
         // =============================================================================
 
+        private bool _isInitialSpawn = true; // Smooth first-frame: all particles start at age 0
+
         private void ResetEmberPosition(EmberParticle ember)
         {
             ember.Position = new Vector2(
                 UnityEngine.Random.Range(0f, _screenWidth),
                 UnityEngine.Random.Range(0f, _screenHeight * 1.2f)
             );
-            ember.Age = UnityEngine.Random.Range(0f, ember.Lifetime * 0.5f);
+            // Initial spawn: age 0 for smooth coordinated fade-in
+            // Subsequent resets: random age for organic variety
+            ember.Age = _isInitialSpawn ? 0f : UnityEngine.Random.Range(0f, ember.Lifetime * 0.5f);
         }
 
         private void ResetAshPosition(AshParticle ash)

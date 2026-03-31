@@ -300,6 +300,20 @@ namespace VeilBreakers.UI.CharacterSelect
             _isEmbarking = true;
         }
 
+        /// <summary>
+        /// Resets the embarking state so the hold-to-embark can be triggered again.
+        /// Called by CharacterSelectManager when the embark flow completes or fails.
+        /// Without this, a failed embark would permanently disable the hold interaction.
+        /// </summary>
+        public void ResetEmbarkState()
+        {
+            _isEmbarking = false;
+            _holdStarted = false;
+            _holdProgress = 0f;
+            ResetAllVisuals();
+            StartBreathingGlow();
+        }
+
         // =============================================================================
         // POINTER EVENT HANDLERS
         // =============================================================================

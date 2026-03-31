@@ -279,11 +279,7 @@ namespace VeilBreakers.UI.VFX
                 }
             }
 
-            if (strike == null && _lightningStrikes.Count > 0)
-            {
-                strike = _lightningStrikes[0];
-            }
-
+            // If all strikes active, skip this trigger rather than interrupting an ongoing animation
             if (strike == null) return;
 
             var tex = UnityEngine.Random.value < 0.5f ? _lightningMaskedA : _lightningMaskedB;

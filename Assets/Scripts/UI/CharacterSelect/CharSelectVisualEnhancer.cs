@@ -642,11 +642,11 @@ namespace VeilBreakers.UI.CharacterSelect
             },
             ["orion"] = new HeroCardColors
             {
-                BorderColor = new Color(100f/255f, 70f/255f, 220f/255f, 0.75f),  // Purplish blue
-                GradTop     = new Color(30f/255f, 22f/255f, 65f/255f, 0.85f),
-                GradBottom  = new Color(15f/255f, 10f/255f, 32f/255f, 0.95f),
-                AccentText  = new Color(140f/255f, 110f/255f, 255f/255f, 1f),    // Bright purplish blue
-                GlowColor   = new Color(100f/255f, 70f/255f, 220f/255f, 0.45f),
+                BorderColor = new Color(35f/255f, 55f/255f, 200f/255f, 0.75f),   // Deep dark blue
+                GradTop     = new Color(12f/255f, 18f/255f, 55f/255f, 0.85f),
+                GradBottom  = new Color(6f/255f, 10f/255f, 28f/255f, 0.95f),
+                AccentText  = new Color(80f/255f, 130f/255f, 255f/255f, 1f),     // Bright blue
+                GlowColor   = new Color(35f/255f, 55f/255f, 200f/255f, 0.45f),
             },
             ["nyx"] = new HeroCardColors
             {

@@ -137,24 +137,27 @@ namespace VeilBreakers.UI.CharacterSelect
                     _cinematicNameLabel, heroName, theme.glitchResolveSpeed));
             }
 
-            // t=800ms: Cracks shatter + name fade
+            // t=800ms: Cracks shatter + name holds (no fade yet — let player read it)
             if (_veilTransition != null)
             {
                 seq.Insert(0.8f, _veilTransition.PlayShatter(theme.primaryColor, 0.2f));
             }
+            // Name stays visible longer for readability
+
+            // t=1200ms: Name fade out (slow, 0.4s so it's readable)
             if (_cinematicNameLabel != null)
             {
-                seq.Insert(0.8f, Tween.VisualElementOpacity(_cinematicNameLabel, 0f, 0.15f, Ease.InQuad));
+                seq.Insert(1.2f, Tween.VisualElementOpacity(_cinematicNameLabel, 0f, 0.4f, Ease.InQuad));
             }
 
-            // t=1000ms: White-out
+            // t=1400ms: White-out
             if (_veilTransition != null)
             {
-                seq.Insert(1.0f, _veilTransition.PlayWhiteOut(0.2f));
+                seq.Insert(1.4f, _veilTransition.PlayWhiteOut(0.2f));
             }
 
-            // t=1200ms: Complete -- fire OnCinematicComplete
-            seq.InsertCallback(1.2f, () =>
+            // t=1700ms: Complete -- fire OnCinematicComplete
+            seq.InsertCallback(1.7f, () =>
             {
                 CleanupCinematicLabel();
                 OnCinematicComplete?.Invoke();

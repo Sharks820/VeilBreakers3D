@@ -500,7 +500,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             float deltaX = evt.position.x - _dragStartX;
             _dragStartX = evt.position.x;
-            _modelRotationY += deltaX * 0.5f;
+            _modelRotationY += deltaX * 1.0f;
             _currentModel.transform.localRotation = Quaternion.Euler(0f, _modelRotationY, 0f);
         }
 
