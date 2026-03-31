@@ -104,8 +104,8 @@ Plans:
 **Plans:** 2 plans (gap analysis showed most work already complete)
 
 Plans:
-- [ ] 06-01-PLAN.md — Create per-hero VolumeProfile assets + assign to HeroThemeConfig SOs (CHARSEL-04)
-- [ ] 06-02-PLAN.md — Wire VeilDissolveController to real shader + Renderer (CHARSEL-05)
+- [x] 06-01-PLAN.md — Create per-hero VolumeProfile assets + assign to HeroThemeConfig SOs (CHARSEL-04)
+- [x] 06-02-PLAN.md — Wire VeilDissolveController to real shader + Renderer (CHARSEL-05)
 
 ## Phase 7: 3D Model Audit & Integration
 

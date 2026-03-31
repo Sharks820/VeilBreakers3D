@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: milestone
 current_phase: 6
-status: planning
-stopped_at: Completed 06-02-PLAN.md
-last_updated: "2026-03-31T14:00:00.000Z"
+status: phase-complete
+stopped_at: Completed 06-01-PLAN.md execution (Phase 6 complete)
+last_updated: "2026-03-31T13:47:26Z"
 progress:
   total_phases: 8
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 2
-  completed_plans: 0
+  completed_plans: 2
 ---
 
 # Session State
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md
 
 **Milestone:** v6.0 — Bug Fixes & Code Quality Hardening + UI Rebuild
 **Current phase:** 6
-**Status:** Planning complete, ready to execute
+**Status:** Phase 6 complete (both plans 06-01 and 06-02 done)
 
 ## What's Done (v6.0)
 
@@ -67,7 +67,7 @@ See: .planning/PROJECT.md
 - Plan 03: TitleScreenVFX decomposed from 3146 to 735 lines (5 subsystems)
 - Plan 04: UIVFXContainer z-order management, VERATitleAudio randomized interactions, texture glow
 
-### Phase 6: Character Select AAA Rebuild (PLANNING COMPLETE - 2026-03-31)
+### Phase 6: Character Select AAA Rebuild (DONE - 2026-03-31)
 
 Gap analysis showed most AAA features already implemented in prior sessions:
 - CHARSEL-01 (hero card carousel + gradient/glow) -- DONE
@@ -77,8 +77,8 @@ Gap analysis showed most AAA features already implemented in prior sessions:
 - CHARSEL-07 (EmbarkCinematicController) -- DONE
 
 Remaining gaps:
-- Plan 01: Per-hero VolumeProfile assets (all 4 HeroThemeConfig.volumeProfile = null)
-- Plan 02: Wire VeilDissolveController to shader + Renderer
+- Plan 01: Per-hero VolumeProfile assets (all 4 HeroThemeConfig.volumeProfile = null) -- DONE (b246eba)
+- Plan 02: Wire VeilDissolveController to shader + Renderer -- DONE (ee413e2)
 
 ## Remaining Phases
 
@@ -96,6 +96,10 @@ Remaining gaps:
 - VERA audio uses weighted random with per-pattern cooldowns and history exclusion
 - TitleScreenVFX decomposed to 5 subsystems + slim orchestrator (77% reduction)
 - Phase 6 gap analysis: 5 of 7 CHARSEL requirements already met, 2 remaining gaps
+- 06-01: Editor script approach for VolumeProfile generation (hand-authored YAML unreliable for Unity GUID-based serialization)
+- 06-01: VolumeProfile overrides match VolumeProfileTransitioner.CacheTargetValues reads exactly
+- 06-02: White noise texture default acceptable for VeilDissolvePlaceholder (shader falls back to identity noise)
+- 06-02: SetDissolveController injection pattern for wiring dissolve to model renderer
 
 ## Blockers / Concerns
 
@@ -103,6 +107,6 @@ Remaining gaps:
 
 ## Session Continuity
 
-Last session: 2026-03-31T14:00:00.000Z
+Last session: 2026-03-31T13:47:26Z
 Resume file: None
-Stopped at: Completed 06-02-PLAN.md
+Stopped at: Completed 06-01-PLAN.md execution (Phase 6 complete)
