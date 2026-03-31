@@ -1,70 +1,133 @@
 {
-  "version": "1.0",
-  "timestamp": "2026-03-24T00:33:36Z",
-  "phase": "aaa-ui-overhaul",
-  "phase_name": "AAA UI Overhaul — Main Menu + Character Select",
-  "phase_dir": "feature/aaa-ui-overhaul",
-  "plan": 1,
-  "task": 0,
-  "total_tasks": 17,
+  "version": "2.0",
+  "timestamp": "2026-03-30T21:30:00Z",
+  "milestone": "v6.0",
+  "milestone_name": "Bug Fixes & Code Quality Hardening + UI Rebuild",
+  "phase": "pre-roadmap",
+  "phase_name": "Milestone Setup — Research complete, requirements next",
   "status": "paused",
-  "completed_tasks": [
-    {"id": 1, "name": "UXML vertical button layout", "status": "done", "commit": "fc4deed"},
-    {"id": 2, "name": "USS unified button styles", "status": "done", "commit": "9d6d458"},
-    {"id": 3, "name": "ButtonVFXHelper top highlight", "status": "done", "commit": "534ea6e"},
-    {"id": 4, "name": "Logo dark backing", "status": "done", "commit": "02e3bbe"},
-    {"id": 5, "name": "Rename SPD to STAMINA", "status": "done", "commit": "2f4af6d"},
-    {"id": 6, "name": "Per-stat colors in USS", "status": "done", "commit": "531bf01"},
-    {"id": 7, "name": "D&D attributes as numbers", "status": "done", "commit": "803ff99"},
-    {"id": 8, "name": "Panel depth upgrade USS", "status": "done", "commit": "7f6092f"},
-    {"id": 9, "name": "Champion 50/50 split", "status": "done", "commit": "03cb3de"},
-    {"id": 10, "name": "Embark button restyle", "status": "done", "commit": "dc39dfa"},
-    {"id": 11, "name": "Bottom bar realignment", "status": "done", "commit": "406cb38"},
-    {"id": 12, "name": "Hero card size 80x100", "status": "done", "commit": "dc39dfa"},
-    {"id": 13, "name": "Stat number lerp animation", "status": "done", "commit": "8f8fd2e"},
-    {"id": 14, "name": "Embark voice line support", "status": "done", "commit": "6e69b75"},
-    {"id": 15, "name": "Remove champion from stage", "status": "done", "commit": "f6eabe9"},
-    {"id": 16, "name": "Dynamic STAMINA/MANA", "status": "done", "commit": "74ef5d9"},
-    {"id": 17, "name": "SPD attribute added", "status": "done", "commit": "46bd511"}
+  "task": 0,
+  "total_tasks": 0,
+
+  "completed_work": {
+    "foundation_setup": [
+      "GSD updated 1.27→1.30, config saved (quality profile, all checkers ON)",
+      "CLAUDE.md v8.1: slimmed 231→97 lines, fixed corruption tiers (added UNTAMED 80-100%), added security rules, expanded high-risk list, all 4 Context7 IDs",
+      "Created .claude/rules/ (6 path-scoped files: combat/brands-synergy, combat/corruption, ui/toolkit, systems/save-system, systems/audio, systems/3d-pipeline)",
+      "Agent models fixed: commit-helper opus→sonnet, doc-writer opus→haiku",
+      "unity-editor-control skill updated: dual vb-unity + unity-mcp pipeline documented",
+      "github-workflow skill: stale Godot branch reference removed",
+      "Context7 verified: PrimeTween (85 snippets), UI Toolkit (36), Cinemachine 3.1 (2661), URP/Graphics (4074)",
+      "Memory pruned: 3 archived, index cleaned, stale Dec temp file deleted",
+      "Git LFS configured for all binary assets (GLB, FBX, PNG, WAV, etc.)",
+      "Codebase maps refreshed: 7 documents, 2662 lines total"
+    ],
+    "bug_scanning": [
+      "Bug-hunter agent: Combat+Capture — 20 bugs (1 CRIT, 4 HIGH, 9 MED, 6 LOW)",
+      "Bug-hunter agent: UI+Menus — 29 bugs (2 CRIT, 8 HIGH, 12 MED, 7 LOW)",
+      "Bug-hunter agent: Core+Systems+Data — 24 bugs (2 CRIT, 5 HIGH, 8 MED, 9 LOW)",
+      "VB Code Reviewer: 3378 findings across 170 files in 12.2s (31 CRIT, 63 HIGH, 173 MED, 3111 LOW)",
+      "VB Code Reviewer verified: 210 rules, 175 unique rule IDs match template exactly, latest version confirmed"
+    ],
+    "milestone_setup": [
+      "PROJECT.md updated with 8 phases (A through H)",
+      "STATE.md updated for v6.0 milestone",
+      "Committed: c7f8116 — docs: start milestone v6.0",
+      "4 parallel Opus research agents completed (Stack, Features, Architecture, Pitfalls)",
+      "Research synthesized into SUMMARY.md, committed: 121cd45"
+    ]
+  },
+
+  "current_position": {
+    "workflow_step": "GSD new-milestone workflow, Step 9: Define Requirements",
+    "what_just_happened": "Research complete (4 agents + synthesizer). SUMMARY.md written and committed. Next is defining REQUIREMENTS.md from research findings, then spawning roadmapper.",
+    "next_action": "Generate REQUIREMENTS.md with REQ-IDs scoped to this milestone, grouped by phase category. Then spawn gsd-roadmapper to create ROADMAP.md with 8 phases."
+  },
+
+  "remaining_work": [
+    "Step 9: Define REQUIREMENTS.md with REQ-IDs (from research + bug reports)",
+    "Step 10: Spawn gsd-roadmapper to create ROADMAP.md (8 phases, A-H)",
+    "Step 11: Get user approval on roadmap",
+    "Then: /gsd:plan-phase for each phase, starting with Phase A (critical bugs)",
+    "Then: /gsd:execute-phase to actually fix the code"
   ],
-  "remaining_tasks": [
-    {"id": "V2-1", "name": "C# gradient texture generation for buttons", "status": "not_started"},
-    {"id": "V2-2", "name": "C# glow overlay VisualElements for panels", "status": "not_started"},
-    {"id": "V2-3", "name": "C# depth layering system for AAA panel look", "status": "not_started"},
-    {"id": "V2-4", "name": "Demon interactive hover + animation (C#)", "status": "not_started"},
-    {"id": "V2-5", "name": "Seamless video loop fix", "status": "not_started"},
-    {"id": "V2-6", "name": "Audio assets (demon laughs, girl crying, music)", "status": "not_started"},
-    {"id": "V2-7", "name": "Champion model RenderTexture in panel", "status": "not_started"},
-    {"id": "V2-8", "name": "Nav arrow icons (replace unicode)", "status": "not_started"}
+
+  "key_research_findings": {
+    "stack": "No new packages needed. Just Roslyn analyzer DLL + .editorconfig. Two new C# classes: UIGlowOverlay.cs, CharSelectAudio.cs",
+    "features": "70% infrastructure exists. #1 gap = real 3D models (placeholder capsules). #2 = animation clips (all null). Title screen needs polish not rebuild.",
+    "architecture": "Unity 6 has native filter:blur() in UI Toolkit — USS limitation assumption outdated. Fix texture leak API before rebuilds. Z-order fragility from multiple root.Insert(0) calls.",
+    "pitfalls": "Mass bug fixing without isolation is #1 risk. One fix per commit. Debug.Log replacement is NOT batch find-replace (ErrorLogger.Log is [Conditional], Warn/Error are not). USS background-color silently kills runtime gradients."
+  },
+
+  "master_bug_report": {
+    "total_manual": 73,
+    "total_code_reviewer": 3378,
+    "critical_5": [
+      "Defender synergy defense never applied (DamageCalculator + BattleManager)",
+      "Brand effectiveness matrix 3 bidirectional violations (BrandSystem.cs)",
+      "UNTAMED corruption tier 80-100% missing (CorruptionSystem + Enums)",
+      "CharSelectFocusManager div-by-zero (_heroCount never set)",
+      "CharSelectVisualEnhancer embark callback leak (anonymous lambdas)"
+    ],
+    "high_17": [
+      "Enemy synergy never computed (player synergy used for enemies)",
+      "DEFENSE skill ignores skillData (reads stale loadout)",
+      "Unsafe enum casts without Enum.IsDefined (HeroData, SkillData, ItemData)",
+      "GameDatabase async fire-and-forget (unawaited init Task)",
+      "SaveData path level clamp [0,1] vs PathSystem [0,100]",
+      "UIAnimationController DontDestroyOnLoad inconsistency",
+      "Texture2D + PanelSettings memory leaks (MainMenuBootstrap, MenuBootstrap)",
+      "EmbarkCinematicController event nulling hangs async flow",
+      "Shared AudioSource conflict (HoldToEmbark vs CharSelectFocusManager)",
+      "Static event field persistence across scene loads (17 instances)",
+      "Collection modification during iteration (10 instances)",
+      "CaptureBannerController Unity null-conditional bypass",
+      "CarouselController PointerDown callbacks never unregistered",
+      "CaptureBannerController subscribe in Start() with no retry",
+      "SkillSlotController shows '7' instead of 'R' for ultimate slot",
+      "Debug.Log in Combatant.InterruptCast unguarded (production)",
+      "VERASystem hand-rolled singleton instead of SingletonMonoBehaviour<T>"
+    ],
+    "code_reviewer_high_confidence": "187 findings with confidence >= 75. Top rules: GAME-06 (async without CancellationToken, 29x — mostly test files FP), BUG-42 (static events, 17x — real), BUG-38 (Texture2D leaks, 11x — real), ITER-01 (collection modification, 10x — needs verification)"
+  },
+
+  "project_phases": {
+    "A": "Critical Bug Fixes (5 CRITICAL bugs)",
+    "B": "High-Priority Bug Fixes (16+ HIGH bugs)",
+    "C": "Code Quality Hardening (Debug.Log, singletons, dead code, tooling)",
+    "D": "Title Screen & CharSelect Bug Fixes (interaction, readability, gamepad)",
+    "E": "Title Screen UI Rebuild AAA (gradients, procedural audio, VFX)",
+    "F": "Character Selection UI Rebuild AAA (UIGradientHelper, glow, embark)",
+    "G": "3D Model Quality Audit & Integration (28 GLBs)",
+    "H": "End-to-End Verification"
+  },
+
+  "user_design_notes": {
+    "vera_title_audio": "VERA asks for help → demon responds aggressively telling her to be quiet. Then OTHER random interactions play as title sits idle. NOT a repeating loop. Weighted random system with cooldowns. Ambient drone runs independently underneath.",
+    "ui_scope": "Title screen and CharSelect need AAA rebuild, not just tweaking. Full C# runtime gradients, glow overlays, procedural audio.",
+    "model_audit": "Verify quality of all 28 GLB models BEFORE integration. Check polycount, UVs, normals, rig integrity."
+  },
+
+  "commits_this_session": [
+    "23ced4b — chore: optimize GSD config (from yesterday, already pushed)",
+    "79cf1c7 — chore: commit pre-existing work (from yesterday, already pushed)",
+    "45353eb — chore: v6 foundation — slim CLAUDE.md, add rules, refresh codebase maps",
+    "fed9059 — chore: configure Git LFS for binary assets",
+    "c7f8116 — docs: start milestone v6.0 Bug Fixes & Code Quality Hardening",
+    "121cd45 — docs: research SUMMARY.md (committed by synthesizer agent)"
   ],
-  "blockers": [
-    {
-      "description": "USS alone cannot achieve AAA visuals — no gradients, box-shadow, blur filters. Must use C# runtime texture generation + layered VisualElements for premium look.",
-      "type": "technical",
-      "workaround": "Generate Texture2D gradients at runtime, apply as background-image. Create overlay VisualElements for glow/depth."
-    },
-    {
-      "description": "HTML mockup used CSS features impossible in UI Toolkit — created expectation gap",
-      "type": "technical",
-      "workaround": "Next session: build visual effects through C# code, not USS. Reference mockup for DESIGN targets, implement via Unity-native techniques."
-    }
-  ],
-  "human_actions_pending": [],
-  "decisions": [
-    {"decision": "Buttons vertical right-aligned stack", "rationale": "AAA RPG standard (Diablo/Elden Ring style), doesn't compete with demon figure", "phase": "aaa-ui-overhaul"},
-    {"decision": "All buttons same size, orange on hover only", "rationale": "User preference — no primary/secondary distinction at rest", "phase": "aaa-ui-overhaul"},
-    {"decision": "SPD renamed to STAMINA, dynamic swap to MANA for casters", "rationale": "Physical heroes use STAMINA (green), VOIDTOUCHED/UNCHAINED use MANA (purple)", "phase": "aaa-ui-overhaul"},
-    {"decision": "D&D attributes as numbers not bars", "rationale": "User preferred bold numbers over same-color bars that were hard to differentiate", "phase": "aaa-ui-overhaul"},
-    {"decision": "SPD added back as 7th attribute", "rationale": "Speed affects casting/melee/ranged attack speed — universal stat, displayed as number", "phase": "aaa-ui-overhaul"},
-    {"decision": "Champion 50/50 split in panel, removed from 3D stage", "rationale": "Hero gets full spotlight on stage, champion gets prominent info+model area in panel", "phase": "aaa-ui-overhaul"},
-    {"decision": "Visual effects MUST use C# route, not USS-only", "rationale": "USS lacks gradients, box-shadow, blur — proven by terrible visual result from USS-only approach", "phase": "aaa-ui-overhaul"}
-  ],
-  "uncommitted_files": [
-    "Assets/Scripts/UI/CharacterSelect/CharSelectFocusManager.cs",
-    "Assets/Scripts/UI/Effects/MainMenuVFXOverlayController.cs",
-    "Assets/Scripts/UI/Menus/MainMenuBootstrap.cs",
-    "CLAUDE.md"
-  ],
-  "next_action": "Build C# UIGradientHelper that generates Texture2D gradients at runtime and applies them as background-image to buttons and panels. Then create UIGlowOverlay system that adds layered glow VisualElements. Match the V5 mockup (.superpowers/brainstorm/stable/aaa-v5.html) pixel-for-pixel using Unity-native techniques.",
-  "context_notes": "The USS-only approach failed spectacularly. All 17 USS/UXML tasks are committed and compile clean (0 errors) but look nothing like the approved mockup because UI Toolkit lacks CSS gradients, box-shadow, and filter effects. The STRUCTURAL changes are correct (vertical buttons, stat colors, champion layout, bottom bar alignment) but the VISUAL QUALITY needs a complete C# implementation pass. The mockup is at .superpowers/brainstorm/stable/aaa-v5.html. Bug scan found 4 pre-existing HIGH issues (ButtonVFXHelper callback leak, async void TriggerEmbark, FindAnyObjectByType in hot path, gamepad stick misread) — none introduced by our changes."
+
+  "key_files": {
+    "CLAUDE.md": "v8.1, 97 lines — slim + game design rules + Context7 IDs",
+    ".claude/rules/": "6 path-scoped rule files (combat, ui, systems)",
+    ".planning/PROJECT.md": "Updated with 8 phases A-H for v6.0",
+    ".planning/STATE.md": "v6.0 milestone, defining requirements",
+    ".planning/research/SUMMARY.md": "Synthesized research from 4 Opus agents",
+    ".planning/codebase/": "7 documents freshly generated today (2662 lines)",
+    "Assets/Editor/VeilBreakers/VB_CodeReviewer.cs": "4006 lines, 210 rules, working — ran scan producing 3378 findings",
+    "vb_code_review.json 3-30.json": "Full scan results at C:/Users/Conner/OneDrive/Documents/"
+  },
+
+  "resume_command": "/gsd:resume-work",
+  "context_notes": "Session started by recovering from a crash (yesterday's session lost). Foundation setup was Task 2-7 from yesterday's list. All foundation work complete. Milestone v6.0 initialized. Research done. Next: define requirements, create roadmap, then start executing Phase A (critical bug fixes). The user wants ALL phases — do not remove any. VERA audio design direction is in memory (feedback_vera_title_audio.md)."
 }

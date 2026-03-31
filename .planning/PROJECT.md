@@ -70,18 +70,34 @@ The game flow from title screen through character selection to gameplay must wor
 - [ ] Cap damage buff compounding (Combatant.ApplyDamageBuff)
 - [ ] Remove dead code (duplicate data classes, unused rarity enum, GetRarityModifier returning 0)
 
-**Phase D: Title Screen & Character Selection Fixes**
+**Phase D: Title Screen & Character Selection Bug Fixes**
 - [ ] Fix title screen visual bugs and polish issues
 - [ ] Fix character selection interaction bugs (focus, navigation, hover states)
 - [ ] Fix button highlight glitch (dual-system conflict)
 - [ ] Fix readability issues (font sizes, opacity, spacing)
 - [ ] Ensure gamepad navigation works without crashes
-- [ ] Verify end-to-end flow: Title → CharSelect → Embark
 
-**Phase E: 3D Model Quality Audit**
+**Phase E: Title Screen UI Rebuild (AAA)**
+- [ ] AAA title screen with C# runtime gradients and glow effects
+- [ ] Procedural audio (ambient drone, VERA interactions, demon laugh)
+- [ ] Visual polish (video background, veil effects, button VFX)
+
+**Phase F: Character Selection UI Rebuild (AAA)**
+- [ ] AAA character select with C# UIGradientHelper + UIGlowOverlay
+- [ ] Hero card carousel with proper focus management
+- [ ] Hold-to-embark with visual feedback layers
+- [ ] Full gamepad support without crashes
+
+**Phase G: 3D Model Quality Audit & Integration**
 - [ ] Audit all 28 GLB models (polycount, UVs, normals, rig integrity)
-- [ ] Fix any models that fail quality checks before integration
+- [ ] Fix any models that fail quality checks
+- [ ] Integrate verified models into character select and game scenes
 - [ ] Verify models display correctly in Unity with proper materials
+
+**Phase H: End-to-End Verification**
+- [ ] Verify flow: Title → CharSelect → Embark → Overworld
+- [ ] Run VB Code Reviewer — zero CRITICAL/HIGH findings
+- [ ] Performance pass — no GC allocations in hot paths
 
 ### Out of Scope
 
