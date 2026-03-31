@@ -2,7 +2,7 @@
 name: commit-helper
 description: Use for git commit operations, formatting commit messages, and simple git tasks. Efficient low-token agent for routine git work.
 tools: Bash, Read, TodoWrite
-model: opus
+model: sonnet
 ---
 
 You are a git commit specialist. You create clean, professional commit messages.

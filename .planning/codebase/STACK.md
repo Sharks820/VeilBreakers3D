@@ -1,177 +1,223 @@
 # Technology Stack
 
-**Analysis Date:** 2026-02-21
+**Analysis Date:** 2026-03-30
 
 ## Languages
 
 **Primary:**
-- C# (latest supported by Unity 6) - All game logic, editor tools, tests
-- USS (Unity Style Sheets) - UI styling (`Assets/UI/Styles/*.uss`)
-- UXML (Unity XML) - UI layout definitions (`Assets/UI/Screens/*.uxml`, `Assets/UI/Templates/*.uxml`)
+- C# (Unity 6 / .NET Standard) — All game logic, editor tools, tests (128 scripts in `Assets/Scripts/`)
+- HLSL/ShaderLab — Custom shaders (`Assets/Shaders/VeilCrack.shader`, `Assets/Shaders/VeilDissolve.shader`)
 
 **Secondary:**
-- JSON - Game data files (`Assets/Resources/Data/*.json`)
-- YAML - Unity serialized assets (`ProjectSettings/*.asset`)
+- USS (Unity Style Sheets) — UI Toolkit styling (`Assets/UI/Styles/CharacterSelect.uss`, `Assets/UI/Styles/VeilBreakers.uss`)
+- UXML (Unity XML) — UI layout markup (`Assets/UI/Templates/*.uxml`, `Assets/UI/Screens/CharacterSelect.uxml`)
+- JSON — Game data definitions (`Assets/Resources/Data/heroes.json`, `monsters.json`, `skills.json`, `items.json`)
+- PowerShell — CI/build scripts (`Tools/ci/run_unity_tests.ps1`, `Tools/ci/check_coverage.ps1`, `Tools/ci/find_unity.ps1`, `Tools/ci/verify_phase.ps1`)
+- Python 3.12 — Blender helper tools and model inspection (`Tools/*.py`, 12+ scripts)
+- JavaScript (CJS/ESM) — MCP server launchers (`Tools/mcp/github-mcp-launcher.js`, `Tools/mcp/spawn-patch.cjs`, `Tools/mcp/launch-unity-mcp.js`)
 
 ## Runtime
 
-**Environment:**
-- Unity 6000.3.6f1 (Unity 6 LTS track) - `ProjectSettings/ProjectVersion.txt`
+**Engine:**
+- Unity 6000.3.6f1 (Unity 6 LTS) — `ProjectSettings/ProjectVersion.txt`
 - .NET Standard / Mono scripting runtime
-- Active Input Handling: Input System (New) - `activeInputHandler: 2` in `ProjectSettings/ProjectSettings.asset`
 
-**Graphics Pipeline:**
-- Universal Render Pipeline (URP) 17.3.0 - `Packages/manifest.json`
+**Render Pipeline:**
+- Universal Render Pipeline (URP) 17.3.0 — `Packages/manifest.json`
 - Global settings: `Assets/UniversalRenderPipelineGlobalSettings.asset`
-- Volume profile: `Assets/DefaultVolumeProfile.asset`
-- Graphics APIs (Windows): D3D11 + Vulkan (auto-detection disabled) - `m_BuildTargetGraphicsAPIs` in ProjectSettings
+- Default volume profile: `Assets/DefaultVolumeProfile.asset`
+- Volume profile transitions used in CharacterSelect: `Assets/Scripts/UI/CharacterSelect/VolumeProfileTransitioner.cs`
 
 **Package Manager:**
 - Unity Package Manager (UPM)
 - Lockfile: `Packages/packages-lock.json` (present)
+- Custom scoped registry: `npmjs` (registry.npmjs.org) for `com.kyrylokuzyk` scope (PrimeTween)
 
 ## Frameworks
 
 **Core:**
-- Unity Engine 6000.3.6f1 - Game engine
-- Universal Render Pipeline 17.3.0 - Rendering
-- Input System 1.18.0 - Player input handling
-- UI Toolkit (UIElements module) - All UI (NOT legacy UGUI for new code)
-- TextMesh Pro - Text rendering within UI Toolkit
+- Unity UI Toolkit — Primary UI system (41 scripts use `UnityEngine.UIElements`)
+- TextMeshPro (via URP bundle) — Legacy text rendering in combat UI (6 scripts: `SkillSlotController.cs`, `AllyPanelController.cs`, `CaptureBannerController.cs`, `PlayerPanelController.cs`, `EnemyPanelController.cs`)
+- Unity Input System 1.18.0 — Player input via `Assets/Settings/VeilBreakersInput.inputactions`
+  - Used in: `Assets/Scripts/Core/InputManager.cs`, `Assets/Scripts/Core/VeilBreakersInputActions.cs`
 
-**Testing:**
-- Unity Test Framework 1.6.0 - Test runner
-- NUnit (via Unity) - Assertions
-- Code Coverage 1.2.7 - Coverage reports
-
-**Build/Dev:**
-- Addressables 2.8.0 - Asset management and loading
-- Burst Compiler 1.8.27 (transitive dep) - Performance-critical math
-- Unity Mathematics 1.2.1 (transitive dep) - Math library
-- Memory Profiler 1.1.9 - Memory analysis
-- Profile Analyzer 1.2.3 - Performance profiling
-- Adaptive Performance 6.0.0 - Runtime performance scaling
+**Animation:**
+- PrimeTween 1.3.8 — Tween animations (15 scripts, primarily UI transitions in `Assets/Scripts/UI/CharacterSelect/` and `Assets/Scripts/UI/Core/`)
+- Unity Animation system — Character/monster animators and blend trees
 
 **Navigation:**
-- AI Navigation 2.0.9 - NavMesh pathfinding
+- Unity AI Navigation 2.0.12 — NavMesh pathfinding (package present, not yet referenced in C# scripts)
 
-**3D Content Pipeline:**
-- glTFast 5.2.0 - glTF/GLB model import
-- Blender 4.4 integration via DCC Bridge (`Assets/Editor/DCCBridgeEditor.cs`)
-- Tripo3D Bridge for AI model generation (`Assets/Editor/Tripo3DBridgeEditor.cs`)
-- Mixamo animation import (`Assets/Editor/MixamoAnimationImporter.cs`)
+**3D Asset Loading:**
+- glTFast 6.14.1 — GLB model import (24 GLB files across `Assets/Art/Models/Heroes/` and `Assets/Art/Models/Monsters/`)
+- Addressables 2.8.1 — Asset management (referenced in `Assets/Scripts/Core/GameDataAssets.cs`, `Assets/Scripts/UI/Core/UIAssets.cs`)
 
-**Editor Integration:**
-- Rider IDE 3.0.38 - Primary IDE support
-- MCP Unity plugin (`com.gamelovers.mcp-unity`) - AI agent control of Unity Editor
+**Testing:**
+- Unity Test Framework 1.6.0 — EditMode and PlayMode tests (20 test files)
+- NUnit (via Unity) — Test assertions
+- Unity Code Coverage 1.2.7 — Coverage reporting and gating (35% minimum line coverage enforced in CI)
+
+**Performance:**
+- Unity Adaptive Performance 6.0.0 — Runtime performance scaling
+- Unity Memory Profiler 1.1.12 — Memory analysis
+- Unity Profile Analyzer 1.3.3 — CPU profiling
+
+**Build/Dev:**
+- Unity Editor 6000.3.6f1 — Development environment
+- game-ci/unity-builder@v4 — CI build (GitHub Actions)
+- game-ci/unity-test-runner@v4 — CI test runner (GitHub Actions)
+- Serena (LSP-backed, OmniSharp) — C# symbol intelligence for AI agents
+- unity-mcp-server (IvanMurzak) — Runtime debugging, Roslyn execute, editor control
 
 ## Key Dependencies
 
-**Critical (game breaks without these):**
-- `com.unity.inputsystem` 1.18.0 - All player input (referenced in `VeilBreakers.Runtime.asmdef`)
-- `com.unity.render-pipelines.universal` 17.3.0 - All rendering
-- `com.unity.modules.uielements` 1.0.0 - UI Toolkit (all menus, HUD, screens)
-- `com.unity.ugui` 2.0.0 - Scene transition fade canvas (legacy usage in `VBSceneManager.cs`)
-- Unity.TextMeshPro - Text rendering (referenced in `VeilBreakers.Runtime.asmdef`)
-- `com.unity.addressables` 2.8.0 - Asset loading strategy
+**Critical (from `Packages/manifest.json`):**
 
-**Infrastructure:**
-- `com.unity.nuget.newtonsoft-json` 3.2.1 - JSON serialization (transitive via MCP Unity)
-- `com.unity.ai.navigation` 2.0.9 - AI pathfinding for overworld
-- `com.unity.cloud.gltfast` 5.2.0 - 3D model import pipeline
+| Package | Version | Purpose |
+|---------|---------|---------|
+| `com.kyrylokuzyk.primetween` | 1.3.8 | UI tween animations (buttons, transitions, panels) |
+| `com.unity.render-pipelines.universal` | 17.3.0 | URP rendering pipeline |
+| `com.unity.inputsystem` | 1.18.0 | New Input System (action maps) |
+| `com.unity.cloud.gltfast` | 6.14.1 | glTF/GLB model import at editor/runtime |
+| `com.unity.addressables` | 2.8.1 | Addressable asset system |
+| `com.unity.ai.navigation` | 2.0.12 | NavMesh navigation |
+| `com.unity.ugui` | 2.0.0 | Legacy uGUI (TextMeshPro dependency, combat UI) |
 
-**Dev/Debug Only:**
-- `com.unity.memoryprofiler` 1.1.9 - Memory debugging
-- `com.unity.performance.profile-analyzer` 1.2.3 - Performance debugging
-- `com.unity.testtools.codecoverage` 1.2.7 - Test coverage
-- `com.gamelovers.mcp-unity` (git) - AI agent Unity Editor control
+**Infrastructure (built-in Unity modules used):**
+
+| Module | Purpose |
+|--------|---------|
+| `com.unity.modules.physics` | 3D physics |
+| `com.unity.modules.animation` | Animator/animation clips |
+| `com.unity.modules.audio` | Audio playback |
+| `com.unity.modules.particlesystem` | VFX particle systems |
+| `com.unity.modules.video` | Video playback (menu background) |
+| `com.unity.modules.terrain` | Terrain system |
+| `com.unity.modules.ai` | NavMesh agents |
+| `com.unity.modules.uielements` | UI Toolkit core |
+| `com.unity.modules.unitywebrequest` | HTTP requests (asset loading) |
 
 ## Assembly Definitions
 
 **Runtime:**
-- `Assets/Scripts/VeilBreakers.Runtime.asmdef` - Root namespace `VeilBreakers`, references: `Unity.InputSystem`, `Unity.TextMeshPro`
+- `Assets/Scripts/VeilBreakers.Runtime.asmdef`
+- Root namespace: `VeilBreakers`
+- References: `Unity.InputSystem`, `Unity.TextMeshPro`, `Unity.RenderPipelines.Universal.Runtime`, `Unity.RenderPipelines.Core.Runtime`, `PrimeTween.Runtime`
 
 **Editor:**
-- `Assets/Scripts/Editor/VeilBreakers.Editor.asmdef` - Root namespace `VeilBreakers.Editor`, references: `VeilBreakers.Runtime`, `Unity.RenderPipelines.Universal.Runtime`, `Unity.RenderPipelines.GPUDriven.Runtime`
+- `Assets/Scripts/Editor/VeilBreakers.Editor.asmdef`
+- Root namespace: `VeilBreakers.Editor`
+- References: `VeilBreakers.Runtime`, `VeilBreakers.Tests.Runtime`, `Unity.RenderPipelines.Universal.Runtime`, `Unity.RenderPipelines.GPUDriven.Runtime`
+- Platform: Editor only
 
 **Tests:**
-- `Assets/Tests/EditMode/VeilBreakers.Tests.EditMode.asmdef` - References: `VeilBreakers.Runtime`, `UnityEngine.TestRunner`, `UnityEditor.TestRunner`, NUnit
-- `Assets/Tests/PlayMode/VeilBreakers.Tests.PlayMode.asmdef` - References: `Assembly-CSharp`
+- `Assets/Tests/EditMode/` — EditMode test assembly (11 test files)
+- `Assets/Tests/PlayMode/` — PlayMode test assembly (2 test files)
+- `Assets/Tests/RuntimeTests/` — Runtime test assembly (8 test files)
 
 ## Data Serialization
 
-**Game Data (read-only):**
-- JSON files loaded via `Resources.Load<TextAsset>()` at runtime
-- Paths defined in `Assets/Scripts/Core/Constants.cs`:
-  - `Data/monsters` -> `Assets/Resources/Data/monsters.json`
-  - `Data/skills` -> `Assets/Resources/Data/skills.json`
-  - `Data/heroes` -> `Assets/Resources/Data/heroes.json` (meta only, no file)
-  - `Data/items` -> `Assets/Resources/Data/items.json`
-- Data types: `MonsterData`, `SkillData`, `HeroData`, `ItemData` in `Assets/Scripts/Data/`
-- Archive versions maintained: `monsters_archive_v1.json`, `skills_archive_v1.json`
+**Game Data (read-only, bundled):**
+- JSON files loaded via `Resources.Load<TextAsset>()` with fallback candidates
+- Loader: `Assets/Scripts/Core/GameDataAssets.cs` (singleton ScriptableObject, Addressable-ready)
+- Parser: `Assets/Scripts/Core/GameDatabase.cs` (uses `JsonUtility.FromJson` with wrapper pattern for arrays)
+- Data types in `Assets/Scripts/Data/`: `MonsterData.cs`, `SkillData.cs`, `HeroData.cs`, `ItemData.cs`
 
-**Save Data:**
-- Custom binary format with header: magic bytes "VEIL" + version + flags + HMAC
-- Serialization chain: `JsonUtility.ToJson()` -> GZip compression -> AES encryption -> HMAC-SHA256 integrity
-- Save version: 2 (defined in `Assets/Scripts/Data/SaveData.cs`)
-- Migration system: `Assets/Scripts/Managers/MigrationRunner.cs` with `ISaveMigration` interface
-- File handler: `Assets/Scripts/Managers/SaveFileHandler.cs`
-- Stored at: `Application.persistentDataPath`
+**Save System:**
+- Handler: `Assets/Scripts/Managers/SaveFileHandler.cs`
+- Serialization: `JsonUtility.ToJson()` -> GZip compression -> AES-CBC encryption -> HMAC-SHA256 integrity
+- Encryption key: PBKDF2-derived, stored in PlayerPrefs with file fallback
+- Location: `Application.persistentDataPath`
 
-**ScriptableObjects:**
-- `AudioConfig` (`Assets/Scripts/Audio/AudioConfig.cs`) - Audio system configuration
-- `UIAssets` (`Assets/Scripts/UI/Core/UIAssets.cs`) - Centralized UI asset references
-- `HeroDisplayConfig` - Per-hero character select configurations (`Assets/Resources/CharacterSelect/HeroDisplayConfigs/*.asset`)
+**Settings:**
+- Manager: `Assets/Scripts/Managers/SettingsManager.cs`
+- Storage: `PlayerPrefs` + `JsonUtility` for `GameSettings` object
+- No third-party serializers (no Newtonsoft.Json, no MessagePack)
 
 ## Configuration
 
 **Environment:**
-- No `.env` files (offline game, no external services)
-- Unity Cloud Project ID: `3ba56aa7-39e3-4fb1-8c28-536b72fb73d0` (cloud services disabled)
-- Organization: `twotoedtimmy_unity`
-- Cloud services all disabled: Build, Game Performance, Legacy Analytics, Purchasing, UDP, Unity Ads
+- `.env` file present (contains API keys for external AI services -- existence noted only, NEVER read)
+- Environment variables referenced by MCP servers: `ELEVENLABS_API_KEY`, `GEMINI_API_KEY`, `TRIPO_API_KEY`, `FAL_KEY`
+- These are development-time only; the game has zero runtime network dependencies
 
 **Build:**
-- Product: `VeilBreakers3D` v4.30 Alpha
-- Company: `VeilBreakers`
-- Application ID: `com.VeilBreakers.VeilBreakers3D`
-- Default resolution: 1920x1080, fullscreen borderless
-- Target platform: Windows Standalone (primary)
-- Color space: Gamma (`m_ActiveColorSpace: 0`)
-- Incremental GC enabled
-- Frame timing stats enabled
+- `ProjectSettings/ProjectSettings.asset` — Unity player settings
+- `ProjectSettings/QualitySettings.asset` — Quality tiers
+- `ProjectSettings/GraphicsSettings.asset` — Rendering config
+- `.gitattributes` — LF line endings for source, binary tracking for assets, UnityYAMLMerge for scene/prefab files
 
-**MCP (AI Agent) Configuration:**
-- Core profile: `.mcp.json` - sequential-thinking, memory-graph, serena, mcp-unity, gemini-cli, github, blender
-- Full profile: `.mcp.full.json` - Extended tool set
-- MCP Unity server: port 8090, auto-start enabled (`ProjectSettings/McpUnitySettings.json`)
+**Input:**
+- `Assets/Settings/VeilBreakersInput.inputactions` — Input action definitions
+
+**Data Files:**
+- `Assets/Resources/Data/heroes.json` — Hero stat/brand/path definitions
+- `Assets/Resources/Data/monsters.json` — Monster definitions
+- `Assets/Resources/Data/skills.json` — Skill definitions
+- `Assets/Resources/Data/items.json` — Item definitions
+
+## Git Configuration
+
+- `.gitattributes` — Comprehensive cross-platform normalization (LF for source, binary for assets, UnityYAMLMerge for Unity serialized files)
+- `.gitignore` — Standard Unity gitignore
+- No Git LFS configured (binary assets stored directly in repo)
 
 ## Platform Requirements
 
 **Development:**
-- Windows 11 (primary development platform)
-- Unity 6000.3.6f1
-- Rider IDE (configured via `com.unity.ide.rider`)
-- Blender 4.4 (optional, for 3D content pipeline)
-- Node.js (for MCP server tools)
+- Windows 11 (primary development OS)
+- Unity 6000.3.6f1 installed
+- Node.js (via nvm4w at `C:/nvm4w/nodejs`)
+- Python 3.12+ (for Blender tools)
+- uv (Python package manager, for MCP toolkit servers)
+- gh CLI authenticated (for GitHub MCP)
+- Blender (for 3D asset pipeline, connects on localhost:9876)
 
 **Production:**
-- Windows Standalone (primary target)
+- Target: StandaloneWindows64 (per CI build config in `.github/workflows/unity-ci.yml`)
+- Offline single-player (no network dependencies)
 - 1920x1080 minimum resolution
-- D3D11 or Vulkan GPU
 
 ## Scenes
 
-Registered scenes (`Assets/Scenes/`):
-- `Bootstrap` - Initial load, manager initialization
-- `MainMenu` - Title screen, menu navigation
-- `CharacterSelect` - Hero selection (current rebuild focus)
-- `TestArena` - Development testing scene
-- `Battle` - Combat encounters
-- `Overworld` - Exploration/map
+| Scene | Path | Purpose |
+|-------|------|---------|
+| Bootstrap | `Assets/Scenes/Bootstrap.unity` | App entry point, manager initialization |
+| MainMenu | `Assets/Scenes/MainMenu.unity` | Title screen, menu navigation |
+| CharacterSelect | `Assets/Scenes/CharacterSelect.unity` | Hero selection carousel |
+| Battle | `Assets/Scenes/Battle.unity` | Turn-based combat encounters |
+| Overworld | `Assets/Scenes/Overworld.unity` | Exploration/map |
+| TestArena | `Assets/Scenes/TestArena.unity` | Development testing |
 
-Scene management: `Assets/Scripts/Managers/VBSceneManager.cs` (singleton, async loading with fade transitions)
+## Fonts
+
+- `Assets/UI/Fonts/Cinzel-Variable.ttf` — Primary display font
+- `Assets/UI/Fonts/CinzelDecorative-Bold.ttf` — Decorative headers
+- `Assets/UI/Fonts/CinzelDecorative-Regular.ttf` — Decorative text
+- `Assets/UI/Fonts/Rajdhani-Bold.ttf` — UI body text (bold)
+- `Assets/UI/Fonts/Rajdhani-SemiBold.ttf` — UI body text (semi-bold)
+- `Assets/UI/Fonts/Arial.ttf` — Fallback font
+- `Assets/TextMesh Pro/Fonts/LiberationSans.ttf` — TMP default
+
+## Media Assets
+
+**Video:**
+- `Assets/StreamingAssets/background_video.mp4` — Main menu background
+- `Assets/StreamingAssets/background_video_reversed.mp4` — Reversed variant
+
+**Audio:**
+- `Assets/Resources/Audio/Music/` — Music tracks (MP3)
+- `Assets/Resources/Audio/SFX/` — Sound effects (MP3)
+- `Assets/Resources/Audio/Ambient/` — Ambient layers (WAV)
+
+**3D Models (24 GLB files):**
+- `Assets/Art/Models/Heroes/Nyx/model_v{1-4}_pbr.glb`
+- `Assets/Art/Models/Heroes/Orion/model_v{1-4}_pbr.glb`
+- `Assets/Art/Models/Heroes/Seraphina/model_v{1-4}_pbr.glb`
+- `Assets/Art/Models/Monsters/Bloodshade/model_v{1-4}_pbr.glb`
+- `Assets/Art/Models/Monsters/Grimthorn/model_v{1-4}_pbr.glb`
+- `Assets/Art/Models/Monsters/Voltgeist/model_v{1-4}_pbr.glb`
 
 ---
 
-*Stack analysis: 2026-02-21*
+*Stack analysis: 2026-03-30*

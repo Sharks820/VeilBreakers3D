@@ -1,339 +1,445 @@
 # Codebase Structure
 
-**Analysis Date:** 2026-02-21
+**Analysis Date:** 2026-03-30
 
 ## Directory Layout
 
 ```
 VeilBreakers3DCurrent/
 ├── Assets/
-│   ├── Art/                        # 3D models, textures, materials, VFX
-│   ├── Editor/                     # Unity Editor extensions (not in builds)
-│   ├── Prefabs/                    # Reusable GameObject prefabs
-│   ├── Resources/                  # Runtime-loadable assets (JSON data, UI)
-│   │   ├── Data/                   # Game data JSON files
-│   │   ├── UI/                     # UI Toolkit assets (duplicated from Assets/UI/)
-│   │   │   ├── Styles/             # USS stylesheets (runtime copies)
-│   │   │   └── Templates/          # UXML templates (runtime copies)
-│   │   └── CharacterSelect/        # Character select ScriptableObjects
-│   │       └── HeroDisplayConfigs/ # Per-hero display config assets
-│   ├── Scenes/                     # Unity scene files
-│   │   └── Test/                   # Test scenes
-│   ├── Scripts/                    # All C# source code
-│   │   ├── AI/                     # Monster combat AI
-│   │   ├── Audio/                  # Audio system scripts
-│   │   ├── Capture/                # Monster capture mechanics
-│   │   ├── Combat/                 # Battle system, combatants, damage
-│   │   ├── Commands/               # Command pattern implementations
-│   │   ├── Core/                   # Singletons, bootstrap, event bus, input
-│   │   ├── Data/                   # Enums, data models (Monster, Hero, Skill, Item, Save)
-│   │   ├── Editor/                 # Editor-only scripts (separate assembly)
-│   │   ├── Managers/               # Persistent service managers
-│   │   ├── Systems/                # Pure game logic (Brand, Path, Corruption, Synergy, VERA)
-│   │   ├── Test/                   # Test helper scripts
-│   │   ├── UI/                     # UI controllers and components
-│   │   │   ├── CharacterSelect/    # Character select screen controllers
-│   │   │   ├── Combat/             # Battle HUD controllers
-│   │   │   ├── Controls/           # Reusable UI controls
-│   │   │   ├── Core/               # Shared UI infrastructure (ThemeManager, ScreenTransition)
-│   │   │   ├── Effects/            # UI visual effects
-│   │   │   └── Menus/              # Menu screen controllers (MainMenu, Settings, etc.)
-│   │   └── Utils/                  # Shared utility classes
-│   ├── Settings/                   # Unity project settings assets
-│   ├── Tests/                      # Unit and integration tests
-│   │   ├── EditMode/               # Edit-mode tests (no scene required)
-│   │   └── PlayMode/               # Play-mode tests (scene required)
-│   ├── UI/                         # UI Toolkit source files
-│   │   ├── Screens/                # Full-screen UXML layouts
-│   │   ├── Styles/                 # USS stylesheets (source of truth)
-│   │   └── Templates/              # Reusable UXML templates
-│   └── _Archive/                   # Deprecated/archived code (do NOT use)
-│       └── OldCharacterSelect/     # Previous character select UXML files
-├── Docs/                           # Project documentation
-├── screenshots/                    # Visual reference screenshots
-├── .planning/                      # GSD planning documents
-│   └── codebase/                   # Codebase analysis documents
-├── CLAUDE.md                       # Claude Code project instructions
-└── VEILBREAKERS.md                 # Project state and memory document
+│   ├── Adaptive Performance/   # Unity Adaptive Performance package config
+│   ├── AddressableAssetsData/  # Addressable asset system data
+│   ├── Art/                    # Art assets (sprites, textures, models)
+│   ├── Audio/                  # Audio clips and configs
+│   ├── Characters/             # Character-related assets
+│   ├── Data/                   # ScriptableObject data containers (mostly .gitkeep placeholders)
+│   ├── Editor/                 # Editor-only scripts and tools
+│   ├── Prefabs/                # Prefab assets (Characters, Monsters, UI, VFX)
+│   ├── Resources/              # Runtime-loadable assets (JSON data, UI templates, audio, sprites)
+│   ├── Scenes/                 # Unity scenes (Bootstrap, MainMenu, CharacterSelect, Battle, Overworld, TestArena)
+│   ├── Scripts/                # All C# source code (primary development area)
+│   ├── Settings/               # Render pipeline and quality settings
+│   ├── Shaders/                # Custom shaders (VeilCrack, VeilDissolve)
+│   ├── StreamingAssets/        # Streaming assets
+│   ├── Tests/                  # Unity Test Framework tests
+│   ├── TextMesh Pro/           # TextMeshPro assets
+│   ├── UI/                     # UI Toolkit assets (UXML templates, USS stylesheets)
+│   ├── XR/                     # XR/VR settings
+│   ├── _Archive/               # Archived/deprecated assets
+│   └── _Recovery/              # Recovery backups
+├── Docs/                       # Design documents, lore, migration plans, art references
+├── Packages/                   # Unity Package Manager manifests
+├── ProjectSettings/            # Unity project settings
+├── Tools/                      # Build tools, MCP servers, DCC bridge, CI scripts
+├── _Archive/                   # Top-level archive (3D models, animations, generated cleanup)
+├── gemini-skills/              # Gemini AI skill definitions
+├── screenshots/                # Screenshot captures for visual QA
+├── test-results/               # Test result output
+├── CLAUDE.md                   # Claude AI configuration and project rules
+└── VEILBREAKERS.md             # Master game design document and memory
+```
+
+## Scripts Directory (Primary Code)
+
+```
+Assets/Scripts/
+├── AI/                         # AI decision-making (Gambit system)
+│   ├── AIPersonality.cs        # AI behavior weight profiles
+│   ├── GambitAction.cs         # Action definitions for AI rules
+│   ├── GambitCondition.cs      # Condition evaluation for AI rules
+│   ├── GambitController.cs     # Main AI controller (attached to Combatant)
+│   ├── GambitEvaluator.cs      # Rule evaluation and action selection
+│   └── GambitRule.cs           # Individual AI rule definitions
+├── Audio/                      # Sound systems
+│   ├── AudioBattleIntegration.cs  # Bridge between combat events and audio
+│   ├── AudioConfig.cs          # Audio configuration ScriptableObject
+│   ├── AudioManager.cs         # Master audio singleton (SFX, volume)
+│   ├── AudioTriggers.cs        # Event-based audio trigger helpers
+│   ├── LowHealthAudio.cs       # Low HP warning audio singleton
+│   ├── MusicManager.cs         # Music playback singleton
+│   ├── VB_UISoundManager.cs    # UI-specific sound effects
+│   └── VERAVoiceController.cs  # VERA AI companion voice playback
+├── Battle/                     # (Empty - combat logic is in Combat/)
+├── Capture/                    # Monster capture system
+│   ├── BindThresholdCalculator.cs  # Calculates when bind becomes available
+│   ├── CaptureData.cs          # Capture-related data types and enums
+│   ├── CaptureFormulaCalculator.cs # Capture success probability math
+│   ├── CaptureManager.cs       # Capture lifecycle singleton (scene-scoped)
+│   └── QTEController.cs        # Quick-time event for capture bonus
+├── Characters/                 # (Empty placeholder)
+├── Combat/                     # Core combat system
+│   ├── BattleManager.cs        # Combat lifecycle singleton (scene-scoped)
+│   ├── Combatant.cs            # Base combat participant component
+│   └── DamageCalculator.cs     # Static damage/heal formula calculations
+├── Commands/                   # Quick command system
+│   ├── QuickCommand.cs         # Individual command definition
+│   ├── QuickCommandManager.cs  # Command execution manager
+│   ├── RadialMenuController.cs # Radial menu UI for commands
+│   └── TimeSlowController.cs   # Time-slow effect during command selection
+├── Core/                       # Application infrastructure
+│   ├── Constants.cs            # All magic numbers and global constants
+│   ├── ErrorLogger.cs          # Structured logging utility
+│   ├── EventBus.cs             # Static event system (50+ events)
+│   ├── GameBootstrap.cs        # System initialization orchestrator
+│   ├── GameDataAssets.cs       # ScriptableObject holding JSON TextAsset refs
+│   ├── GameDataTypes.cs        # JSON wrapper classes for deserialization
+│   ├── GameDatabase.cs         # Central data repository singleton
+│   ├── GameManager.cs          # Game state + party management singleton
+│   ├── InputManager.cs         # Input system singleton (new Input System)
+│   ├── SingletonMonoBehaviour.cs  # Generic persistent singleton base class
+│   └── VeilBreakersInputActions.cs # Auto-generated Input System actions
+├── Data/                       # Data model definitions
+│   ├── AbilityData.cs          # Ability/skill slot data structures
+│   ├── Enums.cs                # ALL game enumerations (Brand, Path, SkillType, StatusEffect, etc.)
+│   ├── HeroData.cs             # Hero champion data (JSON-loaded)
+│   ├── HeroDisplayConfig.cs    # Hero visual configuration for CharSelect
+│   ├── ItemData.cs             # Item data (JSON-loaded)
+│   ├── MonsterData.cs          # Monster data (JSON-loaded)
+│   ├── SaveData.cs             # Save file structure + SavedMonster + SaveSlotMetadata
+│   ├── ShrineData.cs           # Shrine/checkpoint data
+│   ├── SkillData.cs            # Skill data (JSON-loaded)
+│   └── StatusEffectData.cs     # Status effect definition data
+├── Editor/                     # Editor-only utilities
+│   ├── TestArenaSetup.cs       # Test arena scene setup helper
+│   ├── UITextSettingsSetup.cs  # UI text default settings
+│   └── Unity6SetupWizard.cs    # Unity 6 project setup wizard
+├── Managers/                   # Persistent service managers
+│   ├── AutoSaveManager.cs      # Automatic save trigger logic
+│   ├── MigrationRunner.cs      # Save file version migration
+│   ├── SaveFileHandler.cs      # File I/O, encryption, backup rotation
+│   ├── SaveManager.cs          # Save/load orchestrator singleton
+│   ├── SettingsManager.cs      # Player settings (audio, graphics, etc.)
+│   ├── ShrineManager.cs        # Shrine discovery and interaction
+│   ├── StatusEffectManager.cs  # Status effect lifecycle singleton
+│   └── VBSceneManager.cs       # Scene loading with fade transitions
+├── Monsters/                   # (Empty placeholder)
+├── Runtime/                    # (Empty placeholder)
+├── Systems/                    # Pure game rule systems (static)
+│   ├── BrandSystem.cs          # 10-brand effectiveness matrix
+│   ├── CorruptionSystem.cs     # Corruption tiers and stat modifiers
+│   ├── PathSystem.cs           # Path bonuses and progression
+│   ├── StatusEffectInstance.cs # Runtime status effect instance data
+│   ├── SynergySystem.cs        # Party synergy tier calculations
+│   └── VERASystem.cs           # VERA AI companion behavior system
+├── Test/                       # Test helpers (in-game testing)
+├── UI/                         # UI controllers
+│   ├── CharacterSelect/        # Character select screen (21 files)
+│   │   ├── CarouselController.cs           # Hero carousel navigation
+│   │   ├── CharSelectEnvironmentController.cs  # 3D environment control
+│   │   ├── CharSelectEvents.cs             # Scene-scoped event hub
+│   │   ├── CharSelectFocusManager.cs       # Keyboard/gamepad focus
+│   │   ├── CharSelectUIUtils.cs            # Shared UI utilities
+│   │   ├── CharSelectVisualEnhancer.cs     # Visual polish effects
+│   │   ├── CharacterSelectManager.cs       # Main orchestrator
+│   │   ├── EmbarkCinematicController.cs    # Embark cinematic sequence
+│   │   ├── GlitchTextEffect.cs             # Glitch text animation
+│   │   ├── HeroDataPanelController.cs      # Hero info panel population
+│   │   ├── HeroStageController.cs          # 3D hero model stage
+│   │   ├── HeroStatsPanelController.cs     # Stats display panel
+│   │   ├── HeroSwitchAnimator.cs           # Hero switch animation
+│   │   ├── HeroThemeConfig.cs              # Per-hero theme ScriptableObject
+│   │   ├── HeroThemeTransitioner.cs        # Theme color transitions
+│   │   ├── HoldToEmbarkController.cs       # Hold-to-confirm embark button
+│   │   ├── OverlayController.cs            # Overlay effect management
+│   │   ├── ScreenEntryAnimator.cs          # Screen entry animation
+│   │   ├── StatNumberAnimator.cs           # Stat number roll-up animation
+│   │   ├── VeilDissolveController.cs       # Veil dissolve shader control
+│   │   └── VeilTransitionController.cs     # Veil transition effects
+│   ├── Combat/                 # Combat HUD (10 files)
+│   │   ├── AllyPanelController.cs          # Individual ally status panel
+│   │   ├── CaptureBannerController.cs      # Capture availability banner
+│   │   ├── CombatHUD.cs                    # Main combat HUD orchestrator
+│   │   ├── CombatUIConfig.cs               # Combat UI configuration
+│   │   ├── EnemyPanelController.cs         # Enemy target info panel
+│   │   ├── HealthBarController.cs          # Animated health bar
+│   │   ├── PlayerPanelController.cs        # Player status panel
+│   │   ├── SkillBarController.cs           # Skill slot bar (6 slots)
+│   │   └── SkillSlotController.cs          # Individual skill slot
+│   ├── Controls/               # Reusable UI controls
+│   │   ├── AnimatedBar.cs                  # Generic animated progress bar
+│   │   ├── ButtonVFXHelper.cs              # Button visual effects helper
+│   │   └── VBDropdownField.cs              # Custom dropdown field
+│   ├── Core/                   # UI infrastructure
+│   │   ├── FPSCounter.cs                   # FPS overlay display
+│   │   ├── MenuBootstrap.cs                # Menu scene initialization
+│   │   ├── MenuVFXController.cs            # Menu VFX management
+│   │   ├── MoltenButtonVFX.cs              # Molten button visual effect
+│   │   ├── MoltenVeinVFX.cs                # Molten vein background effect
+│   │   ├── ParallaxBackground.cs           # Parallax scrolling background
+│   │   ├── ScreenTransition.cs             # Screen transition effects
+│   │   ├── SoulSwarmVFX.cs                 # Soul particle swarm effect
+│   │   ├── ThemeManager.cs                 # Brand/corruption color theming
+│   │   ├── TitleScreenAudio.cs             # Title screen music/SFX
+│   │   ├── TitleScreenVFX.cs               # Title screen visual effects
+│   │   ├── UIAnimationController.cs        # Centralized UI animation runner
+│   │   ├── UIAssets.cs                     # UI asset reference holder
+│   │   ├── UIAutoSetup.cs                  # Automatic UI setup helpers
+│   │   └── UIGradientHelper.cs             # Runtime gradient texture generation
+│   ├── Effects/                # UI visual effects
+│   │   └── MainMenuVFXOverlayController.cs # Main menu VFX overlay
+│   └── Menus/                  # Menu screen controllers
+│       ├── HeroMonsterPairPreview.cs       # Hero+monster preview display
+│       ├── InventoryController.cs          # Inventory screen
+│       ├── MainMenuBootstrap.cs            # Main menu scene bootstrap
+│       ├── MainMenuController.cs           # Main menu UI controller
+│       ├── MainMenuVFXController.cs        # Main menu VFX
+│       ├── MonsterCollectionController.cs  # Monster collection browser
+│       ├── SaveSlotBrowserController.cs    # Save slot selection UI
+│       ├── SettingsPanelController.cs      # Settings panel UI
+│       └── VERADialogueController.cs       # VERA dialogue display
+├── Utils/                      # Generic utilities
+│   ├── Extensions.cs           # C# extension methods
+│   └── ObjectPool.cs           # Generic object pooling
+└── VFX/                        # Brand-specific VFX scripts
+    ├── VB_AoEVFX_ground_circle_RUIN.cs # RUIN brand AOE VFX
+    ├── VB_HitVFX_SAVAGE.cs             # SAVAGE brand hit VFX
+    └── VB_StatusVFX_SURGE.cs           # SURGE brand status VFX
+```
+
+## UI Toolkit Assets
+
+```
+Assets/UI/
+├── Screens/
+│   └── CharacterSelect.uxml       # Character select screen layout
+├── Styles/
+│   ├── CharacterSelect.uss        # Character select styles
+│   └── VeilBreakers.uss           # Global shared styles
+└── Templates/
+    ├── Dialogue.uxml              # Dialogue box template
+    ├── Inventory.uxml             # Inventory screen template
+    ├── MainMenu.uxml              # Main menu template
+    ├── MonsterCollection.uxml     # Monster collection template
+    └── SettingsPanel.uxml         # Settings panel template
+
+Assets/Resources/UI/Templates/
+├── CharacterSelect.uxml           # CharacterSelect (Resources copy for runtime loading)
+└── MainMenu.uxml                  # MainMenu (Resources copy for runtime loading)
+```
+
+## Scenes
+
+```
+Assets/Scenes/
+├── Bootstrap.unity         # First scene loaded; contains GameBootstrap
+├── MainMenu.unity          # Title screen with menu UI
+├── CharacterSelect.unity   # Hero selection screen with 3D stage
+├── Battle.unity            # Combat arena
+├── Overworld.unity         # Exploration/overworld
+└── TestArena.unity         # Development testing scene
+```
+
+## JSON Data Files
+
+```
+Assets/Resources/Data/
+├── GameDataAssets.asset    # ScriptableObject referencing JSON TextAssets
+├── heroes.json             # 4 hero definitions (Vex, Seraphina, Orion, Nyx)
+├── items.json              # Item definitions
+├── monsters.json           # Monster definitions
+└── skills.json             # Skill/ability definitions
 ```
 
 ## Directory Purposes
 
 **`Assets/Scripts/Core/`:**
-- Purpose: Application foundation -- bootstrapping, singleton infrastructure, global systems
-- Contains: Singleton base class, game bootstrap, game manager, database, event bus, input, constants
-- Key files:
-  - `GameBootstrap.cs`: First code to run; creates all managers in phased order
-  - `GameManager.cs`: Central game state (GameState enum), party management, hero/monster runtime data
-  - `GameDatabase.cs`: Async JSON data loader; query methods for monsters/heroes/skills/items
-  - `SingletonMonoBehaviour.cs`: Generic persistent singleton base class
-  - `EventBus.cs`: Static event system (~50+ events for decoupled communication)
-  - `InputManager.cs`: Unity Input System wrapper with `GameAction` enum and polling API
-  - `Constants.cs`: All magic numbers, colors, resource paths, tags/layers
-  - `GameDataAssets.cs`: ScriptableObject holding references to all JSON TextAssets
-  - `GameDataTypes.cs`: JSON wrapper classes for Unity's `JsonUtility`
+- Purpose: Foundation infrastructure that everything depends on
+- Contains: Singletons, event bus, game state, input, data loading
+- Key files: `GameBootstrap.cs` (init order), `EventBus.cs` (all events), `Constants.cs` (all magic numbers)
 
 **`Assets/Scripts/Data/`:**
-- Purpose: Data models and enumerations used across all layers
-- Contains: JSON-serializable data classes, game enums
-- Key files:
-  - `Enums.cs`: All game enumerations (Brand, Path, CorruptionState, SkillType, StatusEffectType with 60+ effects, ItemCategory, MonsterRarity, AIPattern, HeroRole, etc.)
-  - `MonsterData.cs`: Monster identity, brands, stats, growth rates, skills, AI config, corruption, rewards, lore
-  - `HeroData.cs`: 4 heroes (Vex, Seraphina, Orion, Nyx) with D&D-style BaseStats, ResourceType per hero
-  - `SkillData.cs`: Skill definitions with types, targets, power, cooldowns
-  - `ItemData.cs`: Item definitions with categories and effects
-  - `SaveData.cs`: Serializable save game state
+- Purpose: Pure data definitions with no behavior
+- Contains: Serializable classes for JSON data, all enums, save file structures
+- Key files: `Enums.cs` (ALL enums in one file), `SaveData.cs` (save format with validation)
 
 **`Assets/Scripts/Systems/`:**
-- Purpose: Pure game logic -- stateless static classes that calculate game mechanics
-- Contains: Brand effectiveness, path bonuses, corruption tiers, synergy tiers, VERA AI
-- Key files:
-  - `BrandSystem.cs`: 10-brand effectiveness matrix (2x/0.5x/1x) + hybrid brand resolution
-  - `PathSystem.cs`: 4 path stat bonus profiles with `[ThreadStatic]` buffer optimization
-  - `CorruptionSystem.cs`: 5-tier corruption state with stat multipliers (inverted: lower = stronger)
-  - `SynergySystem.cs`: Party composition synergy tiers (FULL/PARTIAL/NEUTRAL/ANTI)
-  - `VERASystem.cs`: AI companion with Veil Integrity, personality states, glitch text, dialogue queue
+- Purpose: Stateless game rule calculations
+- Contains: Static classes with pure math functions
+- Key files: `BrandSystem.cs` (10x10 effectiveness matrix), `SynergySystem.cs` (party tier calc)
 
 **`Assets/Scripts/Combat/`:**
-- Purpose: Real-time battle system orchestration and combat entities
-- Contains: Battle manager, combatant component, damage formulas, skill execution, guard system, AI
-- Key files:
-  - `BattleManager.cs`: Scene-specific singleton; combat loop in `Update()`, ability dispatch, synergy recalculation
-  - `Combatant.cs`: MonoBehaviour for all combat entities; stats, events, casting system, status effects
-  - `DamageCalculator.cs`: Static damage formula: `BasePower * (ATK/DEF) * BrandMult * SynergyMult * Variance * CritMult`
+- Purpose: Combat runtime logic
+- Contains: Battle lifecycle, combatant state, damage formulas
+- Key files: `BattleManager.cs` (combat orchestrator), `Combatant.cs` (universal combat entity)
 
-**`Assets/Scripts/Managers/`:**
-- Purpose: Persistent service singletons that manage cross-scene concerns
-- Contains: Save/load, scene transitions, audio, settings, status effects, shrines, auto-save
-- Key files:
-  - `SaveManager.cs`: 3 manual + 2 auto-save slots, async atomic writes, SemaphoreSlim mutex, backup rotation
-  - `VBSceneManager.cs`: Scene loading with programmatic fade overlay, async loading with progress
-  - `AudioManager.cs`: Sound effect playback
-  - `MusicManager.cs`: Background music management
-  - `SettingsManager.cs`: Player settings persistence
-  - `AutoSaveManager.cs`: Automatic save triggers on progression events
-  - `StatusEffectManager.cs`: Global status effect tick management
-  - `ShrineManager.cs`: Shrine discovery and interaction tracking
+**`Assets/Scripts/UI/CharacterSelect/`:**
+- Purpose: Character selection screen (most complex UI in the project)
+- Contains: 21 controller files following orchestrator + sub-controller delegation pattern
+- Key files: `CharacterSelectManager.cs` (orchestrator), `CharSelectEvents.cs` (scene-scoped events)
 
-**`Assets/Scripts/UI/`:**
-- Purpose: All user interface controllers using UI Toolkit (UXML/USS)
-- Contains: Per-screen controller hierarchies, shared UI infrastructure, effects
-- Key subdirectories:
-  - `CharacterSelect/`: `CharacterSelectManager.cs` (orchestrator) + sub-controllers (hero info, ability display, model viewer, etc.)
-  - `Combat/`: Battle HUD controllers
-  - `Controls/`: Reusable custom UI controls
-  - `Core/`: `ThemeManager.cs` (centralized colors), `ScreenTransition.cs` (fade effects)
-  - `Effects/`: UI visual effect scripts (particles, glow, etc.)
-  - `Menus/`: `MainMenuController.cs` (893 lines, entrance animations, async save detection), settings panels
+**`Assets/Scripts/UI/Combat/`:**
+- Purpose: Combat HUD panels
+- Contains: Panel controllers for player, enemy, allies, skill bar, capture
+- Key files: `CombatHUD.cs` (orchestrator), `SkillBarController.cs` (6-slot skill bar)
 
-**`Assets/Scripts/AI/`:**
-- Purpose: Monster combat AI decision-making
-- Contains: AI behavior patterns for enemy combatants during battle
+**`Assets/Resources/`:**
+- Purpose: Runtime-loadable assets (loaded via `Resources.Load`)
+- Contains: JSON game data, UI templates, audio clips, sprites, hero configs
+- Generated: No
+- Committed: Yes
 
-**`Assets/Scripts/Capture/`:**
-- Purpose: Monster capture mechanics and calculations
-- Contains: Capture rate formulas and capture flow logic
+**`Assets/Data/`:**
+- Purpose: ScriptableObject data containers (currently placeholder .gitkeep files)
+- Contains: Empty subdirectories for Brands, Items, Monsters, Skills
+- Note: Actual JSON data lives in `Assets/Resources/Data/`
 
-**`Assets/Scripts/Utils/`:**
-- Purpose: Shared utility functions used across multiple layers
-- Contains: Extension methods, helper classes, common algorithms
+**`Docs/`:**
+- Purpose: Design documents, lore, migration plans, art references
+- Contains: `MIGRATION_PLAN.md`, art references, lore archive, legacy Godot docs, superpowers brainstorms
 
-**`Assets/UI/`:**
-- Purpose: UI Toolkit source files (UXML layouts and USS stylesheets)
-- Contains: Screen layouts, reusable templates, theme and component styles
-- Key files:
-  - `Screens/CharacterSelect.uxml`: Character select screen layout
-  - `Templates/MainMenu.uxml`: Main menu layout template
-  - `Templates/Dialogue.uxml`, `Inventory.uxml`, `MonsterCollection.uxml`, `SettingsPanel.uxml`
-  - `Styles/VeilBreakers.uss`: Base stylesheet
-  - `Styles/VeilBreakersTheme.uss`: Theme variables and tokens
-  - `Styles/VeilBreakersUI.uss`: Component styles
-  - `Styles/CharacterSelect.uss`, `CharacterSelectAAA.uss`: Character select specific styles
-
-**`Assets/Resources/Data/`:**
-- Purpose: JSON game data files loaded at runtime by `GameDatabase`
-- Contains:
-  - `monsters.json`: All monster definitions
-  - `heroes.json`: All hero definitions
-  - `skills.json`: All skill definitions
-  - `items.json`: All item definitions
-  - `monsters_archive_v1.json`, `skills_archive_v1.json`: Archived data versions
-
-**`Assets/Scenes/`:**
-- Purpose: Unity scene files defining the game flow
-- Contains:
-  - `Bootstrap.unity`: First scene; runs `GameBootstrap` to initialize all managers
-  - `MainMenu.unity`: Main menu screen
-  - `CharacterSelect.unity`: Hero selection before starting a new game
-  - `Overworld.unity`: Exploration/overworld gameplay
-  - `Battle.unity`: Combat encounters
-  - `TestArena.unity`: Development test scene
-  - `Test/TestArena.unity`: Additional test scene
-
-**`Assets/Editor/`:**
-- Purpose: Unity Editor extensions and tools (excluded from builds)
-- Contains: Texture generators, import postprocessors, DCC bridge editors, scene wiring utilities, `SceneAuditor.cs`
-
-**`Assets/_Archive/`:**
-- Purpose: Deprecated code kept for reference (do NOT import or use)
-- Contains: `OldCharacterSelect/` with previous character select UXML files
+**`Tools/`:**
+- Purpose: Build automation, MCP servers, DCC bridge, CI pipelines
+- Contains: Python scripts, Git hooks, CI configs, MCP server definitions
 
 ## Key File Locations
 
 **Entry Points:**
-- `Assets/Scripts/Core/GameBootstrap.cs`: Application entry point; creates all managers
-- `Assets/Scripts/Combat/BattleManager.cs`: Battle scene entry point
+- `Assets/Scripts/Core/GameBootstrap.cs`: Application startup, system initialization
 - `Assets/Scripts/UI/Menus/MainMenuController.cs`: Main menu screen controller
 - `Assets/Scripts/UI/CharacterSelect/CharacterSelectManager.cs`: Character select orchestrator
+- `Assets/Scripts/Combat/BattleManager.cs`: Combat lifecycle manager
 
 **Configuration:**
-- `Assets/Scripts/Core/Constants.cs`: All game constants, magic numbers, resource paths
-- `Assets/Scripts/Core/GameDataAssets.cs`: ScriptableObject referencing JSON data TextAssets
-- `Assets/Resources/Data/*.json`: Game data (monsters, heroes, skills, items)
-- `CLAUDE.md`: Project-level Claude Code instructions
-- `VEILBREAKERS.md`: Project state and memory document
+- `Assets/Scripts/Core/Constants.cs`: All magic numbers, timing, colors, resource paths
+- `Assets/Scripts/Data/Enums.cs`: ALL game enumerations (Brand, Path, SkillType, StatusEffectType, BattleState, etc.)
+- `Assets/Scripts/Audio/AudioConfig.cs`: Audio configuration ScriptableObject
+- `Assets/Scripts/UI/Combat/CombatUIConfig.cs`: Combat UI configuration
 
 **Core Logic:**
+- `Assets/Scripts/Core/GameManager.cs`: Game state, party management, hero/monster stats
+- `Assets/Scripts/Core/EventBus.cs`: All game events (50+ static Action delegates)
+- `Assets/Scripts/Core/GameDatabase.cs`: Central data repository (async JSON loading)
+- `Assets/Scripts/Combat/DamageCalculator.cs`: Damage formula implementation
 - `Assets/Scripts/Systems/BrandSystem.cs`: Brand effectiveness matrix
-- `Assets/Scripts/Systems/SynergySystem.cs`: Party synergy calculations
-- `Assets/Scripts/Systems/CorruptionSystem.cs`: Corruption tier logic
-- `Assets/Scripts/Systems/PathSystem.cs`: Path stat bonuses
-- `Assets/Scripts/Combat/DamageCalculator.cs`: Damage formula
-- `Assets/Scripts/Combat/Combatant.cs`: Combat entity base class
+- `Assets/Scripts/Systems/SynergySystem.cs`: Synergy tier calculation
+- `Assets/Scripts/Systems/CorruptionSystem.cs`: Corruption state and modifiers
+- `Assets/Scripts/Systems/PathSystem.cs`: Path bonuses and progression
 
 **Persistence:**
-- `Assets/Scripts/Managers/SaveManager.cs`: Save/load with atomic writes and backup rotation
-- `Assets/Scripts/Data/SaveData.cs`: Serializable save data structure
-- `Assets/Scripts/Managers/AutoSaveManager.cs`: Auto-save triggers
+- `Assets/Scripts/Managers/SaveManager.cs`: Save/load orchestrator (async, encrypted)
+- `Assets/Scripts/Managers/SaveFileHandler.cs`: File I/O, encryption, backup rotation
+- `Assets/Scripts/Managers/MigrationRunner.cs`: Save version migration
+- `Assets/Scripts/Managers/AutoSaveManager.cs`: Auto-save trigger logic
+- `Assets/Scripts/Data/SaveData.cs`: Save file data structure
 
 **Testing:**
-- `Assets/Tests/EditMode/`: Edit-mode unit tests
-- `Assets/Tests/PlayMode/`: Play-mode integration tests
-- `Assets/Scripts/Test/`: Test helper scripts
-
-## Assembly Definitions
-
-**`Assets/Scripts/VeilBreakers.Runtime.asmdef`:**
-- Main runtime assembly containing all game code
-- Referenced by Editor and Test assemblies
-
-**`Assets/Scripts/Editor/VeilBreakers.Editor.asmdef`:**
-- Editor-only scripts; excluded from builds
-- References: VeilBreakers.Runtime
-
-**`Assets/Tests/PlayMode/VeilBreakers.Tests.PlayMode.asmdef`:**
-- Play-mode tests requiring scene and MonoBehaviour lifecycle
-- References: VeilBreakers.Runtime
-
-**`Assets/Tests/EditMode/VeilBreakers.Tests.EditMode.asmdef`:**
-- Edit-mode tests for pure logic (no scene required)
-- References: VeilBreakers.Runtime
+- `Assets/Tests/`: Unity Test Framework tests
+- `Assets/Scripts/Editor/TestArenaSetup.cs`: Test arena setup utility
 
 ## Naming Conventions
 
 **Files:**
-- PascalCase for all C# files: `BattleManager.cs`, `DamageCalculator.cs`, `MonsterData.cs`
-- Suffix pattern: `*Manager` (persistent singleton), `*System` (static logic), `*Controller` (UI), `*Data` (data model)
-- Scene files: PascalCase (`MainMenu.unity`, `CharacterSelect.unity`)
-- UXML: PascalCase (`CharacterSelect.uxml`, `MainMenu.uxml`)
-- USS: PascalCase (`VeilBreakers.uss`, `CharacterSelect.uss`)
-- JSON data: lowercase (`monsters.json`, `heroes.json`)
+- PascalCase for all C# files: `GameManager.cs`, `BrandSystem.cs`
+- Prefix `VB_` for brand-specific VFX: `VB_HitVFX_SAVAGE.cs`
+- Prefix `VB` for project-specific managers: `VBSceneManager.cs`, `VBDropdownField.cs`
+- JSON data files: lowercase with underscores: `monsters.json`, `skills.json`
 
 **Directories:**
-- PascalCase: `Combat/`, `Core/`, `Systems/`, `UI/`, `Data/`, `Managers/`
-- Map to namespace segments: `Assets/Scripts/Combat/` -> `namespace VeilBreakers.Combat`
+- PascalCase for script folders: `CharacterSelect/`, `Combat/`, `Core/`
+- Lowercase for asset folders: `saves/` (runtime), `screenshots/`
 
-**C# Naming:**
-- Namespaces: `VeilBreakers.[Category]` (e.g., `VeilBreakers.Combat`, `VeilBreakers.UI.CharacterSelect`)
-- Classes: PascalCase (`BattleManager`, `DamageCalculator`)
-- Constants: `k` prefix (`kVarianceMin`, `kMaxPartySize`, `kGameScene`)
-- Private fields: `_` prefix (`_heroList`, `_currentIndex`, `_isTransitioning`)
-- Serialized fields: `[SerializeField] private Type _name`
-- Properties: PascalCase (`CurrentHero`, `IsTransitioning`, `HeroCount`)
-- Events: `On` prefix (`OnDeath`, `OnHpChanged`, `OnGameStarted`)
-- Static event fire methods: PascalCase verb (`GameStarted()`, `DamageDealt()`, `MonsterCaptured()`)
-- Enums: UPPER_SNAKE_CASE values (`IRONBOUND`, `SUPER_EFFECTIVE`, `IN_BATTLE`)
-
-**UXML Element IDs:**
-- kebab-case: `btn-prev`, `btn-embark`, `confirm-overlay`, `embark-text`, `embark-glow`
-
-**USS Classes:**
-- kebab-case: `theme-vex`, `theme-seraphina`, `hidden`, `breathing`
+**Namespaces:**
+- Root: `VeilBreakers`
+- Pattern: `VeilBreakers.[Folder]` matching directory structure:
+  - `VeilBreakers.Core` -> `Assets/Scripts/Core/`
+  - `VeilBreakers.Data` -> `Assets/Scripts/Data/`
+  - `VeilBreakers.Combat` -> `Assets/Scripts/Combat/`
+  - `VeilBreakers.Systems` -> `Assets/Scripts/Systems/`
+  - `VeilBreakers.Managers` -> `Assets/Scripts/Managers/`
+  - `VeilBreakers.AI` -> `Assets/Scripts/AI/`
+  - `VeilBreakers.Capture` -> `Assets/Scripts/Capture/`
+  - `VeilBreakers.Audio` -> `Assets/Scripts/Audio/`
+  - `VeilBreakers.Commands` -> `Assets/Scripts/Commands/`
+  - `VeilBreakers.UI.Core` -> `Assets/Scripts/UI/Core/`
+  - `VeilBreakers.UI.Menus` -> `Assets/Scripts/UI/Menus/`
+  - `VeilBreakers.UI.Combat` -> `Assets/Scripts/UI/Combat/`
+  - `VeilBreakers.UI.CharacterSelect` -> `Assets/Scripts/UI/CharacterSelect/`
+  - `VeilBreakers.UI.Controls` -> `Assets/Scripts/UI/Controls/`
+  - `VeilBreakers.UI.Effects` -> `Assets/Scripts/UI/Effects/`
 
 ## Where to Add New Code
 
-**New Game System (e.g., crafting, questing):**
-- Pure logic: `Assets/Scripts/Systems/NewSystem.cs` (static class in `VeilBreakers.Systems`)
-- Persistent manager: `Assets/Scripts/Managers/NewManager.cs` (extends `SingletonMonoBehaviour<T>`)
-- Register new manager in `Assets/Scripts/Core/GameBootstrap.cs` in the appropriate phase
-- Add events to `Assets/Scripts/Core/EventBus.cs` for cross-system communication
-- Add relevant enums to `Assets/Scripts/Data/Enums.cs`
-
-**New Data Type:**
-- Data model: `Assets/Scripts/Data/NewData.cs` (JSON-serializable class in `VeilBreakers.Data`)
-- JSON file: `Assets/Resources/Data/newdata.json`
-- Add TextAsset reference to `Assets/Scripts/Core/GameDataAssets.cs`
-- Add loading logic to `Assets/Scripts/Core/GameDatabase.cs`
-- Add wrapping type to `Assets/Scripts/Core/GameDataTypes.cs` if needed
+**New Game System (e.g., crafting, quest, loot):**
+- Pure rules: `Assets/Scripts/Systems/NewSystem.cs` (static class, namespace `VeilBreakers.Systems`)
+- Manager singleton: `Assets/Scripts/Managers/NewManager.cs` (extends `SingletonMonoBehaviour<T>`, namespace `VeilBreakers.Managers`)
+- Data model: `Assets/Scripts/Data/NewData.cs` (serializable class, namespace `VeilBreakers.Data`)
+- Register singleton in `GameBootstrap.Initialize()` at `Assets/Scripts/Core/GameBootstrap.cs`
+- Add events to `EventBus.cs` and add cleanup to `ClearAllListeners()`
 
 **New UI Screen:**
-- UXML layout: `Assets/UI/Screens/NewScreen.uxml`
-- USS styles: `Assets/UI/Styles/NewScreen.uss`
-- Controller: `Assets/Scripts/UI/[Category]/NewScreenController.cs` (in `VeilBreakers.UI.[Category]`)
-- Sub-controllers: `Assets/Scripts/UI/[Category]/NewScreen[Part]Controller.cs`
-- Scene: `Assets/Scenes/NewScreen.unity` (if dedicated scene) or add to existing scene
-- Add scene constant to `Assets/Scripts/Managers/VBSceneManager.cs` if new scene
-- Use UI Toolkit patterns: `UIDocument`, `rootVisualElement.Q<T>("element-id")`, callback registration
+- Controller: `Assets/Scripts/UI/Menus/NewScreenController.cs` (MonoBehaviour, namespace `VeilBreakers.UI.Menus`)
+- UXML template: `Assets/UI/Templates/NewScreen.uxml`
+- USS styles: `Assets/UI/Styles/NewScreen.uss` (or extend `VeilBreakers.uss`)
+- If needs runtime loading: also place UXML in `Assets/Resources/UI/Templates/`
+- Scene: Add UIDocument component with UXML reference to scene GameObject
 
-**New Combat Feature:**
-- Combat logic: `Assets/Scripts/Combat/NewFeature.cs` (in `VeilBreakers.Combat`)
-- Integrate with `Assets/Scripts/Combat/BattleManager.cs` for battle loop
-- Add damage/effect types to `Assets/Scripts/Data/Enums.cs`
-- Add events to `Assets/Scripts/Core/EventBus.cs`
+**New Combat Feature (e.g., new skill type, combo system):**
+- Logic: Add to `Assets/Scripts/Combat/BattleManager.cs` or create new file in `Assets/Scripts/Combat/`
+- UI: Add panel controller in `Assets/Scripts/UI/Combat/`
+- Wire events through `CombatHUD.cs` -> `BattleManager`
 
-**New Monster/Hero:**
-- Add entry to `Assets/Resources/Data/monsters.json` or `Assets/Resources/Data/heroes.json`
-- No code changes needed if data schema is unchanged
-- For new hero: add theme class in USS, add `HeroDisplayConfig` ScriptableObject
+**New Monster / Hero / Skill / Item:**
+- JSON data: Edit `Assets/Resources/Data/monsters.json` (or heroes/skills/items.json)
+- Sprite: `Assets/Resources/Art/Sprites/monsters/` (or heroes/)
+- No C# changes needed (data-driven via GameDatabase)
 
-**New Tests:**
-- Edit-mode: `Assets/Tests/EditMode/NewTest.cs` (pure logic, no scene)
-- Play-mode: `Assets/Tests/PlayMode/NewTest.cs` (requires MonoBehaviour lifecycle)
-- Test helpers: `Assets/Scripts/Test/`
+**New Brand VFX:**
+- Script: `Assets/Scripts/VFX/VB_[Type]VFX_[BRAND].cs`
+- Particle prefab: `Assets/Prefabs/VFX/`
+
+**New AI Behavior:**
+- Personality: Create `AIPersonality` ScriptableObject asset
+- Custom rules: Create `GambitRuleSetAsset` ScriptableObject
+- Attach `GambitController` component to Combatant GameObject
+
+**New Status Effect:**
+- Add enum value to `StatusEffectType` in `Assets/Scripts/Data/Enums.cs`
+- Add `StatusEffectData` entry in `GameDataAssets` StatusEffects array
+- `StatusEffectManager` handles application/tick/removal automatically
+
+**New Save Data Field:**
+- Add field to `SaveData` in `Assets/Scripts/Data/SaveData.cs`
+- Increment `SaveVersion.CURRENT`
+- Add migration in `MigrationRunner`
+- Add validation in `SaveData.ValidateAndRepair()`
 
 **Utilities:**
-- Shared helpers: `Assets/Scripts/Utils/`
+- Shared helpers: `Assets/Scripts/Utils/Extensions.cs` or new file in `Assets/Scripts/Utils/`
+- Object pooling: Use `ObjectPool` at `Assets/Scripts/Utils/ObjectPool.cs`
 
 ## Special Directories
 
-**`Assets/Resources/`:**
-- Purpose: Assets loadable at runtime via `Resources.Load()`
-- Generated: No (manually managed)
-- Committed: Yes
-- Note: Contains duplicate copies of UI Toolkit files from `Assets/UI/`. The source of truth for UXML/USS is `Assets/UI/`; `Assets/Resources/UI/` exists for runtime loading fallback.
-
 **`Assets/_Archive/`:**
-- Purpose: Deprecated code preserved for reference
+- Purpose: Archived assets no longer in active use
+- Generated: No (manually moved)
+- Committed: Yes
+
+**`Assets/_Recovery/`:**
+- Purpose: Recovery backups from broken states
+- Generated: No (manually created)
+- Committed: Yes
+
+**`Assets/Resources/`:**
+- Purpose: Assets loadable via `Resources.Load()` at runtime
 - Generated: No
 - Committed: Yes
-- Note: Do NOT reference or use archived code in new work. It exists only for historical context.
+- Note: Keep minimal; prefer direct references via SerializeField or GameDataAssets
 
-**`Assets/Editor/`:**
-- Purpose: Editor-only scripts (texture generators, import postprocessors, DCC bridge, scene auditors)
+**`Library/`, `Temp/`, `Logs/`:**
+- Purpose: Unity-generated caches and logs
+- Generated: Yes
+- Committed: No (gitignored)
+
+**`TempCompileCheck/`:**
+- Purpose: Temporary compilation verification project
+- Generated: Yes (by tooling)
+- Committed: Partially
+
+**`Tools/`:**
+- Purpose: External tooling (MCP servers, DCC bridge, CI, Git hooks)
 - Generated: No
-- Committed: Yes
-- Note: Excluded from runtime builds. Has its own assembly definition.
-
-**`Assets/Settings/`:**
-- Purpose: Unity project settings assets (render pipeline, quality, input)
-- Generated: Partially (some by Unity, some manual)
-- Committed: Yes
-
-**`.planning/`:**
-- Purpose: GSD workflow planning documents and codebase analysis
-- Generated: By GSD tooling
 - Committed: Yes
 
 ---
 
-*Structure analysis: 2026-02-21*
+*Structure analysis: 2026-03-30*

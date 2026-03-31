@@ -2,7 +2,7 @@
 name: documentation-writer
 description: Use for simple documentation updates, adding entries to logs, updating version numbers. Efficient low-token agent for routine doc work.
 tools: Read, Edit, TodoWrite
-model: opus
+model: haiku
 ---
 
 You are a documentation specialist. You make clean, consistent documentation updates.

@@ -1,434 +1,552 @@
 # Testing Patterns
 
-**Analysis Date:** 2026-02-21
+**Analysis Date:** 2026-03-30
 
 ## Test Framework
 
 **Runner:**
-- Custom MonoBehaviour-based test harness (NOT NUnit, NOT Unity Test Framework)
-- Tests are MonoBehaviour scripts attached to GameObjects in test scenes or triggered via Inspector
-- No `Assets/Tests/` assembly definition -- tests live alongside production code in `Assets/Scripts/Test/`
+- Unity Test Framework (NUnit-based) for structured EditMode and PlayMode tests
+- Assembly: `Assets/Tests/EditMode/` and `Assets/Tests/PlayMode/`
+- Legacy MonoBehaviour-based test harness still exists in `Assets/Scripts/Test/` (being superseded)
 
 **Assertion Library:**
-- Custom per-file assertion helpers (no shared assertion base class)
-- Two assertion patterns coexist:
-  1. **Throw-on-failure:** `Assert(bool, string)` throws `Exception` on failure (caught by test runner)
-  2. **Log-and-count:** `AssertTrue(bool, string)` / `AssertFalse(bool, string)` logs pass/fail and increments counters
+- NUnit (`nunit.framework.dll`) via Unity Test Runner
+- `Assert.AreEqual()`, `Assert.IsTrue()`, `Assert.Greater()`, `Assert.Less()`, etc.
 
 **Run Commands:**
 ```bash
-# No CLI test runner -- tests run inside Unity Editor
-# Option 1: Set _runOnStart = true in Inspector, enter Play Mode
-# Option 2: Right-click component → Context Menu → "Run All Tests"
-# Option 3: Call RunAllTests() from another script
+# Unity CLI (batch mode)
+Unity.exe -batchmode -runTests -testPlatform EditMode -projectPath .
+Unity.exe -batchmode -runTests -testPlatform PlayMode -projectPath .
+
+# In Unity Editor
+# Window > General > Test Runner > EditMode tab > Run All
+# Window > General > Test Runner > PlayMode tab > Run All
 ```
 
 ## Test File Organization
 
 **Location:**
-- Main test directory: `Assets/Scripts/Test/`
-- Domain-specific tests live with their domain: `Assets/Scripts/Audio/AudioTests.cs`
+- EditMode tests: `Assets/Tests/EditMode/` (separate from production code)
+- PlayMode tests: `Assets/Tests/PlayMode/` (separate from production code)
+- Legacy tests: `Assets/Scripts/Test/` (MonoBehaviour-based, pre-NUnit migration)
 
 **Naming:**
-- Suffix `Tests`: `CaptureTests.cs`, `GambitTests.cs`, `SaveSystemTests.cs`
-- Exception: `CombatTestSetup.cs` (setup + tests combined)
+- EditMode: `{SystemName}_EditModeTests.cs`
+- PlayMode: `{SystemName}_PlayModeTests.cs`
+- Class name matches filename exactly
 
-**Files:**
+**Structure:**
 ```
-Assets/Scripts/Test/
-├── CaptureTests.cs          # Monster capture system tests (689 lines)
-├── CombatTestSetup.cs       # Brand, synergy, damage, combatant tests (411 lines)
-├── CombatUITests.cs         # Visual UI validation tests (247 lines)
-├── GambitTests.cs           # AI gambit system tests (687 lines)
-├── QuickCommandTests.cs     # Command system tests (620 lines)
-├── SaveSystemTests.cs       # Save/load cycle tests (527 lines)
-└── StatusEffectTests.cs     # Status effect system tests (677 lines)
+Assets/Tests/
+├── EditMode/
+│   ├── VeilBreakers.Tests.EditMode.asmdef
+│   ├── BrandSystem_EditModeTests.cs
+│   ├── CaptureSystem_EditModeTests.cs
+│   ├── CorruptionSystem_EditModeTests.cs
+│   ├── DamageCalculator_EditModeTests.cs
+│   ├── HeroThemeConfig_EditModeTests.cs
+│   ├── MainMenuAssets_EditModeTests.cs
+│   ├── PrimeTween_Integration_EditModeTests.cs
+│   ├── SceneIntegrity_EditModeTests.cs
+│   └── SynergySystem_EditModeTests.cs
+└── PlayMode/
+    ├── VeilBreakers.Tests.PlayMode.asmdef
+    ├── CharacterSelect_PlayModeTests.cs
+    └── MainMenuOverlay_PlayModeTests.cs
+```
 
-Assets/Scripts/Audio/
-└── AudioTests.cs            # Audio system tests (464 lines)
+## Assembly Definitions
+
+**EditMode test assembly (`Assets/Tests/EditMode/VeilBreakers.Tests.EditMode.asmdef`):**
+```json
+{
+  "name": "VeilBreakers.Tests.EditMode",
+  "rootNamespace": "VeilBreakers.Tests.EditMode",
+  "references": [
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner",
+    "VeilBreakers.Runtime",
+    "PrimeTween.Runtime"
+  ],
+  "includePlatforms": ["Editor"],
+  "overrideReferences": true,
+  "precompiledReferences": ["nunit.framework.dll"],
+  "defineConstraints": ["UNITY_INCLUDE_TESTS"]
+}
+```
+
+**PlayMode test assembly (`Assets/Tests/PlayMode/VeilBreakers.Tests.PlayMode.asmdef`):**
+```json
+{
+  "name": "VeilBreakers.Tests.PlayMode",
+  "rootNamespace": "VeilBreakers.Tests.PlayMode",
+  "references": [
+    "VeilBreakers.Runtime",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner"
+  ],
+  "includePlatforms": [],
+  "overrideReferences": true,
+  "precompiledReferences": ["nunit.framework.dll"],
+  "defineConstraints": ["UNITY_INCLUDE_TESTS"]
+}
 ```
 
 ## Test Structure
 
-**Suite Organization (Synchronous Pattern):**
+**EditMode Test Pattern (pure logic, no scene required):**
 ```csharp
-// From Assets/Scripts/Test/CaptureTests.cs
-namespace VeilBreakers.Test
+// From Assets/Tests/EditMode/BrandSystem_EditModeTests.cs
+using NUnit.Framework;
+using VeilBreakers.Data;
+using VeilBreakers.Systems;
+
+namespace VeilBreakers.Tests.EditMode
 {
-    public class CaptureTests : MonoBehaviour
+    public class BrandSystem_EditModeTests
     {
-        [SerializeField] private bool _runOnStart = true;
-
-        private int _passed;
-        private int _failed;
-        private List<string> _failures = new();
-
-        private void Start()
+        [Test]
+        [Category("Suite.Core")]
+        [Category("System.Brand")]
+        public void Iron_SuperEffective_Against_Surge_And_Dread()
         {
-            if (_runOnStart)
-                StartCoroutine(RunTestsDelayed());
-        }
-
-        [ContextMenu("Run All Tests")]
-        public void RunAllTests()
-        {
-            _passed = 0; _failed = 0; _failures.Clear();
-            Debug.Log("=== TEST SUITE STARTING ===");
-
-            Test_SpecificBehavior();
-            Test_AnotherBehavior();
-            // ... more tests
-
-            Debug.Log($"Passed: {_passed} | Failed: {_failed}");
-        }
-
-        private IEnumerator RunTestsDelayed()
-        {
-            yield return new WaitForSeconds(0.1f); // Let managers initialize
-            RunAllTests();
+            Assert.AreEqual(2.0f, BrandSystem.GetEffectiveness(Brand.IRON, Brand.SURGE));
+            Assert.AreEqual(2.0f, BrandSystem.GetEffectiveness(Brand.IRON, Brand.DREAD));
         }
     }
 }
 ```
 
-**Suite Organization (Async Pattern):**
+**EditMode Test with SetUp/TearDown (requires GameObjects):**
 ```csharp
-// From Assets/Scripts/Test/SaveSystemTests.cs
-namespace VeilBreakers.Test
+// From Assets/Tests/EditMode/DamageCalculator_EditModeTests.cs
+public class DamageCalculator_EditModeTests
 {
-    public class SaveSystemTests : MonoBehaviour
-    {
-        [SerializeField] private bool _runOnStart = false;
-        [SerializeField] private bool _cleanupAfterTests = true;
-        [SerializeField] private int _testsPassed;
-        [SerializeField] private int _testsFailed;
-        [SerializeField] private List<string> _failedTests = new List<string>();
+    private GameObject _attackerGO;
+    private GameObject _defenderGO;
+    private Combatant _attacker;
+    private Combatant _defender;
 
-        private async void Start()
+    [SetUp]
+    public void SetUp()
+    {
+        _attackerGO = new GameObject("TestAttacker");
+        _defenderGO = new GameObject("TestDefender");
+        _attacker = _attackerGO.AddComponent<Combatant>();
+        _attacker.Initialize("test_attacker", "Test Attacker", Brand.IRON, 100, 50, 20, 10, 10, 10, 10, true);
+        _defender = _defenderGO.AddComponent<Combatant>();
+        _defender.Initialize("test_defender", "Test Defender", Brand.SURGE, 100, 50, 10, 15, 10, 10, 10, false);
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        if (_attackerGO != null) Object.DestroyImmediate(_attackerGO);
+        if (_defenderGO != null) Object.DestroyImmediate(_defenderGO);
+    }
+}
+```
+
+**PlayMode Test Pattern (requires scene and coroutine):**
+```csharp
+// From Assets/Tests/PlayMode/CharacterSelect_PlayModeTests.cs
+using System.Collections;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.TestTools;
+using UnityEngine.UIElements;
+
+namespace VeilBreakers.Tests.PlayMode
+{
+    public class CharacterSelect_PlayModeTests
+    {
+        private const int kMaxPollFrames = 600; // ~10 seconds at 60fps
+
+        [UnityTearDown]
+        public IEnumerator TearDown()
         {
-            if (_runOnStart)
+            yield return null;
+        }
+
+        [UnityTest]
+        [Category("Suite.Smoke")]
+        [Category("Phase.PreProd")]
+        public IEnumerator CharacterSelect_DisplaysHeroIdentityAndStats()
+        {
+            yield return SceneManager.LoadSceneAsync("CharacterSelect", LoadSceneMode.Single);
+
+            UIDocument doc = null;
+            for (int i = 0; i < kMaxPollFrames; i++)
             {
-                await Task.Delay(500); // Wait for managers
-                await RunAllTestsAsync();
+                doc = Object.FindFirstObjectByType<UIDocument>();
+                if (doc != null && doc.rootVisualElement != null) break;
+                yield return null;
             }
-        }
 
-        public async Task RunAllTestsAsync()
-        {
-            _testsPassed = 0; _testsFailed = 0; _failedTests.Clear();
-            Debug.Log("=== SAVE SYSTEM TESTS STARTING ===");
-
-            await Test_SaveData_CreateNew();
-            await Test_SaveManager_Load();
-            // ... more tests
-
-            Debug.Log($"Passed: {_testsPassed} | Failed: {_testsFailed}");
-            if (_cleanupAfterTests) CleanupTestFiles();
+            Assert.NotNull(doc, "UIDocument not found in CharacterSelect.");
+            // ... validate UI element content ...
         }
     }
 }
 ```
 
-**Individual Test Method Pattern (Throw-on-failure):**
+## Test Categories
+
+**Use NUnit `[Category]` attributes for filtering. Two-axis categorization:**
+
+**Suite categories (test scope/criticality):**
+- `Suite.Core` - Core game system logic (brand, synergy, corruption, damage)
+- `Suite.Smoke` - Quick sanity checks (scene loads, assets exist, UI renders)
+- `Suite.Integration` - Cross-system integration (PrimeTween assembly resolves)
+- `Suite.Integrity` - Structural integrity (no missing scripts, resources exist)
+- `Suite.Perf` - Performance benchmarks (GC allocation budgets)
+
+**System categories (what's being tested):**
+- `System.Brand` - Brand effectiveness matrix
+- `System.Combat` - Damage calculator, combatant lifecycle
+- `System.Corruption` - Corruption tiers, stat modifiers
+- `System.Synergy` - Synergy tier calculations, bonuses
+- `System.Capture` - Capture formula, item effectiveness, bind thresholds
+- `System.Theme` - HeroThemeConfig fields, ScriptableObject creation
+- `System.Animation` - PrimeTween integration
+
+**Phase categories (project milestone gates):**
+- `Phase.PreProd` - Must pass before pre-production milestone
+
+**Example usage:**
 ```csharp
-// From Assets/Scripts/Test/SaveSystemTests.cs
-private async Task Test_SaveData_CreateNew()
-{
-    string testName = "SaveData.CreateNew";
-    try
-    {
-        var data = SaveData.CreateNew("vex", "TestHero", GamePath.IRONBOUND);
+[Test]
+[Category("Suite.Core")]
+[Category("System.Brand")]
+public void Iron_SuperEffective_Against_Surge_And_Dread() { ... }
 
-        Assert(data != null, "Data should not be null");
-        Assert(data.version == SaveVersion.CURRENT, "Version should match current");
-        Assert(data.heroId == "vex", "HeroId should match");
-
-        Pass(testName);
-    }
-    catch (Exception ex)
-    {
-        Fail(testName, ex.Message);
-    }
-}
+[UnityTest]
+[Category("Suite.Smoke")]
+[Category("Phase.PreProd")]
+public IEnumerator CharacterSelect_DisplaysHeroIdentityAndStats() { ... }
 ```
 
-**Individual Test Method Pattern (Log-and-count):**
-```csharp
-// From Assets/Scripts/Test/CombatTestSetup.cs
-private void Test_BrandEffectiveness()
-{
-    // Super effective
-    float ironVsSurge = BrandSystem.GetEffectiveness(Brand.IRON, Brand.SURGE);
-    AssertEqual(ironVsSurge, 2.0f, "IRON vs SURGE should be 2x");
+## Test Naming Convention
 
-    // Not effective
-    float ironVsSavage = BrandSystem.GetEffectiveness(Brand.IRON, Brand.SAVAGE);
-    AssertEqual(ironVsSavage, 0.5f, "IRON vs SAVAGE should be 0.5x");
-}
+**Format:** `{SystemUnderTest}_{BehaviorDescription}`
+
+**Examples from the codebase:**
+```
+Iron_SuperEffective_Against_Surge_And_Dread
+Every_Core_Brand_Has_Exactly_Two_Strengths_And_Two_Weaknesses
+Corruption_0_Is_Ascended
+ApplyCorruptionModifier_Ascended_Increases_Stat
+SuperEffective_Brand_Gives_2x_Multiplier
+Null_Combatant_Returns_Fallback_Damage
+Best_Case_Capture_Over_90_Percent
+Combatant_Starts_Alive
+Heal_Capped_At_Max_HP
+PrimeTween_AssemblyResolves
+MainMenu_OverlayVfxRendersAndDoesNotBlockInput
 ```
 
-**Startup Patterns:**
-- Coroutine delay: `yield return new WaitForSeconds(0.1f);` for sync tests
-- Task delay: `await Task.Delay(500);` for async tests
-- Both ensure singleton managers are initialized before tests run
+Use underscores to separate words (not camelCase). Be descriptive about the expected behavior.
 
 ## Mocking
 
 **Framework:** None -- no mocking framework used
 
 **Patterns:**
-- Tests create real GameObjects and components, then destroy them:
+- Create real GameObjects for MonoBehaviour tests, destroy in TearDown:
   ```csharp
-  // From Assets/Scripts/Test/CaptureTests.cs
-  private GameObject CreateTestCombatant(string id, Brand brand, int level)
+  // From Assets/Tests/EditMode/DamageCalculator_EditModeTests.cs
+  [SetUp]
+  public void SetUp()
   {
-      var go = new GameObject($"TestCombatant_{id}");
-      var combatant = go.AddComponent<Combatant>();
-      // ... configure ...
-      return go;
+      _attackerGO = new GameObject("TestAttacker");
+      _attacker = _attackerGO.AddComponent<Combatant>();
+      _attacker.Initialize("test_attacker", "Test Attacker", Brand.IRON, ...);
+  }
+
+  [TearDown]
+  public void TearDown()
+  {
+      if (_attackerGO != null) Object.DestroyImmediate(_attackerGO);
   }
   ```
-- Cleanup via `DestroyImmediate()` in `finally` blocks:
+
+- Create temporary GameObjects in individual tests with try/finally cleanup:
   ```csharp
-  GameObject testObj = null;
+  // From Assets/Tests/EditMode/DamageCalculator_EditModeTests.cs
+  var surgeGO = new GameObject("SurgeAttacker");
   try
   {
-      testObj = CreateTestCombatant("test", Brand.IRON, 10);
+      var surgeAttacker = surgeGO.AddComponent<Combatant>();
       // ... assertions ...
   }
   finally
   {
-      if (testObj != null) DestroyImmediate(testObj);
+      Object.DestroyImmediate(surgeGO);
   }
   ```
+
 - ScriptableObjects created with `ScriptableObject.CreateInstance<T>()`:
   ```csharp
-  // From Assets/Scripts/Test/StatusEffectTests.cs
-  var effectData = ScriptableObject.CreateInstance<StatusEffectData>();
-  effectData.effectName = "Test Poison";
-  effectData.effectType = StatusEffectType.POISON;
-  // ... test ... then DestroyImmediate(effectData);
+  // From Assets/Tests/EditMode/HeroThemeConfig_EditModeTests.cs
+  var config = ScriptableObject.CreateInstance<HeroThemeConfig>();
+  Assert.IsNotNull(config);
+  Object.DestroyImmediate(config);
   ```
 
-**What to Mock (by creating real instances):**
-- GameObjects and MonoBehaviour components
-- ScriptableObject data definitions
-- Singleton managers (create if not present)
+**What to test directly (no mocks needed):**
+- Static systems: `BrandSystem`, `CorruptionSystem`, `SynergySystem`, `DamageCalculator`
+- Data structures: `CaptureItemConfig`, `CaptureFormulaCalculator`, `BindThresholdConfig`
+- ScriptableObject field existence (via reflection)
 
-**What NOT to Mock:**
-- Static systems (BrandSystem, EventBus) -- test directly
-- Math/utility functions -- test directly
-- File I/O in save tests -- uses real save files with cleanup
+**What needs real instances:**
+- `Combatant` (MonoBehaviour -- requires GameObject)
+- Scene-level tests (load real scenes in PlayMode)
 
 ## Fixtures and Factories
 
 **Test Data:**
 ```csharp
-// Factory pattern from Assets/Scripts/Test/CaptureTests.cs
-private GameObject CreateTestCombatant(string id, Brand brand, int level)
+// Inline struct creation for capture tests
+// From Assets/Tests/EditMode/CaptureSystem_EditModeTests.cs
+var monster = new BoundMonsterData
 {
-    var go = new GameObject($"TestCombatant_{id}");
-    var combatant = go.AddComponent<Combatant>();
-    // Configure combatant with test data
-    return go;
-}
-
-// Inline creation from Assets/Scripts/Test/SaveSystemTests.cs
-var data = SaveData.CreateNew("vex", "TestHero", GamePath.IRONBOUND);
-data.heroLevel = 42;
-data.currency = 9999;
-data.party.Add(SavedMonster.Create("monster_hollow", 15, 25.5f));
+    boundAtHPPercent = 0.25f,
+    currentCorruption = 35f,
+    rarity = MonsterRarity.COMMON,
+    monsterLevel = 10
+};
 ```
 
-**Location:**
-- No shared fixtures directory
-- Factory methods are private within each test class
-- Test data created inline or via domain constructors (`SaveData.CreateNew()`, `SavedMonster.Create()`)
-
-**Singleton Setup in Tests:**
-```csharp
-// Ensure manager exists for tests (from Assets/Scripts/Test/SaveSystemTests.cs)
-if (SaveManager.Instance == null)
-{
-    var go = new GameObject("SaveManager");
-    go.AddComponent<SaveManager>();
-    await Task.Delay(100); // Let it initialize
-}
-```
+**No shared fixtures directory.** Test data is created inline or via `[SetUp]` methods.
 
 ## Coverage
 
-**Requirements:** None enforced -- no coverage tooling configured
+**Requirements:** None enforced -- no coverage tooling or thresholds configured
 
-**View Coverage:**
-```bash
-# No coverage tooling available
-# Manual inspection required
-```
+**Current coverage by system (based on test file analysis):**
+
+| System | Test Count | Coverage |
+|--------|-----------|----------|
+| BrandSystem | ~25 tests | High - full matrix, hybrid brands, display names |
+| CorruptionSystem | ~20 tests | High - all tiers, boundaries, edge cases, modifiers |
+| SynergySystem | ~18 tests | High - all paths, tiers, bonuses, corruption rates |
+| DamageCalculator | ~10 tests | Medium - brand mult, synergy, true damage, null safety |
+| Combatant | ~14 tests | Medium - lifecycle, HP/MP, defend, revive |
+| CaptureSystem | ~25 tests | High - items, formula, QTE, level, corruption, berserk |
+| HeroThemeConfig | ~4 tests | Low - field existence only |
+| Scene integrity | ~2 tests | Low - missing scripts, main menu loads |
+| MainMenu assets | ~2 tests | Low - resource existence, shader existence |
+| PrimeTween | ~2 tests | Low - assembly resolution only |
+| CharacterSelect (PlayMode) | ~2 tests | Low - UI renders, model spawns |
+| MainMenu overlay (PlayMode) | ~2 tests | Low - VFX renders, GC budget |
 
 ## Test Types
 
-**Unit Tests:**
-- Pure logic tests (brand effectiveness, damage formulas, synergy calculations)
-- Located in: `Assets/Scripts/Test/CombatTestSetup.cs`, `Assets/Scripts/Test/GambitTests.cs`
-- Test static systems directly: `BrandSystem.GetEffectiveness()`, `DamageCalculator.Calculate()`
+**Unit Tests (EditMode):**
+- Pure logic tests requiring no scene or runtime
+- Located in: `Assets/Tests/EditMode/`
+- Test static systems directly
+- Fast execution, no coroutines
+- Examples: brand effectiveness, corruption tiers, damage formulas, capture rates
 
-**Integration Tests:**
-- Multi-system tests (save create → modify → save → load → verify)
-- Located in: `Assets/Scripts/Test/SaveSystemTests.cs` (`Test_FullSaveCycle`)
-- Test singleton manager interactions: SaveManager + GameDatabase + ShrineManager
+**Integration Tests (EditMode):**
+- Verify cross-system contracts
+- Located in: `Assets/Tests/EditMode/PrimeTween_Integration_EditModeTests.cs`
+- Example: PrimeTween assembly resolves correctly
 
-**Runtime Tests:**
-- Tests that verify behavior in Play Mode with real components
-- Located in: `Assets/Scripts/Test/CaptureTests.cs`, `Assets/Scripts/Test/StatusEffectTests.cs`
-- Create real GameObjects, apply effects, verify state changes
+**Integrity Tests (EditMode):**
+- Structural validation of project assets
+- Located in: `Assets/Tests/EditMode/SceneIntegrity_EditModeTests.cs`, `MainMenuAssets_EditModeTests.cs`
+- Examples: no missing scripts in scenes, required resources exist
 
-**Visual Validation Tests:**
-- UI appearance/behavior tests (not automated pass/fail)
-- Located in: `Assets/Scripts/Test/CombatUITests.cs`
-- Triggered via `[ContextMenu]`, visually inspected by developer
+**PlayMode Tests:**
+- Require Unity runtime and real scenes
+- Located in: `Assets/Tests/PlayMode/`
+- Use `[UnityTest]` attribute, return `IEnumerator`
+- Poll for conditions with frame-count timeout: `kMaxPollFrames = 600`
+- Examples: character select UI populates, overlay VFX renders
 
-**E2E Tests:**
-- Not used -- no automated end-to-end framework
+**Performance Tests (PlayMode):**
+- GC allocation budgets measured via `ProfilerRecorder`
+- Only run in batch mode: `Assert.Ignore("GC allocation test only reliable in batchmode.")`
+- Located in: `Assets/Tests/PlayMode/MainMenuOverlay_PlayModeTests.cs`
+- Budget: `kEditorBatchGcBudget = 12288f` (12KB/frame)
 
 ## Common Patterns
 
-**Assertion Helpers (Throw Pattern):**
+**Design Doc Validation Pattern:**
+Test that constants match the game design document:
 ```csharp
-// From Assets/Scripts/Test/SaveSystemTests.cs
-private void Assert(bool condition, string message)
+// From Assets/Tests/EditMode/CorruptionSystem_EditModeTests.cs
+[Test]
+public void Thresholds_Match_Design_Values()
 {
-    if (!condition)
-        throw new Exception($"Assertion failed: {message}");
-}
-
-private void Pass(string testName)
-{
-    _testsPassed++;
-    Debug.Log($"<color=green>[PASS]</color> {testName}");
-}
-
-private void Fail(string testName, string error)
-{
-    _testsFailed++;
-    _failedTests.Add($"{testName}: {error}");
-    Debug.LogError($"<color=red>[FAIL]</color> {testName}: {error}");
+    Assert.AreEqual(10f, CorruptionSystem.ASCENDED_THRESHOLD);
+    Assert.AreEqual(25f, CorruptionSystem.PURIFIED_THRESHOLD);
+    Assert.AreEqual(50f, CorruptionSystem.UNSTABLE_THRESHOLD);
+    Assert.AreEqual(75f, CorruptionSystem.CORRUPTED_THRESHOLD);
 }
 ```
 
-**Assertion Helpers (Count Pattern):**
+**Matrix Completeness Pattern:**
+Verify a system's invariants hold across all inputs:
 ```csharp
-// From Assets/Scripts/Test/CaptureTests.cs
-private void Assert(bool condition, string message, string testName)
+// From Assets/Tests/EditMode/BrandSystem_EditModeTests.cs
+[Test]
+public void Every_Core_Brand_Has_Exactly_Two_Strengths_And_Two_Weaknesses()
 {
-    if (condition) { _passed++; Debug.Log($"  [PASS] {message}"); }
-    else { _failed++; _failures.Add($"{testName}: {message}"); Debug.LogError($"  [FAIL] {message}"); }
-}
-
-// From Assets/Scripts/Test/GambitTests.cs (generic equality)
-private void AssertEqual<T>(T actual, T expected, string message)
-{
-    bool pass = EqualityComparer<T>.Default.Equals(actual, expected);
-    Assert(pass, pass ? message : $"{message} (expected={expected}, actual={actual})", "");
-}
-
-// Approximate float comparison
-private void AssertApprox(float actual, float expected, float tolerance, string message)
-{
-    bool pass = Mathf.Abs(actual - expected) <= tolerance;
-    Assert(pass, pass ? message : $"{message} (expected~{expected}, actual={actual}, tol={tolerance})", "");
-}
-```
-
-**Async Testing:**
-```csharp
-// From Assets/Scripts/Test/SaveSystemTests.cs
-private async Task Test_SaveManager_CreateAndSave()
-{
-    string testName = "SaveManager.CreateAndSave";
-    try
+    Brand[] coreBrands = { Brand.IRON, Brand.SAVAGE, ... };
+    foreach (var attacker in coreBrands)
     {
-        bool success = await SaveManager.Instance.CreateNewSaveAsync(
-            TEST_SLOT, "vex", "SaveManagerTest", GamePath.IRONBOUND
-        );
-        Assert(success, "Create and save should succeed");
-        Assert(SaveManager.Instance.HasActiveSave, "Should have active save");
-        Pass(testName);
-    }
-    catch (Exception ex)
-    {
-        Fail(testName, ex.Message);
+        int strengths = 0, weaknesses = 0, neutrals = 0;
+        foreach (var defender in coreBrands)
+        {
+            float eff = BrandSystem.GetEffectiveness(attacker, defender);
+            if (eff >= 2.0f) strengths++;
+            else if (eff <= 0.5f) weaknesses++;
+            else neutrals++;
+        }
+        Assert.AreEqual(2, strengths, $"{attacker} should have exactly 2 super-effective matchups");
+        Assert.AreEqual(2, weaknesses, $"{attacker} should have exactly 2 not-effective matchups");
+        Assert.AreEqual(6, neutrals, $"{attacker} should have exactly 6 neutral matchups");
     }
 }
 ```
 
-**Error Testing:**
+**Boundary Testing Pattern:**
+Test exact tier boundaries:
 ```csharp
-// From Assets/Scripts/Test/SaveSystemTests.cs - Corruption detection
-private async Task Test_SaveFileHandler_Checksum()
+// From Assets/Tests/EditMode/CorruptionSystem_EditModeTests.cs
+[Test] public void Corruption_10_Is_Ascended()
+    => Assert.AreEqual(CorruptionState.ASCENDED, CorruptionSystem.GetCorruptionState(10f));
+[Test] public void Corruption_11_Is_Purified()
+    => Assert.AreEqual(CorruptionState.PURIFIED, CorruptionSystem.GetCorruptionState(10.01f));
+```
+
+**Ordering/Comparison Pattern:**
+Verify relative ordering:
+```csharp
+// From Assets/Tests/EditMode/CaptureSystem_EditModeTests.cs
+[Test]
+public void Better_QTE_Gives_Higher_Chance()
 {
-    string testName = "SaveFileHandler.Checksum";
-    try
-    {
-        var data = SaveData.CreateNew("nyx", "ChecksumTest", GamePath.UNCHAINED);
-        byte[] bytes = SaveFileHandler.SerializeToBytes(data);
+    float miss = CaptureFormulaCalculator.CalculateQuick(monster, item, 10, QTEResult.MISS);
+    float okay = CaptureFormulaCalculator.CalculateQuick(monster, item, 10, QTEResult.OKAY);
+    float good = CaptureFormulaCalculator.CalculateQuick(monster, item, 10, QTEResult.GOOD);
+    float perfect = CaptureFormulaCalculator.CalculateQuick(monster, item, 10, QTEResult.PERFECT);
 
-        // Corrupt the data
-        byte[] corrupted = (byte[])bytes.Clone();
-        corrupted[50] = (byte)(corrupted[50] ^ 0xFF);
-
-        // Corrupted data should fail
-        var corruptedResult = SaveFileHandler.DeserializeFromBytes(corrupted);
-        Assert(corruptedResult == null, "Corrupted data should fail checksum");
-
-        Pass(testName);
-    }
-    catch (Exception ex)
-    {
-        Fail(testName, ex.Message);
-    }
+    Assert.Greater(okay, miss, "Okay > Miss");
+    Assert.Greater(good, okay, "Good > Okay");
+    Assert.Greater(perfect, good, "Perfect > Good");
 }
 ```
 
-**Cleanup Pattern:**
+**Null Safety Pattern:**
+Test graceful handling of null inputs:
 ```csharp
-// Per-object cleanup (from CaptureTests)
-finally
+// From Assets/Tests/EditMode/DamageCalculator_EditModeTests.cs
+[Test]
+public void Null_Combatant_Returns_Fallback_Damage()
 {
-    if (testObj != null) DestroyImmediate(testObj);
+    var result = DamageCalculator.Calculate(null, _defender, 50, DamageType.PHYSICAL);
+    Assert.Greater(result.finalDamage, 0);
 }
 
-// Suite-level cleanup (from SaveSystemTests)
-private void CleanupTestFiles()
+// From Assets/Tests/EditMode/CaptureSystem_EditModeTests.cs
+[Test]
+public void Null_Monster_Returns_Zero_Chance()
 {
-    try
+    var result = CaptureFormulaCalculator.Calculate(null, CaptureItem.VEIL_CRYSTAL, 10, QTEResult.GOOD);
+    Assert.AreEqual(0f, result.finalChance);
+}
+```
+
+**PlayMode Polling Pattern:**
+Wait for async scene content with frame-count timeout:
+```csharp
+// From Assets/Tests/PlayMode/CharacterSelect_PlayModeTests.cs
+private const int kMaxPollFrames = 600; // ~10 seconds at 60fps
+
+UIDocument doc = null;
+for (int i = 0; i < kMaxPollFrames; i++)
+{
+    doc = Object.FindFirstObjectByType<UIDocument>();
+    if (doc != null && doc.rootVisualElement != null) break;
+    yield return null;
+}
+Assert.NotNull(doc, "UIDocument not found in CharacterSelect.");
+```
+
+**Reflection-based Field Existence Pattern:**
+Validate ScriptableObject schema:
+```csharp
+// From Assets/Tests/EditMode/HeroThemeConfig_EditModeTests.cs
+[Test]
+public void HeroThemeConfig_HasRequiredColorFields()
+{
+    var config = ScriptableObject.CreateInstance<HeroThemeConfig>();
+    Assert.IsNotNull(config.GetType().GetField("primaryColor"));
+    Assert.IsNotNull(config.GetType().GetField("glowColor"));
+    Assert.IsNotNull(config.GetType().GetField("darkColor"));
+    Object.DestroyImmediate(config);
+}
+```
+
+**Runtime-safe Type Lookup (avoids compile-time assembly dependency):**
+```csharp
+// From Assets/Tests/PlayMode/MainMenuOverlay_PlayModeTests.cs
+private static Type FindType(string fullName)
+{
+    foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
     {
-        SaveManager.Instance?.DeleteSlot(TEST_SLOT);
-        Debug.Log("[Test] Cleanup complete");
+        var t = asm.GetType(fullName, throwOnError: false);
+        if (t != null) return t;
     }
-    catch (Exception ex)
-    {
-        Debug.LogWarning($"[Test] Cleanup failed: {ex.Message}");
-    }
+    return null;
 }
 ```
 
 ## Writing New Tests
 
-**Follow this pattern when adding tests:**
+**For a new game system (EditMode):**
+1. Create `Assets/Tests/EditMode/{SystemName}_EditModeTests.cs`
+2. Use namespace `VeilBreakers.Tests.EditMode`
+3. Add `[Category("Suite.Core")]` and `[Category("System.{Name}")]` on every `[Test]`
+4. Use `[SetUp]`/`[TearDown]` for GameObject lifecycle
+5. Group tests with `====` comment banners
+6. Test: design doc constants, boundary values, null safety, matrix completeness
 
-1. Create a MonoBehaviour in `Assets/Scripts/Test/` with `[Namespace].Test` namespace
-2. Add `[SerializeField] private bool _runOnStart` and pass/fail counters
-3. Add `[ContextMenu("Run All Tests")]` on the public entry point
-4. Use try/catch per test method with `Pass()`/`Fail()` reporting
-5. For async operations, use `async Task` methods with the throw-on-failure Assert pattern
-6. Create real GameObjects/ScriptableObjects; destroy them in `finally` blocks
-7. Ensure singletons exist before testing (create if needed)
-8. Log a summary: `Debug.Log($"Passed: {_passed} | Failed: {_failed}");`
-9. Add `_cleanupAfterTests` flag if tests create persistent state (files, saves)
+**For a new scene/UI feature (PlayMode):**
+1. Create `Assets/Tests/PlayMode/{Feature}_PlayModeTests.cs`
+2. Use namespace `VeilBreakers.Tests.PlayMode`
+3. Use `[UnityTest]` returning `IEnumerator`
+4. Add `[Category("Suite.Smoke")]` and `[Category("Phase.PreProd")]`
+5. Load scene via `SceneManager.LoadSceneAsync()`
+6. Poll for conditions with `kMaxPollFrames` timeout
+7. Use `[UnityTearDown]` for cleanup
 
-**Test naming:** `Test_SystemName_BehaviorUnderTest` (e.g., `Test_SaveData_CreateNew`, `Test_BrandEffectiveness`)
+**For a performance gate (PlayMode):**
+1. Add to existing PlayMode test file or create new one
+2. Use `[Category("Suite.Perf")]`
+3. Guard with `Assert.Ignore()` for non-batchmode
+4. Use `ProfilerRecorder` for measurement
+5. Set explicit budget thresholds as `const` fields
+
+## Legacy Test System
+
+**The `Assets/Scripts/Test/` directory contains MonoBehaviour-based tests** that predate the NUnit migration. These use a custom assertion framework with pass/fail counters and are triggered via Inspector `[ContextMenu]` or `_runOnStart` flags. When adding new tests, use the NUnit pattern in `Assets/Tests/` instead.
+
+Legacy files (for reference, not for new test authoring):
+- `Assets/Scripts/Test/CaptureTests.cs`
+- `Assets/Scripts/Test/CombatTestSetup.cs`
+- `Assets/Scripts/Test/CombatUITests.cs`
+- `Assets/Scripts/Test/GambitTests.cs`
+- `Assets/Scripts/Test/QuickCommandTests.cs`
+- `Assets/Scripts/Test/SaveSystemTests.cs`
+- `Assets/Scripts/Test/StatusEffectTests.cs`
 
 ---
 
-*Testing analysis: 2026-02-21*
+*Testing analysis: 2026-03-30*

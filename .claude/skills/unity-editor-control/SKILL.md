@@ -5,69 +5,58 @@ description: Use when you need to interact with Unity Editor - run builds, get d
 
 # Unity Editor Control
 
-## Overview
+## Two MCP Servers — Use the Right One
 
-This skill triggers the **mcp-unity** MCP server for direct Unity Editor manipulation.
+### vb-unity (Script Generation — 22 tools, 258 actions)
+Generates C# editor scripts. 3-step workflow: generate -> recompile -> invoke menu item.
 
-## When to Use
+**Use for:** VFX setup, audio pipelines, scene configuration, terrain, UI generation, gameplay systems, bulk content creation, procedural generation.
 
-- "Run the game" / "Play the scene"
-- "Build the project"
-- "Check for compile errors"
-- "Get Unity console output"
-- "Create a new scene"
-- "Add a GameObject to the scene"
+**Key tools:** `unity_vfx`, `unity_audio`, `unity_ui`, `unity_scene`, `unity_gameplay`, `unity_game`, `unity_content`, `unity_world`, `unity_editor` (recompile, screenshot)
 
-## Available Operations
+### unity-mcp (Direct Editor Control — 60+ tools)
+Real-time editor manipulation. Immediate results, no script generation needed.
 
-### Build & Run
-```
-- Run project in Play mode
-- Build standalone player
-- Stop running game
-```
+**Use for:** Play mode control, console log reading, scene queries, GameObject inspection, live debugging, test running, batch property changes.
 
-### Debug Information
-```
-- Get console output (errors, warnings, logs)
-- Check compile status
-- Get project settings
-```
+**Key tools:**
+| Tool | Purpose |
+|------|---------|
+| `editor-application-set-state` | Start/stop/pause play mode |
+| `console-get-logs` | Read runtime errors and logs |
+| `scene-get-data` / `scene-list-opened` | Query scene state |
+| `gameobject-find` / `gameobject-modify` | Find and change GameObjects |
+| `editor-selection-get/set` | Control editor selection |
+| `screenshot-game-view` / `screenshot-scene-view` | Capture views |
+| `script-execute` | Run C# code directly (Roslyn) |
+| `reflection-method-call` | Call methods on live objects |
+| `batch-execute` | Multiple ops in one round-trip |
+| `run-tests` | Execute and read test results |
 
-### Scene Operations
-```
-- Create new scenes
-- Load existing scenes
-- Add GameObjects
-- Modify scene hierarchy
-```
+## When to Use Which
 
-## Usage Pattern
+| Task | Use | Why |
+|------|-----|-----|
+| Create brand VFX for all 10 types | **vb-unity** | Bulk generation |
+| Check if VFX plays correctly | **unity-mcp** | Instant play mode + console |
+| Set up terrain with lighting | **vb-unity** | Full pipeline |
+| Query current scene during debug | **unity-mcp** | Immediate read |
+| Modify 50 GameObject properties | **unity-mcp** | batch_execute |
+| Generate procedural dungeon | **vb-unity** | Worldbuilding tools |
+| Run tests and read results | **unity-mcp** | Console access |
+| Check compile errors | **unity-mcp** | console-get-logs |
+| Take screenshot for visual QA | **Either** | Both support screenshots |
+| Recompile after vb-unity script | **unity-mcp** | Faster than vb-unity recompile |
 
-1. **Before coding**: Check if Unity compiles with current code
-2. **After coding**: Verify no compile errors introduced
-3. **Testing**: Run the game to test changes
-4. **Debugging**: Get console output to diagnose issues
-
-## MCP Server
-
-**Server**: mcp-unity
-**Package**: `com.gamelovers.mcp-unity` (Unity package)
-**Launcher**: `Tools/mcp/launch-unity-mcp.js` (auto-resolves current PackageCache hash)
-**Requires**: Unity Editor running with MCP bridge enabled
-
-## Integration Notes
-
-- Unity must be open with the VeilBreakers3D project loaded
-- MCP bridge must be installed in Unity (via Package Manager)
-- Commands execute in the context of the active scene
-
-## Workflow Example
+## Workflow Integration
 
 ```
-1. Make code changes using Serena
-2. USE THIS SKILL to check compile status
-3. If errors: Use unity-debugger agent to investigate
-4. If clean: USE THIS SKILL to run and test
-5. Check console output for runtime errors
+1. Use vb-unity to GENERATE (VFX, audio, UI, scenes)
+2. Use unity-mcp to VERIFY (play mode, console, screenshots)
+3. Fix issues found, repeat
 ```
+
+## Requirements
+- Unity Editor must be running with VeilBreakers3D project loaded
+- unity-mcp bridge must be installed (IvanMurzak/Unity-MCP package)
+- vb-unity connects via generated scripts; unity-mcp connects via WebSocket (port 8080)

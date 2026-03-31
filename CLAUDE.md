@@ -3,131 +3,34 @@
 ## Mission
 Build an AAA-quality 3D monster RPG using Unity. Quality over speed, but don't overthink simple tasks.
 
-**Engine:** Unity 3D (UI Toolkit)
-**Memory:** `VEILBREAKERS.md` (read at session start)
-**Migration:** `Docs/MIGRATION_PLAN.md`
+**Engine:** Unity 3D (UI Toolkit) | **Memory:** `VEILBREAKERS.md` | **Migration:** `Docs/MIGRATION_PLAN.md`
 
 ---
 
-# CORE PRINCIPLES (Not Rules)
+# CORE PRINCIPLES
 
-## 1. Trust Your Reasoning
-- Use tools when they genuinely help, not because a rule says so
-- Simple questions get simple answers
-- Complex tasks benefit from structured approaches
-- You decide what's appropriate for each situation
+## Anti-Regression Protocol (MANDATORY)
+- **ALWAYS read a file before editing it.** No exceptions.
+- **Test after every 3-5 changes.** Run compile check or relevant tests.
+- **Max 2 attempts per approach.** If fix #2 fails, re-read context, try fundamentally different approach.
+- **Never guess API signatures.** Use Context7, Serena, or read the source.
+- **If you break something while fixing something else, revert immediately.**
 
-## 2. Context Efficiency (Lean BUT Safe)
-- Prefer symbol-level reads and file slices over full-file dumps
-- Use Serena for semantic code navigation (saves tokens)
-- Ask Gemini for second opinions on complex decisions
-- Keep responses focused and concise
-- **CRITICAL: "Token optimization" = concise chat, NOT skipping file reads.**
-  Reading a file before editing costs ~500 tokens. Blind-editing then fixing regressions costs ~50,000. Always read first.
+## Context7 — HARD RULE
+Before writing ANY PrimeTween (`/kyrylokuzyk/primetween`), UI Toolkit (`/needle-mirror/com.unity.ui`), Cinemachine (`/websites/unity3d_packages_com_unity_cinemachine_3_1`), or URP (`/unity-technologies/graphics`) code: call `resolve-library-id` then `query-docs`. NON-NEGOTIABLE. Hallucinated APIs have cost entire sessions. If Context7 has no answer, read `Packages/` source — NEVER guess.
 
-## 3. Anti-Regression Protocol (MANDATORY)
-These rules exist because a session lost hours to regressions from skipped verification:
+## Visual QA Pipeline
+1. **Design** -> brainstorm / HTML mockup / reference screenshot
+2. **Extract spec** -> `zai ui_to_artifact` (output_type=spec)
+3. **Implement** -> Unity UI Toolkit (UXML + USS + C#/PrimeTween)
+4. **Capture** -> `unity_editor action=screenshot`
+5. **Compare** -> `zai ui_diff_check` (expected=mockup, actual=screenshot)
+6. **Iterate** -> fix gaps until it passes
 
-- **ALWAYS read a file before editing it.** No exceptions. Even if you "know" the contents.
-- **Test after every 3-5 changes.** Run compile check or relevant tests. Catch breaks immediately.
-- **Never loop on the same failing approach more than twice.** If fix attempt #2 fails, stop, re-read context, try a fundamentally different approach.
-- **Never guess at API signatures.** Look them up (Context7, Serena, or read the source). PrimeTween, Unity UI Toolkit, and Cinemachine APIs are frequently hallucinated.
-- **If you break something while fixing something else, revert the regression immediately** — don't stack more fixes on top of a broken base.
-
-## 4. Reasoning Budget (Power Without Bloat)
-- **Default mode:** 2-pass reasoning
-  - Pass 1: quick hypothesis from local code/context
-  - Pass 2: targeted verification (tests/logs/docs) before final claims
-- **Deep mode (only when needed):** use `sequential-thinking` if any are true:
-  - High-risk change (data loss, save format, core combat/math)
-  - 3+ interacting systems
-  - Repro is unclear after one focused debug pass
-- **Stop conditions:** when confidence is high and tests/validation pass, ship instead of over-analyzing
-- **Loop detection:** If you've made 3+ attempts at the same fix without progress, STOP. Summarize what you've tried, what failed, and ask the user or try a completely different approach.
-
-## 5. Commit When It Makes Sense
-- Commit after completing logical units of work
-- Don't interrupt mid-task for arbitrary time-based commits
-- Version updates in VEILBREAKERS.md track progress
-
----
-
-# TOOL GUIDANCE (Smart Judgment)
-
-## Visual QA Pipeline (Closes Design→Implementation Gap)
-
-The #1 struggle: mockups look great but implementation doesn't match. Use this pipeline:
-
-1. **Design** → superpowers brainstorm / HTML mockup / reference screenshot
-2. **Extract spec** → `zai ui_to_artifact` (output_type=spec) from mockup image
-3. **Implement** → Unity UI Toolkit (UXML + USS + C#/PrimeTween)
-4. **Capture** → `unity_editor action=screenshot` of actual result
-5. **Compare** → `zai ui_diff_check` (expected=mockup, actual=screenshot)
-6. **Iterate** → fix gaps identified by diff check until it passes
-
-**Also available:**
-- `zai analyze_image` — general visual analysis of any screenshot
-- `zai diagnose_error_screenshot` — analyze Unity error screenshots
-- `gemini analyzeFile` — Gemini visual analysis as second opinion
-
-## Serena — C# Symbol Intelligence (28 tools, LSP-backed)
-
-| Task | Use Serena? | Instead |
-|------|-------------|---------|
-| Understand unfamiliar file structure | YES - `get_symbols_overview` | - |
-| Find where a method is called | YES - `find_referencing_symbols` | - |
-| Refactor a symbol safely | YES - `rename_symbol` / `replace_symbol_body` | - |
-| Read a file you know the path to | **NO** | Just use `Read` tool |
-| Quick text search | **NO** | Just use `Grep` tool |
-| Small edit to known code | **NO** | Just use `Edit` tool |
-
-## Context7 — Mandatory API Lookups (NEVER HALLUCINATE)
-
-| Library | Context7 ID | When to Use |
-|---------|-------------|-------------|
-| PrimeTween | `/kyrylokuzyk/primetween` | **EVERY** PrimeTween call — 85 verified snippets |
-| Unity UI Toolkit | `/needle-mirror/com.unity.ui` | **EVERY** UXML/USS/VisualElement API call — 36 snippets |
-| Unity URP | resolve via Context7 | Shader/rendering API questions |
-
-**HARD RULE:** Before writing ANY PrimeTween, UI Toolkit, Cinemachine, or URP code, you MUST call `context7 resolve-library-id` then `query-docs`. This is NON-NEGOTIABLE. Hallucinated APIs have cost entire sessions. If Context7 has no answer, read the source in `Packages/` — NEVER guess.
-
-## Superpowers Skills - Use When Valuable
-
-| Skill | USE for | SKIP for |
-|-------|---------|----------|
-| brainstorming | New systems, unclear requirements | Simple additions, bug fixes |
-| writing-plans | Multi-file implementations | Single-file changes |
-| systematic-debugging | Complex/mysterious bugs | Obvious errors |
-| verification-before-completion | Major changes, PRs | Quick fixes |
-
-**Default:** Skip skills for simple tasks. Use skills when complexity justifies structure.
-
-## VB-Toolkit (PREFER for game dev tasks)
-
-37 compound tools (22 Unity + 15 Blender) with 330+ actions. Use these FIRST for game dev tasks.
-**Full reference:** `Docs/TOOLKIT_REFERENCE.md`
-
-## Other Tools
-
-| Situation | Recommended Tool | Why |
-|-----------|------------------|-----|
-| Unity API questions | Context7 `query-docs` | Up-to-date documentation |
-| Complex analysis | `sequential-thinking` | Structured breakdown |
-| Second opinion | `gemini-cli` or `codex-cli` MCP | Different AI perspectives |
-| Code strengthening | `unity_qa analyze_code` + `code_review` | Catch regressions before they compound |
-| Visual QA | `zai ui_diff_check` | Compare mockup vs implementation |
-
-## Model Routing (Quality-First Token Optimization)
-
-| Task Type | Model | Why |
-|-----------|-------|-----|
-| Simple file reads, grep, git status | **Haiku** | Cheap factual lookups |
-| Write code, fix bugs, implement features | **Sonnet** | Quality-to-cost sweet spot |
-| Architecture, multi-system changes, debugging | **Opus** | When judgment prevents regressions |
-| Research subagents (parallel exploration) | **Haiku** | Cheap parallel scouts |
-| Edits touching 3+ files or core systems | **Sonnet+** | Don't cut corners on risky changes |
-
-**Rule:** Never downgrade model to save tokens on changes that touch core systems (combat, save, UI controllers). The cost of a regression is 10-50x the cost of using a better model.
+## Reasoning Budget
+- **Default:** 2-pass (hypothesis -> targeted verification)
+- **Deep mode:** `sequential-thinking` only for high-risk changes, 3+ interacting systems, or unclear repro
+- **Loop detection:** 3+ failed attempts -> STOP, summarize, ask user or change approach entirely
 
 ---
 
@@ -135,21 +38,22 @@ The #1 struggle: mockups look great but implementation doesn't match. Use this p
 
 ## Key Systems (Don't Break These)
 
-### 10-Brand Combat
-IRON, SAVAGE, SURGE, VENOM, DREAD, LEECH, GRACE, MEND, RUIN, VOID
+**10-Brand Combat:** IRON, SAVAGE, SURGE, VENOM, DREAD, LEECH, GRACE, MEND, RUIN, VOID
 - Each: 2x to 2 brands, 0.5x to 2 brands, 1x to 6 brands
 
-### 4 Paths
-IRONBOUND, FANGBORN, VOIDTOUCHED, UNCHAINED
+**4 Paths:** IRONBOUND, FANGBORN, VOIDTOUCHED, UNCHAINED
 
-### Corruption (0-100%)
-0-10% ASCENDED (+25%), 11-25% Purified (+10%), 26-50% Unstable, 51-75% Corrupted (-10%), 76-100% Abyssal (-20%)
+**Corruption (0-100%):**
+- 0-10% ASCENDED (+25%) | 11-25% Purified (+10%) | 26-50% Unstable (+0%)
+- 51-75% Corrupted (-10%) | 76-79% Abyssal (-20%) | **80-100% UNTAMED (uncontrollable)**
 
-### Synergy Tiers
-FULL (3/3): +8% damage/defense | PARTIAL (2/3): +5% | NEUTRAL: +0% | ANTI: +0%
+**Synergy Tiers:** FULL (3/3): +8% dmg/def, 0.5x corruption scaling | PARTIAL (2/3): +5% | NEUTRAL/ANTI: +0%
+
+**Party:** 3 Active + 3 Backpack slots (hard constraint). Swap cooldown: 3-5s abilities, instant basic.
+
+**Brand Matrix Rule:** Effectiveness is bidirectional — if IRON is 2x vs SURGE, SURGE must be 0.5x vs IRON.
 
 ## Code Style
-
 ```csharp
 namespace VeilBreakers.[Category]
 {
@@ -165,67 +69,35 @@ namespace VeilBreakers.[Category]
 
 ## Project Structure
 - Scripts: `Assets/Scripts/[Combat|Core|Systems|UI|Data]/`
-- Art: `Assets/Art/`
-- Docs: `Docs/`
-- Screenshots: `screenshots/`
-
----
-
-# CLAUDE + GEMINI + CODEX HYBRID APPROACH
-
-| Situation | Tool | Action |
-|-----------|------|--------|
-| Second opinion on architecture | Gemini CLI | `gemini -p "Analyze..."` or `mcp__gemini-cli__chat` |
-| Code review | Codex CLI | `codex -p "Review..."` or `mcp__codex-cli__chat` |
-| Complex debugging stuck | Either | Get a different perspective |
-| Research/web search | Gemini CLI | Gemini has web access |
+- Art: `Assets/Art/` | Docs: `Docs/` | Screenshots: `screenshots/`
 
 ---
 
 # HIGH-RISK CHANGES (Ask User First)
-
 - Brand/Path system design changes
-- Save file format modifications
+- Save file format modifications (test with old saves via MigrationRunner)
 - Core class renames/removals
 - Major architectural changes
+- Corruption tier threshold changes (80% = UNTAMED is a hard game state boundary)
+- Capture formula modifications (deterministic: HP% + Corruption% + Item Tier + QTE)
+- Party slot structure changes (breaks save compatibility)
+- Synergy multiplier adjustments (cascades across all brand/path combos)
 - Deleting files (archive instead)
 
----
+# SECURITY (Game-Critical)
+- SaveManager uses AES-CBC + HMAC-SHA256 — maintain on all format changes
+- Validate deserialized save data against gameplay constraints (corruption 0-100, brand multipliers 0.5-2x)
+- No `Path.Combine` with user input, no `JSON.Parse` of untrusted strings
+- Event unsubscription on cleanup (memory leak vector)
 
 # LESSONS LEARNED
-
-## Don't Repeat
-- Windows reserved filenames (nul, con, aux)
-- `Find()` in Update loops
-- Allocations in Update
-- Missing font references (UI disappears)
-- Disabled components = silent failures
-- Editing files without reading them first (causes regressions)
-- Guessing PrimeTween/Cinemachine/UI Toolkit API names (always hallucinated wrong)
-- Retrying the same broken approach 5+ times hoping it works (loop detection!)
-- Stacking fixes on a broken base instead of reverting the regression first
-
-## What Works
-- ScriptableObjects for game data
-- Event-driven architecture
-- Serena for semantic code ops
-- Visual verification via Unity screenshots
-- Reading files before editing (prevents 90% of regressions)
-- Testing after every 3-5 changes (catches breaks before they compound)
-- Parallel agents for research, sequential for edits
-
----
+**Don't:** `Find()` in Update, allocations in Update, missing font refs, disabled components, editing without reading, guessing PrimeTween/Cinemachine APIs, retrying same broken approach 5+ times, stacking fixes on broken base, Windows reserved filenames (nul/con/aux)
+**Do:** ScriptableObjects for data, event-driven architecture, visual verification via screenshots, read before edit, test every 3-5 changes, parallel agents for research / sequential for edits
 
 # GIT WORKFLOW
-
-**Branch Structure:**
-- `master` — production truth
-- `develop` — integration branch, mirrors master after merges
-- `feature/<name>` — feature branches from master
-
-**After every commit:** sync branches with `git branch -f develop master`
-**Before ending session:** verify all active branches point to same commit
+- `master` -- production truth | `develop` -- mirrors master | `feature/<name>` -- from master
+- **After every commit:** `git branch -f develop master`
+- **Before ending session:** verify all branches synced
 
 ---
-
-*Configuration v7.0 - Quality-Guarded Token Optimization*
+*Configuration v8.1 - Slim + game design rules. Path-scoped rules in .claude/rules/*

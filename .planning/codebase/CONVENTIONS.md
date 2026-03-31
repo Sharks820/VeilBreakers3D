@@ -1,285 +1,508 @@
 # Coding Conventions
 
-**Analysis Date:** 2026-02-21
+**Analysis Date:** 2026-03-30
+
+## Namespace Conventions
+
+**Root namespace:** `VeilBreakers`
+
+**Sub-namespaces map to script directories:**
+- `VeilBreakers.Core` - `Assets/Scripts/Core/`
+- `VeilBreakers.Combat` - `Assets/Scripts/Combat/`
+- `VeilBreakers.Data` - `Assets/Scripts/Data/`
+- `VeilBreakers.Systems` - `Assets/Scripts/Systems/`
+- `VeilBreakers.Managers` - `Assets/Scripts/Managers/`
+- `VeilBreakers.Audio` - `Assets/Scripts/Audio/`
+- `VeilBreakers.AI` - `Assets/Scripts/AI/`
+- `VeilBreakers.Capture` - `Assets/Scripts/Capture/`
+- `VeilBreakers.Commands` - `Assets/Scripts/Commands/`
+- `VeilBreakers.UI.CharacterSelect` - `Assets/Scripts/UI/CharacterSelect/`
+- `VeilBreakers.UI.Combat` - `Assets/Scripts/UI/Combat/`
+- `VeilBreakers.UI.Controls` - `Assets/Scripts/UI/Controls/`
+- `VeilBreakers.UI.Core` - `Assets/Scripts/UI/Core/`
+- `VeilBreakers.UI.Effects` - `Assets/Scripts/UI/Effects/`
+- `VeilBreakers.UI.Menus` - `Assets/Scripts/UI/Menus/`
+- `VeilBreakers.Utils` - `Assets/Scripts/Utils/`
+- `VeilBreakers.VFX` - `Assets/Scripts/VFX/`
+
+**Assembly definitions:**
+- Runtime: `VeilBreakers.Runtime` (`Assets/Scripts/VeilBreakers.Runtime.asmdef`) - root namespace `VeilBreakers`
+- EditMode Tests: `VeilBreakers.Tests.EditMode` (`Assets/Tests/EditMode/VeilBreakers.Tests.EditMode.asmdef`)
+- PlayMode Tests: `VeilBreakers.Tests.PlayMode` (`Assets/Tests/PlayMode/VeilBreakers.Tests.PlayMode.asmdef`)
+
+**Rule:** One namespace per file, matching directory structure. When creating a new file in `Assets/Scripts/Combat/`, use namespace `VeilBreakers.Combat`.
 
 ## Naming Patterns
 
 **Files:**
-- PascalCase for all C# files: `GameManager.cs`, `BrandSystem.cs`, `MonsterData.cs`
-- Test files use suffix `Tests`: `CaptureTests.cs`, `GambitTests.cs`, `SaveSystemTests.cs`
-- ScriptableObject data files use suffix `Data`: `StatusEffectData.cs`, `ShrineData.cs`, `MonsterData.cs`
-- Config ScriptableObjects use suffix `Config`: `HeroDisplayConfig.cs`, `CombatUIConfig.cs`, `AudioConfig.cs`
-
-**Namespaces:**
-- Root: `VeilBreakers`
-- Pattern: `VeilBreakers.[Category]`
-- Categories: `Core`, `Data`, `Systems`, `Managers`, `Combat`, `AI`, `Capture`, `Commands`, `Audio`, `Utils`, `Test`
-- UI uses dot-separated sub-namespaces: `VeilBreakers.UI.Core`, `VeilBreakers.UI.Combat`, `VeilBreakers.UI.Controls`, `VeilBreakers.UI.Menus`, `VeilBreakers.UI.CharacterSelect`
-- One namespace per file, matching directory structure
+- One class per file, filename matches class name: `BrandSystem.cs` contains `BrandSystem`
+- PascalCase for all files: `GameManager.cs`, `DamageCalculator.cs`
+- ScriptableObject data files use suffix `Data`: `MonsterData.cs`, `StatusEffectData.cs`
+- ScriptableObject configs use suffix `Config`: `HeroThemeConfig.cs`, `AudioConfig.cs`, `HeroDisplayConfig.cs`
 
 **Constants:**
-- String/path constants use `k` prefix with PascalCase: `kGameScene`, `kMainMenuScene`, `kConfigPath`, `kPrefix`, `kCombatPrefix`
-  - Example from `Assets/Scripts/Core/ErrorLogger.cs`: `private const string kPrefix = "[VB]";`
-  - Example from `Assets/Scripts/UI/CharacterSelect/CharacterSelectManager.cs`: `private const string kGameScene = "Overworld";`
-- USS class name constants use `k` prefix: `private const string kBaseClass = "animated-bar";`
-  - Example from `Assets/Scripts/UI/Controls/AnimatedBar.cs`
-- Numeric/game-balance constants use SCREAMING_SNAKE_CASE: `BASE_CRIT_RATE`, `MAX_LEVEL`, `SUPER_EFFECTIVE`
-  - Example from `Assets/Scripts/Core/Constants.cs`: `public const float BASE_CRIT_RATE = 0.05f;`
-  - Example from `Assets/Scripts/Systems/BrandSystem.cs`: `public const float SUPER_EFFECTIVE = 2.0f;`
-- Static readonly values (Color, Vector3) use SCREAMING_SNAKE with type prefix: `COLOR_GOLD`, `COLOR_HEALTH_GREEN`
-  - Example from `Assets/Scripts/Core/Constants.cs`: `public static readonly Color COLOR_GOLD = new Color(1f, 0.84f, 0f);`
+- `k` prefix with PascalCase for private/local string constants:
+  ```csharp
+  // From Assets/Scripts/Core/ErrorLogger.cs
+  private const string kPrefix = "[VB]";
+  private const string kCombatPrefix = "[VB:Combat]";
+
+  // From Assets/Scripts/UI/CharacterSelect/CharacterSelectManager.cs
+  private const string kGameScene = "Overworld";
+  private const string kBtnPrev = "btn-prev";
+  private const int kTabOverview = 0;
+  ```
+- `k` prefix for numeric private constants:
+  ```csharp
+  // From Assets/Scripts/Combat/DamageCalculator.cs
+  private const float kVarianceMin = 0.9f;
+  private const float kVarianceMax = 1.1f;
+  private const int kMaxPartySize = 6;
+  ```
+- UPPER_CASE for public game-balance constants:
+  ```csharp
+  // From Assets/Scripts/Systems/BrandSystem.cs
+  public const float SUPER_EFFECTIVE = 2.0f;
+  public const float NOT_EFFECTIVE = 0.5f;
+
+  // From Assets/Scripts/Core/Constants.cs
+  public const int MAX_PARTY_SIZE = 3;
+  public const float BASE_CRIT_RATE = 0.05f;
+  ```
+- Static readonly for non-primitive public constants (Color, Vector2):
+  ```csharp
+  // From Assets/Scripts/Core/Constants.cs
+  public static readonly Color COLOR_GOLD = new Color(1f, 0.84f, 0f);
+  public static readonly Vector2 BUTTON_MEDIUM = new Vector2(200, 50);
+  ```
 
 **Private Fields:**
-- Underscore prefix: `_currentIndex`, `_heroList`, `_isTransitioning`, `_uiDocument`
-- Always `[SerializeField]` when exposed to Inspector: `[SerializeField] private UIDocument _uiDocument;`
-- Never public fields -- use `[SerializeField] private` with a property if external access needed
+- `_` prefix always: `_currentIndex`, `_heroList`, `_isTransitioning`, `_party`
+- Always `[SerializeField] private` when exposed to Inspector -- never public fields
+  ```csharp
+  [SerializeField] private UIDocument _uiDocument;
+  [SerializeField] private BattleState _state = BattleState.INITIALIZING;
+  ```
 
 **Properties:**
-- PascalCase: `CurrentIndex`, `CurrentHero`, `HeroCount`, `IsTransitioning`
-- Prefer expression-bodied: `public int CurrentIndex => _currentIndex;`
-- Complex properties use expression body too:
+- PascalCase: `CurrentHp`, `IsAlive`, `Brand`, `DisplayName`
+- Expression-bodied for simple getters:
   ```csharp
-  public HeroData CurrentHero => _heroList != null && _currentIndex >= 0 && _currentIndex < _heroList.Count
-      ? _heroList[_currentIndex] : null;
+  public bool IsAlive => _isAlive;
+  public BattleState State => _state;
+  public IReadOnlyList<Combatant> PlayerParty => _playerParty;
   ```
 
 **Events:**
-- Static events use `On` prefix with PascalCase: `OnGameStarted`, `OnBattleEnded`, `OnDamageDealt`
-- Fire methods omit `On` prefix: `GameStarted()`, `BattleEnded(bool victory)`, `DamageDealt(...)`
-- Type: `public static event Action<TArgs>` (not UnityEvent, not custom delegate)
-- Example from `Assets/Scripts/Core/EventBus.cs`:
+- `On` prefix for event declarations: `OnBattleStart`, `OnDamageDealt`, `OnCombatantDeath`
+- Static events in `EventBus` follow same pattern: `OnGameStarted`, `OnBattleEnded`
+- Fire methods match event name without `On`: `GameStarted()`, `BattleEnded()`
+- Type: `event Action<TArgs>` (not UnityEvent, not custom delegates)
   ```csharp
-  public static event Action<string, string, int, bool> OnDamageDealt;
+  // From Assets/Scripts/Core/EventBus.cs
+  public static event Action<string, string, int, bool> OnDamageDealt;  // source, target, amount, isCrit
   public static void DamageDealt(string source, string target, int amount, bool isCrit)
       => OnDamageDealt?.Invoke(source, target, amount, isCrit);
   ```
 
-**Methods:**
-- PascalCase: `NavigateToHero()`, `LoadHeroData()`, `ApplyThemeClass()`
-- Private helpers prefixed with verb: `EnsureCriticalManagers()`, `CacheUIReferences()`, `UpdateEmbarkText()`
-- Event handlers use `On` prefix: `OnPrevClicked()`, `OnNavigationMove()`, `OnConfirmClicked()`
-- Callback methods use expression body for simple delegation:
-  ```csharp
-  private void OnPrevClicked(ClickEvent evt) => NavigatePrev();
-  ```
-
 **Enums:**
-- Enum type names: PascalCase (`Brand`, `StatusEffectType`, `AIPattern`)
-- Enum values: SCREAMING_SNAKE_CASE with explicit integer assignments:
+- PascalCase type name: `Brand`, `BattleState`, `DamageType`
+- UPPER_CASE values with explicit integer assignments:
   ```csharp
   public enum Brand { NONE = 0, IRON = 1, SAVAGE = 2, SURGE = 3, ... }
   ```
-- Defined centrally in `Assets/Scripts/Data/Enums.cs`
+- All game enums centralized in `Assets/Scripts/Data/Enums.cs`
 
-**Local Variables:**
-- camelCase: `heroName`, `prevIndex`, `newIndex`, `themeClass`
+**Methods:**
+- PascalCase: `Calculate()`, `AddToParty()`, `GetEffectiveness()`
+- Boolean methods use `Is`/`Has`/`Can` prefix: `IsHybridBrand()`, `HasAdvantage()`, `IsItemEffective()`
+- Event handlers use `On` prefix: `OnPrevClicked()`, `OnNavigationMove()`
 
-**Parameters:**
-- camelCase: `heroId`, `effectType`, `monsterId`
+**Local variables and parameters:** camelCase: `heroId`, `heroName`, `prevIndex`, `effectType`
 
-## Code Style
+## Code Organization Within Files
 
-**Formatting:**
-- No `.editorconfig` or `.prettierrc` detected -- relies on IDE defaults (likely Rider or Visual Studio)
-- 4-space indentation (standard C#)
-- Opening brace on same line for methods/classes (Allman style for namespace/class, K&R for control flow)
-- Single blank line between methods
-- No trailing whitespace enforced
+**Section headers use 77-char `=` banner comments:**
+```csharp
+// =============================================================================
+// SECTION NAME
+// =============================================================================
+```
 
-**Linting:**
-- No Roslyn analyzers or StyleCop detected
-- Relies on Unity compiler warnings
-- `#pragma warning disable CS0618` used selectively for obsolete API calls
-  - Example from `Assets/Scripts/Core/EventBus.cs` lines 92-97
+**Standard section order in a MonoBehaviour:**
+1. CONSTANTS
+2. CONFIGURATION / SERIALIZED FIELDS (grouped by `[Header("...")]`)
+3. STATE (private fields)
+4. PROPERTIES
+5. UNITY LIFECYCLE (Awake/OnSingletonAwake, Start, Update, OnDestroy)
+6. INITIALIZATION
+7. PUBLIC API METHODS
+8. PRIVATE HELPERS
+9. EVENT HANDLERS
+10. LOGGING
 
-**Section Organization:**
-- Files use prominent section separators (81-character line of `=`):
-  ```csharp
-  // =============================================================================
-  // SECTION NAME
-  // =============================================================================
-  ```
-- Standard section order in MonoBehaviour:
-  1. CONSTANTS
-  2. SERIALIZED FIELDS
-  3. STATE (private fields)
-  4. CACHED UI REFERENCES (if UI class)
-  5. PROPERTIES
-  6. LIFECYCLE (OnEnable, OnDisable, OnDestroy)
-  7. DATA LOADING / INITIALIZATION
-  8. PUBLIC API
-  9. PRIVATE HELPERS
-  10. EVENT HANDLERS
+**Example from `Assets/Scripts/Core/GameManager.cs`:**
+```csharp
+namespace VeilBreakers.Core
+{
+    public class GameManager : SingletonMonoBehaviour<GameManager>
+    {
+        // =============================================================================
+        // GAME STATE
+        // =============================================================================
+        public enum GameState { MainMenu, Exploring, InBattle, ... }
 
-**Line Length:**
-- No strict limit enforced; lines occasionally exceed 120 characters for long signatures
+        // =============================================================================
+        // PARTY DATA
+        // =============================================================================
+        [Serializable]
+        public class PartyMember { ... }
+
+        // =============================================================================
+        // INITIALIZATION
+        // =============================================================================
+        protected override void OnSingletonAwake() { ... }
+
+        // =============================================================================
+        // STATE MANAGEMENT
+        // =============================================================================
+        public void ChangeState(GameState newState) { ... }
+    }
+}
+```
+
+**Test files use `====` banners (68-char) for test groupings:**
+```csharp
+// ====================================================================
+// EFFECTIVENESS MATRIX - SUPER EFFECTIVE (2x)
+// ====================================================================
+```
+
+## SerializeField Patterns
+
+**Group Inspector fields with `[Header("Section")]`:**
+```csharp
+// From Assets/Scripts/Combat/Combatant.cs
+[Header("Identity")]
+[SerializeField] private string _combatantId;
+[SerializeField] private Brand _brand = Brand.NONE;
+
+[Header("Stats")]
+[SerializeField] private int _maxHp = 100;
+[SerializeField] private int _currentHp = 100;
+
+[Header("State")]
+[SerializeField] private bool _isAlive = true;
+```
+
+**Always provide default values:**
+```csharp
+[SerializeField] private BattleState _state = BattleState.INITIALIZING;
+[SerializeField] private bool _initializeOnAwake = true;
+[SerializeField] private float _minimumSplashTime = 1.0f;
+```
+
+## Singleton Pattern
+
+**Use `SingletonMonoBehaviour<T>` from `Assets/Scripts/Core/SingletonMonoBehaviour.cs`:**
+```csharp
+public class GameManager : SingletonMonoBehaviour<GameManager>
+{
+    protected override void OnSingletonAwake()
+    {
+        // Initialize here instead of Awake()
+    }
+}
+```
+
+**Key rules:**
+- Access via `GameManager.Instance`
+- Null-safe check via `GameManager.HasInstance`
+- Automatic `DontDestroyOnLoad` (override `IsPersistent => false` for scene-specific singletons)
+- Domain-reload safe via `SingletonResetHelper`
+- Duplicate instances are auto-destroyed with a warning
+
+**Scene-specific singletons:**
+```csharp
+// From Assets/Scripts/Combat/BattleManager.cs
+public class BattleManager : SingletonMonoBehaviour<BattleManager>
+{
+    protected override bool IsPersistent => false;
+}
+```
+
+**Bootstrap initialization order in `Assets/Scripts/Core/GameBootstrap.cs`:**
+1. Core: `GameManager`, `GameDatabase`, `InputManager`
+2. Persistence: `SettingsManager`, `VBSceneManager`, `SaveManager`, `AutoSaveManager`
+3. Audio: `AudioManager`, `MusicManager`, `VERAVoiceController`, `LowHealthAudio`
+4. Gameplay: `StatusEffectManager`, `ShrineManager`, `FPSCounter`
+
+## Event Architecture
+
+**Global events via static `EventBus` (`Assets/Scripts/Core/EventBus.cs`):**
+```csharp
+// Subscribe
+EventBus.OnBattleStarted += HandleBattleStarted;
+// Publish
+EventBus.BattleStarted();
+```
+
+**Component-level events via standard C# events:**
+```csharp
+// From Assets/Scripts/Combat/BattleManager.cs
+public event Action OnBattleStart;
+public event Action<Combatant, Combatant, DamageResult> OnDamageDealt;
+public event Action<Combatant> OnCombatantDeath;
+```
+
+**Domain reload safety (MANDATORY for all static state):**
+```csharp
+[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+private static void ResetStatics()
+{
+    _minLevel = LogLevel.Debug;
+}
+```
+
+Every class with static fields must implement this pattern. `EventBus.ClearAllListeners()` and `SingletonResetHelper` handle their respective resets.
+
+## Error Handling
+
+**Use `ErrorLogger` from `Assets/Scripts/Core/ErrorLogger.cs` for subsystem-tagged logging:**
+```csharp
+ErrorLogger.Log("General info");          // [VB] - stripped in release
+ErrorLogger.Warn("Something unexpected");  // [VB] - kept in release
+ErrorLogger.Error("Something broke");      // [VB] - kept in release
+ErrorLogger.Combat("Damage calculated");   // [VB:Combat] - stripped in release
+ErrorLogger.Save("Slot saved");            // [VB:Save]
+ErrorLogger.UI("Panel opened");            // [VB:UI]
+ErrorLogger.AI("Decision made");           // [VB:AI]
+ErrorLogger.Capture("Monster bound");      // [VB:Capture]
+ErrorLogger.Settings("Volume changed");    // [VB:Settings]
+```
+
+**Debug-only methods use `[Conditional]` attributes** -- auto-stripped from release builds:
+```csharp
+[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]
+public static void Log(string message) { ... }
+```
+
+**Performance timing:**
+```csharp
+var sw = ErrorLogger.BeginTiming("LoadDatabase");
+// ... work ...
+ErrorLogger.EndTiming(sw, "LoadDatabase", warnThresholdMs: 16.67f);
+```
+
+**Direct `Debug.Log` acceptable in core singletons with `[ClassName]` prefix:**
+```csharp
+Debug.Log("[GameManager] State changed: MainMenu -> Exploring");
+Debug.LogError("[GameBootstrap] Failed to initialize AudioManager");
+```
+
+**Null guard pattern at public API boundaries:**
+```csharp
+// From Assets/Scripts/Combat/DamageCalculator.cs
+if (attacker == null || defender == null)
+{
+    Debug.LogWarning("[DamageCalculator] Null combatant in damage calculation");
+    result.finalDamage = basePower > 0 ? basePower : 1;
+    return result;
+}
+```
+
+**Assertions (debug-only):**
+```csharp
+ErrorLogger.Assert(hp >= 0, "HP should never be negative");
+ErrorLogger.AssertNotNull(combatant, "combatant");
+```
 
 ## Import Organization
 
 **Order:**
-1. System namespaces (`System`, `System.Collections`, `System.Collections.Generic`, `System.IO`, `System.Threading.Tasks`)
-2. Unity namespaces (`UnityEngine`, `UnityEngine.SceneManagement`, `UnityEngine.UIElements`)
-3. Project namespaces (`VeilBreakers.Core`, `VeilBreakers.Data`, `VeilBreakers.Managers`, `VeilBreakers.UI.Core`)
+1. `System` and `System.*` namespaces
+2. `UnityEngine` and `UnityEngine.*` namespaces
+3. `UnityEditor` namespaces (Editor-only files)
+4. Third-party packages (`PrimeTween`, `Unity.Profiling`, etc.)
+5. `VeilBreakers.*` project namespaces
 
-**Path Aliases:**
-- Type aliasing used to resolve conflicts:
-  ```csharp
-  using GamePath = VeilBreakers.Data.Path;  // Avoid conflict with System.IO.Path
-  ```
-  Example from `Assets/Scripts/Test/SaveSystemTests.cs` line 9
+**Example from `Assets/Scripts/Combat/BattleManager.cs`:**
+```csharp
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using VeilBreakers.Core;
+using VeilBreakers.Data;
+using VeilBreakers.Systems;
+```
 
-**No barrel files or index files used** -- each file imports what it needs directly.
+**Type aliases for name conflicts:**
+```csharp
+// From Assets/Scripts/Managers/SaveManager.cs
+using IOPath = System.IO.Path;  // Avoids conflict with VeilBreakers.Data.Path
+```
 
-## Error Handling
+**No barrel files or index files.** Each file imports its dependencies explicitly.
 
-**Patterns:**
-- Early return with null checks:
-  ```csharp
-  if (_uiDocument == null) { Debug.LogError("[CharacterSelectManager] UIDocument not assigned!"); return; }
-  ```
-- Null-conditional operator for optional references: `_btnPrev?.RegisterCallback<ClickEvent>(OnPrevClicked);`
-- Try/catch in test code only -- production code uses guard clauses
-- Coroutine timeout pattern:
-  ```csharp
-  float timeout = 10f;
-  float elapsed = 0f;
-  while (!ready) {
-      elapsed += Time.deltaTime;
-      if (elapsed > timeout) { Debug.LogError("Timed out"); yield break; }
-      yield return null;
-  }
-  ```
-  Example from `Assets/Scripts/UI/CharacterSelect/CharacterSelectManager.cs` lines 143-154
-- Task-to-coroutine bridge (polling `IsCompleted`):
-  ```csharp
-  var task = manager.SomeAsyncMethod();
-  while (!task.IsCompleted) yield return null;
-  if (task.IsFaulted || task.IsCanceled) { Debug.LogWarning("Failed"); yield break; }
-  ```
+## Data Patterns
 
-**Error Severity:**
-- `Debug.LogError()` for critical failures (missing references, system init failures)
-- `Debug.LogWarning()` for recoverable issues (missing configs, fallback used)
-- `Debug.Log()` for informational/diagnostic output
+**JSON-loaded data uses `snake_case` fields for serialization compatibility:**
+```csharp
+// From Assets/Scripts/Data/MonsterData.cs
+[Serializable]
+public class MonsterData
+{
+    public string monster_id;
+    public string display_name;
+    public int base_hp;
+    public float hp_growth;
+    public string[] innate_skills;
+    public List<LearnableSkillEntry> learnable_skills_list;
+}
+```
 
-## Logging
+**ScriptableObjects use standard C# camelCase fields:**
+```csharp
+// From Assets/Scripts/UI/CharacterSelect/HeroThemeConfig.cs
+public class HeroThemeConfig : ScriptableObject
+{
+    public Color primaryColor;
+    public Color glowColor;
+    public float musicIntensity;
+    public float scanlineOpacity;
+}
+```
 
-**Framework:** `UnityEngine.Debug` with centralized `ErrorLogger` wrapper
+**Constants centralized in `Assets/Scripts/Core/Constants.cs`:**
+- All magic numbers belong here
+- `static readonly` for non-primitive types (`Vector2`, `Color`)
+- `const` for primitive types
+- Helper methods for computed values: `GetHPColor()`, `GetExpForLevel()`
 
-**Patterns:**
-- Direct logging uses bracketed class/system prefix: `[CharSelectManager]`, `[EventBus]`, `[GameBootstrap]`
-- Centralized logging via `Assets/Scripts/Core/ErrorLogger.cs`:
-  ```csharp
-  ErrorLogger.Combat("Damage calculated", source, target);
-  ErrorLogger.UI("Screen loaded");
-  ErrorLogger.AI("Decision made");
-  ```
-- Subsystem prefixes: `[VB]`, `[VB:Combat]`, `[VB:UI]`, `[VB:AI]`, `[VB:Capture]`, `[VB:Settings]`
-- Conditional compilation: logging methods marked `[Conditional("UNITY_EDITOR"), Conditional("DEVELOPMENT_BUILD")]`
-- Performance timing:
-  ```csharp
-  ErrorLogger.BeginTiming("operation_name");
-  // ... work ...
-  ErrorLogger.EndTiming("operation_name"); // Logs elapsed ms
-  ```
+## Game System Design Patterns
 
-## Comments
+**Pure static classes for stateless game logic (no MonoBehaviour):**
+- `Assets/Scripts/Systems/BrandSystem.cs` - brand effectiveness matrix
+- `Assets/Scripts/Systems/CorruptionSystem.cs` - corruption state/modifier calculations
+- `Assets/Scripts/Systems/SynergySystem.cs` - synergy tier calculations
+- `Assets/Scripts/Systems/PathSystem.cs` - path bonus calculations
+- `Assets/Scripts/Combat/DamageCalculator.cs` - damage formula
 
-**When to Comment:**
-- XML doc comments (`///`) on all public methods and classes
-- Inline comments for non-obvious logic (e.g., `// Wrap around`, `// Walk up the visual tree`)
-- Section separators for file organization (see Code Style above)
-- Parameter documentation via inline comments on event declarations:
-  ```csharp
-  public static event Action<string, string, int, bool> OnDamageDealt;  // source, target, amount, isCrit
-  ```
+**Manager singletons for stateful runtime systems:**
+- `Assets/Scripts/Core/GameManager.cs` - game state, party management
+- `Assets/Scripts/Managers/SaveManager.cs` - save/load operations
+- `Assets/Scripts/Audio/AudioManager.cs` - audio playback, bank management
+- `Assets/Scripts/Combat/BattleManager.cs` - battle orchestration
 
-**XML Doc:**
-- `<summary>` tags on classes and public methods
-- Used consistently in core infrastructure, less consistently in UI controllers
-- Example from `Assets/Scripts/Systems/BrandSystem.cs`:
-  ```csharp
-  /// <summary>
-  /// Get damage multiplier between attacker and defender brands
-  /// </summary>
-  public static float GetEffectiveness(Brand attacker, Brand defender)
-  ```
+## Performance Conventions
 
-**Deprecation:**
-- Use `[Obsolete("Use X instead")]` attribute with migration guidance
-- Example from `Assets/Scripts/Core/EventBus.cs`:
-  ```csharp
-  [Obsolete("Use StatusEffectApplied(GameObject, StatusEffectType) instead")]
-  public static event Action<string, StatusEffect, int> OnStatusApplied;
-  ```
+**Pre-allocate buffers to avoid GC in Update:**
+```csharp
+// From Assets/Scripts/Combat/BattleManager.cs
+private const int kMaxPartySize = 6;
+private Brand[] _brandBuffer = new Brand[kMaxPartySize];
+```
 
-## Function Design
+**Cache WaitForSeconds:**
+```csharp
+// From Assets/Scripts/Core/GameBootstrap.cs
+private static readonly WaitForSeconds kTestDelayWait = new WaitForSeconds(0.5f);
+```
 
-**Size:** Methods are generally 5-30 lines. Longer methods are split by section separators within the class.
+**Use HashSet for O(1) membership lookups:**
+```csharp
+// From Assets/Scripts/Combat/BattleManager.cs
+private readonly HashSet<Combatant> _playerPartySet = new HashSet<Combatant>();
+```
 
-**Parameters:**
-- Prefer primitives and data objects over raw tuples
-- Use string IDs extensively: `heroId`, `monsterId`, `skillId`, `shrineId`
-- Avoid `out` parameters; return values or data objects instead
+**Expose read-only collections:**
+```csharp
+private readonly List<PartyMember> _party = new List<PartyMember>();
+public IReadOnlyList<PartyMember> Party => _party;
+```
 
-**Return Values:**
-- Void for fire-and-forget operations and event handlers
-- Bool for success/failure: `bool success = await SaveAsync(slot);`
-- Nullable references for "not found": `return null;`
-- Expression-bodied for simple returns
+**Forbidden in Update loops** (enforced by `unity-antipattern-guard.js` hook):
+- `Find()`, `FindObjectOfType()`, `FindObjectsByType()`
+- `GetComponent()` (must cache in Awake/Start)
+- `Camera.main` (cache the reference)
+- LINQ queries (allocate enumerators)
+- `new List/Dictionary/string[]` heap allocations
+- `Resources.Load()` (cache loaded resources)
 
-## Module Design
+## VB-IGNORE Comment Pattern
 
-**Exports:**
-- One primary class per file
-- Supporting types (nested classes, small data structs) may live in the same file
-- Example: `GameManager.cs` contains nested `PartyMember` and `ActiveHero` classes
+**Suppress automated code review warnings:**
+```csharp
+// Format: // VB-IGNORE {CODE} -- {justification}
+private Dictionary<string, float> _bankLastUsed = new Dictionary<string, float>(); // VB-IGNORE BUG-34 -- not serialized, runtime-only tracking
+```
 
-**Barrel Files:**
-- Not used. Each file imports its dependencies explicitly.
+Known code prefixes:
+- `BUG-{N}` - Specific bug pattern detector
+- `SEC-{N}` - Security warning
+- `DEEP-{N}` - Deep analysis warning
+- `UNITY-{N}` - Unity-specific warning
+- `TASK-{N}` - Task-related warning
 
-**Static Utility Classes:**
-- Used for stateless systems: `BrandSystem`, `EventBus`, `ErrorLogger`, `Constants`
-- Pattern: `public static class SystemName { ... }`
+Always include a justification after `--`.
 
-**Singleton Pattern:**
-- Base class: `Assets/Scripts/Core/SingletonMonoBehaviour.cs`
-- Used by: `GameManager`, `GameDatabase`, `SaveManager`, `ShrineManager`, `ThemeManager`, `ScreenTransition`
-- Access: `GameManager.Instance`, `SaveManager.HasInstance`
-- Lifecycle: `_isQuitting` guard prevents recreation during application quit
-- Override `IsPersistent` to control DontDestroyOnLoad behavior
+## Deprecation Pattern
 
-**ScriptableObject Pattern:**
-- Used for: game data configs, display configs, audio configs, status effect definitions
-- Always use `[CreateAssetMenu]` attribute:
-  ```csharp
-  [CreateAssetMenu(fileName = "NewStatusEffect", menuName = "VeilBreakers/Status Effect")]
-  public class StatusEffectData : ScriptableObject
-  ```
-- Heavy use of Inspector attributes: `[Header]`, `[Tooltip]`, `[Range]`, `[TextArea]`
-- `#if UNITY_EDITOR` guard on `OnValidate()` methods
+**Use `[Obsolete]` with migration guidance:**
+```csharp
+// From Assets/Scripts/Core/EventBus.cs
+[Obsolete("Use StatusEffectApplied(GameObject, StatusEffectType) instead")]
+public static event Action<string, StatusEffect, int> OnStatusApplied;
+```
 
-**UI Toolkit Custom Elements:**
-- Use `[UxmlElement]` attribute with `partial class`:
-  ```csharp
-  [UxmlElement]
-  public partial class AnimatedBar : VisualElement
-  ```
-- Bindable properties use `[UxmlAttribute]`
-- USS class constants use `k` prefix: `private const string kBaseClass = "animated-bar";`
+**Suppress obsolete warnings at usage sites:**
+```csharp
+#pragma warning disable CS0618
+public static void StatusApplied(string target, StatusEffect effect, int duration)
+    => OnStatusApplied?.Invoke(target, effect, duration);
+#pragma warning restore CS0618
+```
 
-**Event-Driven Communication:**
-- Global events: `Assets/Scripts/Core/EventBus.cs` (static Action events)
-- Scoped events: `CharSelectEvents` (screen-specific static events with `ClearAll()`)
-- UI binding: `RegisterCallback<ClickEvent>()` / `UnregisterCallback<ClickEvent>()` paired in `BindUI()`/`UnbindUI()`
-- Always unsubscribe in `OnDisable()` or `OnDestroy()`
+## Claude Hook Quality Gates
 
-**Extension Methods:**
-- Centralized in `Assets/Scripts/Utils/Extensions.cs`
-- Namespace: `VeilBreakers.Utils`
-- Organized by target type with section separators
-- Include safety guards (null checks, division-by-zero protection)
+**Active hooks in `.claude/hooks/` that enforce conventions automatically:**
+
+| Hook | Trigger | Purpose |
+|------|---------|---------|
+| `blind-edit-guard.js` | PreToolUse (Edit) | Warns when editing a .cs file without reading it first |
+| `unity-antipattern-guard.js` | PreToolUse (Edit/Write) | Blocks Find/GetComponent/LINQ/Camera.main/heap allocs/Resources.Load in files with Update loops |
+| `protect-critical-files.js` | PreToolUse (Edit/Write) | Warns before modifying brand/path/corruption/synergy/save/combat/capture system files |
+| `guard-destructive.js` | PreToolUse | Guards against destructive git operations |
+| `track-cs-edits.js` | PreToolUse | Tracks C# file edits for session awareness |
+
+## XML Documentation
+
+**Required on all public methods and classes:**
+```csharp
+/// <summary>
+/// Calculate damage for an attack
+/// </summary>
+public static DamageResult Calculate(Combatant attacker, Combatant defender, ...)
+```
+
+**Inline event parameter docs via trailing comments:**
+```csharp
+public static event Action<string, string, int, bool> OnDamageDealt;  // source, target, amount, isCrit
+```
+
+## Code Style
+
+**Formatting:**
+- No `.editorconfig` or Roslyn analyzers configured
+- 4-space indentation (standard C#)
+- Allman-style braces for classes/methods, K&R-style for control flow
+- No strict line length limit; lines occasionally exceed 120 chars for long signatures
+
+**Linting:**
+- Unity compiler warnings only
+- `#pragma warning disable/restore` used selectively for intentional warnings
+- Hook-based enforcement for Unity anti-patterns (see Quality Gates above)
 
 ---
 
-*Convention analysis: 2026-02-21*
+*Convention analysis: 2026-03-30*

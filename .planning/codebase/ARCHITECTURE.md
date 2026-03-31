@@ -1,269 +1,317 @@
 # Architecture
 
-**Analysis Date:** 2026-02-21
+**Analysis Date:** 2026-03-30
 
 ## Pattern Overview
 
-**Overall:** Singleton-based Service Locator with Event-Driven Communication
+**Overall:** Singleton Manager + Event Bus + ScriptableObject Data Architecture
 
 **Key Characteristics:**
-- Persistent singleton managers initialized via a Bootstrap scene in phased order
-- Static `EventBus` class for decoupled game-wide communication (~50+ events)
-- Instance-level C# events on components for local communication (e.g., `Combatant.OnDeath`)
-- JSON data loaded asynchronously into in-memory dictionaries via `GameDatabase`
-- UI Toolkit (UXML/USS) for all menu screens; programmatic C# for animations
-- Real-time tactical combat (cooldown-based, not turn-based)
-- Scene-based game flow with fade transitions managed by `VBSceneManager`
+- Persistent singleton managers survive scene transitions via `DontDestroyOnLoad`
+- Static `EventBus` provides decoupled game-wide communication (50+ events)
+- JSON-backed data layer with `GameDatabase` dictionary lookups
+- Scene-scoped singletons for battle and capture systems
+- Pure static systems for game rules (no MonoBehaviour, no state)
+- UI Toolkit (UXML/USS/C#) for all UI, animated with PrimeTween
 
 ## Layers
 
 **Core Layer:**
-- Purpose: Application lifecycle, singleton infrastructure, input, event bus, constants, data asset references
+- Purpose: Application lifecycle, singletons, event bus, constants, input
 - Location: `Assets/Scripts/Core/`
-- Contains: `GameBootstrap`, `GameManager`, `GameDatabase`, `SingletonMonoBehaviour<T>`, `EventBus`, `InputManager`, `Constants`, `GameDataAssets`, `GameDataTypes`
-- Depends on: `VeilBreakers.Data` (enums, data classes)
+- Contains: `GameManager`, `GameBootstrap`, `EventBus`, `SingletonMonoBehaviour<T>`, `GameDatabase`, `GameDataAssets`, `InputManager`, `Constants`, `ErrorLogger`
+- Depends on: `VeilBreakers.Data` (enums, data types)
 - Used by: Every other layer
 
 **Data Layer:**
-- Purpose: Data structures, enumerations, JSON-serializable models
+- Purpose: Game data definitions, enums, serialization structures
 - Location: `Assets/Scripts/Data/`
-- Contains: `Enums.cs` (Brand, Path, CorruptionState, SkillType, StatusEffectType, etc.), `MonsterData.cs`, `HeroData.cs`, `SkillData.cs`, `ItemData.cs`, `SaveData.cs`
-- Depends on: UnityEngine only
-- Used by: Core, Systems, Combat, UI, Managers
+- Contains: `HeroData`, `MonsterData`, `SkillData`, `ItemData`, `SaveData`, `Enums`, `StatusEffectData`, `HeroDisplayConfig`, `ShrineData`, `AbilityData`
+- Depends on: Nothing (leaf layer)
+- Used by: Core, Combat, Systems, Managers, UI
 
 **Systems Layer:**
-- Purpose: Pure game logic systems (stateless static classes for combat math)
+- Purpose: Pure game rule calculations with no mutable state
 - Location: `Assets/Scripts/Systems/`
-- Contains: `BrandSystem`, `PathSystem`, `CorruptionSystem`, `SynergySystem`, `VERASystem`
+- Contains: `BrandSystem`, `SynergySystem`, `CorruptionSystem`, `PathSystem`, `VERASystem`, `StatusEffectInstance`
 - Depends on: `VeilBreakers.Data`
-- Used by: Combat, UI, Managers
+- Used by: Combat, Managers, UI (for display helpers)
 
 **Combat Layer:**
-- Purpose: Battle orchestration, combatant state, damage calculation, AI
+- Purpose: Real-time tactical combat execution
 - Location: `Assets/Scripts/Combat/`
-- Contains: `BattleManager`, `Combatant`, `DamageCalculator`, `CombatAI`, skill executors, guard system
+- Contains: `BattleManager`, `Combatant`, `DamageCalculator`
 - Depends on: Core, Data, Systems
-- Used by: UI (combat HUD), Managers (scene transitions)
+- Used by: UI.Combat, AI, Capture, Audio
 
 **Managers Layer:**
-- Purpose: Persistent services (save/load, scene management, audio, settings, status effects, shrines)
+- Purpose: Persistent services (save/load, settings, scenes, effects)
 - Location: `Assets/Scripts/Managers/`
-- Contains: `SaveManager`, `VBSceneManager`, `AudioManager`, `MusicManager`, `SettingsManager`, `AutoSaveManager`, `StatusEffectManager`, `ShrineManager`
-- Depends on: Core, Data
-- Used by: Combat, UI
-
-**UI Layer:**
-- Purpose: All user interface screens and components using UI Toolkit
-- Location: `Assets/Scripts/UI/`
-- Contains: Screen controllers, sub-controllers, effects, shared controls
-- Depends on: Core, Data, Systems (for display values)
-- Used by: Nothing (leaf layer)
+- Contains: `SaveManager`, `AutoSaveManager`, `SaveFileHandler`, `MigrationRunner`, `VBSceneManager`, `SettingsManager`, `StatusEffectManager`, `ShrineManager`
+- Depends on: Core, Data, Systems
+- Used by: UI, Combat (for StatusEffectManager)
 
 **AI Layer:**
-- Purpose: Monster combat AI behavior
+- Purpose: Autonomous combatant decision-making (Gambit system)
 - Location: `Assets/Scripts/AI/`
-- Contains: AI decision-making for enemy combatants
-- Depends on: Combat, Data
+- Contains: `GambitController`, `GambitEvaluator`, `GambitRule`, `GambitCondition`, `GambitAction`, `AIPersonality`
+- Depends on: Combat, Core, Data
+- Used by: Attached to enemy/ally Combatant GameObjects via `[RequireComponent(typeof(Combatant))]`
 
 **Capture Layer:**
-- Purpose: Monster capture mechanics
+- Purpose: Monster capture mechanics (mark, bind, QTE, capture)
 - Location: `Assets/Scripts/Capture/`
-- Contains: Capture logic and calculations
-- Depends on: Combat, Data, Systems
+- Contains: `CaptureManager`, `CaptureFormulaCalculator`, `BindThresholdCalculator`, `QTEController`, `CaptureData`
+- Depends on: Combat, Core, Data
+- Used by: UI.Combat (CombatHUD triggers capture)
+
+**Audio Layer:**
+- Purpose: Sound effects, music, voice, battle audio integration
+- Location: `Assets/Scripts/Audio/`
+- Contains: `AudioManager`, `MusicManager`, `AudioConfig`, `AudioTriggers`, `AudioBattleIntegration`, `LowHealthAudio`, `VB_UISoundManager`, `VERAVoiceController`
+- Depends on: Core (EventBus, SingletonMonoBehaviour)
+- Used by: Listens to EventBus events
+
+**UI Layer:**
+- Purpose: All user interface screens and HUD elements
+- Location: `Assets/Scripts/UI/`
+- Contains: Sub-folders for CharacterSelect, Combat, Controls, Core, Effects, Menus
+- Depends on: Core, Data, Combat, Managers, Systems
+- Used by: Scene GameObjects (MonoBehaviour attached to UIDocument holders)
+
+**Commands Layer:**
+- Purpose: Quick command / radial menu system for combat
+- Location: `Assets/Scripts/Commands/`
+- Contains: `QuickCommand`, `QuickCommandManager`, `RadialMenuController`, `TimeSlowController`
+- Depends on: Combat, Core
+- Used by: UI.Combat
+
+**Utils Layer:**
+- Purpose: Generic utilities and extensions
+- Location: `Assets/Scripts/Utils/`
+- Contains: `Extensions`, `ObjectPool`
+- Depends on: Nothing
+- Used by: Any layer
+
+**VFX Layer:**
+- Purpose: Visual effects scripts (brand-specific particle systems)
+- Location: `Assets/Scripts/VFX/`
+- Contains: `VB_AoEVFX_ground_circle_RUIN`, `VB_HitVFX_SAVAGE`, `VB_StatusVFX_SURGE`
+- Depends on: Core (brand data)
+- Used by: Combat scene GameObjects
 
 ## Data Flow
 
-**Game Initialization (Bootstrap):**
+**Bootstrap Flow (Application Start):**
 
-1. `GameBootstrap.OnEnable()` runs in the Bootstrap scene
-2. Phase 1: Creates `GameManager`, `GameDatabase`, `InputManager` singletons
-3. `GameDatabase.InitializeAsync()` loads all JSON files (`monsters.json`, `heroes.json`, `skills.json`, `items.json`) in parallel via `Task.WhenAll`
-4. JSON parsed via `JsonUtility` with `WrapJsonArray()` helper (Unity can't parse bare arrays)
-5. Data stored in `Dictionary<string, T>` lookups (e.g., `_monsters`, `_skills`)
-6. Phase 2-4: Creates remaining managers (Save, Audio, Scene, etc.)
-7. After splash delay, `VBSceneManager.LoadScene("MainMenu")` transitions to the main menu
+1. `Bootstrap` scene loads with `GameBootstrap` GameObject
+2. `GameBootstrap.OnSingletonAwake()` calls `Initialize()`
+3. Phase 1: Creates `GameManager`, `GameDatabase`, `InputManager` singletons
+4. Phase 2: Creates `SettingsManager`, `VBSceneManager`, `SaveManager`, `AutoSaveManager`
+5. Phase 3: Creates `AudioManager`, `MusicManager`, `VERAVoiceController`, `LowHealthAudio`
+6. Phase 4: Creates `StatusEffectManager`, `ShrineManager`, `FPSCounter`
+7. `GameDatabase.OnSingletonAwake()` triggers async JSON loading (monsters, skills, heroes, items in parallel)
+8. After splash delay, `VBSceneManager.LoadSceneWithFade("MainMenu")` transitions to main menu
 
 **Scene Flow:**
+
 ```
-Bootstrap -> MainMenu -> CharacterSelect -> Overworld <-> Battle
-                ^                                          |
-                |__________________________________________|
+Bootstrap -> MainMenu -> CharacterSelect -> Overworld / Battle / TestArena
+                 ^                                        |
+                 |________________________________________|
 ```
 
-**Character Select -> Gameplay:**
+Scenes: `Bootstrap`, `MainMenu`, `CharacterSelect`, `Battle`, `Overworld`, `TestArena`
+Scene names are constants in `VBSceneManager.Scenes` static class at `Assets/Scripts/Managers/VBSceneManager.cs`.
 
-1. `CharacterSelectManager.OnEnable()` waits for `GameDatabase.IsReady` via coroutine
-2. Loads hero data via `GameDatabase.Instance.GetAllHeroes()`
-3. User navigates heroes and clicks Embark
-4. `SaveManager.CreateNewSaveAsync()` creates a new save file (async with atomic writes)
-5. `VBSceneManager` or `ScreenTransition` fades to Overworld scene
+**New Game Flow:**
+
+1. `MainMenuController` presents New Game / Continue / Settings / Exit
+2. Player selects New Game -> `VBSceneManager.GoToCharacterSelect()`
+3. `CharacterSelectManager` loads hero list from `GameDatabase.Heroes`
+4. Player browses heroes (Vex, Seraphina, Orion, Nyx) via carousel
+5. Player holds Embark button -> `HoldToEmbarkController` triggers
+6. `SaveManager.CreateNewSaveAsync()` creates save in best available slot
+7. `GameManager.StartNewGame(heroId, starterMonsterId)` initializes party
+8. `EmbarkCinematicController` plays transition animation
+9. `VBSceneManager` loads game scene (`Overworld`)
 
 **Combat Flow:**
 
-1. `BattleManager.StartBattle()` initializes combatants and synergy calculations
-2. Each frame: `BattleManager.Update()` ticks cooldowns, checks victory/defeat
-3. Player selects ability -> `BattleManager.ExecuteAbility()` dispatches by `SkillType`
-4. `DamageCalculator.Calculate()` computes: `BasePower * (ATK/DEF) * BrandMult * SynergyMult * Variance * CritMult`
-5. `Combatant.TakeDamage()` applies result, fires `OnDamageReceived` and `OnHpChanged` events
-6. `EventBus.DamageDealt()` notifies UI and other listeners
-7. On death: `Combatant.OnDeath` event fires, `BattleManager` checks win/lose conditions
+1. Scene loads `Battle` scene with `BattleManager` (scene-scoped singleton, `IsPersistent = false`)
+2. `BattleManager.StartBattle(players, enemies, championPath)` initializes combatants
+3. `CombatHUD.Initialize(player, allies, enemies)` sets up UI panels
+4. Real-time Update loop: `BattleManager.Update()` ticks cooldowns, checks win/lose
+5. Player input -> `CombatHUD` -> `BattleManager.ExecuteAbility(user, slot, target)`
+6. `DamageCalculator.Calculate()` computes damage with brand/synergy/corruption modifiers
+7. `Combatant.TakeDamage()` / `Combatant.Heal()` mutates HP, fires events
+8. `EventBus` broadcasts damage/heal/death events to Audio, UI, VFX listeners
+9. `BattleManager.CheckBattleEnd()` triggers victory/defeat when party wiped
+
+**Damage Calculation Pipeline:**
+
+```
+BasePower * (ATK/DEF ratio, clamped 0.5-2.0)
+  * attacker.DamageMultiplier (buffs/debuffs)
+  * BrandSystem.GetEffectiveness(attacker.Brand, defender.Brand) [0.5x, 1.0x, 2.0x]
+  * SynergySystem.GetDamageBonus(tier) [1.0, 1.05, 1.08]
+  * (2.0 - defenderSynergyDefense) [defender synergy reduction]
+  * (1.0 + CorruptionModifier) [-0.20 to +0.25]
+  * Random.Range(0.9, 1.1) [variance]
+  * CritMultiplier [1.0 or 1.5]
+  = finalDamage (min 1)
+```
+
+Implementation: `Assets/Scripts/Combat/DamageCalculator.cs` (static class)
+
+**Capture Flow:**
+
+1. Player marks target via `CaptureManager.MarkTarget()` (multiple marks allowed)
+2. Allies approach marked target; `BindThresholdCalculator` computes bind threshold from HP%, corruption%, rarity
+3. When target HP drops below threshold, bind window opens
+4. Ally executes bind -> `CaptureManager` applies `BOUND` status (can't act, can't die)
+5. Capture phase: battle pauses, player selects capture item tier
+6. `CaptureFormulaCalculator` computes base capture rate from HP%, corruption%, item tier
+7. `QTEController` runs quick-time event for bonus
+8. Success: monster added to party via `GameManager.AddToParty()`; Fail: monster goes berserk, battle resumes
+
+**Save/Load Flow:**
+
+1. `SaveManager.SaveAsync(slot)` acquires `SemaphoreSlim` mutex (5s timeout)
+2. Updates playtime and timestamp on `SaveData`
+3. `SaveFileHandler.RotateBackups(path)` creates .bak1/.bak2 backup chain
+4. `SaveFileHandler.SerializeToBytes()` serializes with JSON + GZip + AES-CBC + HMAC-SHA256
+5. `SaveFileHandler.WriteFileAtomicAsync()` writes to temp file, then atomic rename
+6. Read-back verification confirms byte-level match
+7. `EventBus.SaveCompleted(slot)` broadcasts success
+8. Load reverses: read bytes -> HMAC verify -> AES decrypt -> GZip decompress -> JSON deserialize
+9. `MigrationRunner.MigrateToLatest()` upgrades old save versions (current: v3)
 
 **State Management:**
-- `GameManager.GameState` enum: MainMenu, Exploring, InBattle, InDialogue, InMenu, Paused, Loading
-- `GameManager` holds runtime party state: 1 `ActiveHero` + up to 3 `PartyMember` monsters
-- `SaveManager` persists state to disk with `SaveData` serialization (3 manual + 2 auto-save slots)
-- No external state management library; state lives in singleton instances
+
+- `GameManager.CurrentState` enum: `MainMenu`, `Exploring`, `InBattle`, `InDialogue`, `InMenu`, `Paused`, `Loading`
+- `GameManager.ChangeState()` handles transitions (e.g., pause sets `Time.timeScale = 0`)
+- `BattleManager._state` enum: `INITIALIZING`, `PLAYER_TURN`, `ENEMY_TURN`, `ANIMATING`, `VICTORY`, `DEFEAT`, `ESCAPED`, `CAPTURE`
+- Party data lives in `GameManager` at runtime: `CurrentHero` (ActiveHero) + `Party` (List<PartyMember>)
+- Persistent data lives in `SaveData` serialized to disk via `SaveManager`
 
 ## Key Abstractions
 
 **SingletonMonoBehaviour<T>:**
-- Purpose: Base class for all persistent manager singletons
+- Purpose: Generic base for persistent singletons with DontDestroyOnLoad
 - Location: `Assets/Scripts/Core/SingletonMonoBehaviour.cs`
-- Pattern: Generic MonoBehaviour with `DontDestroyOnLoad`, `HasInstance` check, duplicate destruction
-- Override `IsPersistent => false` for scene-specific singletons (e.g., `BattleManager`)
-- Used by: `GameManager`, `GameDatabase`, `SaveManager`, `VBSceneManager`, `AudioManager`, `InputManager`, `BattleManager`, `ThemeManager`, and all other managers
+- Examples: `GameManager`, `GameDatabase`, `SaveManager`, `InputManager`, `AudioManager`, `VBSceneManager`, `StatusEffectManager`, `ShrineManager`
+- Pattern: `SingletonResetHelper` handles domain reload cleanup for all closed generic types via `[RuntimeInitializeOnLoadMethod]`
+- Override `IsPersistent => false` for scene-scoped singletons (e.g., `BattleManager`, `CaptureManager`)
+- Access: `T.Instance` (returns null if quitting), `T.HasInstance` for null-safe checks
 
 **EventBus:**
-- Purpose: Decoupled game-wide event communication (replaces Godot signals from migration)
+- Purpose: Static event hub for decoupled cross-system communication
 - Location: `Assets/Scripts/Core/EventBus.cs`
-- Pattern: Static class with `public static event Action<T>` fields and static fire methods
-- Categories: Game State, Battle, Status Effects, Combat Synergy, Monster, Hero, Inventory, UI, Audio, Save/Load, Shrine, Progression, Scene
-- `ClearAllListeners()` nulls all delegates during cleanup
-- Has deprecated `StatusEffect` events alongside new `StatusEffectType` events
+- Pattern: Static `Action` delegates with static fire methods (e.g., `EventBus.BattleStarted()`)
+- Categories: Game State (4), Battle (5), Combat Actions (4), Skill Types (4), Status Effects (6), Synergy (3), Monster (4), Hero (3), Inventory (4), UI (4), Audio (3), Save/Load (8), Shrine (3), Progression (4), Scene (8)
+- Cleanup: `ClearAllListeners()` nulls all delegates; called on domain reload via `[RuntimeInitializeOnLoadMethod]`
+- Subscribe in `OnEnable`/`Start`, unsubscribe in `OnDisable`/`OnDestroy` for scene-scoped objects
 
-**CharSelectEvents (Screen-local events):**
-- Purpose: Scoped event bus for the Character Select screen only
-- Location: `Assets/Scripts/UI/CharacterSelect/CharSelectEvents.cs`
-- Pattern: Same static event pattern as EventBus but with `ClearAll()` on scene exit
-- Used by: `CharacterSelectManager` and its sub-controllers
+**GameDatabase:**
+- Purpose: Central read-only data repository loaded from JSON
+- Location: `Assets/Scripts/Core/GameDatabase.cs`
+- Pattern: Async parallel load on singleton init; `Dictionary<string, T>` lookups
+- Data sources: `Resources/Data/monsters.json`, `heroes.json`, `skills.json`, `items.json` via `GameDataAssets` ScriptableObject
+- Access: `GameDatabase.Instance.GetMonster("id")`, `GetSkill()`, `GetHero()`, `GetItem()`
+- Readiness: check `GameDatabase.Instance.IsReady` before querying; `InitializationTask` can be awaited
 
 **Combatant:**
-- Purpose: Base class for all entities in combat (heroes and monsters)
+- Purpose: Unified combat participant (hero or monster) with stats, abilities, status effects
 - Location: `Assets/Scripts/Combat/Combatant.cs`
-- Pattern: MonoBehaviour with serialized stats, instance events (`OnHpChanged`, `OnDeath`, etc.), casting system, status effect management
-- Uses manual iteration (no LINQ) in hot paths
+- Pattern: MonoBehaviour component on battle scene GameObjects
+- Events: `OnHpChanged`, `OnMpChanged`, `OnDamageReceived`, `OnHealed`, `OnDeath`, `OnRevive`
+- Owns: `AbilityLoadout` (6 slots: BASIC_ATTACK, DEFEND, SKILL_1, SKILL_2, SKILL_3, ULTIMATE), local status effect list (fallback), casting state, defend/guard state
 
-**GameDataAssets (ScriptableObject):**
-- Purpose: Centralized reference to all JSON TextAsset files, eliminating scattered `Resources.Load` calls
-- Location: `Assets/Scripts/Core/GameDataAssets.cs`
-- Pattern: ScriptableObject singleton with `[CreateAssetMenu]`, fallback path resolution
-- Referenced by: `GameDatabase` during initialization
+**Static Rule Systems (all in `Assets/Scripts/Systems/`):**
+- `BrandSystem`: 10-brand effectiveness matrix (2x strong, 0.5x weak, 1x neutral), hybrid brand resolution via `GetCoreBrand()`, brand colors and display names
+- `SynergySystem`: Party synergy tiers (FULL 3/3: +8%, PARTIAL 2/3: +5%, NEUTRAL: +0%, ANTI: +0% with 1.5x corruption) based on champion Path + party brands
+- `CorruptionSystem`: 5-tier corruption state (ASCENDED 0-10%: +25%, Purified 11-25%: +10%, Unstable 26-50%: +0%, Corrupted 51-75%: -10%, Abyssal 76-100%: -20%)
+- `PathSystem`: 4-path stat bonuses (IRONBOUND=Defense, FANGBORN=Attack, VOIDTOUCHED=Magic, UNCHAINED=Balanced) with 0.5% per path level scaling
 
-**DamageResult (struct):**
-- Purpose: Value type carrying all damage calculation outputs
-- Location: `Assets/Scripts/Combat/DamageCalculator.cs`
-- Contains: `finalDamage`, `brandMultiplier`, `synergyMultiplier`, `variance`, `isCritical`, `wasBlocked`, `wasDodged`
-- Computed properties: `IsSuperEffective`, `IsNotEffective`
+**AbilityLoadout (6-slot system):**
+- Slot 0: BASIC_ATTACK (no cooldown)
+- Slot 1: DEFEND (no cooldown)
+- Slot 2: SKILL_1 (4-6s cooldown)
+- Slot 3: SKILL_2 (10-15s cooldown)
+- Slot 4: SKILL_3 (18-25s cooldown)
+- Slot 5: ULTIMATE (45-90s cooldown)
 
 ## Entry Points
 
 **GameBootstrap:**
 - Location: `Assets/Scripts/Core/GameBootstrap.cs`
-- Triggers: Scene load of Bootstrap scene (first scene in build settings)
-- Responsibilities: Creates all singleton managers in 4 phases, waits for `GameDatabase` readiness, loads MainMenu scene after splash delay
-
-**BattleManager:**
-- Location: `Assets/Scripts/Combat/BattleManager.cs`
-- Triggers: Battle scene load (scene-specific singleton, `IsPersistent => false`)
-- Responsibilities: Initializes combatants, runs combat loop in `Update()`, dispatches abilities, checks win/lose
+- Triggers: Attached to GameObject in `Bootstrap` scene (first scene loaded)
+- Responsibilities: Creates all persistent singletons in dependency order, runs health checks, loads first scene after splash delay
 
 **MainMenuController:**
 - Location: `Assets/Scripts/UI/Menus/MainMenuController.cs`
-- Triggers: MainMenu scene load
-- Responsibilities: Renders main menu UI, handles New Game / Continue / Settings, async save detection
+- Triggers: `MainMenu` scene loads, `UIDocument` provides UXML root
+- Responsibilities: New Game / Continue / Settings / Exit navigation, title screen VFX, animated transitions
 
 **CharacterSelectManager:**
 - Location: `Assets/Scripts/UI/CharacterSelect/CharacterSelectManager.cs`
-- Triggers: CharacterSelect scene load
-- Responsibilities: Hero navigation, embark flow (save creation + scene transition), delegates to sub-controllers
+- Triggers: `CharacterSelect` scene loads
+- Responsibilities: Hero browsing, tab switching (Overview/Abilities/Lore), embark flow with timeout/error handling, save creation, theme transitions
+- Delegates to sub-controllers: `HeroDataPanelController`, `HeroStatsPanelController`, `CarouselController`, `HoldToEmbarkController`, `EmbarkCinematicController`, `HeroThemeTransitioner`, `VeilTransitionController`
+
+**BattleManager:**
+- Location: `Assets/Scripts/Combat/BattleManager.cs`
+- Triggers: `Battle` scene loads, external code calls `StartBattle()`
+- Responsibilities: Combat lifecycle, ability execution, synergy tracking, party swaps, victory/defeat, event cleanup
+
+**CombatHUD:**
+- Location: `Assets/Scripts/UI/Combat/CombatHUD.cs`
+- Triggers: `Battle` scene loads with HUD prefab
+- Responsibilities: Player/enemy/ally panels, skill bar, target cycling, ally selection, capture banner, bidirectional sync with BattleManager
 
 ## Error Handling
 
-**Strategy:** Defensive programming with Debug.Log warnings, graceful fallbacks, and null-safe navigation
+**Strategy:** Defensive programming with Debug.Log/LogWarning/LogError + null guards
 
 **Patterns:**
-- Null guards at method entry with `Debug.LogWarning/LogError` and early return (see `DamageCalculator.Calculate()`, `GameDatabase` queries)
-- `?.` null-conditional operator throughout UI binding code (e.g., `_btnPrev?.RegisterCallback<ClickEvent>`)
-- Coroutine timeout patterns: `InitializeWhenReady()` in `CharacterSelectManager` has a 10-second timeout waiting for `GameDatabase`
-- Async error handling: `Task.IsFaulted`/`Task.IsCanceled` checks after awaiting save operations (see `CreateOrRotateNewGameSave`)
-- `SemaphoreSlim` with 5-second timeout in `SaveManager` to prevent deadlocks on concurrent save/load
-- Atomic file writes in `SaveFileHandler` to prevent save corruption
-- Backup rotation in `SaveManager` for save recovery
-- `_isQuitting` flag in `SingletonMonoBehaviour` prevents errors during application shutdown
-- No try/catch in most game logic; exceptions are rare by design (defensive checks prevent them)
+- Singleton access: always check `T.HasInstance` before `.Instance` to avoid null references
+- `GameDatabase` query methods return null if `!IsReady`; callers must null-check
+- `SaveManager` uses `try/catch` with typed exception filters (`IOException`, `InvalidDataException`)
+- `SaveManager` uses `SemaphoreSlim` with 5-second timeout to prevent deadlocks
+- `SaveData.ValidateAndRepair()` clamps all values to valid ranges and initializes null lists
+- `EventBus` handlers use null-conditional invocation (`OnEvent?.Invoke()`)
+- Conditional compilation: `#if UNITY_EDITOR || DEVELOPMENT_BUILD` for verbose combat logging
+- `ErrorLogger` static class for consistent structured logging
 
 ## Cross-Cutting Concerns
 
 **Logging:**
-- `Debug.Log/LogWarning/LogError` with `[ClassName]` prefix convention (e.g., `[CharSelectManager]`, `[DamageCalculator]`)
-- No structured logging framework; Unity console output only
-- Logging level controlled by message type (Log = info, LogWarning = recoverable, LogError = broken)
+- `Debug.Log/LogWarning/LogError` with `[ClassName]` prefix convention
+- `ErrorLogger` static helper at `Assets/Scripts/Core/ErrorLogger.cs`
+- Verbose combat logs gated behind `UNITY_EDITOR || DEVELOPMENT_BUILD` defines
 
 **Validation:**
-- Data classes have `Validate()` methods with fallback defaults (see `HeroData.Validate()`)
-- `GameDatabase` validates loaded data counts after JSON parsing
-- `Constants.cs` centralizes all magic numbers to prevent scattered literals
-- No runtime schema validation on JSON data
+- `SaveData.ValidateAndRepair()` for save file integrity (clamps, null-init, size limits)
+- `DamageCalculator` clamps stat ratios to [0.5, 2.0] and enforces minimum 1 damage
+- `CorruptionSystem` clamps corruption to [0, 100] via `Mathf.Clamp`
+- Brand effectiveness resolves hybrid brands via `BrandSystem.GetCoreBrand()`
 
-**Authentication:**
-- Not applicable (single-player offline game)
+**Save Security:**
+- AES-CBC encryption + HMAC-SHA256 verification on all save files
+- Atomic file writes (write to temp, rename) prevent corruption on crash
+- Backup rotation (.bak1, .bak2) for recovery from corrupted saves
+- Orphaned temp file cleanup on initialization
+- Save version migration via `MigrationRunner` (current version: 3)
 
-**Input:**
-- `InputManager` wraps Unity's new Input System via generated `VeilBreakersInputActions`
-- `GameAction` enum with 25+ actions mapping to input bindings
-- Polling API: `GetActionDown()`, `GetAction()`, `GetActionUp()`
-- Device detection: `IsUsingGamepad` flag for UI adaptation
-- Action map switching: `EnableGameplay()` / `EnableUI()` / `DisableAll()`
-
-**Theming:**
-- `ThemeManager` singleton provides centralized color lookups for brands, corruption states, rarities, health, surfaces
-- Array-based O(1) color lookup by enum index
-- Per-hero USS theme classes applied via `ApplyThemeClass()` on the root `VisualElement`
-
-**Scene Management:**
-- `VBSceneManager` handles all scene transitions with fade overlay
-- Scene constants defined in `VBSceneManager`: Bootstrap, MainMenu, CharacterSelect, TestArena, Battle, Overworld
-- `ScreenTransition` provides alternative transition mechanism used by some controllers
-- Async loading with `SceneManager.LoadSceneAsync` and progress tracking via `EventBus`
-
-## Key Game Systems
-
-**10-Brand Combat System:**
-- Location: `Assets/Scripts/Systems/BrandSystem.cs`
-- 10 core brands: IRON, SAVAGE, SURGE, VENOM, DREAD, LEECH, GRACE, MEND, RUIN, VOID
-- 6 hybrid brands: IRON_SAVAGE, VOID_SURGE, MEND_GRACE, VENOM_DREAD, LEECH_RUIN, SURGE_IRON
-- Each brand is 2x effective against 2 brands, 0.5x against 2 brands, 1x against 6
-- Hybrid brands resolve to core via `GetCoreBrand()` for effectiveness lookup
-- Constants: `SUPER_EFFECTIVE = 2.0f`, `NOT_EFFECTIVE = 0.5f`, `NEUTRAL = 1.0f`
-
-**4-Path System:**
-- Location: `Assets/Scripts/Systems/PathSystem.cs`
-- Paths: IRONBOUND, FANGBORN, VOIDTOUCHED, UNCHAINED
-- Each path provides stat bonus multipliers (e.g., IRONBOUND: Defense 1.5x, HP 1.2x)
-- `[ThreadStatic]` bonus buffer avoids allocation in queries
-- Exponential path progression scaling
-
-**Corruption System (0-100%):**
-- Location: `Assets/Scripts/Systems/CorruptionSystem.cs`
-- Inverted trope: lower corruption = stronger
-- 5 tiers: ASCENDED (0-10%, +25%), PURIFIED (11-25%, +10%), UNSTABLE (26-50%, 0%), CORRUPTED (51-75%, -10%), ABYSSAL (76-100%, -20%)
-- Affects stat multipliers on monsters
-- Purification difficulty scales (harder near Ascension)
-
-**Synergy System:**
-- Location: `Assets/Scripts/Systems/SynergySystem.cs`
-- Party composition grants tier bonuses: FULL (3/3 matching brands): +8% damage/defense, 0.5x corruption rate, combo unlocked; PARTIAL (2/3): +5%, 0.75x corruption; ANTI (weak brands): 1.5x corruption
-- UNCHAINED path always NEUTRAL (flex path)
-- Recalculated when party composition changes
-
-**VERA AI Companion:**
-- Location: `Assets/Scripts/Systems/VERASystem.cs`
-- Veil Integrity (0-100%) drives personality degradation
-- 4 states: Normal, Corrupted, Critical, Abyssal
-- Glitch system with Zalgo text effects at low integrity
-- Priority-based dialogue queue
-- Subscribes to EventBus for reactive dialogue triggers
+**Performance Conventions:**
+- No LINQ in hot paths (Update loops use `for` with index)
+- Pre-allocated buffers: `Brand[] _brandBuffer` in BattleManager, `List<T>` temp buffers in StatusEffectManager
+- `HashSet<Combatant>` for O(1) party membership lookups in BattleManager
+- Cached `WaitForSeconds`/`WaitForSecondsRealtime` as `static readonly` fields
+- `[ThreadStatic]` reusable buffers for pure systems (`PathSystem._bonusBuffer`)
+- `Dictionary` caches for computed values (brand display names, brand colors)
 
 ---
 
-*Architecture analysis: 2026-02-21*
+*Architecture analysis: 2026-03-30*

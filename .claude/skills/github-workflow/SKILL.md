@@ -64,7 +64,7 @@ This skill triggers the **github** MCP server for repository operations using Pe
 
 **Repository**: Sharks820/VeilBreakers3D
 **Main Branch**: master
-**Current Branch**: feature/godot-documentation-transfer
+**Workflow**: feature branches from master (see CLAUDE.md GIT WORKFLOW)
 
 ## PR Template
 
