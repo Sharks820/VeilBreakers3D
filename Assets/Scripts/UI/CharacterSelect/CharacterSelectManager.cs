@@ -749,13 +749,6 @@ namespace VeilBreakers.UI.CharacterSelect
             else content.RemoveFromClassList("tab-active");
         }
 
-        private static void SetTabContentActive(VisualElement content, bool active)
-        {
-            if (content == null) return;
-            if (active) content.AddToClassList("tab-active");
-            else content.RemoveFromClassList("tab-active");
-        }
-
         /// <summary>
         /// Re-applies hero accent color to the currently active tab button.
         /// Called on hero navigation to update tab colors without changing the active tab.
