@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v6.0
 milestone_name: milestone
-current_phase: 6
-status: phase-complete
+current_phase: 7
+status: planning
 stopped_at: Completed 06-01-PLAN.md execution (Phase 6 complete)
-last_updated: "2026-03-31T13:47:26Z"
+last_updated: "2026-03-31T13:53:41.989Z"
 progress:
   total_phases: 8
   completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 6
+  completed_plans: 6
 ---
 
 # Session State
@@ -22,8 +22,8 @@ See: .planning/PROJECT.md
 ## Position
 
 **Milestone:** v6.0 — Bug Fixes & Code Quality Hardening + UI Rebuild
-**Current phase:** 6
-**Status:** Phase 6 complete (both plans 06-01 and 06-02 done)
+**Current phase:** 7
+**Status:** Ready to plan
 
 ## What's Done (v6.0)
 
@@ -70,6 +70,7 @@ See: .planning/PROJECT.md
 ### Phase 6: Character Select AAA Rebuild (DONE - 2026-03-31)
 
 Gap analysis showed most AAA features already implemented in prior sessions:
+
 - CHARSEL-01 (hero card carousel + gradient/glow) -- DONE
 - CHARSEL-02 (per-hero theming via HeroThemeConfig + CSS) -- DONE
 - CHARSEL-03 (tab system + hero-themed panels) -- DONE
@@ -77,6 +78,7 @@ Gap analysis showed most AAA features already implemented in prior sessions:
 - CHARSEL-07 (EmbarkCinematicController) -- DONE
 
 Remaining gaps:
+
 - Plan 01: Per-hero VolumeProfile assets (all 4 HeroThemeConfig.volumeProfile = null) -- DONE (b246eba)
 - Plan 02: Wire VeilDissolveController to shader + Renderer -- DONE (ee413e2)
 
