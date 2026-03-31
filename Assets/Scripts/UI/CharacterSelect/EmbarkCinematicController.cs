@@ -77,11 +77,19 @@ namespace VeilBreakers.UI.CharacterSelect
         // LIFECYCLE
         // =============================================================================
 
+        private bool _isDisabled;
+
         private void OnDisable()
         {
+            _isDisabled = true;
             _cinematicSequence.Stop();
             CleanupCinematicLabel();
-            OnCinematicComplete = null; // Prevent stale delegate leaks
+            // Notify subscribers that the cinematic was interrupted so async flows don't hang.
+            if (OnCinematicComplete != null)
+            {
+                OnCinematicComplete.Invoke();
+                OnCinematicComplete = null;
+            }
             // Clean up any orphaned flash elements created by BuildAccentFlash
             if (_root != null)
             {

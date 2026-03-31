@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using VeilBreakers.Core;
 using VeilBreakers.Data;
 
 namespace VeilBreakers.AI
@@ -273,7 +274,7 @@ namespace VeilBreakers.AI
             int total = damageWeight + survivalWeight + teamValueWeight + positioningWeight + controlWeight;
             if (total != 100)
             {
-                Debug.LogWarning($"[AIPersonality] {personalityName}: Category weights sum to {total}, should be 100");
+                ErrorLogger.Warn($"[AIPersonality] {personalityName}: Category weights sum to {total}, should be 100");
             }
 
             // Auto-set personality name from brand if empty

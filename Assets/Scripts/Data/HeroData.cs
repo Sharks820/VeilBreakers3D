@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using VeilBreakers.Core;
 
 namespace VeilBreakers.Data
 {
@@ -104,20 +105,20 @@ namespace VeilBreakers.Data
         {
             if (string.IsNullOrEmpty(hero_id))
             {
-                Debug.LogError("[HeroData] Hero ID is null or empty!"); // VB-IGNORE BUG-10 -- string literal, not pattern match on UnityEngine.Object
+                ErrorLogger.Error("[HeroData] Hero ID is null or empty!"); // VB-IGNORE BUG-10 -- string literal, not pattern match on UnityEngine.Object
                 return false;
             }
             
             if (string.IsNullOrEmpty(display_name))
             {
-                Debug.LogWarning($"[HeroData] Hero {hero_id} has no display_name");
+                ErrorLogger.Warn($"[HeroData] Hero {hero_id} has no display_name");
                 display_name = hero_id; // Fallback
             }
             
             // Initialize base_stats if null
             if (base_stats == null)
             {
-                Debug.LogWarning($"[HeroData] Hero {hero_id} has no base_stats, using defaults");
+                ErrorLogger.Warn($"[HeroData] Hero {hero_id} has no base_stats, using defaults");
                 base_stats = new BaseStats { strength = 10, dexterity = 10, constitution = 10, 
                                              intelligence = 10, wisdom = 10, charisma = 10 };
             }
@@ -146,12 +147,12 @@ namespace VeilBreakers.Data
 
         public Brand GetPrimaryBrand()
         {
-            return (Brand)primary_brand;
+            return Enum.IsDefined(typeof(Brand), primary_brand) ? (Brand)primary_brand : Brand.NONE;
         }
 
         public Path GetPrimaryPath()
         {
-            return (Path)primary_path;
+            return Enum.IsDefined(typeof(Path), primary_path) ? (Path)primary_path : Path.NONE;
         }
 
         public HeroRole GetRole()

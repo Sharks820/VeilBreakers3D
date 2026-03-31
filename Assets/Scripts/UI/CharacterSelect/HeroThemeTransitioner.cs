@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using VeilBreakers.Core;
 using UnityEngine.UIElements;
 using PrimeTween;
 using VeilBreakers.Audio;
@@ -102,7 +103,7 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (root == null)
             {
-                Debug.LogError("[HeroThemeTransitioner] Root VisualElement missing."); // VB-IGNORE BUG-10 -- string literal, not pattern match
+                ErrorLogger.Error("[HeroThemeTransitioner] Root VisualElement missing."); // VB-IGNORE BUG-10 -- string literal, not pattern match
                 return;
             }
 
@@ -286,7 +287,7 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (_heroThemes == null || _heroThemes.Length == 0)
             {
-                Debug.LogWarning("[HeroThemeTransitioner] No HeroThemeConfig entries assigned.");
+                ErrorLogger.Warn("[HeroThemeTransitioner] No HeroThemeConfig entries assigned.");
                 return null;
             }
 
@@ -309,7 +310,7 @@ namespace VeilBreakers.UI.CharacterSelect
             }
 
             // Fall back to first available
-            Debug.LogWarning($"[HeroThemeTransitioner] No theme found for hero '{heroId}' at index {index}. Using first.");
+            ErrorLogger.Warn($"[HeroThemeTransitioner] No theme found for hero '{heroId}' at index {index}. Using first.");
             return _heroThemes[0];
         }
     }

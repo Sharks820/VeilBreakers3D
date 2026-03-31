@@ -120,10 +120,12 @@ namespace VeilBreakers.Data
             return Enum.IsDefined(typeof(BrandTier), brand_tier) ? (BrandTier)brand_tier : BrandTier.MINOR;
         }
 
+#pragma warning disable CS0618 // Rarity is obsolete but still in use
         public Rarity GetRarity()
         {
             return Enum.IsDefined(typeof(Rarity), rarity) ? (Rarity)rarity : Rarity.COMMON;
         }
+#pragma warning restore CS0618
 
         public AIPattern GetAIPattern()
         {

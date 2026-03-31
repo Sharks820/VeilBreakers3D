@@ -171,7 +171,7 @@ namespace VeilBreakers.Capture
             _currentCaptureTarget = null;
             _selectedItem = CaptureItem.NONE;
 
-            Debug.Log($"[CaptureManager] Initialized with {_enemies.Length} enemies");
+            ErrorLogger.Log($"[CaptureManager] Initialized with {_enemies.Length} enemies");
         }
 
         // =============================================================================
@@ -245,7 +245,7 @@ namespace VeilBreakers.Capture
                 _cachedThresholds[target] = BindThresholdCalculator.CalculateThreshold(target, nearestAlly);
                 
                 OnTargetMarked?.Invoke(target);
-                Debug.Log($"[CaptureManager] Marked {target.DisplayName} for capture (Threshold: {_cachedThresholds[target]:P0})");
+                ErrorLogger.Log($"[CaptureManager] Marked {target.DisplayName} for capture (Threshold: {_cachedThresholds[target]:P0})");
             }
         }
 
@@ -260,7 +260,7 @@ namespace VeilBreakers.Capture
             {
                 _cachedThresholds.Remove(target);
                 OnTargetUnmarked?.Invoke(target);
-                Debug.Log($"[CaptureManager] Unmarked {target.DisplayName}");
+                ErrorLogger.Log($"[CaptureManager] Unmarked {target.DisplayName}");
             }
         }
 
@@ -429,7 +429,7 @@ namespace VeilBreakers.Capture
             _bindStartTimes[ally] = Time.time;
 
             OnBindStarted?.Invoke(target, ally);
-            Debug.Log($"[CaptureManager] {ally.DisplayName} attempting to bind {target.DisplayName} (duration: {_bindDuration}s)");
+            ErrorLogger.Log($"[CaptureManager] {ally.DisplayName} attempting to bind {target.DisplayName} (duration: {_bindDuration}s)");
         }
 
         /// <summary>
@@ -451,7 +451,7 @@ namespace VeilBreakers.Capture
             target.ApplyStatus(StatusEffectType.BOUND, BindThresholdConfig.BIND_STATUS_DURATION, null);
 
             OnMonsterBound?.Invoke(target);
-            Debug.Log($"[CaptureManager] {target.DisplayName} is now BOUND at {hpPercent:P0} HP");
+            ErrorLogger.Log($"[CaptureManager] {target.DisplayName} is now BOUND at {hpPercent:P0} HP");
         }
 
         /// <summary>
@@ -513,7 +513,7 @@ namespace VeilBreakers.Capture
         {
             if (_boundMonsters.Count == 0)
             {
-                Debug.LogWarning("[CaptureManager] No bound monsters for capture phase");
+                ErrorLogger.Warn("[CaptureManager] No bound monsters for capture phase");
                 return;
             }
 
@@ -522,7 +522,7 @@ namespace VeilBreakers.Capture
             _selectedItem = CaptureItem.NONE;
 
             OnCapturePhaseStarted?.Invoke();
-            Debug.Log("[CaptureManager] Capture phase started");
+            ErrorLogger.Log("[CaptureManager] Capture phase started");
         }
 
         /// <summary>
@@ -535,7 +535,7 @@ namespace VeilBreakers.Capture
             _selectedItem = CaptureItem.NONE;
 
             OnCapturePhaseEnded?.Invoke();
-            Debug.Log("[CaptureManager] Capture phase ended");
+            ErrorLogger.Log("[CaptureManager] Capture phase ended");
         }
 
         /// <summary>
@@ -582,7 +582,7 @@ namespace VeilBreakers.Capture
         {
             if (_currentCaptureTarget == null || _selectedItem == CaptureItem.NONE)
             {
-                Debug.LogError("[CaptureManager] Cannot execute capture: no target or item selected");
+                ErrorLogger.Error("[CaptureManager] Cannot execute capture: no target or item selected");
                 return CaptureOutcome.FLEE;
             }
 
@@ -613,14 +613,14 @@ namespace VeilBreakers.Capture
 
             OnCaptureAttemptComplete?.Invoke(_currentCaptureTarget, outcome);
 
-            Debug.Log($"[CaptureManager] Capture attempt: {chance:P0} chance, rolled {roll:P0} = {outcome}");
+            ErrorLogger.Log($"[CaptureManager] Capture attempt: {chance:P0} chance, rolled {roll:P0} = {outcome}");
 
             return outcome;
         }
 
         private void HandleCaptureSuccess(BoundMonsterData monster)
         {
-            Debug.Log($"[CaptureManager] Successfully captured {monster.combatant.DisplayName}!");
+            ErrorLogger.Log($"[CaptureManager] Successfully captured {monster.combatant.DisplayName}!");
 
             // Remove from bound list
             _boundMonsters.Remove(monster);
@@ -641,16 +641,16 @@ namespace VeilBreakers.Capture
 
                     if (added)
                     {
-                        Debug.Log($"[CaptureManager] Monster added to party: {monster.combatant.DisplayName}");
+                        ErrorLogger.Log($"[CaptureManager] Monster added to party: {monster.combatant.DisplayName}");
                     }
                     else
                     {
-                        Debug.LogWarning($"[CaptureManager] Failed to add monster to party (party full or invalid?)");
+                        ErrorLogger.Warn($"[CaptureManager] Failed to add monster to party (party full or invalid?)");
                     }
                 }
                 else
                 {
-                    Debug.LogWarning($"[CaptureManager] Monster has no MonsterId, cannot add to party");
+                    ErrorLogger.Warn($"[CaptureManager] Monster has no MonsterId, cannot add to party");
                 }
             }
 
@@ -676,7 +676,7 @@ namespace VeilBreakers.Capture
 
             if (outcome == CaptureOutcome.FLEE)
             {
-                Debug.Log($"[CaptureManager] {monster.combatant.DisplayName} fled!");
+                ErrorLogger.Log($"[CaptureManager] {monster.combatant.DisplayName} fled!");
                 // Monster escapes - remove from combat
                 monster.combatant.RemoveStatus(StatusEffectType.BOUND);
 
@@ -685,7 +685,7 @@ namespace VeilBreakers.Capture
             }
             else if (outcome == CaptureOutcome.BERSERK)
             {
-                Debug.Log($"[CaptureManager] {monster.combatant.DisplayName} went BERSERK!");
+                ErrorLogger.Log($"[CaptureManager] {monster.combatant.DisplayName} went BERSERK!");
 
                 // Monster breaks free and gets damage buff
                 monster.combatant.RemoveStatus(StatusEffectType.BOUND);
@@ -765,7 +765,7 @@ namespace VeilBreakers.Capture
                 monster.gameObject.SetActive(false);
             }
 
-            Debug.Log($"[CaptureManager] Removed {monster.DisplayName} from battle");
+            ErrorLogger.Log($"[CaptureManager] Removed {monster.DisplayName} from battle");
         }
 
         /// <summary>

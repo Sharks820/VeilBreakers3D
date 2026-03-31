@@ -1,4 +1,5 @@
 using UnityEngine;
+using VeilBreakers.Core;
 
 namespace VeilBreakers.Audio
 {
@@ -36,7 +37,7 @@ namespace VeilBreakers.Audio
 
             if (AudioManager.Instance == null)
             {
-                if (_debugLog) Debug.LogWarning($"[AudioTriggerZone] AudioManager not found");
+                if (_debugLog) ErrorLogger.Warn($"[AudioTriggerZone] AudioManager not found");
                 return;
             }
 
@@ -45,14 +46,14 @@ namespace VeilBreakers.Audio
                 // Preload the zone audio
                 AudioManager.Instance.OnZoneBoundaryApproach(_zoneName);
 
-                if (_debugLog) Debug.Log($"[AudioTriggerZone] Preloading zone: {_zoneName}");
+                if (_debugLog) ErrorLogger.Log($"[AudioTriggerZone] Preloading zone: {_zoneName}");
             }
             else
             {
                 // Actually enter the zone
                 AudioManager.Instance.OnZoneEnter(_zoneName);
 
-                if (_debugLog) Debug.Log($"[AudioTriggerZone] Entering zone: {_zoneName}");
+                if (_debugLog) ErrorLogger.Log($"[AudioTriggerZone] Entering zone: {_zoneName}");
             }
         }
 
@@ -160,7 +161,7 @@ namespace VeilBreakers.Audio
                 _preloaded = true;
                 AudioManager.Instance?.OnNPCApproach(_npcId);
 
-                if (_debugLog) Debug.Log($"[AudioTriggerNPC] Preloading NPC voice: {_npcId}");
+                if (_debugLog) ErrorLogger.Log($"[AudioTriggerNPC] Preloading NPC voice: {_npcId}");
             }
         }
 
@@ -281,7 +282,7 @@ namespace VeilBreakers.Audio
             // _veilAmbience = FMODUnity.RuntimeManager.CreateInstance("event:/Ambient/Veil/Proximity");
             // _veilAmbience.start();
 
-            if (_debugLog) Debug.Log("[AudioTriggerVeil] Player entered Veil proximity");
+            if (_debugLog) ErrorLogger.Log("[AudioTriggerVeil] Player entered Veil proximity");
         }
 
         private void OnExitVeilProximity()
@@ -293,7 +294,7 @@ namespace VeilBreakers.Audio
             // Reset audio effects
             ResetVeilEffects();
 
-            if (_debugLog) Debug.Log("[AudioTriggerVeil] Player exited Veil proximity");
+            if (_debugLog) ErrorLogger.Log("[AudioTriggerVeil] Player exited Veil proximity");
         }
 
         private void UpdateVeilEffects()
@@ -309,7 +310,7 @@ namespace VeilBreakers.Audio
 
             if (_debugLog && Time.frameCount % 60 == 0)
             {
-                Debug.Log($"[AudioTriggerVeil] Proximity: {_currentProximity:F2}, Reverb: {reverb:F2}");
+                ErrorLogger.Log($"[AudioTriggerVeil] Proximity: {_currentProximity:F2}, Reverb: {reverb:F2}");
             }
         }
 

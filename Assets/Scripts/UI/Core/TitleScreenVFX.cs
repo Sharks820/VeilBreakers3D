@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using VeilBreakers.Core;
 using UnityEngine.UIElements;
 using UnityEngine.Video;
 using VeilBreakers.Managers;
@@ -379,7 +380,7 @@ namespace VeilBreakers.UI.Core
                 _backgroundPortalTexture = Resources.Load<Texture2D>("Art/UI/MainMenu/mainmenu_background_portal");
             }
 
-            Debug.Log($"[TitleScreenVFX] Textures loaded - Smoke: {_smokeTexture != null}, Ash: {_ashTexture != null}, Ember: {_emberTexture != null}, Grunge: {_grungeTexture != null}");
+            ErrorLogger.Log($"[TitleScreenVFX] Textures loaded - Smoke: {_smokeTexture != null}, Ash: {_ashTexture != null}, Ember: {_emberTexture != null}, Grunge: {_grungeTexture != null}");
 
             // Music DISABLED here — TitleScreenAudio component handles all audio
             // (music, demon laughs, girl crying) with proper volume management.
@@ -617,7 +618,7 @@ namespace VeilBreakers.UI.Core
             // CreateFogLayers();
 
             StartVFX();
-            Debug.Log($"[TitleScreenVFX] Staggered VFX init complete: {_emberCount} embers, {_microSparkCount} micro-sparks, {_ashCount} ash, {_smokeCount} smoke, {_sparkCount} sparks");
+            ErrorLogger.Log($"[TitleScreenVFX] Staggered VFX init complete: {_emberCount} embers, {_microSparkCount} micro-sparks, {_ashCount} ash, {_smokeCount} smoke, {_sparkCount} sparks");
         }
 
         // =============================================================================
@@ -933,7 +934,7 @@ namespace VeilBreakers.UI.Core
             var logoTexture = Resources.Load<Texture2D>("Art/UI/MainMenu/logo_veilbreakers");
             if (logoTexture == null)
             {
-                Debug.LogWarning("[TitleScreenVFX] Could not load logo texture for shadow");
+                ErrorLogger.Warn("[TitleScreenVFX] Could not load logo texture for shadow");
                 return;
             }
 
@@ -984,7 +985,7 @@ namespace VeilBreakers.UI.Core
 
             if (!hasForwardFile && _backgroundVideoClip == null)
             {
-                Debug.LogWarning($"[TitleScreenVFX] Video file not found at: {_videoFilePath}");
+                ErrorLogger.Warn($"[TitleScreenVFX] Video file not found at: {_videoFilePath}");
                 _useVideoBackground = false;
                 ApplyBackground();
                 return;
@@ -992,7 +993,7 @@ namespace VeilBreakers.UI.Core
 
             if (!_usePingPongLoop)
             {
-                Debug.LogWarning("[TitleScreenVFX] Reversed background video missing; falling back to single-player loop.");
+                ErrorLogger.Warn("[TitleScreenVFX] Reversed background video missing; falling back to single-player loop.");
             }
 
             // Create render textures
@@ -1026,7 +1027,7 @@ namespace VeilBreakers.UI.Core
             // Set background to black while video loads
             _backgroundElement.style.backgroundColor = Color.black;
 
-            Debug.Log(_usePingPongLoop
+            ErrorLogger.Log(_usePingPongLoop
                 ? "[TitleScreenVFX] Ping-pong dual video setup initiated (forward + reversed)."
                 : "[TitleScreenVFX] Single-player video setup initiated.");
         }
@@ -1077,7 +1078,7 @@ namespace VeilBreakers.UI.Core
             _videoLength = vp.length;
             _isVideoPlaying = true;
 
-            Debug.Log($"[TitleScreenVFX] Forward video prepared - Duration: {_videoLength:F2}s");
+            ErrorLogger.Log($"[TitleScreenVFX] Forward video prepared - Duration: {_videoLength:F2}s");
 
             // COMPOSITING APPROACH: Keep the static bg.png on _backgroundElement (always crisp).
             // Create a video overlay element on top that shows the video.
@@ -1139,7 +1140,7 @@ namespace VeilBreakers.UI.Core
 
         private void OnReversedVideoPrepared(VideoPlayer vp)
         {
-            Debug.Log("[TitleScreenVFX] Reversed video prepared and standing by at frame 0");
+            ErrorLogger.Log("[TitleScreenVFX] Reversed video prepared and standing by at frame 0");
             // Reversed video stays paused at time=0, ready to instantly play when forward ends
             vp.time = 0;
             vp.Pause();
@@ -1484,7 +1485,7 @@ namespace VeilBreakers.UI.Core
             // CreateFogLayers();
 
             StartVFX();
-            Debug.Log($"[TitleScreenVFX] AAA VFX Initialized: {_emberCount} embers, {_microSparkCount} micro-sparks, {_ashCount} ash, {_smokeCount} smoke, {_sparkCount} sparks (Lightning: {_enableLightning}) (Textures: {(_smokeTexture != null ? "smoke " : "")}{(_ashTexture != null ? "ash " : "")}{(_emberTexture != null ? "ember " : "")}{(_grungeTexture != null ? "grunge" : "")})");
+            ErrorLogger.Log($"[TitleScreenVFX] AAA VFX Initialized: {_emberCount} embers, {_microSparkCount} micro-sparks, {_ashCount} ash, {_smokeCount} smoke, {_sparkCount} sparks (Lightning: {_enableLightning}) (Textures: {(_smokeTexture != null ? "smoke " : "")}{(_ashTexture != null ? "ash " : "")}{(_emberTexture != null ? "ember " : "")}{(_grungeTexture != null ? "grunge" : "")})");
         }
 
         private void CreateAtmosphereLayer()
@@ -1589,7 +1590,7 @@ namespace VeilBreakers.UI.Core
             }
             catch (UnityException ex)
             {
-                Debug.LogWarning($"[TitleScreenVFX] Lightning textures could not be processed (make sure they are Read/Write enabled). Disabling lightning. {ex.GetType().Name}: {ex.Message}");
+                ErrorLogger.Warn($"[TitleScreenVFX] Lightning textures could not be processed (make sure they are Read/Write enabled). Disabling lightning. {ex.GetType().Name}: {ex.Message}");
                 _lightningMaskedA = null;
                 _lightningMaskedB = null;
                 return false;

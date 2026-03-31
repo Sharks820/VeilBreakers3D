@@ -86,18 +86,20 @@ namespace VeilBreakers.Data
 
         public EquipmentSlot GetEquipmentSlot()
         {
-            return (EquipmentSlot)equipment_slot;
+            return Enum.IsDefined(typeof(EquipmentSlot), equipment_slot) ? (EquipmentSlot)equipment_slot : EquipmentSlot.WEAPON;
         }
 
+#pragma warning disable CS0618 // Rarity is obsolete but still in use
         public Rarity GetRarity()
         {
-            return (Rarity)rarity;
+            return Enum.IsDefined(typeof(Rarity), rarity) ? (Rarity)rarity : Rarity.COMMON;
         }
+#pragma warning restore CS0618
 
         public Brand GetBrandAffinity()
         {
             if (brand_affinity <= 0) return Brand.NONE;
-            return (Brand)brand_affinity;
+            return Enum.IsDefined(typeof(Brand), brand_affinity) ? (Brand)brand_affinity : Brand.NONE;
         }
 
         /// <summary>

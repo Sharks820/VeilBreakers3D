@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using VeilBreakers.Core;
 
 namespace VeilBreakers.Data
 {
@@ -133,7 +134,7 @@ namespace VeilBreakers.Data
 
             if (string.IsNullOrEmpty(heroId))
             {
-                Debug.LogWarning($"[HeroDisplayConfig] {name} has no heroId assigned!");
+                ErrorLogger.Warn($"[HeroDisplayConfig] {name} has no heroId assigned!");
             }
         }
 #endif

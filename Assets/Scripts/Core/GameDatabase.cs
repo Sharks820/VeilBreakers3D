@@ -58,7 +58,27 @@ namespace VeilBreakers.Core
         {
             _cts = new CancellationTokenSource();
             // Do not block the main thread here
-            InitializationTask = LoadAllDataAsync(_cts.Token);
+            InitializationTask = ObserveTask(LoadAllDataAsync(_cts.Token));
+        }
+
+        /// <summary>
+        /// Wraps a fire-and-forget task with fault observation to prevent unobserved task exceptions.
+        /// </summary>
+        private async Task ObserveTask(Task task)
+        {
+            try
+            {
+                await task;
+            }
+            catch (Exception ex)
+            {
+                // Task faults are already logged inside LoadAllDataAsync via ErrorLogger.
+                // This catch prevents UnobservedTaskException from crashing the runtime.
+                if (ex is not OperationCanceledException)
+                {
+                    ErrorLogger.Error($"[GameDatabase] Unobserved task fault: {ex.Message}");
+                }
+            }
         }
 
         protected override void OnDestroy()
@@ -106,14 +126,20 @@ namespace VeilBreakers.Core
                 ErrorLogger.Log($"  - Heroes: {_heroes.Count}");
                 ErrorLogger.Log($"  - Items: {_items.Count}");
             }
+            catch (OperationCanceledException)
+            {
+                LoadFailed = true;
+                LastLoadError = "Load cancelled";
+                IsLoaded = true;
+            }
             catch (Exception ex)
             {
                 LoadFailed = true;
                 LastLoadError = ex.Message;
                 IsLoaded = true; // Unblock menu flows; consumers can inspect counts/LoadFailed.
 
-                Debug.LogError($"[GameDatabase] Data load failed: {ex.Message}");
-                Debug.LogError($"[GameDatabase] Partial load counts - Monsters: {_monsters.Count}, Skills: {_skills.Count}, Heroes: {_heroes.Count}, Items: {_items.Count}");
+                ErrorLogger.Error($"[GameDatabase] Data load failed: {ex.Message}");
+                ErrorLogger.Error($"[GameDatabase] Partial load counts - Monsters: {_monsters.Count}, Skills: {_skills.Count}, Heroes: {_heroes.Count}, Items: {_items.Count}");
             }
             finally
             {
@@ -204,7 +230,7 @@ namespace VeilBreakers.Core
             }
             catch (Exception e) when (e is InvalidOperationException or FormatException or ArgumentException)
             {
-                Debug.LogError($"[GameDatabase] Failed to load monsters: {e.Message}");
+                ErrorLogger.Error($"[GameDatabase] Failed to load monsters: {e.Message}");
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 throw;
 #else
@@ -258,7 +284,7 @@ namespace VeilBreakers.Core
             }
             catch (Exception e) when (e is InvalidOperationException or FormatException or ArgumentException)
             {
-                Debug.LogError($"[GameDatabase] Failed to load skills: {e.Message}");
+                ErrorLogger.Error($"[GameDatabase] Failed to load skills: {e.Message}");
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 throw;
 #else
@@ -312,7 +338,7 @@ namespace VeilBreakers.Core
             }
             catch (Exception e) when (e is InvalidOperationException or FormatException or ArgumentException)
             {
-                Debug.LogError($"[GameDatabase] Failed to load heroes: {e.Message}");
+                ErrorLogger.Error($"[GameDatabase] Failed to load heroes: {e.Message}");
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 throw;
 #else
@@ -366,7 +392,7 @@ namespace VeilBreakers.Core
             }
             catch (Exception e) when (e is InvalidOperationException or FormatException or ArgumentException)
             {
-                Debug.LogError($"[GameDatabase] Failed to load items: {e.Message}");
+                ErrorLogger.Error($"[GameDatabase] Failed to load items: {e.Message}");
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 throw;
 #else

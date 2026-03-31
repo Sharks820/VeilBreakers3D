@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using VeilBreakers.Core;
 using UnityEngine.UIElements;
 
 namespace VeilBreakers.UI.Core
@@ -134,7 +135,7 @@ namespace VeilBreakers.UI.Core
             CreateVeins();
 
             StartVFX();
-            Debug.Log($"[MoltenVeinVFX] Initialized with {_veins.Count} veins");
+            ErrorLogger.Log($"[MoltenVeinVFX] Initialized with {_veins.Count} veins");
         }
 
         private void CreateVeins()

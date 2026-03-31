@@ -10,7 +10,7 @@ namespace VeilBreakers.UI.Core
     /// Generic UI animation controller for AAA-quality transitions.
     /// Provides fade, scale, slide, and staggered animations for UI Toolkit elements.
     /// </summary>
-    public class UIAnimationController : MonoBehaviour
+    public class UIAnimationController : SingletonMonoBehaviour<UIAnimationController>
     {
         // =============================================================================
         // CONFIGURATION
@@ -24,53 +24,9 @@ namespace VeilBreakers.UI.Core
         [SerializeField] private AnimationCurve _easeOut = AnimationCurve.EaseInOut(0, 0, 1, 1);
         [SerializeField] private AnimationCurve _easeIn = AnimationCurve.EaseInOut(0, 0, 1, 1);
 
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        private static UIAnimationController _instance;
-        private static bool _isQuitting;
-
-        public static bool HasInstance => _instance != null;
-
-        public static UIAnimationController Instance
+        protected override void OnSingletonAwake()
         {
-            get
-            {
-                if (_isQuitting) return null;
-                if (_instance == null)
-                {
-                    var go = new GameObject("UIAnimationController");
-                    _instance = go.AddComponent<UIAnimationController>();
-                    DontDestroyOnLoad(go);
-                }
-                return _instance;
-            }
-        }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStatics()
-        {
-            _instance = null;
-            _isQuitting = false;
-        }
-
-        private void Awake()
-        {
-            if (_instance != null && _instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            _instance = this;
-
-            // Setup default easing curves
             SetupDefaultCurves();
-        }
-
-        private void OnApplicationQuit()
-        {
-            _isQuitting = true;
         }
 
         private void SetupDefaultCurves()

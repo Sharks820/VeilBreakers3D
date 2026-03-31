@@ -153,7 +153,7 @@ namespace VeilBreakers.Combat
             EventBus.BattleStarted();
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Debug.Log($"[BattleManager] Battle started! Synergy: {_currentSynergyTier}");
+            ErrorLogger.Log($"[BattleManager] Battle started! Synergy: {_currentSynergyTier}");
 #endif
         }
 
@@ -274,7 +274,7 @@ namespace VeilBreakers.Combat
             var skillData = GameDatabase.Instance?.GetSkill(ability.skillId);
             if (skillData == null)
             {
-                Debug.LogWarning($"[BattleManager] Skill not found: {ability.skillId}");
+                ErrorLogger.Warn($"[BattleManager] Skill not found: {ability.skillId}");
                 return;
             }
 
@@ -282,7 +282,7 @@ namespace VeilBreakers.Combat
             if (!user.UseMp(skillData.mp_cost))
             {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.Log($"[BattleManager] Not enough MP for {ability.skillId}");
+                ErrorLogger.Log($"[BattleManager] Not enough MP for {ability.skillId}");
 #endif
                 return;
             }
@@ -300,7 +300,8 @@ namespace VeilBreakers.Combat
                     ExecuteHeal(user, target, skillData);
                     break;
                 case SkillType.DEFENSE:
-                    user.StartDefend(user.Abilities.currentDefenseAction, target);
+                    var defenseAction = ResolveDefenseAction(skillData, target);
+                    user.StartDefend(defenseAction, target);
                     break;
                 case SkillType.BUFF:
                     ExecuteBuff(user, target, skillData);
@@ -317,7 +318,7 @@ namespace VeilBreakers.Combat
             }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Debug.Log($"[BattleManager] {user.DisplayName} used {skillData.display_name}");
+            ErrorLogger.Log($"[BattleManager] {user.DisplayName} used {skillData.display_name}");
 #endif
         }
 
@@ -338,7 +339,8 @@ namespace VeilBreakers.Combat
                 attacker, defender,
                 skill.base_power,
                 skill.GetDamageType(),
-                _currentSynergyTier
+                GetSynergyTierFor(attacker),
+                GetSynergyTierFor(defender)
             );
 
             // Apply damage
@@ -404,7 +406,8 @@ namespace VeilBreakers.Combat
                     caster, damageTarget,
                     skill.base_power,
                     skill.GetDamageType(),
-                    _currentSynergyTier
+                    GetSynergyTierFor(caster),
+                    GetSynergyTierFor(damageTarget)
                 );
                 damageTarget.TakeDamage(result.finalDamage, result.isCritical);
                 OnDamageDealt?.Invoke(caster, damageTarget, result);
@@ -429,7 +432,7 @@ namespace VeilBreakers.Combat
             var statusManager = Managers.StatusEffectManager.Instance;
             if (statusManager == null)
             {
-                Debug.LogWarning("[BattleManager] StatusEffectManager not available");
+                ErrorLogger.Warn("[BattleManager] StatusEffectManager not available");
                 return;
             }
 
@@ -548,7 +551,7 @@ namespace VeilBreakers.Combat
             {
                 OnSynergyChanged?.Invoke(_currentSynergyTier);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.Log($"[BattleManager] Synergy changed: {oldTier} -> {_currentSynergyTier}");
+                ErrorLogger.Log($"[BattleManager] Synergy changed: {oldTier} -> {_currentSynergyTier}");
 #endif
             }
         }
@@ -623,7 +626,7 @@ namespace VeilBreakers.Combat
             OnBattleEnd?.Invoke();
             EventBus.BattleEnded(endState == BattleState.VICTORY);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            Debug.Log($"[BattleManager] Battle ended: {endState}");
+            ErrorLogger.Log($"[BattleManager] Battle ended: {endState}");
 #endif
         }
 
@@ -680,6 +683,32 @@ namespace VeilBreakers.Combat
                    && combatant.IsAlive
                    && combatant != _player
                    && _playerPartySet.Contains(combatant); // O(1) instead of O(n)
+        }
+
+        /// <summary>
+        /// Get the synergy tier for a combatant.
+        /// Player party members use the party's synergy; enemies default to NEUTRAL.
+        /// </summary>
+        private SynergySystem.SynergyTier GetSynergyTierFor(Combatant combatant)
+        {
+            if (combatant != null && _playerPartySet.Contains(combatant))
+                return _currentSynergyTier;
+            return SynergySystem.SynergyTier.NEUTRAL;
+        }
+
+        /// <summary>
+        /// Derive the defense action from skill data's target type.
+        /// SELF -> DEFEND_SELF, ally-targeted -> GUARD_ALLY, fallback -> DEFEND_SELF.
+        /// </summary>
+        private static DefenseAction ResolveDefenseAction(SkillData skillData, Combatant target)
+        {
+            if (skillData == null) return DefenseAction.DEFEND_SELF;
+
+            var targetType = skillData.GetTargetType();
+            if (targetType == TargetType.SINGLE_ALLY || targetType == TargetType.ALL_ALLIES)
+                return DefenseAction.GUARD_ALLY;
+
+            return DefenseAction.DEFEND_SELF;
         }
     }
 }

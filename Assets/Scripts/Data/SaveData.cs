@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using VeilBreakers.Core;
 
 namespace VeilBreakers.Data
 {
@@ -60,7 +61,7 @@ namespace VeilBreakers.Data
         /// <summary>Total experience points</summary>
         public int heroExperience;
 
-        /// <summary>Path progression (0.0 to 1.0)</summary>
+        /// <summary>Path progression (0.0 to 100.0)</summary>
         public float heroPathLevel;
 
         /// <summary>Hero's chosen path</summary>
@@ -240,21 +241,21 @@ namespace VeilBreakers.Data
             if (string.IsNullOrEmpty(heroName))
             {
                 heroName = "Unknown Hero";
-                Debug.LogWarning("[SaveData] Repaired missing heroName");
+                ErrorLogger.Warn("[SaveData] Repaired missing heroName");
             }
 
             // Clamp playtime (negative values are invalid)
             if (playtimeSeconds < 0f)
             {
                 playtimeSeconds = 0f;
-                Debug.LogWarning("[SaveData] Repaired negative playtimeSeconds");
+                ErrorLogger.Warn("[SaveData] Repaired negative playtimeSeconds");
             }
 
             // Repair missing/invalid saveDate
             if (string.IsNullOrEmpty(saveDate) || !DateTime.TryParse(saveDate, out _))
             {
                 saveDate = DateTime.UtcNow.ToString("o");
-                Debug.LogWarning("[SaveData] Repaired missing/invalid saveDate");
+                ErrorLogger.Warn("[SaveData] Repaired missing/invalid saveDate");
             }
 
             // Repair missing currentLocation
@@ -267,7 +268,7 @@ namespace VeilBreakers.Data
             if (string.IsNullOrEmpty(saveId))
             {
                 saveId = Guid.NewGuid().ToString("N");
-                Debug.LogWarning("[SaveData] Repaired missing saveId");
+                ErrorLogger.Warn("[SaveData] Repaired missing saveId");
             }
 
             // Clamp hero level to sane range
@@ -277,7 +278,7 @@ namespace VeilBreakers.Data
             if (heroCurrentHp < 0) heroCurrentHp = 0;
             if (heroCurrentMp < 0) heroCurrentMp = 0;
             if (heroExperience < 0) heroExperience = 0;
-            heroPathLevel = Mathf.Clamp(heroPathLevel, 0f, 1f);
+            heroPathLevel = Mathf.Clamp(heroPathLevel, 0f, 100f);
             if (currency < 0) currency = 0;
 
             // Initialize null lists to empty (defensive)
@@ -298,13 +299,13 @@ namespace VeilBreakers.Data
             // Enforce party size limits (3 active, 3 backpack)
             while (party.Count > 3)
             {
-                Debug.LogWarning("[SaveData] Party exceeds max size 3, moving overflow to backpack");
+                ErrorLogger.Warn("[SaveData] Party exceeds max size 3, moving overflow to backpack");
                 backpack.Add(party[party.Count - 1]);
                 party.RemoveAt(party.Count - 1);
             }
             while (backpack.Count > 3)
             {
-                Debug.LogWarning("[SaveData] Backpack exceeds max size 3, moving overflow to storage");
+                ErrorLogger.Warn("[SaveData] Backpack exceeds max size 3, moving overflow to storage");
                 storage.Add(backpack[backpack.Count - 1]);
                 backpack.RemoveAt(backpack.Count - 1);
             }
@@ -338,7 +339,7 @@ namespace VeilBreakers.Data
                 if (monster == null) { monsters.RemoveAt(i); continue; }
                 if (string.IsNullOrEmpty(monster.monsterId))
                 {
-                    Debug.LogError("[SaveData] Monster with null ID found, removing");
+                    ErrorLogger.Error("[SaveData] Monster with null ID found, removing");
                     monsters.RemoveAt(i);
                     continue;
                 }
@@ -355,7 +356,7 @@ namespace VeilBreakers.Data
                 if (string.IsNullOrEmpty(monster.instanceId))
                 {
                     monster.instanceId = Guid.NewGuid().ToString("N");
-                    Debug.LogWarning($"[SaveData] Repaired missing instanceId for monster {monster.monsterId}");
+                    ErrorLogger.Warn($"[SaveData] Repaired missing instanceId for monster {monster.monsterId}");
                 }
             }
         }

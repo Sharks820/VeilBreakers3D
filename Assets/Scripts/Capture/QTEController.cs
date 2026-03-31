@@ -165,7 +165,7 @@ namespace VeilBreakers.Capture
             _targetPosition = UnityEngine.Random.Range(0.35f, 0.65f);
 
             OnQTEStarted?.Invoke();
-            Debug.Log("[QTEController] QTE started - countdown beginning");
+            ErrorLogger.Log("[QTEController] QTE started - countdown beginning");
         }
 
         /// <summary>
@@ -189,7 +189,7 @@ namespace VeilBreakers.Capture
             {
                 _state = QTEState.IDLE;
                 _result = QTEResult.MISS;
-                Debug.Log("[QTEController] QTE cancelled");
+                ErrorLogger.Log("[QTEController] QTE cancelled");
             }
         }
 
@@ -229,7 +229,7 @@ namespace VeilBreakers.Capture
             _state = QTEState.ACTIVE;
             _currentTime = 0f;
             OnQTEActive?.Invoke();
-            Debug.Log("[QTEController] QTE active - GO!");
+            ErrorLogger.Log("[QTEController] QTE active - GO!");
         }
 
         // =============================================================================
@@ -314,7 +314,7 @@ namespace VeilBreakers.Capture
             _state = QTEState.COMPLETE;
             OnQTEComplete?.Invoke(_result);
 
-            Debug.Log($"[QTEController] QTE complete: {_result} (bar at {_barPosition:F2}, target at {_targetPosition:F2})");
+            ErrorLogger.Log($"[QTEController] QTE complete: {_result} (bar at {_barPosition:F2}, target at {_targetPosition:F2})");
 
             // Auto-reset to idle after a brief moment
             if (_resetCoroutine != null)

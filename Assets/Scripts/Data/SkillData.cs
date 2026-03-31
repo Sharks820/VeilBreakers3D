@@ -87,28 +87,28 @@ namespace VeilBreakers.Data
 
         public SkillType GetSkillType()
         {
-            return (SkillType)skill_type;
+            return Enum.IsDefined(typeof(SkillType), skill_type) ? (SkillType)skill_type : SkillType.ATTACK;
         }
 
         public DamageType GetDamageType()
         {
-            return (DamageType)damage_type;
+            return Enum.IsDefined(typeof(DamageType), damage_type) ? (DamageType)damage_type : DamageType.PHYSICAL;
         }
 
         public TargetType GetTargetType()
         {
-            return (TargetType)target_type;
+            return Enum.IsDefined(typeof(TargetType), target_type) ? (TargetType)target_type : TargetType.SINGLE_ENEMY;
         }
 
         public Brand GetBrandRequirement()
         {
             if (brand_requirement < 0) return Brand.NONE;
-            return (Brand)brand_requirement;
+            return Enum.IsDefined(typeof(Brand), brand_requirement) ? (Brand)brand_requirement : Brand.NONE;
         }
 
         public Stat GetScalingStat()
         {
-            return (Stat)scaling_stat;
+            return Enum.IsDefined(typeof(Stat), scaling_stat) ? (Stat)scaling_stat : Stat.ATTACK;
         }
 
         /// <summary>
@@ -147,7 +147,7 @@ namespace VeilBreakers.Data
 
         public StatusEffectType GetStatusEffect()
         {
-            return (StatusEffectType)effect;
+            return Enum.IsDefined(typeof(StatusEffectType), effect) ? (StatusEffectType)effect : StatusEffectType.NONE;
         }
     }
 
@@ -160,7 +160,7 @@ namespace VeilBreakers.Data
 
         public Stat GetStat()
         {
-            return (Stat)stat;
+            return Enum.IsDefined(typeof(Stat), stat) ? (Stat)stat : Stat.ATTACK;
         }
     }
 }

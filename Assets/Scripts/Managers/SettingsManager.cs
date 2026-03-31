@@ -63,19 +63,19 @@ namespace VeilBreakers.Managers
                     if (_settings == null)
                     {
                         _settings = new GameSettings();
-                        Debug.LogWarning("[SettingsManager] Failed to parse settings JSON, resetting to default.");
+                        ErrorLogger.Warn("[SettingsManager] Failed to parse settings JSON, resetting to default.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError($"[SettingsManager] Error loading settings: {ex.Message}. Resetting to default.");
+                    ErrorLogger.Error($"[SettingsManager] Error loading settings: {ex.Message}. Resetting to default.");
                     _settings = new GameSettings();
                 }
             }
             else
             {
                 _settings = new GameSettings();
-                Debug.Log("[SettingsManager] No saved settings found, using defaults.");
+                ErrorLogger.Log("[SettingsManager] No saved settings found, using defaults.");
             }
 
             ApplySettings();
@@ -100,7 +100,7 @@ namespace VeilBreakers.Managers
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[SettingsManager] Failed to save settings: {ex.Message}");
+                ErrorLogger.Error($"[SettingsManager] Failed to save settings: {ex.Message}");
             }
         }
 

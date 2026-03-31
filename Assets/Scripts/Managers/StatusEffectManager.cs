@@ -201,7 +201,7 @@ namespace VeilBreakers.Managers
         {
             if (!_effectDataCache.TryGetValue(effectType, out var data))
             {
-                Debug.LogWarning($"[StatusEffectManager] No cached data for effect type: {effectType}");
+                ErrorLogger.Warn($"[StatusEffectManager] No cached data for effect type: {effectType}");
                 return null;
             }
 
@@ -746,7 +746,7 @@ namespace VeilBreakers.Managers
 
             if (_effectDataCache.Count == 0)
             {
-                Debug.LogWarning("[StatusEffectManager] No status effect definitions found in GameDataAssets. Status effects will not function properly.");
+                ErrorLogger.Warn("[StatusEffectManager] No status effect definitions found in GameDataAssets. Status effects will not function properly.");
             }
             else
             {
@@ -773,7 +773,7 @@ namespace VeilBreakers.Managers
         {
             if (_debugLogging)
             {
-                Debug.Log($"[StatusEffectManager] {message}");
+                ErrorLogger.Log($"[StatusEffectManager] {message}");
             }
         }
 

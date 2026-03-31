@@ -71,7 +71,7 @@ namespace VeilBreakers.UI.CharacterSelect
         /// </summary>
         private void CacheReferences()
         {
-            if (_uiDocument == null) { Debug.LogError("[HeroStatsPanelController] UIDocument not assigned!"); return; }
+            if (_uiDocument == null) { ErrorLogger.Error("[HeroStatsPanelController] UIDocument not assigned!"); return; }
             var root = _uiDocument.rootVisualElement;
             _panel = root.Q<VisualElement>("tab-abilities-content");
             _abilitiesList = root.Q<VisualElement>("abilities-list");

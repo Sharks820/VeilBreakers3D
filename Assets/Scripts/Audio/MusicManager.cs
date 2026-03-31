@@ -212,7 +212,7 @@ namespace VeilBreakers.Audio
             // _explorationEvent = FMODUnity.RuntimeManager.CreateInstance(_config.musicExplorationPath);
             // _explorationEvent.start();
 
-            Debug.Log("[MusicManager] Started exploration music");
+            ErrorLogger.Log("[MusicManager] Started exploration music");
         }
 
         /// <summary>
@@ -228,7 +228,7 @@ namespace VeilBreakers.Audio
             // _combatEvent = FMODUnity.RuntimeManager.CreateInstance(_config.musicCombatPath);
             // _combatEvent.start();
 
-            Debug.Log("[MusicManager] Started combat music");
+            ErrorLogger.Log("[MusicManager] Started combat music");
         }
 
         /// <summary>
@@ -296,7 +296,7 @@ namespace VeilBreakers.Audio
             // FMOD Integration:
             // Set bus volume to 0 or normal
 
-            Debug.Log($"[MusicManager] Music muted: {muted}");
+            ErrorLogger.Log($"[MusicManager] Music muted: {muted}");
         }
 
         // =============================================================================
@@ -368,7 +368,7 @@ namespace VeilBreakers.Audio
             _isTransitioning = false;
 
             OnMusicStateChanged?.Invoke(newState);
-            Debug.Log($"[MusicManager] Music state: {previousState} -> {newState}");
+            ErrorLogger.Log($"[MusicManager] Music state: {previousState} -> {newState}");
         }
 
         private void ConfigureStateParameters(MusicState state)

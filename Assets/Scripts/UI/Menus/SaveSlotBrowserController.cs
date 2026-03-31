@@ -256,7 +256,7 @@ namespace VeilBreakers.UI.Menus
 
             if (task.IsFaulted)
             {
-                Debug.LogError($"[SaveSlotBrowser] Failed to load metadata: {task.Exception}");
+                ErrorLogger.Error($"[SaveSlotBrowser] Failed to load metadata: {task.Exception}");
                 _cachedMetadata = new SaveSlotMetadata[0];
                 yield break;
             }
@@ -447,7 +447,7 @@ namespace VeilBreakers.UI.Menus
                 bool deleted = SaveManager.Instance.DeleteSlot(slot);
                 if (deleted)
                 {
-                    Debug.Log($"[SaveSlotBrowser] Deleted slot {slot}");
+                    ErrorLogger.Log($"[SaveSlotBrowser] Deleted slot {slot}");
                     yield return LoadSlotMetadata();
                     RebuildSlotCards();
                 }

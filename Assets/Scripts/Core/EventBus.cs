@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using VeilBreakers.Core;
 using VeilBreakers.Data;
 
 namespace VeilBreakers.Core
@@ -297,7 +298,7 @@ namespace VeilBreakers.Core
         /// </summary>
         public static void ClearAllListeners()
         {
-            Debug.Log("[EventBus] Clearing all listeners (domain reload)");
+            ErrorLogger.Log("[EventBus] Clearing all listeners (domain reload)");
             OnGameStarted = null;
             OnGamePaused = null;
             OnGameResumed = null;
@@ -377,7 +378,7 @@ namespace VeilBreakers.Core
             OnFadeInStarted = null;
             OnFadeInCompleted = null;
 
-            Debug.Log("[EventBus] All listeners cleared");
+            ErrorLogger.Log("[EventBus] All listeners cleared");
         }
     }
 }

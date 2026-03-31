@@ -106,7 +106,7 @@ namespace VeilBreakers.Commands
             // Set default formation positions (V-formation behind player)
             SetDefaultFormation();
 
-            Debug.Log($"[QuickCommandManager] Initialized with {_allies.Length} allies, {_enemies.Length} enemies");
+            ErrorLogger.Log($"[QuickCommandManager] Initialized with {_allies.Length} allies, {_enemies.Length} enemies");
         }
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace VeilBreakers.Commands
                 _formationPositions[ally] = localOffset;
             }
 
-            Debug.Log("[QuickCommandManager] Formation saved");
+            ErrorLogger.Log("[QuickCommandManager] Formation saved");
         }
 
         /// <summary>
@@ -238,7 +238,7 @@ namespace VeilBreakers.Commands
         {
             if (!CanCommand(ally))
             {
-                Debug.LogWarning($"[QuickCommandManager] Cannot command {ally?.DisplayName ?? "null"}: on cooldown or incapacitated");
+                ErrorLogger.Warn($"[QuickCommandManager] Cannot command {ally?.DisplayName ?? "null"}: on cooldown or incapacitated");
                 return false;
             }
 
@@ -254,7 +254,7 @@ namespace VeilBreakers.Commands
             // Validate target if needed
             if (!ValidateCommandTarget(command))
             {
-                Debug.LogWarning($"[QuickCommandManager] Invalid target for {type}");
+                ErrorLogger.Warn($"[QuickCommandManager] Invalid target for {type}");
                 return false;
             }
 
@@ -271,7 +271,7 @@ namespace VeilBreakers.Commands
             // Fire event
             OnCommandIssued?.Invoke(ally, type);
 
-            Debug.Log($"[QuickCommandManager] {ally.DisplayName} received command: {type}");
+            ErrorLogger.Log($"[QuickCommandManager] {ally.DisplayName} received command: {type}");
             return true;
         }
 
@@ -287,7 +287,7 @@ namespace VeilBreakers.Commands
 
                 OnCommandCancelled?.Invoke(ally, command.commandType);
 
-                Debug.Log($"[QuickCommandManager] Cancelled {ally.DisplayName}'s command: {command.commandType}");
+                ErrorLogger.Log($"[QuickCommandManager] Cancelled {ally.DisplayName}'s command: {command.commandType}");
             }
         }
 
@@ -433,7 +433,7 @@ namespace VeilBreakers.Commands
         {
             if (command.targetUnit == null)
             {
-                Debug.LogWarning("[QuickCommandManager] Attack Target: No target");
+                ErrorLogger.Warn("[QuickCommandManager] Attack Target: No target");
                 CompleteCommand(command);
                 return;
             }
@@ -500,7 +500,7 @@ namespace VeilBreakers.Commands
                     break;
             }
 
-            Debug.Log($"[QuickCommandManager] Applied preset {command.commandType} to {command.executor.DisplayName}");
+            ErrorLogger.Log($"[QuickCommandManager] Applied preset {command.commandType} to {command.executor.DisplayName}");
         }
 
         private void CompleteCommand(QuickCommandInstance command)
@@ -517,7 +517,7 @@ namespace VeilBreakers.Commands
             if (command.executor != null)
             {
                 OnCommandCompleted?.Invoke(command.executor, command.commandType);
-                Debug.Log($"[QuickCommandManager] {command.executor.DisplayName} completed: {command.commandType}");
+                ErrorLogger.Log($"[QuickCommandManager] {command.executor.DisplayName} completed: {command.commandType}");
             }
         }
 
@@ -731,7 +731,7 @@ namespace VeilBreakers.Commands
             else if (Time.time - command.startTime > command.duration * 2f)
             {
                 // Timeout - couldn't reach destination
-                Debug.LogWarning($"[QuickCommandManager] {command.executor.DisplayName} timed out moving to position");
+                ErrorLogger.Warn($"[QuickCommandManager] {command.executor.DisplayName} timed out moving to position");
                 CompleteCommand(command);
             }
         }
@@ -808,7 +808,7 @@ namespace VeilBreakers.Commands
             _expiredCooldownsBuffer.Clear();
             _currentTarget = null;
             _enemies = Array.Empty<Combatant>();
-            Debug.Log("[QuickCommandManager] Combat ended - all commands cancelled, state reset");
+            ErrorLogger.Log("[QuickCommandManager] Combat ended - all commands cancelled, state reset");
         }
 
         /// <summary>

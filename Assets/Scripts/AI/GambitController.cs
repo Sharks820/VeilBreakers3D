@@ -77,7 +77,7 @@ namespace VeilBreakers.AI
             _combatant = GetComponent<Combatant>();
             if (_combatant == null)
             {
-                Debug.LogError($"[GambitController] No Combatant component found on {gameObject.name}");
+                ErrorLogger.Error($"[GambitController] No Combatant component found on {gameObject.name}");
                 enabled = false;
                 return;
             }
@@ -127,7 +127,7 @@ namespace VeilBreakers.AI
 
             _isInitialized = true;
 
-            Debug.Log($"[GambitController] Initialized AI for {_combatant.DisplayName} with {_personality.personalityName}");
+            ErrorLogger.Log($"[GambitController] Initialized AI for {_combatant.DisplayName} with {_personality.personalityName}");
         }
 
         /// <summary>
@@ -150,13 +150,13 @@ namespace VeilBreakers.AI
         {
             if (!_isInitialized || !_combatant.IsAlive)
             {
-                Debug.LogWarning($"[GambitController] Cannot act: initialized={_isInitialized}, alive={_combatant.IsAlive}");
+                ErrorLogger.Warn($"[GambitController] Cannot act: initialized={_isInitialized}, alive={_combatant.IsAlive}");
                 return false;
             }
 
             if (_battleContext == null)
             {
-                Debug.LogError("[GambitController] Battle context not set!");
+                ErrorLogger.Error("[GambitController] Battle context not set!");
                 return false;
             }
 
@@ -178,7 +178,7 @@ namespace VeilBreakers.AI
 
             if (!best.IsValid)
             {
-                Debug.LogWarning($"[GambitController] No valid action found for {_combatant.DisplayName}");
+                ErrorLogger.Warn($"[GambitController] No valid action found for {_combatant.DisplayName}");
                 return false;
             }
 
@@ -196,7 +196,7 @@ namespace VeilBreakers.AI
             if (HasForcedTarget())
             {
                 best = new ScoredAction(best.rule, _forcedTarget, best.score);
-                Debug.Log($"[GambitController] {_combatant.DisplayName} forced target override -> {_forcedTarget.DisplayName}");
+                ErrorLogger.Log($"[GambitController] {_combatant.DisplayName} forced target override -> {_forcedTarget.DisplayName}");
             }
 
             // Execute the action
@@ -215,14 +215,14 @@ namespace VeilBreakers.AI
 
             if (success)
             {
-                Debug.Log($"[GambitController] {_combatant.DisplayName}: {result.message}");
+                ErrorLogger.Log($"[GambitController] {_combatant.DisplayName}: {result.message}");
 
                 // Fire appropriate events based on action type
                 EventBus.SkillUsed(_combatant.CombatantId, action.rule.ruleName);
             }
             else
             {
-                Debug.LogWarning($"[GambitController] Action failed: {result.message}");
+                ErrorLogger.Warn($"[GambitController] Action failed: {result.message}");
             }
 
             return success;
@@ -243,7 +243,7 @@ namespace VeilBreakers.AI
             _ultimateOverridden = false;
 
             // Visual feedback
-            Debug.Log($"[GambitController] {_combatant.DisplayName}'s Ultimate is ready! (F1/F2/F3 to override)");
+            ErrorLogger.Log($"[GambitController] {_combatant.DisplayName}'s Ultimate is ready! (F1/F2/F3 to override)");
         }
 
         /// <summary>
@@ -265,7 +265,7 @@ namespace VeilBreakers.AI
         {
             _ultimateReady = false;
 
-            Debug.Log($"[GambitController] {_combatant.DisplayName} uses Ultimate on {target?.DisplayName ?? "auto-target"}!");
+            ErrorLogger.Log($"[GambitController] {_combatant.DisplayName} uses Ultimate on {target?.DisplayName ?? "auto-target"}!");
 
             // TODO: Integrate with ability system when available
             EventBus.SkillUsed(_combatant.CombatantId, "Ultimate");
@@ -279,7 +279,7 @@ namespace VeilBreakers.AI
             // Guard against null personality or battle context
             if (_personality == null || _battleContext == null)
             {
-                Debug.LogWarning("[GambitController] Cannot get ultimate target: personality or context is null"); // VB-IGNORE BUG-10 -- string literal, not pattern match
+                ErrorLogger.Warn("[GambitController] Cannot get ultimate target: personality or context is null"); // VB-IGNORE BUG-10 -- string literal, not pattern match
                 return null;
             }
 
@@ -441,7 +441,7 @@ namespace VeilBreakers.AI
             {
                 _killCount++;
                 _lastKillTime = Time.time;
-                Debug.Log($"[GambitController] {_combatant.DisplayName} kill streak: {_killCount}");
+                ErrorLogger.Log($"[GambitController] {_combatant.DisplayName} kill streak: {_killCount}");
             }
         }
 
@@ -820,7 +820,7 @@ namespace VeilBreakers.AI
             _forcedTarget = target;
             if (target != null)
             {
-                Debug.Log($"[GambitController] {_combatant.DisplayName} forced to target {target.DisplayName}");
+                ErrorLogger.Log($"[GambitController] {_combatant.DisplayName} forced to target {target.DisplayName}");
             }
         }
 
@@ -831,7 +831,7 @@ namespace VeilBreakers.AI
         {
             if (_forcedTarget != null)
             {
-                Debug.Log($"[GambitController] {_combatant.DisplayName} cleared forced target");
+                ErrorLogger.Log($"[GambitController] {_combatant.DisplayName} cleared forced target");
             }
             _forcedTarget = null;
         }

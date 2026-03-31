@@ -143,7 +143,7 @@ namespace VeilBreakers.Managers
         {
             if (slot < 0 || slot >= kSlotCount)
             {
-                Debug.LogError($"[SaveManager] Invalid slot: {slot}");
+                ErrorLogger.Error($"[SaveManager] Invalid slot: {slot}");
                 return false;
             }
 
@@ -173,7 +173,7 @@ namespace VeilBreakers.Managers
         {
             if (slot < 0 || slot >= kSlotCount)
             {
-                Debug.LogError($"[SaveManager] Invalid slot: {slot}");
+                ErrorLogger.Error($"[SaveManager] Invalid slot: {slot}");
                 return false;
             }
 
@@ -206,13 +206,13 @@ namespace VeilBreakers.Managers
         {
             if (!TryResolveSlotPath(slot, out string path))
             {
-                Debug.LogError($"[SaveManager] Invalid slot: {slot}");
+                ErrorLogger.Error($"[SaveManager] Invalid slot: {slot}");
                 return false;
             }
 
             if (!File.Exists(path))
             {
-                Debug.LogError($"[SaveManager] Save file not found: {path}");
+                ErrorLogger.Error($"[SaveManager] Save file not found: {path}");
                 return false;
             }
 
@@ -222,7 +222,7 @@ namespace VeilBreakers.Managers
                 acquiredMutex = await _saveMutex.WaitAsync(5000); // 5 second timeout
                 if (!acquiredMutex)
                 {
-                    Debug.LogError("[SaveManager] Save/Load operation timeout - took longer than 5 seconds");
+                    ErrorLogger.Error("[SaveManager] Save/Load operation timeout - took longer than 5 seconds");
                     return false;
                 }
 
@@ -288,7 +288,7 @@ namespace VeilBreakers.Managers
             }
             catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException)
             {
-                Debug.LogError($"[SaveManager] Load failed: {ex.Message}");
+                ErrorLogger.Error($"[SaveManager] Load failed: {ex.Message}");
                 EventBus.LoadFailed(slot, ex.Message);
                 return false;
             }
@@ -310,7 +310,7 @@ namespace VeilBreakers.Managers
         {
             if (!TryResolveSlotPath(slot, out string path))
             {
-                Debug.LogError($"[SaveManager] Invalid slot: {slot}");
+                ErrorLogger.Error($"[SaveManager] Invalid slot: {slot}");
                 return false;
             }
 
@@ -341,7 +341,7 @@ namespace VeilBreakers.Managers
             }
             catch (IOException ex)
             {
-                Debug.LogError($"[SaveManager] Delete failed: {ex.Message}");
+                ErrorLogger.Error($"[SaveManager] Delete failed: {ex.Message}");
                 return false;
             }
         }
@@ -407,7 +407,7 @@ namespace VeilBreakers.Managers
             {
                 // Task.WhenAll throws the first exception; log it but continue
                 // collecting results from individual tasks below
-                Debug.LogWarning($"[SaveManager] Exception during metadata fetch: {ex.Message}");
+                ErrorLogger.Warn($"[SaveManager] Exception during metadata fetch: {ex.Message}");
             }
 
             for (int i = 0; i < tasks.Length; i++)
@@ -605,7 +605,7 @@ namespace VeilBreakers.Managers
         {
             if (_currentSave == null)
             {
-                Debug.LogError("[SaveManager] No save data to save");
+                ErrorLogger.Error("[SaveManager] No save data to save");
                 return false;
             }
 
@@ -615,7 +615,7 @@ namespace VeilBreakers.Managers
                 acquiredMutex = await _saveMutex.WaitAsync(5000); // 5 second timeout
                 if (!acquiredMutex)
                 {
-                    Debug.LogError("[SaveManager] Save/Load operation timeout - took longer than 5 seconds");
+                    ErrorLogger.Error("[SaveManager] Save/Load operation timeout - took longer than 5 seconds");
                     return false;
                 }
 
@@ -634,7 +634,7 @@ namespace VeilBreakers.Managers
         {
             if (_currentSave == null)
             {
-                Debug.LogError("[SaveManager] No save data to save");
+                ErrorLogger.Error("[SaveManager] No save data to save");
                 return false;
             }
 
@@ -677,7 +677,7 @@ namespace VeilBreakers.Managers
             }
             catch (IOException ex)
             {
-                Debug.LogError($"[SaveManager] Save failed: {ex.Message}");
+                ErrorLogger.Error($"[SaveManager] Save failed: {ex.Message}");
                 EventBus.SaveFailed(slot, ex.Message);
                 return false;
             }

@@ -41,7 +41,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void CacheReferences()
         {
-            if (_uiDocument == null) { Debug.LogError("[CarouselController] UIDocument not assigned!"); return; }
+            if (_uiDocument == null) { ErrorLogger.Error("[CarouselController] UIDocument not assigned!"); return; }
             var root = _uiDocument.rootVisualElement;
             _carouselStrip = root.Q<VisualElement>("carousel-strip");
             _heroIndex = root.Q<Label>("hero-index");

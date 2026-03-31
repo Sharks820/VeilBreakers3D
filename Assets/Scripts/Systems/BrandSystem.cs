@@ -32,12 +32,12 @@ namespace VeilBreakers.Systems
             new Dictionary<Brand, (Brand[], Brand[])>
         {
             { Brand.IRON,   (new[] { Brand.SURGE, Brand.DREAD }, new[] { Brand.SAVAGE, Brand.RUIN }) },
-            { Brand.SAVAGE, (new[] { Brand.IRON, Brand.MEND },   new[] { Brand.LEECH, Brand.GRACE }) },
+            { Brand.SAVAGE, (new[] { Brand.IRON, Brand.MEND },   new[] { Brand.LEECH, Brand.DREAD }) },
             { Brand.SURGE,  (new[] { Brand.VENOM, Brand.LEECH }, new[] { Brand.IRON, Brand.VOID }) },
             { Brand.VENOM,  (new[] { Brand.GRACE, Brand.MEND },  new[] { Brand.SURGE, Brand.RUIN }) },
             { Brand.DREAD,  (new[] { Brand.SAVAGE, Brand.GRACE },new[] { Brand.IRON, Brand.VOID }) },
-            { Brand.LEECH,  (new[] { Brand.SAVAGE, Brand.RUIN }, new[] { Brand.SURGE, Brand.VENOM }) },
-            { Brand.GRACE,  (new[] { Brand.VOID, Brand.RUIN },   new[] { Brand.SAVAGE, Brand.VENOM }) },
+            { Brand.LEECH,  (new[] { Brand.SAVAGE, Brand.RUIN }, new[] { Brand.SURGE, Brand.MEND }) },
+            { Brand.GRACE,  (new[] { Brand.VOID, Brand.RUIN },   new[] { Brand.DREAD, Brand.VENOM }) },
             { Brand.MEND,   (new[] { Brand.VOID, Brand.LEECH },  new[] { Brand.SAVAGE, Brand.VENOM }) },
             { Brand.RUIN,   (new[] { Brand.IRON, Brand.VENOM },  new[] { Brand.LEECH, Brand.GRACE }) },
             { Brand.VOID,   (new[] { Brand.SURGE, Brand.DREAD }, new[] { Brand.GRACE, Brand.MEND }) }

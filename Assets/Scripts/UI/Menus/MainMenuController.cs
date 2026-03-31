@@ -139,6 +139,10 @@ namespace VeilBreakers.UI.Menus
         // Hover callback storage for proper unregistration (prevents memory leaks)
         private Dictionary<Button, EventCallback<MouseEnterEvent>> _hoverEnterCallbacks;
         private Dictionary<Button, EventCallback<MouseLeaveEvent>> _hoverLeaveCallbacks;
+        private Dictionary<Button, EventCallback<MouseEnterEvent>> _gradientEnterCallbacks;
+        private Dictionary<Button, EventCallback<MouseLeaveEvent>> _gradientLeaveCallbacks;
+        private Dictionary<Button, EventCallback<PointerDownEvent>> _gradientPointerDownCallbacks;
+        private Dictionary<Button, EventCallback<PointerUpEvent>> _gradientPointerUpCallbacks;
 
         // =============================================================================
         // EVENTS
@@ -262,6 +266,10 @@ namespace VeilBreakers.UI.Menus
             // Initialize hover callback dictionaries for proper cleanup
             _hoverEnterCallbacks = new Dictionary<Button, EventCallback<MouseEnterEvent>>();
             _hoverLeaveCallbacks = new Dictionary<Button, EventCallback<MouseLeaveEvent>>();
+            _gradientEnterCallbacks = new Dictionary<Button, EventCallback<MouseEnterEvent>>();
+            _gradientLeaveCallbacks = new Dictionary<Button, EventCallback<MouseLeaveEvent>>();
+            _gradientPointerDownCallbacks = new Dictionary<Button, EventCallback<PointerDownEvent>>();
+            _gradientPointerUpCallbacks = new Dictionary<Button, EventCallback<PointerUpEvent>>();
 
             // Set version
             if (_versionLabel != null)
@@ -332,7 +340,7 @@ namespace VeilBreakers.UI.Menus
 
                 if (slotTask.IsFaulted)
                 {
-                    Debug.LogError($"[MainMenu] Failed to get save slot: {slotTask.Exception?.InnerException?.Message}");
+                    ErrorLogger.Error($"[MainMenu] Failed to get save slot: {slotTask.Exception?.InnerException?.Message}");
                     yield break;
                 }
 
@@ -349,7 +357,7 @@ namespace VeilBreakers.UI.Menus
 
                     if (metaTask.IsFaulted)
                     {
-                        Debug.LogError($"[MainMenu] Failed to get slot metadata: {metaTask.Exception?.InnerException?.Message}");
+                        ErrorLogger.Error($"[MainMenu] Failed to get slot metadata: {metaTask.Exception?.InnerException?.Message}");
                         yield break;
                     }
 
@@ -375,7 +383,7 @@ namespace VeilBreakers.UI.Menus
 
             if (corrupted)
             {
-                Debug.LogWarning($"[MainMenuController] Save slot {continueSlot} appears corrupted; hiding Continue.");
+                ErrorLogger.Warn($"[MainMenuController] Save slot {continueSlot} appears corrupted; hiding Continue.");
             }
         }
 
@@ -643,7 +651,7 @@ namespace VeilBreakers.UI.Menus
 
                     if (slotTask.IsFaulted)
                     {
-                        Debug.LogError($"[MainMenu] Failed to get save slot during load: {slotTask.Exception?.InnerException?.Message}");
+                        ErrorLogger.Error($"[MainMenu] Failed to get save slot during load: {slotTask.Exception?.InnerException?.Message}");
                         SetInteractable(true);
                         yield break;
                     }
@@ -660,19 +668,19 @@ namespace VeilBreakers.UI.Menus
 
                     if (loadTask.IsFaulted)
                     {
-                        Debug.LogError($"[MainMenu] Failed to load save: {loadTask.Exception?.InnerException?.Message}");
+                        ErrorLogger.Error($"[MainMenu] Failed to load save: {loadTask.Exception?.InnerException?.Message}");
                         SetInteractable(true);
                         yield break;
                     }
 
                     if (!loadTask.Result)
                     {
-                        Debug.LogWarning($"[MainMenuController] Failed to load slot {slotToLoad}. Proceeding to scene load.");
+                        ErrorLogger.Warn($"[MainMenuController] Failed to load slot {slotToLoad}. Proceeding to scene load.");
                     }
                 }
                 else
                 {
-                    Debug.LogWarning("[MainMenuController] Continue requested but no valid save slot was found.");
+                    ErrorLogger.Warn("[MainMenuController] Continue requested but no valid save slot was found.");
                 }
             }
 
@@ -845,6 +853,10 @@ namespace VeilBreakers.UI.Menus
             // Initialize hover callback dictionaries (needed by PlayEntranceAnimation)
             _hoverEnterCallbacks = new Dictionary<Button, EventCallback<MouseEnterEvent>>();
             _hoverLeaveCallbacks = new Dictionary<Button, EventCallback<MouseLeaveEvent>>();
+            _gradientEnterCallbacks = new Dictionary<Button, EventCallback<MouseEnterEvent>>();
+            _gradientLeaveCallbacks = new Dictionary<Button, EventCallback<MouseLeaveEvent>>();
+            _gradientPointerDownCallbacks = new Dictionary<Button, EventCallback<PointerDownEvent>>();
+            _gradientPointerUpCallbacks = new Dictionary<Button, EventCallback<PointerUpEvent>>();
 
             // Set version
             if (_versionLabel != null)
@@ -1147,7 +1159,7 @@ namespace VeilBreakers.UI.Menus
             var sdfFont = Resources.Load<UnityEngine.TextCore.Text.FontAsset>("CinzelSDF");
             if (sdfFont == null)
             {
-                Debug.LogWarning("[MainMenu] CinzelSDF.asset not found in Resources — using TTF fallback");
+                ErrorLogger.Warn("[MainMenu] CinzelSDF.asset not found in Resources — using TTF fallback");
                 return;
             }
             root.style.unityFontDefinition = new StyleFontDefinition(sdfFont);
@@ -1317,7 +1329,8 @@ namespace VeilBreakers.UI.Menus
             button.Add(shineSweep);
 
             // --- HOVER CALLBACKS: gradient swap + glow + sweep ---
-            button.RegisterCallback<MouseEnterEvent>(evt =>
+            // Stored in dictionaries for proper unregistration in OnDisable
+            EventCallback<MouseEnterEvent> gradientEnter = evt =>
             {
                 UIGradientHelper.ApplyGradient(button, _btnHoverGradient);
                 glowHalo.style.opacity = 1;
@@ -1327,15 +1340,14 @@ namespace VeilBreakers.UI.Menus
                 {
                     shineSweep.style.left = Length.Percent(105);
                 }).ExecuteLater(10);
-            });
+            };
 
-            button.RegisterCallback<MouseLeaveEvent>(evt =>
+            EventCallback<MouseLeaveEvent> gradientLeave = evt =>
             {
-                // Reset gradient + glow + sweep + hover class (MUST remove class — it overrides inline styles)
+                // Reset gradient + glow + sweep + hover class
                 button.RemoveFromClassList("vb-button-hover-glow");
                 UIGradientHelper.ApplyGradient(button, _btnBaseGradient);
                 glowHalo.style.opacity = 0;
-                button.Blur();
                 // Reset sweep position instantly (no transition)
                 shineSweep.style.transitionDuration = new List<TimeValue> { new(0f, TimeUnit.Second) };
                 shineSweep.style.left = Length.Percent(-35);
@@ -1343,22 +1355,25 @@ namespace VeilBreakers.UI.Menus
                 {
                     shineSweep.style.transitionDuration = new List<TimeValue> { new(0.5f, TimeUnit.Second) };
                 }).ExecuteLater(10);
-            });
+            };
 
-            // --- RIGHT-CLICK FIX: fully reset all hover visuals + release pointer capture ---
-            button.RegisterCallback<PointerDownEvent>(evt =>
+            EventCallback<PointerDownEvent> gradientPointerDown = evt =>
             {
                 if (evt.button == 1) // Right mouse button
                 {
-                    button.RemoveFromClassList("vb-button-hover-glow");
-                    UIGradientHelper.ApplyGradient(button, _btnBaseGradient);
-                    glowHalo.style.opacity = 0;
-                    shineSweep.style.left = Length.Percent(-35);
-                    button.Blur();
-                    button.ReleasePointer(evt.pointerId); // Release pointer capture to clear :hover
-                    evt.StopPropagation(); // Prevent Button's internal handler from re-capturing
+                    ResetButtonHoverState(button, glowHalo, shineSweep);
+                    button.ReleasePointer(evt.pointerId);
+                    evt.StopPropagation();
                 }
-            });
+            };
+
+            button.RegisterCallback(gradientEnter);
+            button.RegisterCallback(gradientLeave);
+            button.RegisterCallback(gradientPointerDown);
+
+            _gradientEnterCallbacks[button] = gradientEnter;
+            _gradientLeaveCallbacks[button] = gradientLeave;
+            _gradientPointerDownCallbacks[button] = gradientPointerDown;
 
             // --- BREATHING GLOW: subtle idle pulse on all buttons ---
             float breathStart = UnityEngine.Random.Range(0f, 6.28f); // Random phase offset
@@ -1524,6 +1539,66 @@ namespace VeilBreakers.UI.Menus
                 }
                 _hoverLeaveCallbacks.Clear();
             }
+
+            if (_gradientEnterCallbacks != null)
+            {
+                foreach (var kvp in _gradientEnterCallbacks)
+                {
+                    kvp.Key?.UnregisterCallback<MouseEnterEvent>(kvp.Value);
+                }
+                _gradientEnterCallbacks.Clear();
+            }
+
+            if (_gradientLeaveCallbacks != null)
+            {
+                foreach (var kvp in _gradientLeaveCallbacks)
+                {
+                    kvp.Key?.UnregisterCallback<MouseLeaveEvent>(kvp.Value);
+                }
+                _gradientLeaveCallbacks.Clear();
+            }
+
+            if (_gradientPointerDownCallbacks != null)
+            {
+                foreach (var kvp in _gradientPointerDownCallbacks)
+                {
+                    kvp.Key?.UnregisterCallback<PointerDownEvent>(kvp.Value);
+                }
+                _gradientPointerDownCallbacks.Clear();
+            }
+
+            if (_gradientPointerUpCallbacks != null)
+            {
+                foreach (var kvp in _gradientPointerUpCallbacks)
+                {
+                    kvp.Key?.UnregisterCallback<PointerUpEvent>(kvp.Value);
+                }
+                _gradientPointerUpCallbacks.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Fully resets hover visual state on a button: gradient, glow halo, shine sweep, CSS class, focus.
+        /// Used by right-click handler and ClearAllHoverStates.
+        /// </summary>
+        private void ResetButtonHoverState(Button button, VisualElement glowHalo, VisualElement shineSweep)
+        {
+            button.RemoveFromClassList("vb-button-hover-glow");
+            if (_btnBaseGradient != null)
+            {
+                UIGradientHelper.ApplyGradient(button, _btnBaseGradient);
+            }
+            if (glowHalo != null) glowHalo.style.opacity = 0;
+            if (shineSweep != null)
+            {
+                shineSweep.style.transitionDuration = new List<TimeValue> { new(0f, TimeUnit.Second) };
+                shineSweep.style.left = Length.Percent(-35);
+                shineSweep.schedule.Execute(() =>
+                {
+                    shineSweep.style.transitionDuration = new List<TimeValue> { new(0.5f, TimeUnit.Second) };
+                }).ExecuteLater(10);
+            }
+            button.Blur();
         }
     }
 }

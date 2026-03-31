@@ -538,7 +538,11 @@ namespace VeilBreakers.UI.Controls
             {
                 button.style.scale = new Scale(Vector2.one);
                 button.RemoveFromClassList("vb-button-hover-glow");
-                // Border colors will be restored by hover callbacks
+                // Clear focus border colors — hover callbacks don't run when focus is lost to overlay
+                button.style.borderTopColor = StyleKeyword.Null;
+                button.style.borderBottomColor = StyleKeyword.Null;
+                button.style.borderLeftColor = StyleKeyword.Null;
+                button.style.borderRightColor = StyleKeyword.Null;
             });
         }
     }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using VeilBreakers.Core;
 using UnityEngine.Rendering;
 
 namespace VeilBreakers.UI.CharacterSelect
@@ -167,7 +168,7 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (string.IsNullOrEmpty(heroId))
             {
-                Debug.LogWarning($"[HeroThemeConfig] {name} has no heroId assigned!");
+                ErrorLogger.Warn($"[HeroThemeConfig] {name} has no heroId assigned!");
             }
         }
 #endif

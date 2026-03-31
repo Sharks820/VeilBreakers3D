@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using VeilBreakers.Core;
 using VeilBreakers.Data;
 
 namespace VeilBreakers.Core
@@ -98,7 +99,7 @@ namespace VeilBreakers.Core
 
         protected override void OnSingletonAwake()
         {
-            Debug.Log("[GameManager] Initialized");
+            ErrorLogger.Log("[GameManager] Initialized");
         }
 
         // =============================================================================
@@ -110,7 +111,7 @@ namespace VeilBreakers.Core
             var oldState = CurrentState;
             CurrentState = newState;
 
-            Debug.Log($"[GameManager] State changed: {oldState} -> {newState}");
+            ErrorLogger.Log($"[GameManager] State changed: {oldState} -> {newState}");
 
             // Handle state transitions
             switch (newState)
@@ -165,7 +166,7 @@ namespace VeilBreakers.Core
             CurrentHero = null;
             _party.Clear();
             Currency = 0;
-            Debug.Log("[GameManager] Game state reset");
+            ErrorLogger.Log("[GameManager] Game state reset");
         }
 
         // =============================================================================
@@ -179,13 +180,13 @@ namespace VeilBreakers.Core
         {
             if (GameDatabase.Instance == null)
             {
-                Debug.LogError("[GameManager] GameDatabase not initialized");
+                ErrorLogger.Error("[GameManager] GameDatabase not initialized");
                 return;
             }
             var heroData = GameDatabase.Instance.GetHero(heroId);
             if (heroData == null)
             {
-                Debug.LogError($"[GameManager] Hero not found: {heroId}");
+                ErrorLogger.Error($"[GameManager] Hero not found: {heroId}");
                 return;
             }
 
@@ -210,7 +211,7 @@ namespace VeilBreakers.Core
                 CurrentHero.learnedSkills.AddRange(heroData.innate_skills);
             }
 
-            Debug.Log($"[GameManager] Hero selected: {heroData.display_name}");
+            ErrorLogger.Log($"[GameManager] Hero selected: {heroData.display_name}");
         }
 
         /// <summary>
@@ -259,19 +260,19 @@ namespace VeilBreakers.Core
         {
             if (_party.Count >= Constants.MAX_PARTY_SIZE)
             {
-                Debug.LogWarning("[GameManager] Party is full!");
+                ErrorLogger.Warn("[GameManager] Party is full!");
                 return false;
             }
 
             if (GameDatabase.Instance == null)
             {
-                Debug.LogError("[GameManager] GameDatabase not initialized");
+                ErrorLogger.Error("[GameManager] GameDatabase not initialized");
                 return false;
             }
             var monsterData = GameDatabase.Instance.GetMonster(monsterId);
             if (monsterData == null)
             {
-                Debug.LogError($"[GameManager] Monster not found: {monsterId}");
+                ErrorLogger.Error($"[GameManager] Monster not found: {monsterId}");
                 return false;
             }
 
@@ -299,7 +300,7 @@ namespace VeilBreakers.Core
             _party.Add(member);
             EventBus.MonsterCaptured(monsterId);
 
-            Debug.Log($"[GameManager] Monster added to party: {monsterData.display_name}");
+            ErrorLogger.Log($"[GameManager] Monster added to party: {monsterData.display_name}");
             return true;
         }
 
@@ -366,7 +367,7 @@ namespace VeilBreakers.Core
                 member.currentMp = member.maxMp;
             }
 
-            Debug.Log("[GameManager] Party fully healed");
+            ErrorLogger.Log("[GameManager] Party fully healed");
         }
 
         // =============================================================================
@@ -414,7 +415,7 @@ namespace VeilBreakers.Core
             ChangeState(GameState.Exploring);
             EventBus.GameStarted();
 
-            Debug.Log("[GameManager] New game started!");
+            ErrorLogger.Log("[GameManager] New game started!");
         }
     }
 }

@@ -10,36 +10,8 @@ namespace VeilBreakers.Systems
     /// Manages the AI companion's dialogue, personality, and veil integrity responses.
     /// VERA has a dual personality that emerges based on Veil Integrity level.
     /// </summary>
-    public class VERASystem : MonoBehaviour
+    public class VERASystem : SingletonMonoBehaviour<VERASystem>
     {
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        private static VERASystem _instance;
-        private static bool _isQuitting;
-
-        public static VERASystem Instance
-        {
-            get
-            {
-                if (_isQuitting) return null;
-                return _instance;
-            }
-        }
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStatics()
-        {
-            _instance = null;
-            _isQuitting = false;
-        }
-
-        private void OnApplicationQuit()
-        {
-            _isQuitting = true;
-        }
-
         // =============================================================================
         // CONFIGURATION
         // =============================================================================
@@ -92,15 +64,11 @@ namespace VeilBreakers.Systems
         // UNITY LIFECYCLE
         // =============================================================================
 
-        private void Awake()
+        protected override void OnSingletonAwake()
         {
-            if (_instance != null && _instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            _instance = this;
-            DontDestroyOnLoad(gameObject);
+            // Initialization that only needs to happen once is handled here.
+            // Event subscription is handled in OnEnable/OnDisable for proper lifecycle.
+            UpdatePersonality();
         }
 
         private void OnEnable()
@@ -118,12 +86,6 @@ namespace VeilBreakers.Systems
         {
             UpdateGlitchState();
             ProcessDialogueQueue();
-        }
-
-        private void OnDestroy()
-        {
-            if (_instance == this)
-                _instance = null;
         }
 
         // =============================================================================

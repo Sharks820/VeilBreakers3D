@@ -304,7 +304,7 @@ namespace VeilBreakers.UI.CharacterSelect
                     }
                     if (shader == null)
                     {
-                        Debug.LogWarning("[HeroStageController] No suitable shader found for placeholder.");
+                        ErrorLogger.Warn("[HeroStageController] No suitable shader found for placeholder.");
                         return placeholder;
                     }
                     _placeholderMaterial = new Material(shader);

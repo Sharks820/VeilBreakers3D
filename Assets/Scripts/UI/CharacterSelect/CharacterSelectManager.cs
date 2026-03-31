@@ -256,7 +256,7 @@ namespace VeilBreakers.UI.CharacterSelect
             // --- HeroStageController (should already exist in scene) ---
             var stageCtrl = GetComponent<HeroStageController>();
             if (stageCtrl == null)
-                Debug.LogWarning("[CharacterSelectManager] HeroStageController not found on this GameObject.", this);
+                ErrorLogger.Warn("[CharacterSelectManager] HeroStageController not found on this GameObject.", this);
 
             // --- HeroThemeTransitioner (needs HeroThemeConfig[], VolumeProfileTransitioner, VeilDissolveController, HeroStageController) ---
             if (_themeTransitioner == null) _themeTransitioner = GetComponent<HeroThemeTransitioner>();
@@ -283,7 +283,7 @@ namespace VeilBreakers.UI.CharacterSelect
             if (holdToEmbark == null) holdToEmbark = gameObject.AddComponent<HoldToEmbarkController>();
             holdToEmbark.AutoWire(_uiDocument, focusManager);
 
-            Debug.Log("[CharSelectManager] All Phase 3-4 components auto-wired successfully.");
+            ErrorLogger.Log("[CharSelectManager] All Phase 3-4 components auto-wired successfully.");
         }
 
         /// <summary>
@@ -314,7 +314,7 @@ namespace VeilBreakers.UI.CharacterSelect
                 new Color(0.94f, 0.20f, 0.22f, 0.30f),
                 new Color(0.22f, 0.04f, 0.04f));
 
-            Debug.Log("[CharSelectManager] Created 4 runtime HeroThemeConfigs (no assets found in Resources/CharacterSelect/HeroThemes).");
+            ErrorLogger.Log("[CharSelectManager] Created 4 runtime HeroThemeConfigs (no assets found in Resources/CharacterSelect/HeroThemes).");
             return configs;
         }
 
@@ -367,7 +367,7 @@ namespace VeilBreakers.UI.CharacterSelect
                 elapsed += Time.deltaTime;
                 if (elapsed > timeout)
                 {
-                    Debug.LogError("[CharSelectManager] Timed out waiting for GameDatabase after 10s.");
+                    ErrorLogger.Error("[CharSelectManager] Timed out waiting for GameDatabase after 10s.");
                     CharSelectEvents.RaiseErrorOccurred("GameDatabase initialization timed out. Please restart.");
                     yield break;
                 }
@@ -377,7 +377,7 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_heroList == null || _heroList.Count == 0)
             {
                 HideSkeletonLoading();
-                Debug.LogError("[CharSelect:INIT] FAILED: No heroes found!");
+                ErrorLogger.Error("[CharSelect:INIT] FAILED: No heroes found!");
                 CharSelectEvents.RaiseErrorOccurred("No heroes found. Please restart.");
                 yield break;
             }
@@ -385,7 +385,7 @@ namespace VeilBreakers.UI.CharacterSelect
             CacheUIReferences();
             if (_root == null)
             {
-                Debug.LogError("[CharSelect:INIT] FAILED: _root is null! UIDocument may not be assigned.");
+                ErrorLogger.Error("[CharSelect:INIT] FAILED: _root is null! UIDocument may not be assigned.");
                 yield break;
             }
             SetAnimationHints();
@@ -454,7 +454,7 @@ namespace VeilBreakers.UI.CharacterSelect
             }
 
             HideSkeletonLoading();
-            Debug.Log("[CharSelectManager] Visibility failsafe applied.");
+            ErrorLogger.Log("[CharSelectManager] Visibility failsafe applied.");
         }
 
         // =============================================================================
@@ -466,13 +466,13 @@ namespace VeilBreakers.UI.CharacterSelect
             _heroList = GameDatabase.Instance.GetAllHeroes();
             if (_heroList == null || _heroList.Count == 0)
             {
-                Debug.LogError("[CharSelectManager] No heroes found in GameDatabase!");
+                ErrorLogger.Error("[CharSelectManager] No heroes found in GameDatabase!");
                 return;
             }
             _heroList.Sort((a, b) => string.Compare(a.hero_id, b.hero_id, StringComparison.Ordinal));
             if (_heroConfigs == null || _heroConfigs.Length == 0)
             {
-                Debug.LogWarning("[CharSelectManager] No HeroDisplayConfigs assigned. Using defaults.");
+                ErrorLogger.Warn("[CharSelectManager] No HeroDisplayConfigs assigned. Using defaults.");
                 _heroConfigs = new HeroDisplayConfig[_heroList.Count];
             }
             ReorderConfigsToMatchHeroes();
@@ -491,7 +491,7 @@ namespace VeilBreakers.UI.CharacterSelect
             if (_heroConfigs == null) return null;
             for (int i = 0; i < _heroConfigs.Length; i++)
                 if (_heroConfigs[i] != null && _heroConfigs[i].heroId == heroId) return _heroConfigs[i];
-            Debug.LogWarning($"[CharSelectManager] No config found for hero '{heroId}'");
+            ErrorLogger.Warn($"[CharSelectManager] No config found for hero '{heroId}'");
             return null;
         }
 
@@ -501,7 +501,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
         private void CacheUIReferences()
         {
-            if (_uiDocument == null) { Debug.LogError("[CharacterSelectManager] UIDocument not assigned!"); return; }
+            if (_uiDocument == null) { ErrorLogger.Error("[CharacterSelectManager] UIDocument not assigned!"); return; }
             _root = _uiDocument.rootVisualElement;
             _btnPrev = _root.Q<Button>(kBtnPrev);
             _btnNext = _root.Q<Button>(kBtnNext);
@@ -804,7 +804,7 @@ namespace VeilBreakers.UI.CharacterSelect
                 }
                 else
                 {
-                    Debug.LogWarning("[CharSelectManager] Cannot play embark voice: no main camera found.");
+                    ErrorLogger.Warn("[CharSelectManager] Cannot play embark voice: no main camera found.");
                 }
             }
 
@@ -817,11 +817,11 @@ namespace VeilBreakers.UI.CharacterSelect
             }
             catch (OperationCanceledException)
             {
-                Debug.Log("[CharSelectManager] Embark cancelled (destroyed or timed out).");
+                ErrorLogger.Log("[CharSelectManager] Embark cancelled (destroyed or timed out).");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[CharSelectManager] Embark failed: {ex.Message}");
+                ErrorLogger.Error($"[CharSelectManager] Embark failed: {ex.Message}");
                 ShowErrorToast($"Embark failed: {ex.Message}");
             }
             finally

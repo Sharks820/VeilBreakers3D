@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using VeilBreakers.Core;
 using VeilBreakers.Data;
 using VeilBreakers.Systems;
 
@@ -316,7 +317,7 @@ namespace VeilBreakers.Combat
         {
             if (_isCasting)
             {
-                Debug.Log($"[Combatant] {_displayName}'s cast was interrupted!");
+                ErrorLogger.Log($"[Combatant] {_displayName}'s cast was interrupted!");
                 CompleteCast();
             }
         }

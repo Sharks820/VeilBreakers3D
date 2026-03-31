@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using VeilBreakers.Core;
 using UnityEngine.UIElements;
 
 namespace VeilBreakers.UI.Core
@@ -113,7 +114,7 @@ namespace VeilBreakers.UI.Core
             }
 
             StartVFX();
-            Debug.Log($"[MenuVFXController] Initialized with {_particles.Count} particles");
+            ErrorLogger.Log($"[MenuVFXController] Initialized with {_particles.Count} particles");
         }
 
         // =============================================================================

@@ -32,7 +32,7 @@ namespace VeilBreakers.UI.Core
                     _instance = Resources.Load<UIAssets>("UI/UIAssets");
                     if (_instance == null)
                     {
-                        Debug.LogError("[UIAssets] UIAssets not found! Create via Assets > Create > VeilBreakers > UI > UIAssets");
+                        ErrorLogger.Error("[UIAssets] UIAssets not found! Create via Assets > Create > VeilBreakers > UI > UIAssets");
                     }
                 }
                 return _instance;

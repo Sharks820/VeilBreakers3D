@@ -1,4 +1,5 @@
 using UnityEngine;
+using VeilBreakers.Core;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using VeilBreakers.UI.Menus;
@@ -14,6 +15,9 @@ namespace VeilBreakers.UI.Core
     {
         private const string kMainMenuScene = "MainMenu";
         private const string kCharacterSelectScene = "CharacterSelect";
+
+        // Runtime-created PanelSettings ( BUG-B-07 ) — destroyed on scene unload
+        private static PanelSettings _runtimePanelSettings;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void OnSceneLoaded()
@@ -32,6 +36,13 @@ namespace VeilBreakers.UI.Core
         {
             SceneManager.sceneLoaded -= HandleSceneLoaded;
             Application.quitting -= OnApplicationQuitting;
+
+            // Destroy runtime PanelSettings ( BUG-B-07 )
+            if (_runtimePanelSettings != null)
+            {
+                Object.Destroy(_runtimePanelSettings);
+                _runtimePanelSettings = null;
+            }
         }
 
         private static void HandleSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -59,16 +70,16 @@ namespace VeilBreakers.UI.Core
             // Check if UI is already set up
             if (Object.FindFirstObjectByType<UIDocument>() != null)
             {
-                Debug.Log("[MenuBootstrap] UIDocument already exists in MainMenu");
+                ErrorLogger.Log("[MenuBootstrap] UIDocument already exists in MainMenu");
                 return;
             }
 
-            Debug.Log("[MenuBootstrap] Setting up MainMenu UI...");
+            ErrorLogger.Log("[MenuBootstrap] Setting up MainMenu UI...");
 
             var uiAssets = UIAssets.Instance;
             if (uiAssets == null)
             {
-                Debug.LogError("[MenuBootstrap] UIAssets not found! Create via Assets > Create > VeilBreakers > UI > UIAssets");
+                ErrorLogger.Error("[MenuBootstrap] UIAssets not found! Create via Assets > Create > VeilBreakers > UI > UIAssets");
                 return;
             }
 
@@ -82,11 +93,13 @@ namespace VeilBreakers.UI.Core
             var panelSettings = uiAssets.DefaultPanelSettings;
             if (panelSettings == null)
             {
-                // Create default panel settings as fallback
-                panelSettings = ScriptableObject.CreateInstance<PanelSettings>();
-                panelSettings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
-                panelSettings.referenceResolution = new Vector2Int(1920, 1080);
-                Debug.LogWarning("[MenuBootstrap] Created runtime PanelSettings - assign DefaultPanelSettings in UIAssets");
+                // Destroy previous runtime PanelSettings before creating a new one ( BUG-B-07 )
+                if (_runtimePanelSettings != null) Object.Destroy(_runtimePanelSettings);
+                _runtimePanelSettings = ScriptableObject.CreateInstance<PanelSettings>();
+                _runtimePanelSettings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
+                _runtimePanelSettings.referenceResolution = new Vector2Int(1920, 1080);
+                panelSettings = _runtimePanelSettings;
+                ErrorLogger.Warn("[MenuBootstrap] Created runtime PanelSettings - assign DefaultPanelSettings in UIAssets");
             }
             uiDocument.panelSettings = panelSettings;
 
@@ -98,7 +111,7 @@ namespace VeilBreakers.UI.Core
             }
             else
             {
-                Debug.LogError("[MenuBootstrap] MainMenuTemplate not assigned in UIAssets!");
+                ErrorLogger.Error("[MenuBootstrap] MainMenuTemplate not assigned in UIAssets!");
                 CreateFallbackMainMenu(uiDocument);
                 return;
             }
@@ -109,23 +122,23 @@ namespace VeilBreakers.UI.Core
             // Add controller
             uiManagerObj.AddComponent<MainMenuController>();
 
-            Debug.Log("[MenuBootstrap] MainMenu UI setup complete");
+            ErrorLogger.Log("[MenuBootstrap] MainMenu UI setup complete");
         }
 
         private static void SetupCharacterSelect()
         {
             if (Object.FindFirstObjectByType<UIDocument>() != null)
             {
-                Debug.Log("[MenuBootstrap] UIDocument already exists in CharacterSelect");
+                ErrorLogger.Log("[MenuBootstrap] UIDocument already exists in CharacterSelect");
                 return;
             }
 
-            Debug.Log("[MenuBootstrap] Setting up CharacterSelect UI...");
+            ErrorLogger.Log("[MenuBootstrap] Setting up CharacterSelect UI...");
 
             var uiAssets = UIAssets.Instance;
             if (uiAssets == null)
             {
-                Debug.LogError("[MenuBootstrap] UIAssets not found!");
+                ErrorLogger.Error("[MenuBootstrap] UIAssets not found!");
                 return;
             }
 
@@ -135,9 +148,11 @@ namespace VeilBreakers.UI.Core
             var panelSettings = uiAssets.DefaultPanelSettings;
             if (panelSettings == null)
             {
-                panelSettings = ScriptableObject.CreateInstance<PanelSettings>();
-                panelSettings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
-                panelSettings.referenceResolution = new Vector2Int(1920, 1080);
+                // Destroy previous runtime PanelSettings before creating a new one ( BUG-B-07 )
+                if (_runtimePanelSettings != null) Object.Destroy(_runtimePanelSettings);
+                _runtimePanelSettings = ScriptableObject.CreateInstance<PanelSettings>();
+                _runtimePanelSettings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
+                _runtimePanelSettings.referenceResolution = new Vector2Int(1920, 1080);
             }
             uiDocument.panelSettings = panelSettings;
 
@@ -148,7 +163,7 @@ namespace VeilBreakers.UI.Core
             }
             else
             {
-                Debug.LogError("[MenuBootstrap] CharacterSelectTemplate not assigned in UIAssets!");
+                ErrorLogger.Error("[MenuBootstrap] CharacterSelectTemplate not assigned in UIAssets!");
                 return;
             }
 
@@ -157,7 +172,7 @@ namespace VeilBreakers.UI.Core
 
             uiManagerObj.AddComponent<VeilBreakers.UI.CharacterSelect.CharacterSelectManager>();
 
-            Debug.Log("[MenuBootstrap] CharacterSelect UI setup complete");
+            ErrorLogger.Log("[MenuBootstrap] CharacterSelect UI setup complete");
         }
 
         private static void CreateFallbackMainMenu(UIDocument uiDocument)
@@ -185,9 +200,9 @@ namespace VeilBreakers.UI.Core
             container.Add(subtitle);
 
             // Create buttons
-            CreateMenuButton(container, "NEW GAME", () => Debug.Log("New Game clicked"));
-            CreateMenuButton(container, "CONTINUE", () => Debug.Log("Continue clicked"));
-            CreateMenuButton(container, "SETTINGS", () => Debug.Log("Settings clicked"));
+            CreateMenuButton(container, "NEW GAME", () => ErrorLogger.Log("New Game clicked"));
+            CreateMenuButton(container, "CONTINUE", () => ErrorLogger.Log("Continue clicked"));
+            CreateMenuButton(container, "SETTINGS", () => ErrorLogger.Log("Settings clicked"));
             CreateMenuButton(container, "QUIT", () => Application.Quit());
 
             var version = new Label("v2.00 - UI Test Build");

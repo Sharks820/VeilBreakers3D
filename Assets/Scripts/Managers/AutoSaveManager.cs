@@ -159,21 +159,21 @@ namespace VeilBreakers.Managers
             if (!_isEnabled)
             {
                 if (_logAutoSaves)
-                    Debug.Log($"[AutoSaveManager] Auto-save disabled, skipping: {reason}");
+                    ErrorLogger.Log($"[AutoSaveManager] Auto-save disabled, skipping: {reason}");
                 return;
             }
 
             if (SaveManager.Instance == null || !SaveManager.Instance.HasActiveSave)
             {
                 if (_logAutoSaves)
-                    Debug.Log($"[AutoSaveManager] No active save, skipping: {reason}");
+                    ErrorLogger.Log($"[AutoSaveManager] No active save, skipping: {reason}");
                 return;
             }
 
             if (SaveManager.Instance.IsSaving || SaveManager.Instance.IsLoading)
             {
                 if (_logAutoSaves)
-                    Debug.Log($"[AutoSaveManager] Save/Load in progress, skipping: {reason}");
+                    ErrorLogger.Log($"[AutoSaveManager] Save/Load in progress, skipping: {reason}");
                 return;
             }
 
@@ -182,7 +182,7 @@ namespace VeilBreakers.Managers
             if (timeSinceLast < _minAutoSaveInterval)
             {
                 if (_logAutoSaves)
-                    Debug.Log($"[AutoSaveManager] Debounce active ({timeSinceLast:F1}s < {_minAutoSaveInterval}s), skipping: {reason}");
+                    ErrorLogger.Log($"[AutoSaveManager] Debounce active ({timeSinceLast:F1}s < {_minAutoSaveInterval}s), skipping: {reason}");
                 return;
             }
 
@@ -193,7 +193,7 @@ namespace VeilBreakers.Managers
             PerformAutoSaveAsync(reason, _cts?.Token ?? CancellationToken.None).ContinueWith(t =>
             {
                 if (t.IsFaulted && t.Exception != null)
-                    Debug.LogError($"[AutoSave] Failed: {t.Exception.InnerException?.Message}");
+                    ErrorLogger.Error($"[AutoSave] Failed: {t.Exception.InnerException?.Message}");
             }, TaskContinuationOptions.OnlyOnFaulted);
         }
 
@@ -204,13 +204,13 @@ namespace VeilBreakers.Managers
                 token.ThrowIfCancellationRequested();
 
                 if (_logAutoSaves)
-                    Debug.Log($"[AutoSaveManager] Auto-saving: {reason}");
+                    ErrorLogger.Log($"[AutoSaveManager] Auto-saving: {reason}");
 
                 // Cache reference to avoid null between await points
                 var saveManager = SaveManager.Instance;
                 if (saveManager == null)
                 {
-                    Debug.LogWarning($"[AutoSaveManager] SaveManager destroyed during auto-save: {reason}");
+                    ErrorLogger.Warn($"[AutoSaveManager] SaveManager destroyed during auto-save: {reason}");
                     return;
                 }
 
@@ -220,20 +220,20 @@ namespace VeilBreakers.Managers
                 if (_logAutoSaves)
                 {
                     if (success)
-                        Debug.Log($"[AutoSaveManager] Auto-save completed: {reason}");
+                        ErrorLogger.Log($"[AutoSaveManager] Auto-save completed: {reason}");
                     else
-                        Debug.LogWarning($"[AutoSaveManager] Auto-save failed: {reason}");
+                        ErrorLogger.Warn($"[AutoSaveManager] Auto-save failed: {reason}");
                 }
             }
             catch (OperationCanceledException)
             {
                 // Expected when component is disabled or destroyed — not an error
                 if (_logAutoSaves)
-                    Debug.Log($"[AutoSaveManager] Auto-save cancelled: {reason}");
+                    ErrorLogger.Log($"[AutoSaveManager] Auto-save cancelled: {reason}");
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[AutoSaveManager] Exception during auto-save '{reason}': {ex.Message}");
+                ErrorLogger.Error($"[AutoSaveManager] Exception during auto-save '{reason}': {ex.Message}");
             }
         }
 
@@ -251,7 +251,7 @@ namespace VeilBreakers.Managers
             PerformAutoSaveAsync($"forced:{reason}", _cts?.Token ?? CancellationToken.None).ContinueWith(t =>
             {
                 if (t.IsFaulted && t.Exception != null)
-                    Debug.LogError($"[AutoSave] Forced save failed: {t.Exception.InnerException?.Message}");
+                    ErrorLogger.Error($"[AutoSave] Forced save failed: {t.Exception.InnerException?.Message}");
             }, TaskContinuationOptions.OnlyOnFaulted);
         }
 

@@ -1,4 +1,5 @@
 using UnityEngine;
+using VeilBreakers.Core;
 using VeilBreakers.Data;
 using VeilBreakers.Systems;
 
@@ -32,7 +33,7 @@ namespace VeilBreakers.Combat
             // Guard against null combatants
             if (attacker == null || defender == null)
             {
-                Debug.LogWarning("[DamageCalculator] Null combatant in damage calculation");
+                ErrorLogger.Warn("[DamageCalculator] Null combatant in damage calculation");
                 result.finalDamage = basePower > 0 ? basePower : 1;
                 return result;
             }
@@ -94,7 +95,7 @@ namespace VeilBreakers.Combat
         /// <summary>
         /// Get stat modifier based on corruption level.
         /// ASCENDED (0-10%): +25%, Purified (11-25%): +10%, Unstable (26-50%): +0%,
-        /// Corrupted (51-75%): -10%, Abyssal (76-100%): -20%
+        /// Corrupted (51-75%): -10%, Abyssal (76-79%): -20%, UNTAMED (80-100%): -20%
         /// </summary>
         private static float GetCorruptionModifier(float corruption)
         {
@@ -102,7 +103,8 @@ namespace VeilBreakers.Combat
             if (corruption <= 25f) return 0.10f;       // Purified
             if (corruption <= 50f) return 0f;           // Unstable
             if (corruption <= 75f) return -0.10f;      // Corrupted
-            return -0.20f;                              // Abyssal
+            if (corruption < 80f) return -0.20f;       // Abyssal (76-79%)
+            return -0.20f;                              // UNTAMED (80-100%)
         }
 
         /// <summary>

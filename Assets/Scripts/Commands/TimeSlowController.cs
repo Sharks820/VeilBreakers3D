@@ -120,7 +120,7 @@ namespace VeilBreakers.Commands
 
                 OnTimeSlowStarted?.Invoke();
 
-                Debug.Log($"[TimeSlowController] Time slow started (scale: {_slowTimeScale})");
+                ErrorLogger.Log($"[TimeSlowController] Time slow started (scale: {_slowTimeScale})");
             }
         }
 
@@ -138,7 +138,7 @@ namespace VeilBreakers.Commands
 
                 OnTimeSlowEnded?.Invoke();
 
-                Debug.Log("[TimeSlowController] Time slow ended");
+                ErrorLogger.Log("[TimeSlowController] Time slow ended");
             }
         }
 
@@ -153,7 +153,7 @@ namespace VeilBreakers.Commands
 
             OnTimeSlowEnded?.Invoke();
 
-            Debug.Log("[TimeSlowController] Time slow force released");
+            ErrorLogger.Log("[TimeSlowController] Time slow force released");
         }
 
         /// <summary>

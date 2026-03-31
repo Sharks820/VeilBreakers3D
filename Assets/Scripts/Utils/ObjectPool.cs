@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using VeilBreakers.Core;
 
 namespace VeilBreakers.Utils
 {
@@ -91,7 +92,7 @@ namespace VeilBreakers.Utils
                 // Check if object was destroyed outside the pool
                 if (obj == null)
                 {
-                    Debug.LogWarning($"[ObjectPool<{typeof(T).Name}>] Found destroyed object in pool. Was it destroyed externally?");
+                    ErrorLogger.Warn($"[ObjectPool<{typeof(T).Name}>] Found destroyed object in pool. Was it destroyed externally?");
                     _totalCreated--;
                 }
             }
@@ -105,7 +106,7 @@ namespace VeilBreakers.Utils
             // Handle instantiation failure
             if (obj == null)
             {
-                Debug.LogError("[ObjectPool] Failed to get object from pool - creation failed");
+                ErrorLogger.Error("[ObjectPool] Failed to get object from pool - creation failed");
                 return null;
             }
 
@@ -142,14 +143,14 @@ namespace VeilBreakers.Utils
         {
             if (obj == null)
             {
-                Debug.LogWarning($"[ObjectPool<{typeof(T).Name}>] Attempted to return null object");
+                ErrorLogger.Warn($"[ObjectPool<{typeof(T).Name}>] Attempted to return null object");
                 return;
             }
 
             // Prevent double-return (object already deactivated means it was already returned)
             if (!obj.gameObject.activeSelf)
             {
-                Debug.LogWarning($"[ObjectPool<{typeof(T).Name}>] Object already returned to pool: {obj.name}");
+                ErrorLogger.Warn($"[ObjectPool<{typeof(T).Name}>] Object already returned to pool: {obj.name}");
                 obj.gameObject.SetActive(false);
                 return;
             }
@@ -220,7 +221,7 @@ namespace VeilBreakers.Utils
             var obj = UnityEngine.Object.Instantiate(_prefab, _parent);
             if (obj == null)
             {
-                Debug.LogError($"[ObjectPool] Failed to instantiate {_prefab?.name ?? "null prefab"}");
+                ErrorLogger.Error($"[ObjectPool] Failed to instantiate {_prefab?.name ?? "null prefab"}");
                 return null;
             }
             obj.name = $"{_prefab.name}_Pool_{_totalCreated}";
@@ -254,7 +255,7 @@ namespace VeilBreakers.Utils
         {
             if (_prefab == null)
             {
-                Debug.LogError($"[GameObjectPool] No prefab assigned on {gameObject.name}");
+                ErrorLogger.Error($"[GameObjectPool] No prefab assigned on {gameObject.name}");
                 return;
             }
 
@@ -272,7 +273,7 @@ namespace VeilBreakers.Utils
         {
             if (_pool == null)
             {
-                Debug.LogError($"[GameObjectPool] Pool not initialized on {gameObject.name} - check prefab assignment");
+                ErrorLogger.Error($"[GameObjectPool] Pool not initialized on {gameObject.name} - check prefab assignment");
                 return null;
             }
             return _pool.Get()?.gameObject;
@@ -283,7 +284,7 @@ namespace VeilBreakers.Utils
         {
             if (_pool == null)
             {
-                Debug.LogError($"[GameObjectPool] Pool not initialized on {gameObject.name} - check prefab assignment");
+                ErrorLogger.Error($"[GameObjectPool] Pool not initialized on {gameObject.name} - check prefab assignment");
                 return null;
             }
             return _pool.Get(position, rotation)?.gameObject;

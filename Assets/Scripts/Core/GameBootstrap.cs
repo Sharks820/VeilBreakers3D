@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using VeilBreakers.Core;
 using VeilBreakers.Managers;
 using VeilBreakers.Audio;
 using VeilBreakers.Combat;
@@ -248,18 +249,18 @@ namespace VeilBreakers.Core
         {
             if (_enableDebugLogs)
             {
-                Debug.Log($"[GameBootstrap] {message}");
+                ErrorLogger.Log($"[GameBootstrap] {message}");
             }
         }
 
         private void LogWarning(string message)
         {
-            Debug.LogWarning($"[GameBootstrap] {message}");
+            ErrorLogger.Warn($"[GameBootstrap] {message}");
         }
 
         private void LogError(string message)
         {
-            Debug.LogError($"[GameBootstrap] {message}");
+            ErrorLogger.Error($"[GameBootstrap] {message}");
         }
     }
 }

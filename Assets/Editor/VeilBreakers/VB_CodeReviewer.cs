@@ -555,19 +555,25 @@ namespace VeilBreakers.Editor.CodeReview
 
             // BUG-14 removed: duplicate of UNITY-18 (SendMessage/BroadcastMessage)
 
-            new ReviewRule("BUG-15", Severity.MEDIUM, Category.Bug, Language.CSharp,
+            new ReviewRule("BUG-15", Severity.LOW, Category.Quality, Language.CSharp,
                 RuleScope.AnyMethod, FileFilter.Runtime,
-                "OnTriggerEnter/OnCollisionEnter -- ensure at least one object has Rigidbody",
-                "At least one colliding object must have a Rigidbody.",
+                "Collision callback detected -- verify Rigidbody setup semantically",
+                "Confirm at least one participating object has the required Rigidbody setup in scene/prefab data.",
                 @"void\s+(OnTriggerEnter|OnCollisionEnter|OnTriggerEnter2D|OnCollisionEnter2D)\s*\(",
-                antiPatterns: new[]{ @"//\s*VB-IGNORE" }),
+                antiPatterns: new[]{ @"//\s*VB-IGNORE" },
+                type: FindingType.Strengthening,
+                confidence: 35,
+                reasoning: "Method presence alone cannot prove whether Rigidbody requirements are satisfied. This needs prefab or scene-level semantic inspection."),
 
-            new ReviewRule("BUG-16", Severity.MEDIUM, Category.Bug, Language.CSharp,
+            new ReviewRule("BUG-16", Severity.LOW, Category.Quality, Language.CSharp,
                 RuleScope.AnyMethod, FileFilter.Runtime,
-                "Physics.Raycast without LayerMask -- scans all layers",
-                "Add a LayerMask parameter to limit which layers are hit.",
+                "Physics cast without LayerMask -- verify intent semantically",
+                "Use a LayerMask when broad collision queries are unintended; keep unmasked casts only when explicitly required.",
                 @"Physics\d*\.Raycast\s*\([^)]*\)\s*;",
-                antiPatterns: new[]{ @"//\s*VB-IGNORE", @"(LayerMask|layerMask|layer)" }),
+                antiPatterns: new[]{ @"//\s*VB-IGNORE", @"(LayerMask|layerMask|layer)" },
+                type: FindingType.Strengthening,
+                confidence: 40,
+                reasoning: "Unmasked raycasts are often intentional for broad queries. Correctness depends on gameplay and layer design, not syntax alone."),
 
             new ReviewRule("BUG-17", Severity.MEDIUM, Category.Bug, Language.CSharp,
                 RuleScope.HotPath, FileFilter.Runtime,
@@ -585,12 +591,13 @@ namespace VeilBreakers.Editor.CodeReview
                 antiPatterns: new[]{ @"//\s*VB-IGNORE" },
                 guard: (line, all, i, ctx) => ctx[i] != LineContext.Comment && BodyLength(all, i) <= 2),
 
-            new ReviewRule("BUG-19", Severity.MEDIUM, Category.Bug, Language.CSharp,
+            new ReviewRule("BUG-19", Severity.LOW, Category.Performance, Language.CSharp,
                 RuleScope.HotPath, FileFilter.Runtime,
-                "foreach in hot path -- may allocate enumerator on older Mono",
+                "foreach in hot path -- verify collection/runtime semantics",
                 "Use for loop with index instead.",
                 @"foreach\s*\(",
                 antiPatterns: new[]{ @"//\s*VB-IGNORE", @"Span<", @"ReadOnlySpan<" },
+                type: FindingType.Optimization,
                 confidence: 50,
                 reasoning: "Modern Unity (2021+) with .NET Standard 2.1 does not allocate enumerators for List<T> and arrays in foreach. Only a concern on older Mono backend or custom IEnumerable types."),
 
@@ -633,9 +640,9 @@ namespace VeilBreakers.Editor.CodeReview
                 }),
 
             // BUG-25 FP fix: Skip ScriptableObject classes (public fields are intended pattern)
-            new ReviewRule("BUG-25", Severity.LOW, Category.Bug, Language.CSharp,
+            new ReviewRule("BUG-25", Severity.LOW, Category.Quality, Language.CSharp,
                 RuleScope.ClassLevel, FileFilter.Runtime,
-                "Public field should be [SerializeField] private for encapsulation",
+                "Public Inspector field -- verify encapsulation intent semantically",
                 "Use [SerializeField] private instead of public for Inspector fields.",
                 @"^\s+public\s+(?!static|const|readonly|override|virtual|abstract|event|delegate|class|struct|enum|interface)\w+\s+\w+\s*[;=]",
                 antiPatterns: new[]{ @"//\s*VB-IGNORE", @":\s*ScriptableObject", @":\s*SOBase", @"\[System\.Serializable\]" },
@@ -648,7 +655,10 @@ namespace VeilBreakers.Editor.CodeReview
                         if (Regex.IsMatch(all[j], @"^\s*class\s+")) return false;
                     }
                     return false;
-                }),
+                },
+                type: FindingType.Strengthening,
+                confidence: 35,
+                reasoning: "Public serialized fields can be intentional data contracts, authoring surfaces, or debug hooks. This is design guidance, not a reliable bug."),
 
             new ReviewRule("BUG-26", Severity.MEDIUM, Category.Bug, Language.CSharp,
                 RuleScope.AnyMethod, FileFilter.Runtime,
@@ -685,15 +695,18 @@ namespace VeilBreakers.Editor.CodeReview
                 @"\.\s*material\s*[\.=](?!s)",
                 antiPatterns: new[]{ @"//\s*VB-IGNORE", @"sharedMaterial", @"MaterialPropertyBlock" }),
 
-            new ReviewRule("BUG-31", Severity.CRITICAL, Category.Bug, Language.CSharp,
+            new ReviewRule("BUG-31", Severity.LOW, Category.Quality, Language.CSharp,
                 RuleScope.AnyMethod, FileFilter.Runtime,
-                "Null-conditional ?. or ?? on UnityEngine.Object bypasses destroyed check",
+                "Null-conditional ?. or ?? may bypass Unity destroyed-object semantics",
                 "Use explicit == null check: Unity overloads == to detect destroyed objects.",
                 @"\b\w+\s*(\?\.|(\?\?))",
                 antiPatterns: new[]{ @"//\s*VB-IGNORE", @"System\.\w+", @"string\?", @"int\?" },
                 guard: (line, all, i, ctx) => {
                     return ctx[i] != LineContext.Comment && Regex.IsMatch(line, @"(Component|GameObject|Transform|Renderer|Collider|Rigidbody|Camera|Light|MonoBehaviour)\s");
-                }),
+                },
+                type: FindingType.Strengthening,
+                confidence: 30,
+                reasoning: "Regex can rarely prove the target expression is a UnityEngine.Object instance. This requires symbol resolution to be trustworthy."),
 
             new ReviewRule("BUG-32", Severity.CRITICAL, Category.Bug, Language.CSharp,
                 RuleScope.HotPath, FileFilter.Runtime,
@@ -793,6 +806,7 @@ namespace VeilBreakers.Editor.CodeReview
                 @"=>\s*\{?[^}]*\b(this|[a-z_]\w*)\b",
                 antiPatterns: new[]{ @"//\s*VB-IGNORE", @"static\s+(void|bool|int)",
                                      @"static\s*\(", @"static\s*\w+\s*=>" },
+                type: FindingType.Optimization,
                 confidence: 50,
                 reasoning: "Most lambdas in Update don't allocate closures in modern Unity/.NET. Only a concern with captured locals that change per-frame."),
 
@@ -874,6 +888,7 @@ namespace VeilBreakers.Editor.CodeReview
                 "Pass false as second argument if world position preservation unneeded.",
                 @"\.SetParent\s*\(\s*[^,)]+\s*\)\s*;",
                 antiPatterns: new[]{ @"//\s*VB-IGNORE" },
+                type: FindingType.Optimization,
                 confidence: 45,
                 reasoning: "worldPositionStays=true (the default) is often the intended behavior to preserve world position during reparenting. Passing false changes the object's world position, which may break gameplay. Only a perf concern in tight loops."),
 
@@ -897,6 +912,7 @@ namespace VeilBreakers.Editor.CodeReview
                 "Set spatialBlend to 1 for 3D or remove rolloff settings.",
                 @"spatialBlend\s*=\s*0",
                 antiPatterns: new[]{ @"//\s*VB-IGNORE" },
+                type: FindingType.Optimization,
                 confidence: 45,
                 reasoning: "spatialBlend=0 is correct for 2D audio (UI sounds, music). Only problematic if distance attenuation is also configured."),
 
@@ -3501,7 +3517,21 @@ namespace VeilBreakers.Editor.CodeReview
             if (!string.IsNullOrEmpty(_pythonToolkitPath) && Directory.Exists(_pythonToolkitPath))
             {
                 pyFiles = Directory.GetFiles(_pythonToolkitPath, "*.py", SearchOption.AllDirectories)
-                    .Where(f => !f.Contains("__pycache__") && !f.Contains(".venv") && !f.Contains("node_modules"))
+                    .Where(f => {
+                        string normalized = f.Replace('\\', '/');
+                        string fileName = Path.GetFileName(normalized);
+                        bool isTestFile = fileName.StartsWith("test_") || fileName.EndsWith("_test.py");
+                        bool isTempFile = fileName.StartsWith("_tmp") || fileName.StartsWith(".tmp")
+                                          || normalized.Contains("/output/") || normalized.Contains("addon_backup_");
+                        return !normalized.Contains("__pycache__")
+                            && !normalized.Contains("/.venv/")
+                            && !normalized.Contains("/node_modules/")
+                            && !normalized.Contains("/tests/")
+                            && !normalized.Contains("/testdata/")
+                            && !normalized.Contains("/fixtures/")
+                            && !isTestFile
+                            && !isTempFile;
+                    })
                     .ToArray();
             }
 
@@ -3922,14 +3952,37 @@ namespace VeilBreakers.Editor.CodeReview
             // Synchronous scan for CI
             reviewer._scanStart = DateTime.Now;
             reviewer._issues.Clear();
+            var scanErrors = new List<string>();
             string[] csFiles = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories)
                 .Where(f => !f.Contains("PackageCache") && !f.Contains("Library") && !f.Contains("Temp")).ToArray();
-            foreach (var f in csFiles) { try { reviewer.ScanCSharpFile(f); } catch {} }
+            foreach (var f in csFiles)
+            {
+                try { reviewer.ScanCSharpFile(f); }
+                catch (Exception ex) { scanErrors.Add($"{f}: {ex.Message}"); }
+            }
             if (!string.IsNullOrEmpty(reviewer._pythonToolkitPath) && Directory.Exists(reviewer._pythonToolkitPath))
             {
                 string[] pyFiles = Directory.GetFiles(reviewer._pythonToolkitPath, "*.py", SearchOption.AllDirectories)
-                    .Where(f => !f.Contains("__pycache__")).ToArray();
-                foreach (var f in pyFiles) { try { reviewer.ScanPythonFile(f); } catch {} }
+                    .Where(f => {
+                        string normalized = f.Replace('\\', '/');
+                        string fileName = Path.GetFileName(normalized);
+                        bool isTestFile = fileName.StartsWith("test_") || fileName.EndsWith("_test.py");
+                        bool isTempFile = fileName.StartsWith("_tmp") || fileName.StartsWith(".tmp")
+                                          || normalized.Contains("/output/") || normalized.Contains("addon_backup_");
+                        return !normalized.Contains("__pycache__")
+                            && !normalized.Contains("/.venv/")
+                            && !normalized.Contains("/node_modules/")
+                            && !normalized.Contains("/tests/")
+                            && !normalized.Contains("/testdata/")
+                            && !normalized.Contains("/fixtures/")
+                            && !isTestFile
+                            && !isTempFile;
+                    }).ToArray();
+                foreach (var f in pyFiles)
+                {
+                    try { reviewer.ScanPythonFile(f); }
+                    catch (Exception ex) { scanErrors.Add($"{f}: {ex.Message}"); }
+                }
             }
             reviewer._criticalCount = reviewer._issues.Count(i => i.Severity == Severity.CRITICAL);
             reviewer._highCount = reviewer._issues.Count(i => i.Severity == Severity.HIGH);
@@ -3938,6 +3991,12 @@ namespace VeilBreakers.Editor.CodeReview
             var sb = new StringBuilder();
             sb.AppendLine($"VB Code Review: {reviewer._issues.Count} issues (C#: {reviewer._issues.Count(i => i.Lang == Language.CSharp)}, Python: {reviewer._issues.Count(i => i.Lang == Language.Python)})");
             sb.AppendLine($"  CRITICAL: {reviewer._criticalCount}  HIGH: {reviewer._highCount}  MEDIUM: {reviewer._mediumCount}  LOW: {reviewer._lowCount}");
+            if (scanErrors.Count > 0)
+            {
+                sb.AppendLine($"  Scan errors: {scanErrors.Count}");
+                foreach (var err in scanErrors.Take(10))
+                    sb.AppendLine($"    {err}");
+            }
             DestroyImmediate(reviewer);
             return sb.ToString();
         }

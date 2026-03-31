@@ -83,8 +83,11 @@ namespace VeilBreakers.UI.CharacterSelect
             CharSelectEvents.OnScreenReady += HandleScreenReady;
             CharSelectEvents.OnEmbarkTriggered += HandleEmbarkTriggered;
 
-            _sfxSource = GetComponent<AudioSource>();
-            if (_sfxSource == null) _sfxSource = gameObject.AddComponent<AudioSource>();
+            // Create a dedicated AudioSource on a child to avoid conflicts with
+            // CharSelectFocusManager which may share the same GameObject.
+            var sfxChild = new GameObject("HoldToEmbark_SFX");
+            sfxChild.transform.SetParent(transform, false);
+            _sfxSource = sfxChild.AddComponent<AudioSource>();
             _sfxSource.playOnAwake = false;
             _sfxSource.spatialBlend = 0f;
 
@@ -136,7 +139,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _btnEmbark = root.Q<VisualElement>(kBtnEmbark);
             if (_btnEmbark == null)
             {
-                Debug.LogError("[HoldToEmbark] btn-embark not found in UXML!");
+                ErrorLogger.Error("[HoldToEmbark] btn-embark not found in UXML!");
                 return;
             }
 
@@ -162,7 +165,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _isInitialized = true;
             StartBreathingGlow();
 
-            Debug.Log("[HoldToEmbark] AAA embark button initialized");
+            ErrorLogger.Log("[HoldToEmbark] AAA embark button initialized");
         }
 
         private void BuildVisualLayers()

@@ -90,7 +90,7 @@ namespace VeilBreakers.Managers
         {
             if (fileData == null || fileData.Length < HEADER_SIZE)
             {
-                Debug.LogError("[SaveFileHandler] File data is null or too small"); // VB-IGNORE BUG-10 -- string literal, not pattern match on UnityEngine.Object
+                ErrorLogger.Error("[SaveFileHandler] File data is null or too small"); // VB-IGNORE BUG-10 -- string literal, not pattern match on UnityEngine.Object
                 return null;
             }
 
@@ -99,7 +99,7 @@ namespace VeilBreakers.Managers
                 // 1. Validate magic bytes
                 if (!ValidateMagicBytes(fileData))
                 {
-                    Debug.LogError("[SaveFileHandler] Invalid magic bytes - not a VeilBreakers save file");
+                    ErrorLogger.Error("[SaveFileHandler] Invalid magic bytes - not a VeilBreakers save file");
                     return null;
                 }
 
@@ -120,7 +120,7 @@ namespace VeilBreakers.Managers
                     byte[] computedHmac = ComputeHMAC(payload);
                     if (!CompareChecksums(storedIntegrity, computedHmac))
                     {
-                        Debug.LogError("[SaveFileHandler] HMAC mismatch - save file tampered or corrupted");
+                        ErrorLogger.Error("[SaveFileHandler] HMAC mismatch - save file tampered or corrupted");
                         return null;
                     }
                 }
@@ -138,7 +138,7 @@ namespace VeilBreakers.Managers
                     byte[] computedChecksum = ComputeSHA256(decrypted);
                     if (!CompareChecksums(storedIntegrity, computedChecksum))
                     {
-                        Debug.LogError("[SaveFileHandler] Checksum mismatch - save file corrupted (legacy v1)");
+                        ErrorLogger.Error("[SaveFileHandler] Checksum mismatch - save file corrupted (legacy v1)");
                         return null;
                     }
                 }
@@ -159,14 +159,14 @@ namespace VeilBreakers.Managers
                 }
                 catch (ArgumentException jsonEx)
                 {
-                    Debug.LogError($"[SaveFileHandler] JSON parse error: {jsonEx.Message}");
+                    ErrorLogger.Error($"[SaveFileHandler] JSON parse error: {jsonEx.Message}");
                     return null;
                 }
 
                 // 9. Validate
                 if (data == null || !data.ValidateAndRepair())
                 {
-                    Debug.LogError("[SaveFileHandler] Save data validation failed");
+                    ErrorLogger.Error("[SaveFileHandler] Save data validation failed");
                     return null;
                 }
 
@@ -174,7 +174,7 @@ namespace VeilBreakers.Managers
             }
             catch (Exception ex) when (ex is IOException or System.Security.Cryptography.CryptographicException or ArgumentException or InvalidOperationException)
             {
-                Debug.LogError($"[SaveFileHandler] Deserialization failed: {ex.Message}");
+                ErrorLogger.Error($"[SaveFileHandler] Deserialization failed: {ex.Message}");
                 return null;
             }
         }
@@ -207,7 +207,7 @@ namespace VeilBreakers.Managers
                     // 1. Check disk space (need 3x file size for safety)
                     if (!HasSufficientDiskSpace(directory, data.Length * 3))
                     {
-                        Debug.LogError("[SaveFileHandler] Insufficient disk space");
+                        ErrorLogger.Error("[SaveFileHandler] Insufficient disk space");
                         return false;
                     }
 
@@ -281,7 +281,7 @@ namespace VeilBreakers.Managers
                 }
             }
 
-            Debug.LogError($"[SaveFileHandler] Failed to write file after {MAX_RETRIES} attempts: {filePath}");
+            ErrorLogger.Error($"[SaveFileHandler] Failed to write file after {MAX_RETRIES} attempts: {filePath}");
             return false;
         }
 
@@ -302,7 +302,7 @@ namespace VeilBreakers.Managers
                     // Guard against integer overflow on large files (>2GB)
                     if (stream.Length > int.MaxValue)
                     {
-                        Debug.LogError($"[SaveFileHandler] File too large to read: {stream.Length} bytes");
+                        ErrorLogger.Error($"[SaveFileHandler] File too large to read: {stream.Length} bytes");
                         return null;
                     }
 
@@ -315,7 +315,7 @@ namespace VeilBreakers.Managers
                         int bytesRead = await stream.ReadAsync(data, totalRead, length - totalRead);
                         if (bytesRead == 0)
                         {
-                            Debug.LogError($"[SaveFileHandler] Unexpected EOF: read {totalRead}/{length} bytes");
+                            ErrorLogger.Error($"[SaveFileHandler] Unexpected EOF: read {totalRead}/{length} bytes");
                             return null;
                         }
                         totalRead += bytesRead; // VB-IGNORE DEEP-03 -- arithmetic addition, not event subscription
@@ -325,7 +325,7 @@ namespace VeilBreakers.Managers
             }
             catch (IOException ex)
             {
-                Debug.LogError($"[SaveFileHandler] Read failed: {ex.Message}");
+                ErrorLogger.Error($"[SaveFileHandler] Read failed: {ex.Message}");
                 return null;
             }
         }
@@ -396,7 +396,7 @@ namespace VeilBreakers.Managers
                 }
             }
 
-            Debug.LogError("[SaveFileHandler] No valid backup found for recovery");
+            ErrorLogger.Error("[SaveFileHandler] No valid backup found for recovery");
             return null;
         }
 

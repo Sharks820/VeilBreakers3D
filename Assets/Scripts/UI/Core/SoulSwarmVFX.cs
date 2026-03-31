@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using VeilBreakers.Core;
 using UnityEngine.UIElements;
 
 namespace VeilBreakers.UI.Core
@@ -159,7 +160,7 @@ namespace VeilBreakers.UI.Core
             // Mouse tracking is registered in OnEnable to avoid double registration
 
             StartVFX();
-            Debug.Log($"[SoulSwarmVFX] Initialized with {_maxParticles} pooled particles");
+            ErrorLogger.Log($"[SoulSwarmVFX] Initialized with {_maxParticles} pooled particles");
         }
 
         private SoulParticle CreateParticleElement()

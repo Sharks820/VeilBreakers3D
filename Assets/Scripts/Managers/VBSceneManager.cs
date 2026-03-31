@@ -268,7 +268,7 @@ namespace VeilBreakers.Managers
             // Guard against missing fade canvas (headless builds, early destruction)
             if (_fadeCanvasGroup == null)
             {
-                Debug.LogWarning("[VBSceneManager] FadeCanvasGroup missing, skipping fade out"); // VB-IGNORE BUG-10 -- string literal, not pattern match
+                ErrorLogger.Warn("[VBSceneManager] FadeCanvasGroup missing, skipping fade out"); // VB-IGNORE BUG-10 -- string literal, not pattern match
                 yield break;
             }
 
@@ -294,7 +294,7 @@ namespace VeilBreakers.Managers
             // Guard against missing fade canvas (headless builds, early destruction)
             if (_fadeCanvasGroup == null)
             {
-                Debug.LogWarning("[VBSceneManager] FadeCanvasGroup missing, skipping fade in"); // VB-IGNORE BUG-10 -- string literal, not pattern match
+                ErrorLogger.Warn("[VBSceneManager] FadeCanvasGroup missing, skipping fade in"); // VB-IGNORE BUG-10 -- string literal, not pattern match
                 yield break;
             }
 
@@ -326,7 +326,7 @@ namespace VeilBreakers.Managers
             // Instead, each scene-scoped subscriber is responsible for unsubscribing
             // in OnDisable/OnDestroy. CharSelectEvents.ClearAll() handles the CharSelect flow.
 
-            Debug.Log($"[VBSceneManager] Scene loaded: {scene.name}");
+            ErrorLogger.Log($"[VBSceneManager] Scene loaded: {scene.name}");
         }
 
         // =============================================================================

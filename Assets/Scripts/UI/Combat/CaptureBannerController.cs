@@ -434,7 +434,7 @@ namespace VeilBreakers.UI.Combat
         private void HandleTargetMarked(Combatant target)
         {
             // Check if this is the current target
-            if (BattleManager.Instance?.CurrentTarget == target)
+            if (BattleManager.HasInstance && BattleManager.Instance.CurrentTarget == target)
             {
                 SetState(CaptureBannerState.MARKED);
             }
@@ -442,7 +442,7 @@ namespace VeilBreakers.UI.Combat
 
         private void HandleTargetUnmarked(Combatant target)
         {
-            if (BattleManager.Instance?.CurrentTarget == target)
+            if (BattleManager.HasInstance && BattleManager.Instance.CurrentTarget == target)
             {
                 SetState(CaptureBannerState.HIDDEN);
             }
@@ -450,7 +450,7 @@ namespace VeilBreakers.UI.Combat
 
         private void HandleThresholdReached(Combatant target, float threshold)
         {
-            if (BattleManager.Instance?.CurrentTarget == target)
+            if (BattleManager.HasInstance && BattleManager.Instance.CurrentTarget == target)
             {
                 SetState(CaptureBannerState.READY);
             }
@@ -474,7 +474,8 @@ namespace VeilBreakers.UI.Combat
         {
             // Return player as fallback for threshold calculation
             // In full implementation, this would get the actual nearest ally
-            return BattleManager.Instance?.Player;
+            if (!BattleManager.HasInstance) return null;
+            return BattleManager.Instance.Player;
         }
     }
 }

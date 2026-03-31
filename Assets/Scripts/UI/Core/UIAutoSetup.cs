@@ -1,4 +1,5 @@
 using UnityEngine;
+using VeilBreakers.Core;
 using UnityEngine.UIElements;
 
 namespace VeilBreakers.UI.Core
@@ -49,7 +50,7 @@ namespace VeilBreakers.UI.Core
                 panelSettings = ScriptableObject.CreateInstance<PanelSettings>();
                 panelSettings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
                 panelSettings.referenceResolution = new Vector2Int(1920, 1080);
-                Debug.LogWarning("[UIAutoSetup] Using runtime-created PanelSettings. For better performance, assign one in Inspector or configure UIAssets.");
+                ErrorLogger.Warn("[UIAutoSetup] Using runtime-created PanelSettings. For better performance, assign one in Inspector or configure UIAssets.");
             }
             _uiDocument.panelSettings = panelSettings;
 
@@ -60,7 +61,7 @@ namespace VeilBreakers.UI.Core
                 template = uiAssets.GetTemplate(_menuToLoad);
                 if (template == null)
                 {
-                    Debug.LogError($"[UIAutoSetup] Template '{_menuToLoad}' not found in UIAssets");
+                    ErrorLogger.Error($"[UIAutoSetup] Template '{_menuToLoad}' not found in UIAssets");
                     CreateFallbackUI();
                     return;
                 }
@@ -77,7 +78,7 @@ namespace VeilBreakers.UI.Core
                 uiAssets.ApplyStandardStyles(_uiDocument.rootVisualElement);
             }
 
-            Debug.Log($"[UIAutoSetup] UI initialized: {_menuToLoad}");
+            ErrorLogger.Log($"[UIAutoSetup] UI initialized: {_menuToLoad}");
         }
 
         private void CreateFallbackUI()

@@ -19,7 +19,8 @@ namespace VeilBreakers.Systems
         public const float PURIFIED_THRESHOLD = 25f;     // 11-25%
         public const float UNSTABLE_THRESHOLD = 50f;     // 26-50%
         public const float CORRUPTED_THRESHOLD = 75f;    // 51-75%
-        // ABYSSAL = 76-100%
+        public const float ABYSSAL_THRESHOLD = 79f;      // 76-79%
+        public const float UNTAMED_THRESHOLD = 80f;      // 80-100%
 
         // =============================================================================
         // STAT MULTIPLIERS
@@ -30,6 +31,7 @@ namespace VeilBreakers.Systems
         public const float UNSTABLE_BONUS = 1.00f;      // Normal stats
         public const float CORRUPTED_BONUS = 0.90f;     // -10% stats
         public const float ABYSSAL_BONUS = 0.80f;       // -20% stats
+        public const float UNTAMED_BONUS = 0.80f;       // -20% stats (uncontrollable)
 
         // =============================================================================
         // STATE CALCULATIONS
@@ -51,7 +53,9 @@ namespace VeilBreakers.Systems
                 return CorruptionState.UNSTABLE;
             if (corruptionPercent <= CORRUPTED_THRESHOLD)
                 return CorruptionState.CORRUPTED;
-            return CorruptionState.ABYSSAL;
+            if (corruptionPercent < UNTAMED_THRESHOLD)
+                return CorruptionState.ABYSSAL;     // 76-79%
+            return CorruptionState.UNTAMED;           // 80-100%
         }
 
         /// <summary>
@@ -75,6 +79,7 @@ namespace VeilBreakers.Systems
                 CorruptionState.UNSTABLE => UNSTABLE_BONUS,
                 CorruptionState.CORRUPTED => CORRUPTED_BONUS,
                 CorruptionState.ABYSSAL => ABYSSAL_BONUS,
+                CorruptionState.UNTAMED => UNTAMED_BONUS,
                 _ => UNSTABLE_BONUS
             };
         }
@@ -135,6 +140,7 @@ namespace VeilBreakers.Systems
                 CorruptionState.UNSTABLE => new Color(0.8f, 0.8f, 0.5f),   // Yellow
                 CorruptionState.CORRUPTED => new Color(0.7f, 0.4f, 0.6f),  // Purple
                 CorruptionState.ABYSSAL => new Color(0.3f, 0.1f, 0.3f),    // Dark purple
+                CorruptionState.UNTAMED => new Color(0.4f, 0.05f, 0.05f),  // Dark red/black
                 _ => Color.white
             };
         }
@@ -159,6 +165,7 @@ namespace VeilBreakers.Systems
                 CorruptionState.UNSTABLE => "Unstable",
                 CorruptionState.CORRUPTED => "Corrupted",
                 CorruptionState.ABYSSAL => "Abyssal",
+                CorruptionState.UNTAMED => "Untamed",
                 _ => "Unknown"
             };
         }
@@ -175,6 +182,7 @@ namespace VeilBreakers.Systems
                 CorruptionState.UNSTABLE => "Balanced between light and dark. Normal stats.",
                 CorruptionState.CORRUPTED => "Tainted by darkness. -10% to all stats.",
                 CorruptionState.ABYSSAL => "Consumed by corruption. -20% to all stats.",
+                CorruptionState.UNTAMED => "Untamed! Monster is uncontrollable. -20% all stats.",
                 _ => "Unknown corruption state"
             };
         }

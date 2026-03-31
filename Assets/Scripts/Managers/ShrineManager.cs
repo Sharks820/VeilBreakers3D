@@ -93,7 +93,7 @@ namespace VeilBreakers.Managers
             if (!_allShrines.Contains(shrine))
             {
                 _allShrines.Add(shrine);
-                Debug.Log($"[ShrineManager] Registered shrine: {shrine.shrineName}");
+                ErrorLogger.Log($"[ShrineManager] Registered shrine: {shrine.shrineName}");
             }
         }
 
@@ -114,7 +114,7 @@ namespace VeilBreakers.Managers
             EventBus.ShrineDiscovered(shrineId);
 
             var shrine = GetShrineById(shrineId);
-            Debug.Log($"[ShrineManager] Discovered shrine: {shrine?.shrineName ?? shrineId}");
+            ErrorLogger.Log($"[ShrineManager] Discovered shrine: {shrine?.shrineName ?? shrineId}");
         }
 
         /// <summary>
@@ -158,12 +158,12 @@ namespace VeilBreakers.Managers
             if (_isInShrineZone && !wasInZone && _currentShrine != null)
             {
                 EventBus.ShrineEntered(_currentShrine.shrineId);
-                Debug.Log($"[ShrineManager] Entered shrine zone: {_currentShrine.shrineName}");
+                ErrorLogger.Log($"[ShrineManager] Entered shrine zone: {_currentShrine.shrineName}");
             }
             else if (!_isInShrineZone && wasInZone && previousShrine != null)
             {
                 EventBus.ShrineExited(previousShrine.shrineId);
-                Debug.Log($"[ShrineManager] Exited shrine zone: {previousShrine.shrineName}");
+                ErrorLogger.Log($"[ShrineManager] Exited shrine zone: {previousShrine.shrineName}");
             }
         }
 
@@ -257,7 +257,7 @@ namespace VeilBreakers.Managers
                 {
                     _discoveredShrines.Add(shrineId);
                 }
-                Debug.Log($"[ShrineManager] Loaded {_discoveredShrines.Count} discovered shrines");
+                ErrorLogger.Log($"[ShrineManager] Loaded {_discoveredShrines.Count} discovered shrines");
             }
         }
 

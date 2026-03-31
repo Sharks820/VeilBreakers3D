@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using VeilBreakers.Core;
 
 namespace VeilBreakers.Audio
 {
@@ -127,7 +128,7 @@ namespace VeilBreakers.Audio
             // _veraVoice.start();
 
             OnDialogueStarted?.Invoke(dialogueId);
-            Debug.Log($"[VERAVoice] Playing dialogue: {dialogueId} (VI: {_currentVeilIntegrity:F0}%)");
+            ErrorLogger.Log($"[VERAVoice] Playing dialogue: {dialogueId} (VI: {_currentVeilIntegrity:F0}%)");
         }
 
         /// <summary>
@@ -140,7 +141,7 @@ namespace VeilBreakers.Audio
             // FMOD Integration:
             // FMODUnity.RuntimeManager.PlayOneShot(eventPath);
 
-            Debug.Log($"[VERAVoice] Combat callout: {calloutType}");
+            ErrorLogger.Log($"[VERAVoice] Combat callout: {calloutType}");
         }
 
         /// <summary>
@@ -156,7 +157,7 @@ namespace VeilBreakers.Audio
             // instance.start();
             // instance.release();
 
-            Debug.Log($"[VERAVoice] Reaction: {reactionType}");
+            ErrorLogger.Log($"[VERAVoice] Reaction: {reactionType}");
         }
 
         /// <summary>

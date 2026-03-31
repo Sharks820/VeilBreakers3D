@@ -38,7 +38,7 @@ namespace VeilBreakers.UI.Combat
         [Header("Settings")]
         [SerializeField] private int _slotIndex;
         [SerializeField] private KeyCode _keyCode = KeyCode.Alpha1;
-        [SerializeField] private string _keybindDisplay = "1";
+        [SerializeField] private string _keybindDisplay = "1"; // VB-IGNORE UIFIX-08 -- overwritten by Initialize() for correct display
 
         [Header("Colors")]
         [SerializeField] private Color _readyColor = Color.white;
@@ -95,12 +95,26 @@ namespace VeilBreakers.UI.Combat
 
         private void Awake()
         {
+            // Use slot-aware keybind display to avoid showing wrong keys
+            // (e.g., slot 6 showing "7" instead of "R" when Initialize hasn't been called yet).
             if (_keybindText != null)
             {
-                _keybindText.text = _keybindDisplay;
+                _keybindText.text = GetKeybindDisplay(_slotIndex);
             }
             SetState(SkillSlotState.READY);
         }
+
+        /// <summary>
+        /// Returns the correct keybind display string for a slot index.
+        /// 0=Q (BasicAttack), 1=E (Defend), 2=1, 3=2, 4=3, 5=4, 6=R (Ultimate)
+        /// </summary>
+        private static string GetKeybindDisplay(int slotIndex) => slotIndex switch
+        {
+            0 => "Q",
+            1 => "E",
+            6 => "R",
+            _ => (slotIndex + 1).ToString()
+        };
 
         private void Update()
         {
@@ -123,7 +137,7 @@ namespace VeilBreakers.UI.Combat
             // Update keybind display based on slot index
             if (_keybindText != null)
             {
-                _keybindText.text = slotIndex == 5 ? "R" : (slotIndex + 1).ToString();
+                _keybindText.text = GetKeybindDisplay(slotIndex);
             }
 
             // Ultimate slots get gold border

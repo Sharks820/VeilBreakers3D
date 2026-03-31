@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using VeilBreakers.Core;
 using UnityEngine.UIElements;
 
 namespace VeilBreakers.UI.Core
@@ -214,7 +215,7 @@ namespace VeilBreakers.UI.Core
                 }
             }
 
-            Debug.Log($"[MoltenButtonVFX] Initialized {_buttonStates.Count} buttons");
+            ErrorLogger.Log($"[MoltenButtonVFX] Initialized {_buttonStates.Count} buttons");
         }
 
         private void SetupButton(Button button, bool isPrimary)
@@ -461,20 +462,20 @@ namespace VeilBreakers.UI.Core
                 {
                     ApplyButtonSkin(button, buttonTexture);
                     anyApplied = true;
-                    Debug.Log($"[MoltenButtonVFX] Applied individual button skin: {button.name}");
+                    ErrorLogger.Log($"[MoltenButtonVFX] Applied individual button skin: {button.name}");
                 }
             }
 
             if (anyApplied)
             {
-                Debug.Log("[MoltenButtonVFX] Successfully applied individual button art skins");
+                ErrorLogger.Log("[MoltenButtonVFX] Successfully applied individual button art skins");
                 return;
             }
 
             // Fallback to legacy sheet-cropping if individual images not found
             if (_buttonSheetTexture == null)
             {
-                Debug.LogWarning("[MoltenButtonVFX] No individual button images found and no sheet texture available");
+                ErrorLogger.Warn("[MoltenButtonVFX] No individual button images found and no sheet texture available");
                 return;
             }
 
@@ -532,7 +533,7 @@ namespace VeilBreakers.UI.Core
             }
             catch (System.Exception ex)
             {
-                Debug.LogWarning($"[MoltenButtonVFX] Button sheet is not readable. Enable Read/Write on mainmenu_buttons_sheet. {ex.GetType().Name}: {ex.Message}");
+                ErrorLogger.Warn($"[MoltenButtonVFX] Button sheet is not readable. Enable Read/Write on mainmenu_buttons_sheet. {ex.GetType().Name}: {ex.Message}");
                 return false;
             }
 

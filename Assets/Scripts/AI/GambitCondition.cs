@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using VeilBreakers.Core;
 using VeilBreakers.Combat;
 using VeilBreakers.Data;
 using VeilBreakers.Systems;
@@ -189,7 +190,7 @@ namespace VeilBreakers.AI
                     return false;
 
                 default:
-                    Debug.LogWarning($"Unknown condition type: {conditionType}");
+                    ErrorLogger.Warn($"Unknown condition type: {conditionType}");
                     return false;
             }
         }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using VeilBreakers.Core;
 using PrimeTween;
 
 namespace VeilBreakers.UI.CharacterSelect
@@ -53,7 +54,7 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (_veilCrackMaterial == null)
             {
-                Debug.LogWarning("[VeilTransitionController] No VeilCrack material assigned. Veil crack effects will be skipped.");
+                ErrorLogger.Warn("[VeilTransitionController] No VeilCrack material assigned. Veil crack effects will be skipped.");
                 return;
             }
             CreateFullScreenQuad();

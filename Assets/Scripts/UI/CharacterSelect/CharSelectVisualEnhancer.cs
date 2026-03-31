@@ -48,6 +48,11 @@ namespace VeilBreakers.UI.CharacterSelect
         private string _currentHeroId; // Track current hero for color updates
         private bool _isSubscribed; // Prevent event handler stacking on re-enable
 
+        // Stored embark hover callbacks for proper cleanup ( BUG-A-05 )
+        private EventCallback<MouseEnterEvent> _embarkEnterCallback;
+        private EventCallback<MouseLeaveEvent> _embarkLeaveCallback;
+        private Button _cachedEmbarkButton;
+
         private void OnEnable()
         {
             if (_uiDocument == null) _uiDocument = GetComponent<UIDocument>();
@@ -76,6 +81,16 @@ namespace VeilBreakers.UI.CharacterSelect
             CharSelectEvents.OnHeroChanged -= HandleHeroChangedForPanelColors;
             CharSelectEvents.OnScreenReady -= HandleScreenReadyForCards;
             _isSubscribed = false;
+
+            // Unregister embark hover callbacks ( BUG-A-05 )
+            if (_cachedEmbarkButton != null)
+            {
+                if (_embarkEnterCallback != null)
+                    _cachedEmbarkButton.UnregisterCallback(_embarkEnterCallback);
+                if (_embarkLeaveCallback != null)
+                    _cachedEmbarkButton.UnregisterCallback(_embarkLeaveCallback);
+            }
+
             CleanupTextures();
             _applied = false;
         }
@@ -208,14 +223,19 @@ namespace VeilBreakers.UI.CharacterSelect
                 new Color(190f/255f, 150f/255f, 40f/255f, 1f)
             );
 
-            embark.RegisterCallback<MouseEnterEvent>(evt =>
+            // Store button + callbacks as fields for cleanup ( BUG-A-05 )
+            _cachedEmbarkButton = embark;
+            _embarkEnterCallback = evt =>
             {
                 UIGradientHelper.ApplyGradient(embark, _embarkHoverGradient);
-            });
-            embark.RegisterCallback<MouseLeaveEvent>(evt =>
+            };
+            _embarkLeaveCallback = evt =>
             {
                 UIGradientHelper.ApplyGradient(embark, _embarkGradient);
-            });
+            };
+
+            embark.RegisterCallback(_embarkEnterCallback);
+            embark.RegisterCallback(_embarkLeaveCallback);
 
             // Top highlight shine on embark button
             var embarkShine = new VisualElement();

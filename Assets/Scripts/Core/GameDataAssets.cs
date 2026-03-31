@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using VeilBreakers.Core;
 using VeilBreakers.Data;
 
 namespace VeilBreakers.Core
@@ -56,7 +57,7 @@ namespace VeilBreakers.Core
             {
                 assets = CreateInstance<GameDataAssets>();
                 assets.hideFlags = HideFlags.DontUnloadUnusedAsset;
-                Debug.LogWarning("[GameDataAssets] Data/GameDataAssets not found. Using runtime fallback from Resources/Data/*.json.");
+                ErrorLogger.Warn("[GameDataAssets] Data/GameDataAssets not found. Using runtime fallback from Resources/Data/*.json.");
             }
 
             EnsureRequiredJsonAssets(assets);
@@ -80,12 +81,12 @@ namespace VeilBreakers.Core
             {
                 if (resolvedAny)
                 {
-                    Debug.LogWarning("[GameDataAssets] Filled missing JSON references from Resources.");
+                    ErrorLogger.Warn("[GameDataAssets] Filled missing JSON references from Resources.");
                 }
                 return;
             }
 
-            Debug.LogError("[GameDataAssets] Required JSON assets are missing. Expected Resources/Data/monsters, skills, heroes, and items.");
+            ErrorLogger.Error("[GameDataAssets] Required JSON assets are missing. Expected Resources/Data/monsters, skills, heroes, and items.");
         }
 
         private static bool HasAllRequiredJsonAssets(GameDataAssets assets)
@@ -113,7 +114,7 @@ namespace VeilBreakers.Core
                 }
             }
 
-            Debug.LogError($"[GameDataAssets] Could not find {label}.json in Resources.");
+            ErrorLogger.Error($"[GameDataAssets] Could not find {label}.json in Resources.");
             return null;
         }
 

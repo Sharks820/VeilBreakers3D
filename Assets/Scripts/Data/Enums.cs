@@ -71,7 +71,8 @@ namespace VeilBreakers.Data
         PURIFIED = 1,       // 11-25% - +10% stats
         UNSTABLE = 2,       // 26-50% - Normal stats
         CORRUPTED = 3,      // 51-75% - -10% stats
-        ABYSSAL = 4         // 76-100% - -20% stats
+        ABYSSAL = 4,        // 76-79% - -20% stats
+        UNTAMED = 5         // 80-100% - Uncontrollable, -20% stats
     }
 
     // =============================================================================
@@ -339,8 +340,10 @@ namespace VeilBreakers.Data
     }
 
     /// <summary>
-    /// Legacy alias - use MonsterRarity instead
+    /// Legacy alias - use MonsterRarity instead.
+    /// Still referenced by UI controllers and data classes.
     /// </summary>
+    [Obsolete("Use MonsterRarity instead. Still referenced by InventoryController, ThemeManager, etc.")]
     public enum Rarity
     {
         COMMON = 0,

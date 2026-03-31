@@ -1,39 +1,15 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using VeilBreakers.Core;
 
 namespace VeilBreakers.Audio
 {
     /// <summary>
     /// Controls low health audio feedback including heartbeat, muffled mix, and urgent music.
     /// </summary>
-    public class LowHealthAudio : MonoBehaviour
+    public class LowHealthAudio : SingletonMonoBehaviour<LowHealthAudio>
     {
-        // =============================================================================
-        // SINGLETON
-        // =============================================================================
-
-        private static LowHealthAudio _instance;
-        private static bool _isQuitting = false;
-
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStatics()
-        {
-            _instance = default;
-            _isQuitting = false;
-        }
-
-        public static LowHealthAudio Instance
-        {
-            get
-            {
-                if (_isQuitting) return null;
-                return _instance;
-            }
-        }
-
-        public static bool HasInstance => _instance != null && !_isQuitting;
-
         // =============================================================================
         // CONFIGURATION
         // =============================================================================
@@ -95,18 +71,8 @@ namespace VeilBreakers.Audio
         // UNITY LIFECYCLE
         // =============================================================================
 
-        private void Awake()
+        protected override void OnSingletonAwake()
         {
-            // Reset static quit flag for Editor play mode restarts
-            _isQuitting = false;
-
-            if (_instance != null && _instance != this)
-            {
-                Destroy(gameObject);
-                return;
-            }
-            _instance = this;
-
             // Load thresholds from config
             if (_config != null)
             {
@@ -116,25 +82,12 @@ namespace VeilBreakers.Audio
             }
         }
 
-        private void OnDestroy()
-        {
-            if (_instance == this)
-            {
-                _instance = null;
-            }
-        }
-
         private void OnDisable()
         {
             // NOTE: Do NOT set events to null - that breaks the event pattern
             // by clearing ALL subscribers globally. Subscribers clean up in their own OnDestroy.
 
             StopAllCoroutines();
-        }
-
-        private void OnApplicationQuit()
-        {
-            _isQuitting = true;
         }
 
         // =============================================================================
@@ -205,7 +158,7 @@ namespace VeilBreakers.Audio
             MusicManager.Instance?.SetParameter("LowHealth", 1f);
 
             OnLowHealthTriggered?.Invoke();
-            Debug.Log("[LowHealthAudio] Low health audio activated");
+            ErrorLogger.Audio("[LowHealthAudio] Low health audio activated");
 
             UpdateIntensity();
         }
@@ -228,7 +181,7 @@ namespace VeilBreakers.Audio
             ResetAudioMix();
 
             OnLowHealthEnded?.Invoke();
-            Debug.Log("[LowHealthAudio] Low health audio deactivated");
+            ErrorLogger.Audio("[LowHealthAudio] Low health audio deactivated");
         }
 
         // =============================================================================
@@ -295,7 +248,7 @@ namespace VeilBreakers.Audio
             // _heartbeatInstance = FMODUnity.RuntimeManager.CreateInstance(heartbeatPath);
             // _heartbeatInstance.start();
 
-            Debug.Log("[LowHealthAudio] Heartbeat started");
+            ErrorLogger.Audio("[LowHealthAudio] Heartbeat started");
         }
 
         private void StopHeartbeat()
@@ -308,7 +261,7 @@ namespace VeilBreakers.Audio
             // _heartbeatInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
             // _heartbeatInstance.release();
 
-            Debug.Log("[LowHealthAudio] Heartbeat stopped");
+            ErrorLogger.Audio("[LowHealthAudio] Heartbeat stopped");
         }
 
         private void UpdateHeartbeatRate()
@@ -355,7 +308,7 @@ namespace VeilBreakers.Audio
             // _breathingInstance = FMODUnity.RuntimeManager.CreateInstance("event:/SFX/Player/HeavyBreathing");
             // _breathingInstance.start();
 
-            Debug.Log("[LowHealthAudio] Heavy breathing started");
+            ErrorLogger.Audio("[LowHealthAudio] Heavy breathing started");
         }
 
         private void StopHeavyBreathing()
@@ -368,7 +321,7 @@ namespace VeilBreakers.Audio
             // _breathingInstance.stop(FMOD.Studio.STOP_MODE.ALLOWFADEOUT);
             // _breathingInstance.release();
 
-            Debug.Log("[LowHealthAudio] Heavy breathing stopped");
+            ErrorLogger.Audio("[LowHealthAudio] Heavy breathing stopped");
         }
 
         // =============================================================================

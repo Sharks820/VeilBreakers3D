@@ -75,7 +75,7 @@ namespace VeilBreakers.Managers
         {
             if (data == null)
             {
-                Debug.LogError("[MigrationRunner] Cannot migrate null data");
+                ErrorLogger.Error("[MigrationRunner] Cannot migrate null data");
                 return null;
             }
 
@@ -91,7 +91,7 @@ namespace VeilBreakers.Managers
             // Future version - cannot downgrade
             if (data.version > _currentVersion)
             {
-                Debug.LogError($"[MigrationRunner] Save version v{data.version} is newer than current v{_currentVersion}. Cannot downgrade.");
+                ErrorLogger.Error($"[MigrationRunner] Save version v{data.version} is newer than current v{_currentVersion}. Cannot downgrade.");
                 return null;
             }
 
@@ -104,12 +104,12 @@ namespace VeilBreakers.Managers
             {
                 if (++iterations > maxIterations)
                 {
-                    Debug.LogError($"[MigrationRunner] Migration loop exceeded max iterations ({maxIterations}). Possible circular dependency.");
+                    ErrorLogger.Error($"[MigrationRunner] Migration loop exceeded max iterations ({maxIterations}). Possible circular dependency.");
                     return null;
                 }
                 if (!_migrations.TryGetValue(data.version, out ISaveMigration migration))
                 {
-                    Debug.LogError($"[MigrationRunner] No migration found from v{data.version}");
+                    ErrorLogger.Error($"[MigrationRunner] No migration found from v{data.version}");
                     return null;
                 }
 
@@ -119,7 +119,7 @@ namespace VeilBreakers.Managers
                 {
                     if (!migration.Migrate(data))
                     {
-                        Debug.LogError($"[MigrationRunner] Migration v{migration.FromVersion} → v{migration.ToVersion} failed");
+                        ErrorLogger.Error($"[MigrationRunner] Migration v{migration.FromVersion} → v{migration.ToVersion} failed");
                         return null;
                     }
 
@@ -127,7 +127,7 @@ namespace VeilBreakers.Managers
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogError($"[MigrationRunner] Migration exception: {ex.Message}");
+                    ErrorLogger.Error($"[MigrationRunner] Migration exception: {ex.Message}");
                     return null;
                 }
             }

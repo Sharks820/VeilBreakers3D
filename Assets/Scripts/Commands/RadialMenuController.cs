@@ -311,7 +311,7 @@ namespace VeilBreakers.Commands
 
             TimeSlowController.Instance?.RequestTimeSlow();
             OnMenuOpened?.Invoke();
-            Debug.Log("[RadialMenuController] Menu opened - selecting ally");
+            ErrorLogger.Log("[RadialMenuController] Menu opened - selecting ally");
         }
 
         public void CloseMenu()
@@ -327,7 +327,7 @@ namespace VeilBreakers.Commands
             SetMenuVisible(false);
             TimeSlowController.Instance?.ReleaseTimeSlow();
             OnMenuClosed?.Invoke();
-            Debug.Log("[RadialMenuController] Menu closed");
+            ErrorLogger.Log("[RadialMenuController] Menu closed");
         }
 
         private void SelectAlly(Combatant ally)
@@ -339,7 +339,7 @@ namespace VeilBreakers.Commands
             HideAllyWheel();
             ShowCommandWheel();
             OnAllySelected?.Invoke(ally);
-            Debug.Log($"[RadialMenuController] Selected ally: {ally.DisplayName}");
+            ErrorLogger.Log($"[RadialMenuController] Selected ally: {ally.DisplayName}");
         }
 
         private void SelectCommand(QuickCommandType command)
@@ -368,7 +368,7 @@ namespace VeilBreakers.Commands
                     ConfirmCommand();
                     break;
             }
-            Debug.Log($"[RadialMenuController] Selected command: {command} - now {State}");
+            ErrorLogger.Log($"[RadialMenuController] Selected command: {command} - now {State}");
         }
 
         private void GoBackToAllySelection()

@@ -101,9 +101,11 @@ namespace VeilBreakers.UI.CharacterSelect
             CharSelectEvents.OnScreenReady += HandleScreenReady;
             CharSelectEvents.OnHeroChanged += HandleHeroChanged;
 
-            // Get or create AudioSource (guard against re-enable adding duplicates)
-            _sfxSource = GetComponent<AudioSource>();
-            if (_sfxSource == null) _sfxSource = gameObject.AddComponent<AudioSource>();
+            // Create a dedicated AudioSource on a child to avoid conflicts with
+            // HoldToEmbarkController which may share the same GameObject.
+            var sfxChild = new GameObject("CharSelectFocus_SFX");
+            sfxChild.transform.SetParent(transform, false);
+            _sfxSource = sfxChild.AddComponent<AudioSource>();
             _sfxSource.playOnAwake = false;
             _sfxSource.spatialBlend = 0f; // 2D sound
 
@@ -125,7 +127,11 @@ namespace VeilBreakers.UI.CharacterSelect
             // Cleanup generated audio clips (owned by this component)
             if (_navTickClip != null) { Destroy(_navTickClip); _navTickClip = null; }
             if (_heroSwitchClip != null) { Destroy(_heroSwitchClip); _heroSwitchClip = null; }
-            // Don't destroy shared AudioSource - other components may reference it
+            // Destroy the dedicated child AudioSource
+            if (_sfxSource != null && _sfxSource.gameObject != null)
+            {
+                Destroy(_sfxSource.gameObject);
+            }
             _sfxSource = null;
 
             _isInitialized = false;

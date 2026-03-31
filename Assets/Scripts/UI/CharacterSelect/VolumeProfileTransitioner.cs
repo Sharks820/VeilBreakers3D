@@ -1,4 +1,5 @@
 using UnityEngine;
+using VeilBreakers.Core;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using PrimeTween;
@@ -31,7 +32,7 @@ namespace VeilBreakers.UI.CharacterSelect
             _volume = FindAnyObjectByType<Volume>();
             if (_volume != null)
             {
-                Debug.Log("[VolumeProfileTransitioner] Auto-wired to existing scene Volume.");
+                ErrorLogger.Log("[VolumeProfileTransitioner] Auto-wired to existing scene Volume.");
                 return;
             }
 
@@ -71,7 +72,7 @@ namespace VeilBreakers.UI.CharacterSelect
 
             _volume.sharedProfile = profile;
 
-            Debug.Log("[VolumeProfileTransitioner] Created runtime Volume with default profile.");
+            ErrorLogger.Log("[VolumeProfileTransitioner] Created runtime Volume with default profile.");
         }
 
         // =============================================================================
@@ -113,14 +114,14 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (_volume == null)
             {
-                Debug.LogError("[VolumeProfileTransitioner] No Volume component assigned.");
+                ErrorLogger.Error("[VolumeProfileTransitioner] No Volume component assigned.");
                 return;
             }
 
             // CRITICAL: Instantiate volume profile at runtime to prevent Editor asset mutation.
             if (_volume.sharedProfile == null)
             {
-                Debug.LogError("[VolumeProfileTransitioner] Volume has no sharedProfile assigned.");
+                ErrorLogger.Error("[VolumeProfileTransitioner] Volume has no sharedProfile assigned.");
                 return;
             }
             _volume.profile = Instantiate(_volume.sharedProfile); // VB-IGNORE BUG-22 -- VolumeProfile is ScriptableObject, not GameObject; parent transform N/A
@@ -216,7 +217,7 @@ namespace VeilBreakers.UI.CharacterSelect
         {
             if (theme.volumeProfile == null)
             {
-                Debug.LogWarning($"[VolumeProfileTransitioner] HeroThemeConfig '{theme.heroId}' has no volumeProfile assigned. Using current values as target.");
+                ErrorLogger.Warn($"[VolumeProfileTransitioner] HeroThemeConfig '{theme.heroId}' has no volumeProfile assigned. Using current values as target.");
                 CopySourceToDestination();
                 return;
             }

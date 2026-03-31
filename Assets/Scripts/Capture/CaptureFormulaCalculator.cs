@@ -1,4 +1,5 @@
 using UnityEngine;
+using VeilBreakers.Core;
 using VeilBreakers.Data;
 
 namespace VeilBreakers.Capture
@@ -26,7 +27,7 @@ namespace VeilBreakers.Capture
             // Guard against null monster
             if (monster == null)
             {
-                Debug.LogWarning("[CaptureFormulaCalculator] Null monster in capture calculation");
+                ErrorLogger.Warn("[CaptureFormulaCalculator] Null monster in capture calculation");
                 result.finalChance = 0f;
                 return result;
             }
@@ -110,7 +111,7 @@ namespace VeilBreakers.Capture
             var bonuses = CaptureFormulaConfig.HPBonuses;
             if (bonuses == null || bonuses.Length < 5)
             {
-                Debug.LogError("[CaptureFormulaCalculator] HPBonuses array not properly configured");
+                ErrorLogger.Error("[CaptureFormulaCalculator] HPBonuses array not properly configured");
                 return 0f;
             }
             
@@ -138,8 +139,9 @@ namespace VeilBreakers.Capture
         /// <summary>
         /// Get rarity modifier (additional penalty beyond item effectiveness).
         /// Note: Most of rarity factor is already in item effectiveness.
-        /// This is minimal additional penalty for formula balancing.
+        /// This always returns 0 — kept for formula structure only.
         /// </summary>
+        [Obsolete("Always returns 0. Rarity is already factored into item effectiveness.")]
         private static float GetRarityModifier(MonsterRarity rarity)
         {
             // Rarity is already heavily factored into item effectiveness
@@ -199,7 +201,7 @@ namespace VeilBreakers.Capture
             // Guard against null monster - default to flee
             if (monster == null)
             {
-                Debug.LogWarning("[CaptureFormulaCalculator] Null monster in failure outcome determination");
+                ErrorLogger.Warn("[CaptureFormulaCalculator] Null monster in failure outcome determination");
                 return CaptureOutcome.FLEE;
             }
 
@@ -218,7 +220,7 @@ namespace VeilBreakers.Capture
             // Guard against null monster
             if (monster == null)
             {
-                Debug.LogWarning("[CaptureFormulaCalculator] Null monster in berserk chance calculation");
+                ErrorLogger.Warn("[CaptureFormulaCalculator] Null monster in berserk chance calculation");
                 return 0.5f; // Default 50% if invalid
             }
 
@@ -226,7 +228,7 @@ namespace VeilBreakers.Capture
             var berserkChances = CaptureFailureConfig.BerserkChance;
             if (berserkChances == null || berserkChances.Length < 3)
             {
-                Debug.LogError("[CaptureFormulaCalculator] BerserkChance array not properly configured");
+                ErrorLogger.Error("[CaptureFormulaCalculator] BerserkChance array not properly configured");
                 return 0.5f;
             }
             

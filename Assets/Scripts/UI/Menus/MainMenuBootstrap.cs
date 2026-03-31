@@ -81,6 +81,9 @@ namespace VeilBreakers.UI.Menus
         private UIAnimationController _animator;
         private Camera _cachedCamera;
 
+        // Runtime-generated texture ( BUG-B-07 )
+        private Texture2D _cornerBlendTex;
+
         // =============================================================================
         // UNITY LIFECYCLE
         // =============================================================================
@@ -122,6 +125,9 @@ namespace VeilBreakers.UI.Menus
             if (_failsafeCoroutine != null) StopCoroutine(_failsafeCoroutine);
 
             CleanupEventHandlers();
+
+            // Destroy runtime-generated texture ( BUG-B-07 )
+            if (_cornerBlendTex != null) { Destroy(_cornerBlendTex); _cornerBlendTex = null; }
         }
 
         // =============================================================================
@@ -148,7 +154,7 @@ namespace VeilBreakers.UI.Menus
         {
             if (_uiDocument == null)
             {
-                Debug.LogError("[MainMenuBootstrap] UIDocument missing on MainMenuBootstrap GameObject.");
+                ErrorLogger.Error("[MainMenuBootstrap] UIDocument missing on MainMenuBootstrap GameObject.");
                 return;
             }
 
@@ -201,7 +207,7 @@ namespace VeilBreakers.UI.Menus
             }
             else
             {
-                Debug.LogError("MainMenuBootstrap: MainMenu template not assigned!");
+                ErrorLogger.Error("MainMenuBootstrap: MainMenu template not assigned!");
                 CreateFallbackMenu(mainContainer);
             }
 
@@ -302,7 +308,7 @@ namespace VeilBreakers.UI.Menus
                 }
             }
 
-            Debug.Log("[MainMenuBootstrap] Visibility failsafe applied.");
+            ErrorLogger.Log("[MainMenuBootstrap] Visibility failsafe applied.");
         }
 
         private IEnumerator EntranceAnimationSequence()
@@ -599,9 +605,10 @@ namespace VeilBreakers.UI.Menus
             // Create a gradient texture: strongly opaque at bottom-right corner, feathers to transparent
             int w = 320;
             int h = 80;
-            var tex = new Texture2D(w, h, TextureFormat.RGBA32, false);
-            tex.wrapMode = TextureWrapMode.Clamp;
-            tex.filterMode = FilterMode.Bilinear;
+            if (_cornerBlendTex != null) Destroy(_cornerBlendTex);
+            _cornerBlendTex = new Texture2D(w, h, TextureFormat.RGBA32, false);
+            _cornerBlendTex.wrapMode = TextureWrapMode.Clamp;
+            _cornerBlendTex.filterMode = FilterMode.Bilinear;
 
             // Match the dark fiery scene bottom — slight warm tint
             Color darkBase = new Color(0.03f, 0.01f, 0.005f, 1f);
@@ -622,12 +629,12 @@ namespace VeilBreakers.UI.Menus
                     float alpha = Mathf.SmoothStep(1f, 0f, dist * 1.1f);
                     alpha = Mathf.Pow(alpha, 0.5f); // Harder edge — ensures watermark is fully covered
 
-                    tex.SetPixel(x, h - 1 - y, new Color(darkBase.r, darkBase.g, darkBase.b, alpha)); // VB-IGNORE PERF-06 -- one-time texture generation at startup, not per-frame
+                    _cornerBlendTex.SetPixel(x, h - 1 - y, new Color(darkBase.r, darkBase.g, darkBase.b, alpha)); // VB-IGNORE PERF-06 -- one-time texture generation at startup, not per-frame
                 }
             }
-            tex.Apply();
+            _cornerBlendTex.Apply();
 
-            overlay.style.backgroundImage = new StyleBackground(tex);
+            overlay.style.backgroundImage = new StyleBackground(_cornerBlendTex);
             overlay.style.backgroundColor = new Color(0, 0, 0, 0); // Transparent base, texture handles alpha
         }
 

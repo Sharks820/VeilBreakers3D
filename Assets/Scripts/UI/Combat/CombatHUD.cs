@@ -168,7 +168,7 @@ namespace VeilBreakers.UI.Combat
             SubscribeToEvents();
             SetVisible(true);
 
-            Debug.Log($"[CombatHUD] Initialized with {_allies.Length} allies and {_enemies.Length} enemies");
+            ErrorLogger.Log($"[CombatHUD] Initialized with {_allies.Length} allies and {_enemies.Length} enemies");
         }
 
         /// <summary>
@@ -368,7 +368,7 @@ namespace VeilBreakers.UI.Combat
 
             if (_allies.Length > _allyPanels.Count)
             {
-                Debug.LogWarning($"[CombatHUD] More allies ({_allies.Length}) than ally panels ({_allyPanels.Count}). Some allies will not have UI.");
+                ErrorLogger.Warn($"[CombatHUD] More allies ({_allies.Length}) than ally panels ({_allyPanels.Count}). Some allies will not have UI.");
             }
 
             for (int i = 0; i < _allyPanels.Count; i++)
@@ -517,13 +517,13 @@ namespace VeilBreakers.UI.Combat
 
         private void HandlePlayerDeath()
         {
-            Debug.Log("[CombatHUD] Player died!");
+            ErrorLogger.Log("[CombatHUD] Player died!");
             // Combat system will handle defeat
         }
 
         private void HandleLowHP()
         {
-            Debug.Log("[CombatHUD] Player HP is low!");
+            ErrorLogger.Log("[CombatHUD] Player HP is low!");
             // Could trigger warning effects
         }
 

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using VeilBreakers.Core;
 using VeilBreakers.Combat;
 using VeilBreakers.Data;
 using VeilBreakers.Managers;
@@ -105,7 +106,7 @@ namespace VeilBreakers.Audio
             }
 
             _isSubscribed = true;
-            Debug.Log("[AudioBattleIntegration] Subscribed to battle events");
+            ErrorLogger.Log("[AudioBattleIntegration] Subscribed to battle events");
         }
 
         /// <summary>
@@ -149,7 +150,7 @@ namespace VeilBreakers.Audio
 
         private void HandleBattleStart()
         {
-            Debug.Log("[AudioBattleIntegration] Battle started - triggering audio");
+            ErrorLogger.Log("[AudioBattleIntegration] Battle started - triggering audio");
 
             // Collect enemy IDs for audio loading
             _enemyIds.Clear();
@@ -178,7 +179,7 @@ namespace VeilBreakers.Audio
 
         private void HandleBattleEnd()
         {
-            Debug.Log("[AudioBattleIntegration] Battle ended - triggering audio");
+            ErrorLogger.Log("[AudioBattleIntegration] Battle ended - triggering audio");
 
             if (BattleManager.Instance == null) return;
             var state = BattleManager.Instance.State;

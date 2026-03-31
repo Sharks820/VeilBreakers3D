@@ -125,7 +125,7 @@ namespace VeilBreakers.Systems
         {
             if (data == null)
             {
-                Debug.LogError("[StatusEffectInstance] Cannot create instance with null data!");
+                ErrorLogger.Error("[StatusEffectInstance] Cannot create instance with null data!");
                 return null;
             }
 
