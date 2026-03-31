@@ -15,7 +15,7 @@
 - [x] **Phase 4: Title Screen & CharSelect Bug Fixes** — USS consolidation, interaction bugs, gamepad
 - [ ] **Phase 5: Title Screen AAA Rebuild** — VFX, VERA audio, gradients, glow effects
 - [ ] **Phase 6: Character Select AAA Rebuild** — Per-hero theming, gradients, embark polish
-- [ ] **Phase 7: 3D Model Audit & Integration** — Audit 28 GLB models, wire into HeroDisplayConfig
+- [ ] **Phase 7: 3D Model Audit & Integration** — Audit 24 GLB models, wire into HeroDisplayConfig
 - [ ] **Phase 8: End-to-End Verification** — Full flow test, code review pass, performance check
 
 ---
@@ -109,15 +109,19 @@ Plans:
 
 ## Phase 7: 3D Model Audit & Integration
 
-**Goal:** Audit all 28 GLB models, decimate, wire into HeroDisplayConfig
+**Goal:** Audit all 24 GLB models, wire hero + champion monster prefabs into HeroDisplayConfig
 **Depends on:** Phase 6 (UI done before model integration)
 **Requirements:** MODEL-01 through MODEL-09
 **Success Criteria:**
-1. All 28 models audited (polycount, UVs, normals, rig) (MODEL-01)
+1. All 24 models audited (polycount, UVs, normals, rig) (MODEL-01)
 2. All 4 heroes display real 3D models in CharSelect (MODEL-04)
 3. Models within budget: 50K tris hero, 30K tris monster (MODEL-03)
 4. At least 1 champion monster wired (MODEL-05)
-**Plans:** 2-3 plans
+**Plans:** 2 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — Create VB_ModelAuditor + wire hero models (MODEL-01, MODEL-02, MODEL-04)
+- [ ] 07-02-PLAN.md — Wire champion monsters + budget check (MODEL-03, MODEL-05)
 
 ## Phase 8: End-to-End Verification
 
@@ -143,7 +147,7 @@ Plans:
 | 4. Title Screen & CharSelect Bug Fixes | 1/1 | Done | 2026-03-30 |
 | 5. Title Screen AAA Rebuild | 0/4 | Planning Complete | - |
 | 6. Character Select AAA Rebuild | 0/2 | Planning Complete | - |
-| 7. 3D Model Audit & Integration | 0/? | Not Started | - |
+| 7. 3D Model Audit & Integration | 0/2 | Planning Complete | - |
 | 8. End-to-End Verification | 0/? | Not Started | - |
 
 ---
