@@ -34,7 +34,7 @@ namespace VeilBreakers.UI.Core
             }
 
             tex.SetPixels(pixels);
-            tex.Apply(false, false); // Keep readable for potential reuse
+            tex.Apply(false, true); // Keep readable for potential reuse
             return tex;
         }
 
@@ -71,7 +71,7 @@ namespace VeilBreakers.UI.Core
             }
 
             tex.SetPixels(pixels);
-            tex.Apply(false, false);
+            tex.Apply(false, true);
             return tex;
         }
 
@@ -100,7 +100,7 @@ namespace VeilBreakers.UI.Core
             }
 
             tex.SetPixels(pixels);
-            tex.Apply(false, false);
+            tex.Apply(false, true);
             return tex;
         }
 
@@ -131,6 +131,16 @@ namespace VeilBreakers.UI.Core
         /// </summary>
         public static VisualElement CreateGlowOverlay(VisualElement parent, Color glowColor, float spread = 8f, float opacity = 0.3f)
         {
+            return CreateGlowOverlay(parent, glowColor, spread, opacity, out _);
+        }
+
+        /// <summary>
+        /// Creates a glow overlay VisualElement and adds it behind the target.
+        /// Returns the overlay for animation/cleanup. Outputs the generated texture for registry tracking.
+        /// </summary>
+        public static VisualElement CreateGlowOverlay(VisualElement parent, Color glowColor, float spread, float opacity, out Texture2D generatedTexture)
+        {
+            generatedTexture = null;
             if (parent == null) return null;
 
             var glow = new VisualElement();
@@ -152,6 +162,7 @@ namespace VeilBreakers.UI.Core
                 new Color(glowColor.r, glowColor.g, glowColor.b, 0f),
                 64
             );
+            generatedTexture = glowTex;
             glow.style.backgroundImage = new StyleBackground(glowTex);
             glow.style.unityBackgroundScaleMode = ScaleMode.StretchToFill;
 
@@ -197,7 +208,7 @@ namespace VeilBreakers.UI.Core
                 hPixels[x] = new Color(highlightColor.r, highlightColor.g, highlightColor.b, highlightColor.a * fade);
             }
             hTex.SetPixels(hPixels);
-            hTex.Apply(false, false);
+            hTex.Apply(false, true);
 
             // Clean up the unused vertical texture
             Object.Destroy(tex);
