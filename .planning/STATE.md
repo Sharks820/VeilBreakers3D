@@ -4,13 +4,13 @@ milestone: v6.0
 milestone_name: milestone
 current_phase: 6
 status: planning
-stopped_at: Completed 05-04-PLAN.md
-last_updated: "2026-03-31T13:25:13.876Z"
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-03-31T14:00:00.000Z"
 progress:
   total_phases: 8
   completed_phases: 1
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 2
+  completed_plans: 0
 ---
 
 # Session State
@@ -23,7 +23,7 @@ See: .planning/PROJECT.md
 
 **Milestone:** v6.0 — Bug Fixes & Code Quality Hardening + UI Rebuild
 **Current phase:** 6
-**Status:** Ready to plan
+**Status:** Planning complete, ready to execute
 
 ## What's Done (v6.0)
 
@@ -67,9 +67,22 @@ See: .planning/PROJECT.md
 - Plan 03: TitleScreenVFX decomposed from 3146 to 735 lines (5 subsystems)
 - Plan 04: UIVFXContainer z-order management, VERATitleAudio randomized interactions, texture glow
 
+### Phase 6: Character Select AAA Rebuild (PLANNING COMPLETE - 2026-03-31)
+
+Gap analysis showed most AAA features already implemented in prior sessions:
+- CHARSEL-01 (hero card carousel + gradient/glow) -- DONE
+- CHARSEL-02 (per-hero theming via HeroThemeConfig + CSS) -- DONE
+- CHARSEL-03 (tab system + hero-themed panels) -- DONE
+- CHARSEL-06 (embark hold layered feedback) -- DONE
+- CHARSEL-07 (EmbarkCinematicController) -- DONE
+
+Remaining gaps:
+- Plan 01: Per-hero VolumeProfile assets (all 4 HeroThemeConfig.volumeProfile = null)
+- Plan 02: Wire VeilDissolveController to shader + Renderer
+
 ## Remaining Phases
 
-- Phase 6: Character Select AAA Rebuild
+- Phase 6: Character Select AAA Rebuild (2 plans, ready to execute)
 - Phase 7: 3D Model Audit & Integration
 - Phase 8: End-to-End Verification
 
@@ -82,6 +95,7 @@ See: .planning/PROJECT.md
 - UIVFXContainer manages 6 named layers (background, atmosphere, particles, lightning, logo, ui)
 - VERA audio uses weighted random with per-pattern cooldowns and history exclusion
 - TitleScreenVFX decomposed to 5 subsystems + slim orchestrator (77% reduction)
+- Phase 6 gap analysis: 5 of 7 CHARSEL requirements already met, 2 remaining gaps
 
 ## Blockers / Concerns
 
@@ -89,6 +103,6 @@ See: .planning/PROJECT.md
 
 ## Session Continuity
 
-Last session: 2026-03-31T13:16:22.745Z
+Last session: 2026-03-31T14:00:00.000Z
 Resume file: None
-Stopped at: Completed 05-04-PLAN.md
+Stopped at: Completed 06-02-PLAN.md
