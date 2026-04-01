@@ -1,0 +1,57 @@
+{
+  "mcpServers": {
+    "sequential-thinking": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "description": "Complex problem breakdown, multi-step reasoning, game balance calculations"
+    },
+    "serena": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena",
+        "start-mcp-server"
+      ],
+      "description": "Symbol-aware code navigation and scoped edits"
+    },
+    "gemini-cli": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["--require", "./Tools/mcp/spawn-patch.cjs", "C:/nvm4w/nodejs/node_modules/mcp-gemini-cli/dist/index.js", "--allow-npx"],
+      "env": {
+        "PATH": "C:\\nvm4w\\nodejs;${PATH}"
+      },
+      "description": "Gemini CLI - search, chat, analyze files. Use for second opinions and web research."
+    },
+    "codex-cli": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["--require", "./Tools/mcp/spawn-patch.cjs", "C:/nvm4w/nodejs/node_modules/mcp-codex-cli/dist/index.js", "--allow-npx"],
+      "env": {
+        "PATH": "C:\\nvm4w\\nodejs;${PATH}"
+      },
+      "description": "Codex CLI - OpenAI code review, analysis. Use as senior reviewer alongside Gemini."
+    },
+    "github": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["Tools/mcp/github-mcp-launcher.js"],
+      "description": "GitHub operations - PRs, issues, commits, CI status. Token auto-sourced from gh CLI."
+    },
+    "unity-mcp": {
+      "type": "stdio",
+      "command": "unity-mcp-server",
+      "args": ["--client-transport=stdio", "--port=8080", "--plugin-timeout=10000"],
+      "description": "IvanMurzak Unity-MCP - runtime debugging, Roslyn execute, reflection, package manager, editor selection"
+    }
+  },
+  "_profile": {
+    "name": "lean",
+    "purpose": "No VB-Blender/VB-Unity tool descriptions. Saves ~23KB per message. Switch to .mcp.json for asset work.",
+    "switch_command": "copy /Y .mcp.lean.json .mcp.json (lean) or copy /Y .mcp.full.json .mcp.json (full)",
+    "missing_tools": ["vb-blender", "vb-unity"]
+  }
+}
