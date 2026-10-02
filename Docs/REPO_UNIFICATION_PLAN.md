@@ -83,7 +83,20 @@ git push github archive/orphan-main:main --force
 
 ## 5. Risk audit (public-exposure, secrets, licences, LFS)
 
-_PENDING_SONNET_
+Independent audit of the 622-commit delta `e8734e6..fcf176b6` and V4's tip tree. Verdict: **not safe to publish as-is. Keep the unified repo private.** Deleting files at the tip would not help, because they would remain in public history; only a history rewrite (`git filter-repo`) could make a public copy safe, and that changes every SHA in the 622 commits.
+
+| Severity | Finding | Detail |
+|---|---|---|
+| None | Secrets | `gitleaks` 8.30.1 run over the whole delta with the repo's own config: 0 leaks. Default rules: 23 hits, all false positives (run-token nonces, shader identifiers, hash manifests, prose). Manual regex sweep for API-key prefixes, private keys, `.env`, Unity `.ulf` licences: nothing. Wwise licence key and Sentry DSN are empty. |
+| High | Personal data in raw AI transcripts | 62 raw session captures (~15 MB) under `Docs/plans/research/`. Two of them (commit `c4a385dc`) include a listing of the owner's personal documents folder. Local user paths appear in 363 files at the tip, versus 150 already in this public repo. |
+| High | Paid vendor code | Ten `Packages/com.jbooth.microsplat.*` modules, 774 files, 565 MB, commit `a504e279`. V4's own gitleaks config labels it purchased vendor code. The Asset Store EULA forbids redistribution. No other paid pack is tracked. |
+| Medium | Internal provenance notes | Roughly 20 planning docs and memory files record asset-pack import history that should stay internal. No pack content is tracked. |
+| Medium | LFS quota | 1,661 pointers at the tip = 2.99 GiB (1,600 unique objects). Across all 622 commits: 1,674 objects, 3.51 GiB. GitHub's free LFS quota is 1 GiB storage and 1 GiB bandwidth per month. About 2.7 GB of the tip total is evidence media under `Docs/plans`. Largest object: `WakingShore_TerrainData.asset`, 92.7 MB. Only ~8 MB is cached in this session's clone; the rest lives in V4's LFS store. |
+| Low | Fonts and CI | `Arial.ttf` is already public here. Cinzel and Rajdhani lack their OFL licence text. CI workflows reference `UNITY_*` secret names (names only, hosted runners). |
+
+Sizes for planning: V4 `.git` is 2.1 GB (2.00 GiB pack). This repo's tree at `e8734e6` is 1.28 GiB raw with binaries inline.
+
+**Consequence for the options in section 3.** Option 4 is rejected outright. Option 2 only works if this repo is made private first and the account buys LFS data packs. Option 1 has none of these costs.
 
 ---
 
